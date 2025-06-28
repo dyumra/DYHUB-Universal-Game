@@ -1,46 +1,45 @@
--- === DYHUB Aimbot & ESP | FULL === --
-local player = game:GetService("Players").LocalPlayer
+-- === DYHUB Aimbot & ESP | Compact with Toggle D, Small Name, Full Colors ===
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
+local player = Players.LocalPlayer
 local Mouse = player:GetMouse()
 local StarterGui = game:GetService("StarterGui")
 
-local function notify(text)
+local function notify(txt)
     pcall(function()
         StarterGui:SetCore("SendNotification", {
             Title = "DYHUB",
-            Text = text,
+            Text = txt,
             Duration = 3
         })
     end)
 end
 
-notify("📊 DYHUB Loaded")
-
-local function getRainbowColor(t)
-    local freq = 2
+local function getRainbow(t)
+    local f = 2
     return Color3.fromRGB(
-        math.floor(math.sin(freq * t + 0) * 127 + 128),
-        math.floor(math.sin(freq * t + 2) * 127 + 128),
-        math.floor(math.sin(freq * t + 4) * 127 + 128)
+        math.floor(math.sin(f*t+0)*127+128),
+        math.floor(math.sin(f*t+2)*127+128),
+        math.floor(math.sin(f*t+4)*127+128)
     )
 end
 
--- === GUI ===
+notify("✅ DYHUB Loaded")
+
 local gui = Instance.new("ScreenGui", player.PlayerGui)
-gui.Name = "DYHUB_GUI"
+gui.Name = "DYHUB"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 300, 0, 500)
-frame.Position = UDim2.new(0.5, -150, 0.5, -250)
+frame.Size = UDim2.new(0, 250, 0, 420)
+frame.Position = UDim2.new(0.5, -125, 0.5, -210)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 frame.Active = true
 frame.Draggable = true
 frame.Parent = gui
 
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
 local stroke = Instance.new("UIStroke", frame)
 stroke.Thickness = 3
 
@@ -53,180 +52,193 @@ title.TextScaled = true
 title.BackgroundTransparency = 1
 title.TextColor3 = Color3.new(1, 1, 1)
 
+local toggleBtn = Instance.new("TextButton", gui)
+toggleBtn.Size = UDim2.new(0, 40, 0, 40)
+toggleBtn.Position = UDim2.new(1, -50, 0, 10)
+toggleBtn.Text = "D"
+toggleBtn.Font = Enum.Font.GothamBlack
+toggleBtn.TextScaled = true
+toggleBtn.BackgroundColor3 = Color3.fromRGB(20,20,20)
+toggleBtn.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1, 0)
+local toggleStroke = Instance.new("UIStroke", toggleBtn)
+toggleStroke.Thickness = 2
+
 RunService.RenderStepped:Connect(function()
-    local c = getRainbowColor(tick())
+    local c = getRainbow(tick())
     stroke.Color = c
     title.TextColor3 = c
+    toggleBtn.TextColor3 = c
+end)
+
+toggleBtn.MouseButton1Click:Connect(function()
+    frame.Visible = not frame.Visible
 end)
 
 local function createBtn(text, posY)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -20, 0, 30)
-    btn.Position = UDim2.new(0, 10, 0, posY)
-    btn.Text = text
-    btn.Font = Enum.Font.GothamBold
-    btn.TextScaled = true
-    btn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    btn.TextColor3 = Color3.new(1, 1, 1)
-    btn.Parent = frame
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
-    return btn
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(1, -20, 0, 30)
+    b.Position = UDim2.new(0, 10, 0, posY)
+    b.Text = text
+    b.Font = Enum.Font.GothamBold
+    b.TextScaled = true
+    b.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    b.TextColor3 = Color3.new(1,1,1)
+    b.Parent = frame
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
+    return b
 end
 
 local posY = 40
-local AimbotOn, SmoothAimbot, WallAimbot = false, false, false
-local ESPOn, ESPTeam, ShowName = false, false, false
-local AimbotTargetPart, targetParts, partIndex = "Head", {"Head", "UpperTorso", "Torso"}, 1
-local ESPMode, espModes, modeIndex = "Highlight", {"Highlight", "BoxHighlight"}, 1
+local Aimbot, Smooth, Wall, ESP, ESPTeam, ShowName = false, false, false, false, false, false
+local TargetPart, parts, partIdx = "Head", {"Head", "UpperTorso", "Torso"}, 1
+local ESPMode = "Highlight"
 local ESPColor = Color3.new(1,1,1)
-local ESPRainbow = false
+local Rainbow = false
 
-local aimbotBtn = createBtn("Aimbot: OFF", posY)
-aimbotBtn.MouseButton1Click:Connect(function()
-    AimbotOn = not AimbotOn
-    aimbotBtn.Text = "Aimbot: " .. (AimbotOn and "ON" or "OFF")
-    notify(aimbotBtn.Text)
+local btn1 = createBtn("Aimbot: OFF", posY)
+btn1.MouseButton1Click:Connect(function()
+    Aimbot = not Aimbot
+    btn1.Text = "Aimbot: " .. (Aimbot and "ON" or "OFF")
+    notify(btn1.Text)
 end)
 
 posY += 35
-local smoothBtn = createBtn("Smooth Aimbot: OFF", posY)
-smoothBtn.MouseButton1Click:Connect(function()
-    SmoothAimbot = not SmoothAimbot
-    smoothBtn.Text = "Smooth Aimbot: " .. (SmoothAimbot and "ON" or "OFF")
-    notify(smoothBtn.Text)
+local btn2 = createBtn("Smooth Aimbot: OFF", posY)
+btn2.MouseButton1Click:Connect(function()
+    Smooth = not Smooth
+    btn2.Text = "Smooth Aimbot: " .. (Smooth and "ON" or "OFF")
+    notify(btn2.Text)
 end)
 
 posY += 35
-local wallBtn = createBtn("Wall Aimbot: OFF", posY)
-wallBtn.MouseButton1Click:Connect(function()
-    WallAimbot = not WallAimbot
-    wallBtn.Text = "Wall Aimbot: " .. (WallAimbot and "ON" or "OFF")
-    notify(wallBtn.Text)
+local btn3 = createBtn("Wall Aimbot: OFF", posY)
+btn3.MouseButton1Click:Connect(function()
+    Wall = not Wall
+    btn3.Text = "Wall Aimbot: " .. (Wall and "ON" or "OFF")
+    notify(btn3.Text)
 end)
 
 posY += 35
-local lockBtn = createBtn("Target Lock: Head", posY)
-lockBtn.MouseButton1Click:Connect(function()
-    partIndex = partIndex % #targetParts + 1
-    AimbotTargetPart = targetParts[partIndex]
-    lockBtn.Text = "Target Lock: " .. AimbotTargetPart
-    notify(lockBtn.Text)
+local btn4 = createBtn("Target Lock: Head", posY)
+btn4.MouseButton1Click:Connect(function()
+    partIdx = partIdx % #parts + 1
+    TargetPart = parts[partIdx]
+    btn4.Text = "Target Lock: " .. TargetPart
+    notify(btn4.Text)
 end)
 
 posY += 35
-local espBtn = createBtn("ESP: OFF", posY)
-espBtn.MouseButton1Click:Connect(function()
-    ESPOn = not ESPOn
-    espBtn.Text = "ESP: " .. (ESPOn and "ON" or "OFF")
-    notify(espBtn.Text)
+local btn5 = createBtn("ESP: OFF", posY)
+btn5.MouseButton1Click:Connect(function()
+    ESP = not ESP
+    btn5.Text = "ESP: " .. (ESP and "ON" or "OFF")
+    notify(btn5.Text)
 end)
 
 posY += 35
-local espTeamBtn = createBtn("ESP Team: OFF", posY)
-espTeamBtn.MouseButton1Click:Connect(function()
+local btn6 = createBtn("ESP Team: OFF", posY)
+btn6.MouseButton1Click:Connect(function()
     ESPTeam = not ESPTeam
-    espTeamBtn.Text = "ESP Team: " .. (ESPTeam and "ON" or "OFF")
-    notify(espTeamBtn.Text)
+    btn6.Text = "ESP Team: " .. (ESPTeam and "ON" or "OFF")
+    notify(btn6.Text)
 end)
 
 posY += 35
-local espModeBtn = createBtn("ESP Model: Highlight", posY)
-espModeBtn.MouseButton1Click:Connect(function()
-    modeIndex = modeIndex % #espModes + 1
-    ESPMode = espModes[modeIndex]
-    espModeBtn.Text = "ESP Model: " .. ESPMode
-    notify(espModeBtn.Text)
-end)
-
-posY += 35
-local nameBtn = createBtn("Show Name: OFF", posY)
-nameBtn.MouseButton1Click:Connect(function()
+local btn7 = createBtn("Show Name: OFF", posY)
+btn7.MouseButton1Click:Connect(function()
     ShowName = not ShowName
-    nameBtn.Text = "Show Name: " .. (ShowName and "ON" or "OFF")
-    notify(nameBtn.Text)
+    btn7.Text = "Show Name: " .. (ShowName and "ON" or "OFF")
+    notify(btn7.Text)
 end)
 
 posY += 35
-local colorLabel = Instance.new("TextLabel", frame)
-colorLabel.Size = UDim2.new(1, -20, 0, 25)
-colorLabel.Position = UDim2.new(0, 10, 0, posY)
-colorLabel.Text = "ESP Color (Red, Blue, Rainbow)"
-colorLabel.Font = Enum.Font.GothamBold
-colorLabel.TextScaled = true
-colorLabel.TextColor3 = Color3.new(1,1,1)
-colorLabel.BackgroundTransparency = 1
+local btn8 = createBtn("ESP Mode: Highlight", posY)
+btn8.MouseButton1Click:Connect(function()
+    ESPMode = ESPMode == "Highlight" and "Box" or "Highlight"
+    btn8.Text = "ESP Mode: " .. ESPMode
+    notify(btn8.Text)
+end)
+
+posY += 35
+local label = Instance.new("TextLabel", frame)
+label.Size = UDim2.new(1, -20, 0, 25)
+label.Position = UDim2.new(0, 10, 0, posY)
+label.Text = "ESP Color: red, rainbow, etc."
+label.Font = Enum.Font.GothamBold
+label.TextScaled = true
+label.TextColor3 = Color3.new(1,1,1)
+label.BackgroundTransparency = 1
 
 posY += 30
 local colorBox = Instance.new("TextBox", frame)
 colorBox.Size = UDim2.new(1, -20, 0, 30)
 colorBox.Position = UDim2.new(0, 10, 0, posY)
-colorBox.PlaceholderText = "Red"
+colorBox.PlaceholderText = "Type color (e.g. black)"
+colorBox.Text = ""
 colorBox.Font = Enum.Font.Gotham
 colorBox.TextColor3 = Color3.new(1,1,1)
 colorBox.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 Instance.new("UICorner", colorBox).CornerRadius = UDim.new(0, 8)
 
-colorBox.FocusLost:Connect(function(enterPressed)
-    if not enterPressed then return end
-    local val = colorBox.Text:lower()
-    ESPRainbow = false
-    if val == "red" then ESPColor = Color3.fromRGB(255,0,0)
-    elseif val == "green" then ESPColor = Color3.fromRGB(0,255,0)
-    elseif val == "blue" then ESPColor = Color3.fromRGB(0,0,255)
-    elseif val == "yellow" then ESPColor = Color3.fromRGB(255,255,0)
-    elseif val == "rainbow" then ESPRainbow = true
+colorBox.FocusLost:Connect(function(enter)
+    if not enter then return end
+    local v = colorBox.Text:lower()
+    Rainbow = false
+    if v == "red" then ESPColor = Color3.fromRGB(255,0,0)
+    elseif v == "blue" then ESPColor = Color3.fromRGB(0,0,255)
+    elseif v == "green" then ESPColor = Color3.fromRGB(0,255,0)
+    elseif v == "yellow" then ESPColor = Color3.fromRGB(255,255,0)
+    elseif v == "black" then ESPColor = Color3.fromRGB(0,0,0)
+    elseif v == "white" then ESPColor = Color3.fromRGB(255,255,255)
+    elseif v == "pink" then ESPColor = Color3.fromRGB(255,105,180)
+    elseif v == "purple" then ESPColor = Color3.fromRGB(128,0,128)
+    elseif v == "orange" then ESPColor = Color3.fromRGB(255,165,0)
+    elseif v == "cyan" then ESPColor = Color3.fromRGB(0,255,255)
+    elseif v == "rainbow" then Rainbow = true
     else ESPColor = Color3.new(1,1,1) end
-    notify("ESP Color: " .. val)
+    notify("ESP Color: " .. v)
 end)
 
--- === Aimbot & ESP ===
 local highlights, boxes, names = {}, {}, {}
 local CurrentTarget = nil
 
-local function validTarget(p)
-    return p and p.Character and p.Character:FindFirstChild(AimbotTargetPart)
-       and p.Character:FindFirstChild("Humanoid")
-       and p.Character.Humanoid.Health > 0
+local function valid(p)
+    return p and p.Character and p.Character:FindFirstChild(TargetPart)
+        and p.Character:FindFirstChild("Humanoid")
+        and p.Character.Humanoid.Health > 0
 end
 
-local function behindWall(p)
+local function isBehind(p)
     local o = Camera.CFrame.Position
-    local d = (p.Character[AimbotTargetPart].Position - o)
-    local r = Ray.new(o, d)
-    local hit = workspace:FindPartOnRay(r, player.Character)
+    local d = (p.Character[TargetPart].Position - o)
+    local ray = Ray.new(o, d)
+    local hit = workspace:FindPartOnRay(ray, player.Character)
     return hit and not p.Character:IsAncestorOf(hit)
 end
 
 local function getClosest()
-    local closest, dist = nil, math.huge
+    local best, dist = nil, math.huge
     for _, p in pairs(Players:GetPlayers()) do
-        if p ~= player and validTarget(p) and (not ESPTeam or p.Team ~= player.Team) then
-            local screen, onScreen = Camera:WorldToViewportPoint(p.Character[AimbotTargetPart].Position)
+        if p ~= player and valid(p) and (not ESPTeam or p.Team ~= player.Team) then
+            local pos, onScreen = Camera:WorldToViewportPoint(p.Character[TargetPart].Position)
             if onScreen then
-                local mag = (Vector2.new(screen.X, screen.Y) - Vector2.new(Mouse.X, Mouse.Y)).Magnitude
-                if mag < dist then
-                    dist = mag
-                    closest = p
-                end
+                local mag = (Vector2.new(pos.X, pos.Y) - Vector2.new(Mouse.X, Mouse.Y)).Magnitude
+                if mag < dist then dist, best = mag, p end
             end
         end
     end
-    return closest
+    return best
 end
 
 RunService.RenderStepped:Connect(function()
-    if AimbotOn then
-        if not validTarget(CurrentTarget)
-          or (not WallAimbot and behindWall(CurrentTarget)) then
+    if Aimbot then
+        if not valid(CurrentTarget) or (not Wall and isBehind(CurrentTarget)) then
             CurrentTarget = getClosest()
         end
-        if CurrentTarget and validTarget(CurrentTarget) then
-            local goal = CFrame.new(Camera.CFrame.Position, CurrentTarget.Character[AimbotTargetPart].Position)
-            if SmoothAimbot then
-                Camera.CFrame = Camera.CFrame:Lerp(goal, 0.2)
-            else
-                Camera.CFrame = goal
-            end
+        if CurrentTarget and valid(CurrentTarget) then
+            local goal = CFrame.new(Camera.CFrame.Position, CurrentTarget.Character[TargetPart].Position)
+            Camera.CFrame = Smooth and Camera.CFrame:Lerp(goal, 0.2) or goal
         end
     else
         CurrentTarget = nil
@@ -234,46 +246,59 @@ RunService.RenderStepped:Connect(function()
 
     for _, p in pairs(Players:GetPlayers()) do
         if p == player then continue end
-        local valid = validTarget(p) and (not ESPTeam or p.Team ~= player.Team)
-        if ESPOn and valid then
-            if not highlights[p] and ESPMode == "Highlight" then
-                local h = Instance.new("Highlight", p.Character)
-                h.Adornee = p.Character
-                h.FillTransparency = 0.5
-                highlights[p] = h
-            elseif not boxes[p] and ESPMode == "BoxHighlight" then
-                local b = Instance.new("BoxHandleAdornment", p.Character)
-                b.Adornee = p.Character:FindFirstChild("HumanoidRootPart")
-                b.Size = Vector3.new(4, 6, 2)
-                b.AlwaysOnTop = true
-                b.ZIndex = 5
-                b.Transparency = 0.5
-                boxes[p] = b
+        local v = valid(p) and (not ESPTeam or p.Team ~= player.Team)
+        if ESP and v then
+            local c = Rainbow and getRainbow(tick()) or ESPColor
+            if ESPMode == "Highlight" then
+                if not highlights[p] then
+                    local h = Instance.new("Highlight")
+                    h.Adornee = p.Character
+                    h.FillTransparency = 0.5
+                    h.Parent = p.Character
+                    highlights[p] = h
+                    if boxes[p] then boxes[p]:Destroy() boxes[p] = nil end
+                end
+                highlights[p].FillColor = c
+            elseif ESPMode == "Box" then
+                local root = p.Character:FindFirstChild("HumanoidRootPart") or p.Character.PrimaryPart
+                if root then
+                    if not boxes[p] then
+                        local b = Instance.new("BoxHandleAdornment")
+                        b.Adornee = root
+                        b.Size = Vector3.new(4,6,2)
+                        b.AlwaysOnTop = true
+                        b.ZIndex = 5
+                        b.Transparency = 0.5
+                        b.Color3 = c
+                        b.Parent = root
+                        boxes[p] = b
+                        if highlights[p] then highlights[p]:Destroy() highlights[p] = nil end
+                    else
+                        boxes[p].Color3 = c
+                    end
+                end
             end
-            local c = ESPRainbow and getRainbowColor(tick()) or ESPColor
-            if highlights[p] then highlights[p].FillColor = c end
-            if boxes[p] then boxes[p].Color3 = c end
+
             if ShowName and not names[p] then
                 local bb = Instance.new("BillboardGui", p.Character)
                 bb.Adornee = p.Character:FindFirstChild("Head")
-                bb.Size = UDim2.new(0, 200, 0, 50)
+                bb.Size = UDim2.new(0, 150, 0, 30)
                 bb.AlwaysOnTop = true
                 local lbl = Instance.new("TextLabel", bb)
                 lbl.Size = UDim2.new(1, 0, 1, 0)
-                lbl.Text = p.DisplayName .. "(@" .. p.Name .. ")"
+                lbl.Text = p.DisplayName.."(@"..p.Name..")"
                 lbl.BackgroundTransparency = 1
                 lbl.TextColor3 = Color3.new(1,1,1)
-                lbl.Font = Enum.Font.GothamBold
+                lbl.Font = Enum.Font.Gotham
                 lbl.TextScaled = true
                 names[p] = bb
             elseif not ShowName and names[p] then
-                names[p]:Destroy()
-                names[p] = nil
+                names[p]:Destroy() names[p] = nil
             end
         else
-            if highlights[p] then highlights[p]:Destroy() highlights[p]=nil end
-            if boxes[p] then boxes[p]:Destroy() boxes[p]=nil end
-            if names[p] then names[p]:Destroy() names[p]=nil end
+            if highlights[p] then highlights[p]:Destroy() highlights[p] = nil end
+            if boxes[p] then boxes[p]:Destroy() boxes[p] = nil end
+            if names[p] then names[p]:Destroy() names[p] = nil end
         end
     end
 end)
