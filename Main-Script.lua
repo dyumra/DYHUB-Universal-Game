@@ -103,12 +103,6 @@ local function createButton(text, posY)
     btn.TextScaled = true
     btn.Parent = mainFrame
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0,12)
-    local grad = Instance.new("UIGradient", btn)
-    grad.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255,0,0)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(0,0,0))
-    }
-    grad.Rotation = 90
     return btn
 end
 
