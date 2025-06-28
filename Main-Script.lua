@@ -17,7 +17,7 @@ local function notify(text)
     end)
 end
 
-notify("🛡️ DYHUB | Join .gg/DYHUBGG")
+notify("🛡️ DYHUB | Join our (.gg/DYHUBGG)")
 
 local function getRainbowColor(tick)
     local freq = 2
