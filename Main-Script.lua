@@ -175,6 +175,7 @@ local colorBox = Instance.new("TextBox", frame)
 colorBox.Size = UDim2.new(1, -20, 0, 30)
 colorBox.Position = UDim2.new(0, 10, 0, posY)
 colorBox.PlaceholderText = "Type color (e.g. black)"
+colorBox.Text = ""
 colorBox.Font = Enum.Font.Gotham
 colorBox.TextColor3 = Color3.new(1,1,1)
 colorBox.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
