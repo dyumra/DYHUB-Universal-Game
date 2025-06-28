@@ -157,13 +157,11 @@ local function createKeyGui()
 
     submitBtn.MouseButton1Click:Connect(function()
         clickTween(submitBtn)
-
         local enteredKey = keyBox.Text:lower():gsub("%s+", "")
-
         if enteredKey == VALID_KEY:lower() or enteredKey == dyhubonly then
             notify("Key Correct! | Loading Script...")
-            keyGui:destroy
-            blur.Size = 15
+            keyGui:Destroy()
+            blur.Size = 0
             loadstring(game:HttpGet('https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Main-Script.lua'))()
             notify("Game: " .. gameName .. " | Game has finished loading...")
         else
@@ -172,7 +170,6 @@ local function createKeyGui()
             local normalGoal = {BackgroundColor3 = Color3.fromRGB(70, 70, 70)}
             local flashTween = TweenService:Create(keyBox, TweenInfo.new(0.15), flashGoal)
             local normalTween = TweenService:Create(keyBox, TweenInfo.new(0.15), normalGoal)
-
             flashTween:Play()
             flashTween.Completed:Wait()
             normalTween:Play()
