@@ -7,7 +7,7 @@ Welcome, and thank you for your patience.
 
 Use the following loadstring to execute the  **DYHUB-Universal** Script:
 ```lua
-loadstring(game:HttpGet('https://raw.githubusercontent.com/dyumra/Main-Module-Script/refs/heads/main/Main-Module.lua'))()
+loadstring(game:HttpGet('https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Key1%2B1.lua'))()
 ```
 
 ## 🔑 - Access Key
