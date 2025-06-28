@@ -1,4 +1,4 @@
--- === DYHUB Aimbot & ESP | Compact with Toggle D, Small Name, Full Colors ===
+-- === DYHUB | Compact Aimbot & ESP ===
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
@@ -164,7 +164,7 @@ posY += 35
 local label = Instance.new("TextLabel", frame)
 label.Size = UDim2.new(1, -20, 0, 25)
 label.Position = UDim2.new(0, 10, 0, posY)
-label.Text = "ESP Color: red, rainbow, etc."
+label.Text = "ESP Color: red, blue, black, etc."
 label.Font = Enum.Font.GothamBold
 label.TextScaled = true
 label.TextColor3 = Color3.new(1,1,1)
@@ -175,7 +175,6 @@ local colorBox = Instance.new("TextBox", frame)
 colorBox.Size = UDim2.new(1, -20, 0, 30)
 colorBox.Position = UDim2.new(0, 10, 0, posY)
 colorBox.PlaceholderText = "Type color (e.g. black)"
-colorBox.Text = ""
 colorBox.Font = Enum.Font.Gotham
 colorBox.TextColor3 = Color3.new(1,1,1)
 colorBox.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
@@ -220,7 +219,8 @@ end
 local function getClosest()
     local best, dist = nil, math.huge
     for _, p in pairs(Players:GetPlayers()) do
-        if p ~= player and valid(p) and (not ESPTeam or p.Team ~= player.Team) then
+        if p ~= player and valid(p) and p.Team ~= player.Team then
+            if not Wall and isBehind(p) then continue end
             local pos, onScreen = Camera:WorldToViewportPoint(p.Character[TargetPart].Position)
             if onScreen then
                 local mag = (Vector2.new(pos.X, pos.Y) - Vector2.new(Mouse.X, Mouse.Y)).Magnitude
@@ -233,12 +233,19 @@ end
 
 RunService.RenderStepped:Connect(function()
     if Aimbot then
-        if not valid(CurrentTarget) or (not Wall and isBehind(CurrentTarget)) then
+        local validTarget = valid(CurrentTarget)
+        local sameTeam = CurrentTarget and CurrentTarget.Team == player.Team
+        local behind = CurrentTarget and isBehind(CurrentTarget)
+
+        if not validTarget or sameTeam or (not Wall and behind) then
             CurrentTarget = getClosest()
         end
-        if CurrentTarget and valid(CurrentTarget) then
+
+        if CurrentTarget and valid(CurrentTarget) and CurrentTarget.Team ~= player.Team then
             local goal = CFrame.new(Camera.CFrame.Position, CurrentTarget.Character[TargetPart].Position)
             Camera.CFrame = Smooth and Camera.CFrame:Lerp(goal, 0.2) or goal
+        else
+            CurrentTarget = nil
         end
     else
         CurrentTarget = nil
