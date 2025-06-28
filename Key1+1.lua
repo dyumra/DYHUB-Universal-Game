@@ -10,6 +10,17 @@ local RunService = game:GetService("RunService")
 local VALID_KEY = "DYHUBTHEBEST"
 local dyhubonly = "dev"
 
+local function notify(text)
+    pcall(function()
+        StarterGui:SetCore("SendNotification", {
+            Title = "DYHUB",
+            Text = text,
+            Duration = 4
+        })
+    end)
+    print("Notify:", text)
+end
+
 notify("🛡️ DYHUB'S TEAM | Join our (.gg/DYHUBGG)")
 
 local placeId = tostring(game.PlaceId)
