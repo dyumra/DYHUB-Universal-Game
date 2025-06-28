@@ -28,7 +28,7 @@ end
 notify("✅ DYHUB Loaded")
 
 local gui = Instance.new("ScreenGui", player.PlayerGui)
-gui.Name = "DYHUB"
+gui.Name = "DYHUB | SKIBIDI TOLIET | Arsenal"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame")
