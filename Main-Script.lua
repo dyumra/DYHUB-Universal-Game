@@ -1,4 +1,4 @@
--- === DYHUB | Compact Aimbot & ESP ===
+-- === DYHUB | ARSENAL ===
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
@@ -46,7 +46,7 @@ stroke.Thickness = 3
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, 0, 0, 30)
 title.Position = UDim2.new(0, 0, 0, 0)
-title.Text = "DYHUB | Aimbot & ESP"
+title.Text = "ARSENAL | DYHUB"
 title.Font = Enum.Font.GothamBold
 title.TextScaled = true
 title.BackgroundTransparency = 1
