@@ -10,6 +10,8 @@ local RunService = game:GetService("RunService")
 local VALID_KEY = "DYHUBTHEBEST"
 local dyhubonly = "dev"
 
+notify("🛡️ DYHUB'S TEAM | Join our (.gg/DYHUBGG)")
+
 local placeId = tostring(game.PlaceId)
 if not allowedGames[placeId] then
     StarterGui:SetCore("SendNotification", {
