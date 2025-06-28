@@ -19,5 +19,6 @@ DYHUBTHEBEST
 
 
 🔔 - **Support:** Compatible with all Executors
-‏‎ㅤ
+ㅤ
+
 📂 - **Logs:** All activity is logged and can be reviewed via Discord
