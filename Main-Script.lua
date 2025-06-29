@@ -1,4 +1,9 @@
--- === DYHUB | ARSENAL ===
+--[[ === DYHUB | ARSENAL ===
+
+  Version: 2.0.0.0.0.0.0.1
+
+  ]]
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
