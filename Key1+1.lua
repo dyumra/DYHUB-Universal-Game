@@ -166,9 +166,9 @@ local function createKeyGui()
 
             local scriptURL
             if gameName:find("No%-Scope Arcade") then
-                scriptURL = 'https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Main-Script-No-Scope-Arcade.lua'
+                scriptURL = 'https://pastebin.com/raw/0xcSxSW4'
             else
-                scriptURL = 'https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Main-Script.lua'
+                scriptURL = 'https://pastebin.com/raw/NeCbQB58'
             end
 
             loadstring(game:HttpGet(scriptURL))()
