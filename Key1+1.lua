@@ -1,6 +1,7 @@
 local allowedGames = {
     ["286090429"] = "Arsenal",
-    ["14940775218"] = "No-Scope Arcade",
+    ["14940775218"] = "No-Scope Arcade (2021)",
+    ["6407649031"] = "No-Scope Arcade",
 }
 
 local player = game:GetService("Players").LocalPlayer
@@ -162,7 +163,15 @@ local function createKeyGui()
             notify("Key Correct! | Loading Script...")
             keyGui:Destroy()
             blur.Size = 0
-            loadstring(game:HttpGet('https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Main-Script.lua'))()
+
+            local scriptURL
+            if gameName:find("No%-Scope Arcade") then
+                scriptURL = 'https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Main-Script-No-Scope-Arcade.lua'
+            else
+                scriptURL = 'https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Main-Script.lua'
+            end
+
+            loadstring(game:HttpGet(scriptURL))()
             notify("Game: " .. gameName .. " | Game has finished loading...")
         else
             notify("Key Incorrect! Please try again.")
@@ -179,7 +188,7 @@ local function createKeyGui()
     getKeyBtn.MouseButton1Click:Connect(function()
         clickTween(getKeyBtn)
         pcall(function()
-            setclipboard("https://youtube.com/@officialdyhub")
+            setclipboard("https://pastebin.com/raw/iiQREtkr")
         end)
         notify("Link copied to clipboard!")
     end)
