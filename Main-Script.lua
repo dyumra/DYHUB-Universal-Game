@@ -286,10 +286,10 @@ btnPosition.MouseButton1Click:Connect(function()
 end)
 posY_Misc = posY_Misc + 38
 
-local btnAutoFire = createBtn("Auto Fire: OFF (BETA)", posY_Misc, miscPage)
+local btnAutoFire = createBtn("(BETA) Auto Fire: OFF", posY_Misc, miscPage)
 btnAutoFire.MouseButton1Click:Connect(function()
     AutoFire = not AutoFire
-    btnAutoFire.Text = "Auto Fire: " .. (AutoFire and "ON" or "OFF") .. " (BETA)"
+    btnAutoFire.Text = "(BETA) Auto Fire: " .. (AutoFire and "ON" or "OFF")"
     notify(btnAutoFire.Text)
     if AutoFire then
         startAutoFire()
