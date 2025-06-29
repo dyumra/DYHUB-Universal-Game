@@ -6,6 +6,8 @@ local player = Players.LocalPlayer
 local Mouse = player:GetMouse()
 local StarterGui = game:GetService("StarterGui")
 
+local MIN_Y_COORDINATE = -50 
+
 local function notify(txt)
     pcall(function()
         StarterGui:SetCore("SendNotification", {
@@ -32,29 +34,30 @@ gui.Name = "DYHUB | SKIBIDI TOLIET | Arsenal"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 250, 0, 420)
-frame.Position = UDim2.new(0.5, -125, 0.5, -210)
+frame.Size = UDim2.new(0, 270, 0, 380)
+frame.Position = UDim2.new(0.5, -135, 0.5, -190)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 frame.Active = true
 frame.Draggable = true
 frame.Parent = gui
 
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
 local stroke = Instance.new("UIStroke", frame)
 stroke.Thickness = 3
 
 local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1, 0, 0, 30)
+title.Size = UDim2.new(1, 0, 0, 36)
 title.Position = UDim2.new(0, 0, 0, 0)
 title.Text = "ARSENAL | DYHUB"
 title.Font = Enum.Font.GothamBold
 title.TextScaled = true
 title.BackgroundTransparency = 1
 title.TextColor3 = Color3.new(1, 1, 1)
+title.TextStrokeTransparency = 0.6
 
 local toggleBtn = Instance.new("TextButton", gui)
-toggleBtn.Size = UDim2.new(0, 40, 0, 40)
-toggleBtn.Position = UDim2.new(1, -50, 0, 10)
+toggleBtn.Size = UDim2.new(0, 42, 0, 42)
+toggleBtn.Position = UDim2.new(1, -54, 0, 12)
 toggleBtn.Text = "D"
 toggleBtn.Font = Enum.Font.GothamBlack
 toggleBtn.TextScaled = true
@@ -64,116 +67,167 @@ Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1, 0)
 local toggleStroke = Instance.new("UIStroke", toggleBtn)
 toggleStroke.Thickness = 2
 
-RunService.RenderStepped:Connect(function()
-    local c = getRainbow(tick())
-    stroke.Color = c
-    title.TextColor3 = c
-    toggleBtn.TextColor3 = c
-end)
-
 toggleBtn.MouseButton1Click:Connect(function()
     frame.Visible = not frame.Visible
 end)
 
-local function createBtn(text, posY)
+local function createSectionTitle(text, posY, parentFrame)
+    local lbl = Instance.new("TextLabel", parentFrame)
+    lbl.Size = UDim2.new(1, -20, 0, 28)
+    lbl.Position = UDim2.new(0, 10, 0, posY)
+    lbl.Text = text
+    lbl.Name = "SectionTitle"
+    lbl.Font = Enum.Font.GothamBold
+    lbl.TextScaled = true
+    lbl.TextColor3 = Color3.new(1,1,1)
+    lbl.BackgroundTransparency = 1
+    return lbl
+end
+
+local function createBtn(text, posY, parentFrame)
     local b = Instance.new("TextButton")
-    b.Size = UDim2.new(1, -20, 0, 30)
+    b.Size = UDim2.new(1, -20, 0, 32)
     b.Position = UDim2.new(0, 10, 0, posY)
     b.Text = text
     b.Font = Enum.Font.GothamBold
     b.TextScaled = true
     b.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
     b.TextColor3 = Color3.new(1,1,1)
-    b.Parent = frame
+    b.Parent = parentFrame
     Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
     return b
 end
 
-local posY = 40
-local Aimbot, Smooth, Wall, ESP, ESPTeam, ShowName = false, false, false, false, false, false
+local Aimbot, Smooth, Wall, ESP, ESPTeam, ShowName, SafeMode, KillAll, AutoFire = false, false, false, false, false, false, true, false, false
 local TargetPart, parts, partIdx = "Head", {"Head", "UpperTorso", "Torso"}, 1
 local ESPMode = "Highlight"
 local ESPColor = Color3.new(1,1,1)
 local Rainbow = false
+local KillAllIndex = 1
+local PositionMode = "Front" 
 
-local btn1 = createBtn("Aimbot: OFF", posY)
-btn1.MouseButton1Click:Connect(function()
+local pages = {}
+local currentPage = 1
+
+local aimbotPage = Instance.new("Frame")
+aimbotPage.Name = "AimbotPage"
+aimbotPage.Size = UDim2.new(1, 0, 1, -36) 
+aimbotPage.Position = UDim2.new(0, 0, 0, 36)
+aimbotPage.BackgroundTransparency = 1
+aimbotPage.Parent = frame
+pages[1] = aimbotPage
+
+local espPage = Instance.new("Frame")
+espPage.Name = "ESPPage"
+espPage.Size = UDim2.new(1, 0, 1, -36)
+espPage.Position = UDim2.new(0, 0, 0, 36)
+espPage.BackgroundTransparency = 1
+espPage.Parent = frame
+espPage.Visible = false 
+pages[2] = espPage
+
+local miscPage = Instance.new("Frame")
+miscPage.Name = "MiscPage"
+miscPage.Size = UDim2.new(1, 0, 1, -36)
+miscPage.Position = UDim2.new(0, 0, 0, 36)
+miscPage.BackgroundTransparency = 1
+miscPage.Parent = frame
+miscPage.Visible = false 
+pages[3] = miscPage
+
+local posY_Aimbot = 5
+createSectionTitle("Aimbot Setting:", posY_Aimbot, aimbotPage)
+posY_Aimbot = posY_Aimbot + 30
+
+local btnAimbot = createBtn("Aimbot: OFF", posY_Aimbot, aimbotPage)
+btnAimbot.MouseButton1Click:Connect(function()
     Aimbot = not Aimbot
-    btn1.Text = "Aimbot: " .. (Aimbot and "ON" or "OFF")
-    notify(btn1.Text)
+    btnAimbot.Text = "Aimbot: " .. (Aimbot and "ON" or "OFF")
+    notify(btnAimbot.Text)
 end)
+posY_Aimbot = posY_Aimbot + 38
 
-posY += 35
-local btn2 = createBtn("Smooth Aimbot: OFF", posY)
-btn2.MouseButton1Click:Connect(function()
+local btnSmooth = createBtn("Smooth Aimbot: OFF", posY_Aimbot, aimbotPage)
+btnSmooth.MouseButton1Click:Connect(function()
     Smooth = not Smooth
-    btn2.Text = "Smooth Aimbot: " .. (Smooth and "ON" or "OFF")
-    notify(btn2.Text)
+    btnSmooth.Text = "Smooth Aimbot: " .. (Smooth and "ON" or "OFF")
+    notify(btnSmooth.Text)
 end)
+posY_Aimbot = posY_Aimbot + 38
 
-posY += 35
-local btn3 = createBtn("Wall Aimbot: OFF", posY)
-btn3.MouseButton1Click:Connect(function()
+local btnWall = createBtn("Wall Aimbot: OFF", posY_Aimbot, aimbotPage)
+btnWall.MouseButton1Click:Connect(function()
     Wall = not Wall
-    btn3.Text = "Wall Aimbot: " .. (Wall and "ON" or "OFF")
-    notify(btn3.Text)
+    btnWall.Text = "Wall Aimbot: " .. (Wall and "ON" or "OFF")
+    notify(btnWall.Text)
 end)
+posY_Aimbot = posY_Aimbot + 38
 
-posY += 35
-local btn4 = createBtn("Target Lock: Head", posY)
-btn4.MouseButton1Click:Connect(function()
+local btnSafeMode = createBtn("Safe Mode: ON", posY_Aimbot, aimbotPage)
+btnSafeMode.MouseButton1Click:Connect(function()
+    SafeMode = not SafeMode
+    btnSafeMode.Text = "Safe Mode: " .. (SafeMode and "ON" or "OFF")
+    notify(btnSafeMode.Text)
+end)
+posY_Aimbot = posY_Aimbot + 38
+
+local btnTargetPart = createBtn("Target Lock: Head", posY_Aimbot, aimbotPage)
+btnTargetPart.MouseButton1Click:Connect(function()
     partIdx = partIdx % #parts + 1
     TargetPart = parts[partIdx]
-    btn4.Text = "Target Lock: " .. TargetPart
-    notify(btn4.Text)
+    btnTargetPart.Text = "Target Lock: " .. TargetPart
+    notify(btnTargetPart.Text)
 end)
 
-posY += 35
-local btn5 = createBtn("ESP: OFF", posY)
-btn5.MouseButton1Click:Connect(function()
+local posY_ESP = 5
+createSectionTitle("ESP Setting:", posY_ESP, espPage)
+posY_ESP = posY_ESP + 30
+
+local btnESP = createBtn("ESP: OFF", posY_ESP, espPage)
+btnESP.MouseButton1Click:Connect(function()
     ESP = not ESP
-    btn5.Text = "ESP: " .. (ESP and "ON" or "OFF")
-    notify(btn5.Text)
+    btnESP.Text = "ESP: " .. (ESP and "ON" or "OFF")
+    notify(btnESP.Text)
 end)
+posY_ESP = posY_ESP + 38
 
-posY += 35
-local btn6 = createBtn("ESP Team: OFF", posY)
-btn6.MouseButton1Click:Connect(function()
+local btnESPTeam = createBtn("ESP Team: OFF", posY_ESP, espPage)
+btnESPTeam.MouseButton1Click:Connect(function()
     ESPTeam = not ESPTeam
-    btn6.Text = "ESP Team: " .. (ESPTeam and "ON" or "OFF")
-    notify(btn6.Text)
+    btnESPTeam.Text = "ESP Team: " .. (ESPTeam and "ON" or "OFF")
+    notify(btnESPTeam.Text)
 end)
+posY_ESP = posY_ESP + 38
 
-posY += 35
-local btn7 = createBtn("Show Name: OFF", posY)
-btn7.MouseButton1Click:Connect(function()
+local btnShowName = createBtn("Show Name: OFF", posY_ESP, espPage)
+btnShowName.MouseButton1Click:Connect(function()
     ShowName = not ShowName
-    btn7.Text = "Show Name: " .. (ShowName and "ON" or "OFF")
-    notify(btn7.Text)
+    btnShowName.Text = "Show Name: " .. (ShowName and "ON" or "OFF")
+    notify(btnShowName.Text)
 end)
+posY_ESP = posY_ESP + 38
 
-posY += 35
-local btn8 = createBtn("ESP Mode: Highlight", posY)
-btn8.MouseButton1Click:Connect(function()
+local btnESPMode = createBtn("ESP Mode: Highlight", posY_ESP, espPage)
+btnESPMode.MouseButton1Click:Connect(function()
     ESPMode = ESPMode == "Highlight" and "Box" or "Highlight"
-    btn8.Text = "ESP Mode: " .. ESPMode
-    notify(btn8.Text)
+    btnESPMode.Text = "ESP Mode: " .. ESPMode
+    notify(btnESPMode.Text)
 end)
+posY_ESP = posY_ESP + 38
 
-posY += 35
-local label = Instance.new("TextLabel", frame)
-label.Size = UDim2.new(1, -20, 0, 25)
-label.Position = UDim2.new(0, 10, 0, posY)
-label.Text = "ESP Color: red, blue, black, etc."
-label.Font = Enum.Font.GothamBold
-label.TextScaled = true
-label.TextColor3 = Color3.new(1,1,1)
-label.BackgroundTransparency = 1
+local labelColor = Instance.new("TextLabel", espPage)
+labelColor.Size = UDim2.new(1, -20, 0, 26)
+labelColor.Position = UDim2.new(0, 10, 0, posY_ESP)
+labelColor.Text = "ESP Color: red, blue, black, etc."
+labelColor.Font = Enum.Font.GothamBold
+labelColor.TextScaled = true
+labelColor.TextColor3 = Color3.new(1,1,1)
+labelColor.BackgroundTransparency = 1
+posY_ESP = posY_ESP + 30
 
-posY += 30
-local colorBox = Instance.new("TextBox", frame)
-colorBox.Size = UDim2.new(1, -20, 0, 30)
-colorBox.Position = UDim2.new(0, 10, 0, posY)
+local colorBox = Instance.new("TextBox", espPage)
+colorBox.Size = UDim2.new(1, -20, 0, 32)
+colorBox.Position = UDim2.new(0, 10, 0, posY_ESP)
 colorBox.PlaceholderText = "Type color (e.g. black)"
 colorBox.Text = ""
 colorBox.Font = Enum.Font.Gotham
@@ -200,13 +254,98 @@ colorBox.FocusLost:Connect(function(enter)
     notify("ESP Color: " .. v)
 end)
 
-local highlights, boxes, names = {}, {}, {}
-local CurrentTarget = nil
+local posY_Misc = 5
+createSectionTitle("Misc / Enchanted:", posY_Misc, miscPage)
+posY_Misc = posY_Misc + 30
+
+local btnKillAll = createBtn("Kill All: OFF", posY_Misc, miscPage)
+btnKillAll.MouseButton1Click:Connect(function()
+    KillAll = not KillAll
+    btnKillAll.Text = "Kill All: " .. (KillAll and "ON" or "OFF")
+    notify(btnKillAll.Text)
+    if KillAll then
+        KillAllIndex = 1
+    end
+end)
+posY_Misc = posY_Misc + 38
+
+local btnPosition = createBtn("Position: Front", posY_Misc, miscPage)
+btnPosition.MouseButton1Click:Connect(function()
+    local modes = {"Front", "Behind", "Above", "Under"}
+    local currentIdx = 1
+    for i, mode in ipairs(modes) do
+        if mode == PositionMode then
+            currentIdx = i
+            break
+        end
+    end
+    currentIdx = (currentIdx % #modes) + 1
+    PositionMode = modes[currentIdx]
+    btnPosition.Text = "Position: " .. PositionMode
+    notify(btnPosition.Text)
+end)
+posY_Misc = posY_Misc + 38
+
+local btnAutoFire = createBtn("Auto Fire: OFF (BETA)", posY_Misc, miscPage)
+btnAutoFire.MouseButton1Click:Connect(function()
+    AutoFire = not AutoFire
+    btnAutoFire.Text = "Auto Fire: " .. (AutoFire and "ON" or "OFF") .. " (BETA)"
+    notify(btnAutoFire.Text)
+    if AutoFire then
+        startAutoFire()
+    else
+        stopAutoFire()
+    end
+end)
+
+local btnBack = Instance.new("TextButton", frame)
+btnBack.Size = UDim2.new(0, 40, 0, 30)
+btnBack.Position = UDim2.new(0, 10, 1, -40)
+btnBack.Text = "<"
+btnBack.Font = Enum.Font.GothamBlack
+btnBack.TextScaled = true
+btnBack.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+btnBack.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", btnBack).CornerRadius = UDim.new(0, 8)
+
+local btnNext = Instance.new("TextButton", frame)
+btnNext.Size = UDim2.new(0, 40, 0, 30)
+btnNext.Position = UDim2.new(1, -50, 1, -40)
+btnNext.Text = ">"
+btnNext.Font = Enum.Font.GothamBlack
+btnNext.TextScaled = true
+btnNext.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+btnNext.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", btnNext).CornerRadius = UDim.new(0, 8)
+
+local autoFireConnection = nil
+
+local function startAutoFire()
+    if autoFireConnection then return end
+    autoFireConnection = RunService.RenderStepped:Connect(function()
+        if AutoFire and player and player.Character and player.Character:FindFirstChildOfClass("Tool") then
+            local tool = player.Character:FindFirstChildOfClass("Tool")
+            if tool and tool:FindFirstChild("Handle") then
+                tool:Activate()
+            end
+        end
+    end)
+end
+
+local function stopAutoFire()
+    if autoFireConnection then
+        autoFireConnection:Disconnect()
+        autoFireConnection = nil
+    end
+end
 
 local function valid(p)
-    return p and p.Character and p.Character:FindFirstChild(TargetPart)
+    local hrp = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+    return p and p.Character
+        and p.Character:FindFirstChild(TargetPart)
         and p.Character:FindFirstChild("Humanoid")
         and p.Character.Humanoid.Health > 0
+        and hrp and hrp.Position.Y > MIN_Y_COORDINATE
 end
 
 local function isBehind(p)
@@ -232,13 +371,104 @@ local function getClosest()
     return best
 end
 
-RunService.RenderStepped:Connect(function()
-    if Aimbot then
-        local validTarget = valid(CurrentTarget)
-        local sameTeam = CurrentTarget and CurrentTarget.Team == player.Team
-        local behind = CurrentTarget and isBehind(CurrentTarget)
+local function getEnemies()
+    local list = {}
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= player and valid(p) and p.Team ~= player.Team then
+            table.insert(list, p)
+        end
+    end
+    return list
+end
 
-        if not validTarget or sameTeam or (not Wall and behind) then
+local function getSafeTarget()
+    local safeTarget = nil
+    local safeDist = 10
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= player and valid(p) and p.Team ~= player.Team then
+            local dist = (p.Character.PrimaryPart.Position - player.Character.PrimaryPart.Position).Magnitude
+            if dist <= safeDist then
+                safeDist = dist
+                safeTarget = p
+            end
+        end
+    end
+    return safeTarget
+end
+
+local function getPositionCFrame(target)
+    if not target or not target.Character or not target.Character:FindFirstChild("HumanoidRootPart") then return nil end
+    local hrp = target.Character.HumanoidRootPart
+    local offset = Vector3.new(0, 0, 0)
+    local distance = 5 
+
+    if PositionMode == "Front" then
+        offset = hrp.CFrame.LookVector * distance
+    elseif PositionMode == "Behind" then
+        offset = -hrp.CFrame.LookVector * distance
+    elseif PositionMode == "Above" then
+        offset = Vector3.new(0, distance, 0)
+    elseif PositionMode == "Under" then
+        offset = Vector3.new(0, -distance, 0)
+    end
+    
+    return CFrame.new(hrp.Position + offset, hrp.Position)
+end
+
+local highlights, boxes, names = {}, {}, {}
+local CurrentTarget = nil
+local lastTeleportTime = 0
+local TELEPORT_DELAY = 1.5 
+
+RunService.RenderStepped:Connect(function()
+    if not Aimbot and not KillAll then
+        CurrentTarget = nil
+    end
+
+    if KillAll then
+        local enemies = getEnemies()
+        if #enemies > 0 then
+            local currentTime = tick()
+            if not CurrentTarget or not valid(CurrentTarget) or (currentTime - lastTeleportTime >= TELEPORT_DELAY) then
+                local foundNewTarget = false
+                local startIdx = KillAllIndex
+                repeat
+                    KillAllIndex = (KillAllIndex % #enemies) + 1 
+                    CurrentTarget = enemies[KillAllIndex]
+                    if valid(CurrentTarget) and CurrentTarget.Team ~= player.Team then
+                        foundNewTarget = true
+                        break 
+                    end
+                    if KillAllIndex == startIdx then
+                        break
+                    end
+                until foundNewTarget
+
+                if not foundNewTarget then
+                    CurrentTarget = nil 
+                else
+                    lastTeleportTime = currentTime 
+                end
+            end
+        else
+            CurrentTarget = nil 
+        end
+
+        if CurrentTarget and valid(CurrentTarget) and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local pos = getPositionCFrame(CurrentTarget)
+            if pos then
+                player.Character.HumanoidRootPart.CFrame = pos
+            end
+
+            local goal = CFrame.new(Camera.CFrame.Position, CurrentTarget.Character[TargetPart].Position)
+            Camera.CFrame = Smooth and Camera.CFrame:Lerp(goal, 0.2) or goal
+        else
+            CurrentTarget = nil 
+        end
+    elseif Aimbot then 
+        if SafeMode then
+            CurrentTarget = getSafeTarget()
+        else
             CurrentTarget = getClosest()
         end
 
@@ -248,8 +478,6 @@ RunService.RenderStepped:Connect(function()
         else
             CurrentTarget = nil
         end
-    else
-        CurrentTarget = nil
     end
 
     for _, p in pairs(Players:GetPlayers()) do
@@ -301,12 +529,57 @@ RunService.RenderStepped:Connect(function()
                 lbl.TextScaled = true
                 names[p] = bb
             elseif not ShowName and names[p] then
-                names[p]:Destroy() names[p] = nil
+                names[p]:Destroy()
+                names[p] = nil
             end
         else
             if highlights[p] then highlights[p]:Destroy() highlights[p] = nil end
             if boxes[p] then boxes[p]:Destroy() boxes[p] = nil end
             if names[p] then names[p]:Destroy() names[p] = nil end
         end
+    end
+})
+
+RunService.RenderStepped:Connect(function()
+    local c = getRainbow(tick())
+    stroke.Color = c
+
+    title.TextColor3 = getRainbow(tick())
+
+    toggleBtn.TextColor3 = c
+
+    for _, lbl in pairs(pages[currentPage]:GetChildren()) do
+        if lbl:IsA("TextLabel") and lbl.Name == "SectionTitle" then
+            lbl.TextColor3 = c
+        end
+    end
+
+    btnNext.TextColor3 = getRainbow(tick())
+    btnBack.TextColor3 = getRainbow(tick())
+end)
+
+local function showPage(pageNumber)
+    for i, page in ipairs(pages) do
+        page.Visible = (i == pageNumber)
+    end
+    currentPage = pageNumber
+
+    btnBack.Visible = (currentPage > 1)
+    btnNext.Visible = (currentPage < #pages)
+end
+
+showPage(1)
+
+btnBack.MouseButton1Click:Connect(function()
+    if currentPage > 1 then
+        showPage(currentPage - 1)
+        notify("Page: " .. currentPage)
+    end
+end)
+
+btnNext.MouseButton1Click:Connect(function()
+    if currentPage < #pages then
+        showPage(currentPage + 1)
+        notify("Page: " .. currentPage)
     end
 end)
