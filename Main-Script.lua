@@ -1,6 +1,6 @@
 --[[ === DYHUB | ARSENAL ===
 
-  Version: 2.0.0.0.0.0.0.1
+  Version: 2.0.0.0.0.0.0.5
 
   ]]
 
@@ -276,25 +276,16 @@ posY_Misc = posY_Misc + 38
 
 local btnPosition = createBtn("Position: Front", posY_Misc, miscPage)
 btnPosition.MouseButton1Click:Connect(function()
-    local modes = {"Front", "Behind", "Above", "Under"}
-    local currentIdx = 1
-    for i, mode in ipairs(modes) do
-        if mode == PositionMode then
-            currentIdx = i
-            break
-        end
-    end
-    currentIdx = (currentIdx % #modes) + 1
-    PositionMode = modes[currentIdx]
+    PositionMode = PositionMode == "Front" and "Behind" or "Front"
     btnPosition.Text = "Position: " .. PositionMode
     notify(btnPosition.Text)
 end)
 posY_Misc = posY_Misc + 38
 
-local btnAutoFire = createBtn("(BETA) Auto Fire: OFF", posY_Misc, miscPage)
+local btnAutoFire = createBtn("Auto Fire: OFF", posY_Misc, miscPage)
 btnAutoFire.MouseButton1Click:Connect(function()
     AutoFire = not AutoFire
-    btnAutoFire.Text = "(BETA) Auto Fire: " .. (AutoFire and "ON" or "OFF")"
+    btnAutoFire.Text = "Auto Fire: " .. (AutoFire and "ON" or "OFF")
     notify(btnAutoFire.Text)
     if AutoFire then
         startAutoFire()
@@ -405,18 +396,11 @@ local function getPositionCFrame(target)
     if not target or not target.Character or not target.Character:FindFirstChild("HumanoidRootPart") then return nil end
     local hrp = target.Character.HumanoidRootPart
     local offset = Vector3.new(0, 0, 0)
-    local distance = 5 
-
     if PositionMode == "Front" then
-        offset = hrp.CFrame.LookVector * distance
-    elseif PositionMode == "Behind" then
-        offset = -hrp.CFrame.LookVector * distance
-    elseif PositionMode == "Above" then
-        offset = Vector3.new(0, distance, 0)
-    elseif PositionMode == "Under" then
-        offset = Vector3.new(0, -distance, 0)
+        offset = hrp.CFrame.LookVector * 3
+    else
+        offset = -hrp.CFrame.LookVector * 3
     end
-    
     return CFrame.new(hrp.Position + offset, hrp.Position)
 end
 
@@ -543,7 +527,7 @@ RunService.RenderStepped:Connect(function()
             if names[p] then names[p]:Destroy() names[p] = nil end
         end
     end
-})
+end)
 
 RunService.RenderStepped:Connect(function()
     local c = getRainbow(tick())
