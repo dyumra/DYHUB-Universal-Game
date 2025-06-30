@@ -111,7 +111,7 @@ local ESPMode = "Highlight"
 local ESPColor = Color3.new(1,1,1)
 local Rainbow = false
 local KillAllIndex = 1
-local safemodew = 69
+local safemodew = 10
 local PositionMode = "Front" 
 
 local pages = {}
