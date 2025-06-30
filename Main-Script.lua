@@ -1,7 +1,7 @@
 --[[ 
 
   === DYHUB | ARSENAL ===
-  Version: 2.0.0.0.0.0.0.6
+  Version: 2.0.0.0.0.0.0.7
   ===== DYHUB'S TEAM =====
 
 --]]
@@ -171,7 +171,7 @@ btnWall.MouseButton1Click:Connect(function()
 end)
 posY_Aimbot = posY_Aimbot + 38
 
-local btnSafeMode = createBtn("Safe Mode: ON", posY_Aimbot, aimbotPage)
+local btnSafeMode = createBtn("Safe Mode: OFF", posY_Aimbot, aimbotPage)
 btnSafeMode.MouseButton1Click:Connect(function()
     SafeMode = not SafeMode
     btnSafeMode.Text = "Safe Mode: " .. (SafeMode and "ON" or "OFF")
