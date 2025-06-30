@@ -1,7 +1,7 @@
 --[[ 
 
   === DYHUB | ARSENAL ===
-  Version: 2.0.0.0.0.0.0.5
+  Version: 2.0.0.0.0.0.0.6
   ===== DYHUB'S TEAM =====
 
 --]]
@@ -105,12 +105,13 @@ local function createBtn(text, posY, parentFrame)
     return b
 end
 
-local Aimbot, Smooth, Wall, ESP, ESPTeam, ShowName, SafeMode, KillAll, AutoFire = false, false, false, false, false, false, true, false, false
+local Aimbot, Smooth, Wall, ESP, ESPTeam, ShowName, SafeMode, KillAll, AutoFire = false, false, false, false, false, false, false, false, false
 local TargetPart, parts, partIdx = "Head", {"Head", "UpperTorso", "Torso"}, 1
 local ESPMode = "Highlight"
 local ESPColor = Color3.new(1,1,1)
 local Rainbow = false
 local KillAllIndex = 1
+local safemodew = 69
 local PositionMode = "Front" 
 
 local pages = {}
@@ -381,7 +382,7 @@ end
 
 local function getSafeTarget()
     local safeTarget = nil
-    local safeDist = 10
+    local safeDist = safemodew
     for _, p in pairs(Players:GetPlayers()) do
         if p ~= player and valid(p) and p.Team ~= player.Team then
             local dist = (p.Character.PrimaryPart.Position - player.Character.PrimaryPart.Position).Magnitude
