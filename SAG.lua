@@ -34,7 +34,7 @@ gui.Name = "DYHUB | Steal a Garden!"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 280, 0, 480)
+frame.Size = UDim2.new(0, 280, 0, 440)
 frame.Position = UDim2.new(0.5, -140, 0.5, -240)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 frame.Active = true
@@ -65,14 +65,6 @@ title.BackgroundTransparency = 1
 title.TextColor3 = Color3.new(1, 1, 1)
 title.TextStrokeTransparency = 0.6
 
--- Rainbow loop
-RunService.RenderStepped:Connect(function()
-    local t = tick()
-    local rainbow = getRainbow(t)
-    title.TextColor3 = rainbow
-    stroke.Color = rainbow
-end)
-
 local toggleBtn = Instance.new("TextButton", gui)
 toggleBtn.Size = UDim2.new(0, 42, 0, 42)
 toggleBtn.Position = UDim2.new(1, -54, 0, 12)
@@ -86,6 +78,14 @@ Instance.new("UIStroke", toggleBtn).Thickness = 2
 
 toggleBtn.MouseButton1Click:Connect(function()
     frame.Visible = not frame.Visible
+end)
+
+RunService.RenderStepped:Connect(function()
+    local t = tick()
+    local rainbow = getRainbow(t)
+    title.TextColor3 = rainbow
+    toggleBtn.TextColor3 = rainbow
+    stroke.Color = rainbow
 end)
 
 local function createBtn(text, posY, parentFrame)
