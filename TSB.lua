@@ -1,12 +1,12 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "DYHUB",
+   Name = "DYHUB | dsc.gg/dyhub",
    Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
    LoadingTitle = "dsc.gg/dyhub",
    LoadingSubtitle = "Powered by DYHUB TEAM",
    ShowText = "gurt yo", -- for mobile users to unhide rayfield, change if you'd like
-   Theme = "Serenity", -- Check https://docs.sirius.menu/rayfield/configuration/themes
+   Theme = "Dark Blue", -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
    ToggleUIKeybind = "K", -- The keybind to toggle the UI visibility (string like "K" or Enum.KeyCode)
 
