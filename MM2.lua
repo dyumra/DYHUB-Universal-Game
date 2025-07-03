@@ -17,16 +17,16 @@ local function notify(text)
     end)
 end
 
-notify("DYHUB Loaded!")
+notify("DYHUB Loaded! for Murder Mystery 2")
 
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "DYHUB | TP GUN | MM2"
+screenGui.Name = "DYHUB | DUPE SKIN VISUAL | MM2"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 350, 0, 350)
-mainFrame.Position = UDim2.new(0.5, -175, 0.5, -175)
+mainFrame.Size = UDim2.new(0, 350, 0, 390)
+mainFrame.Position = UDim2.new(0.5, -175, 0.5, -195)
 mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 mainFrame.BackgroundTransparency = 0.5
 mainFrame.BorderSizePixel = 0
@@ -133,9 +133,7 @@ function createOrUpdateHighlight(target)
         highlight.Adornee = target.Character
         highlights[target.Name] = highlight
     end
-
     highlight.Adornee = target.Character
-
     if target.Name == currentMurderer then
         highlight.FillColor = Color3.new(1, 0, 0)
     elseif target.Name == currentSheriff then
@@ -164,7 +162,6 @@ function createOrUpdateESPLabel(target)
         text.Size = UDim2.new(1, 0, 1, 0)
         text.Parent = billboard
     end
-
     local head = target.Character and target.Character:FindFirstChild("Head")
     local hrp = target.Character and target.Character:FindFirstChild("HumanoidRootPart")
     local localHRP = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
@@ -172,11 +169,9 @@ function createOrUpdateESPLabel(target)
     if hrp and localHRP then
         distance = math.floor((hrp.Position - localHRP.Position).Magnitude)
     end
-
     billboard.Adornee = head
     billboard.Enabled = espEnabled
     billboard.Text.Text = string.format("%s\nStud: %s", target.Name, distance)
-
     if target.Name == currentMurderer then
         billboard.Text.TextColor3 = Color3.new(1, 0, 0)
     elseif target.Name == currentSheriff then
@@ -236,49 +231,39 @@ local function onPlayerWeaponCheck(p)
     local function checkTools()
         local bp = p:FindFirstChild("Backpack")
         local char = p.Character
-
         local hasKnife = (bp and bp:FindFirstChild("Knife")) or (char and char:FindFirstChild("Knife"))
         local hasGun = (bp and bp:FindFirstChild("Gun")) or (char and char:FindFirstChild("Gun"))
-
         if hasKnife then
             rememberedMurderer = p.Name
         elseif rememberedMurderer == p.Name then
             rememberedMurderer = nil
         end
-
         if hasGun then
             rememberedSheriff = p.Name
         elseif rememberedSheriff == p.Name then
             rememberedSheriff = nil
         end
-
         currentMurderer = rememberedMurderer or "Unknown"
         currentSheriff = rememberedSheriff or "Unknown"
-
         murdererLabel.Text = "Murderer: " .. currentMurderer
         sheriffLabel.Text = "Sheriff: " .. currentSheriff
-
         createOrUpdateHighlight(p)
         createOrUpdateESPLabel(p)
     end
-
     if p.Character then
         p.Character.ChildAdded:Connect(checkTools)
         p.Character.ChildRemoved:Connect(checkTools)
     end
-
     local bp = p:FindFirstChild("Backpack")
     if bp then
         bp.ChildAdded:Connect(checkTools)
         bp.ChildRemoved:Connect(checkTools)
     end
-
     p.CharacterAdded:Connect(function(char)
         char.ChildAdded:Connect(checkTools)
         char.ChildRemoved:Connect(checkTools)
         checkTools()
     end)
-
     checkTools()
 end
 
@@ -294,7 +279,6 @@ Players.PlayerRemoving:Connect(function(p)
     end
 end)
 
--- Noclip
 local noclipEnabled = false
 
 local noclipButton = Instance.new("TextButton", mainFrame)
@@ -322,7 +306,6 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- Unlock All Emotes
 local unlockEmoteButton = Instance.new("TextButton", mainFrame)
 unlockEmoteButton.Size = UDim2.new(0.9, 0, 0, 40)
 unlockEmoteButton.Position = UDim2.new(0.05, 0, 0, 300)
@@ -335,7 +318,6 @@ styleButton(unlockEmoteButton)
 unlockEmoteButton.MouseButton1Click:Connect(function()
     local PlayerGui = player:WaitForChild("PlayerGui")
     local Emotes = PlayerGui:WaitForChild("MainGUI"):WaitForChild("Game"):FindFirstChild("Emotes")
-
     if Emotes then
         local EmoteModule = require(ReplicatedStorage:WaitForChild("Modules"):WaitForChild("EmoteModule"))
         EmoteModule.GeneratePage(
@@ -347,4 +329,39 @@ unlockEmoteButton.MouseButton1Click:Connect(function()
     else
         notify("❌ Emotes not found!")
     end
+end)
+
+local dupeAllButton = Instance.new("TextButton", mainFrame)
+dupeAllButton.Size = UDim2.new(0.9, 0, 0, 40)
+dupeAllButton.Position = UDim2.new(0.05, 0, 0, 350)
+dupeAllButton.Text = "Dupe All Skins"
+dupeAllButton.Font = Enum.Font.GothamBold
+dupeAllButton.TextScaled = true
+Instance.new("UICorner", dupeAllButton).CornerRadius = UDim.new(0, 10)
+styleButton(dupeAllButton)
+
+local crate = "Halloween2024Box"
+local itemList = {
+    Harvester = "Harvester",
+    Gingerscope = "Gingerscope",
+    Icepiercer = "Icepiercer",
+    VampireGun = "VampireGun",
+    VampireAxe = "VampireAxe",
+    TravelerAxe = "TravelerAxe",
+    Spirit = "WraithKnife",
+    ChromaWatergun = "WatergunChroma"
+}
+
+local _R = game:GetService("ReplicatedStorage")
+local _B = _R:WaitForChild("Remotes"):WaitForChild("Shop"):WaitForChild("BoxController")
+
+local function fireBoxController(...)
+    _B:Fire(...)
+end
+
+dupeAllButton.MouseButton1Click:Connect(function()
+    for _, item in pairs(itemList) do
+        fireBoxController(crate, item)
+    end
+    notify("✅ Dupe All Skins Sent!")
 end)
