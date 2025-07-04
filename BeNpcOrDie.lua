@@ -1,13 +1,3 @@
---[[
-  _                        __                                             _       _       
- | |                      / /                                            (_)     | |      
- | |_   _ __ ___   ___   / /_ _ _ __ ___ ___ _   _ _____  _____  ___ _ __ _ _ __ | |_ ___ 
- | __| | '_ ` _ \ / _ \ / / _` | '__/ __/ _ \ | | / __\ \/ / __|/ __| '__| | '_ \| __/ __|
- | |_ _| | | | | |  __// / (_| | | | (_|  __/ |_| \__ \>  <\__ \ (__| |  | | |_) | |_\__ \
-  \__(_)_| |_| |_|\___/_/ \__,_|_|  \___\___|\__,_|___/_/\_\___/\___|_|  |_| .__/ \__|___/
-                                                                           | |            
-                                                                           |_|            
-]]
 if game.GameId == 4019583467 then
     local Library =
         loadstring(
@@ -28,7 +18,7 @@ if game.GameId == 4019583467 then
     local Window =
         Library:CreateWindow {
         Title = "Be NPC or Die",
-        SubTitle = "by Bac0nH1ckOff | t.me/arceusxscripts",
+        SubTitle = "DYHUB | dsc.gg/dyhub",
         TabWidth = 160,
         Size = UDim2.fromOffset(830, 525),
         Resize = true,
