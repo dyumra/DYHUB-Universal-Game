@@ -1,16 +1,3 @@
---[[
-     Powered by @dyumra.
-     Game: Anime Rails
-     Status: 🟢
-]]
-
---[[
-     Working: 🟢
-     Not Working: 🔴
-     Fixing: 🟠
-     Broke: ⚫
-]]
-
 local player = game:GetService("Players").LocalPlayer
 local StarterGui = game:GetService("StarterGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -28,7 +15,7 @@ local function notify(text)
     print("Notify:", text)
 end
 
-notify("🛡️ DYHUB'S TEAM\nJoin our (.gg/DYHUBGG)")
+notify("🛡️ DYHUB'S TEAM\nJoin our (dsc.gg/dyhub)")
 
 local key1InputGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 key1InputGui.Name = "LoadingMenu"
@@ -54,7 +41,7 @@ key1Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 key1Title.BackgroundTransparency = 0.5
 key1Title.Font = Enum.Font.GothamBold
 key1Title.TextSize = 22
-key1Title.Text = "🛡 DYHUB'S\n Join our (.gg/DYHUBGG)"
+key1Title.Text = "🛡 DYHUB'S\n Join our (dsc.gg/dyhub)"
 Instance.new("UICorner", key1Title).CornerRadius = UDim.new(0, 15)
 
 local spinner = Instance.new("ImageLabel", key1Frame)
@@ -73,7 +60,7 @@ spawn(function()
 end)
 
 local gui = Instance.new("ScreenGui")
-gui.Name = "DupeDYHUBGui"
+gui.Name = "DYHUB | Dupe MCA | Anime Rails"
 gui.ResetOnSpawn = false
 gui.Enabled = false
 
@@ -186,7 +173,7 @@ local dupeNames = {
   "RedeemedWolfBoss", "RedeemedKnight", "LuffyMorph", "DoughMorph", "GravityAura", "DoughAura",
   "LavaAura", "Gear5Class", "MochiClass", "Rinnegan", "Kurama", "Sasuke", "Pain", "EightGates", "Sed",
   "Cid", "Gojo", "Assasin", "AntKing", "BlueFlames", "BloodKnight", "BloodMorph", "BloodMorphS",
-  "AntMorph", "AntMorphS", "AssasinMorph"
+  "AntMorph", "AntMorphS", "AssasinMorph", "LightAura", "AlterAura", "Alter", "Saber", "SaberMorph", "AlterMorph"
 }
 
 local function fillScrollingList()
