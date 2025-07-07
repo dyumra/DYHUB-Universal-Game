@@ -18,7 +18,7 @@ notify("🛡️ DYHUB'S TEAM\nJoin our Discord (.gg/DYHUB)")
 
 -- GUI
 local gui = Instance.new("ScreenGui")
-gui.Name = "DYHUB-BEST-UPGRADE-DRILL-INF"
+gui.Name = "DYHUB | INF & DUPE | Grow a Mine"
 gui.ResetOnSpawn = false
 gui.Enabled = false
 gui.Parent = player:WaitForChild("PlayerGui")
@@ -51,7 +51,7 @@ end
 local title = Instance.new("TextLabel", mainFrame)
 title.Size = UDim2.new(1, 0, 0, 40)
 title.Position = UDim2.new(0, 0, 0, 0)
-title.Text = "DYHUB | BEST Upgrade | BEST Drill | Inf Money"
+title.Text = "Grow a Mine | DYHUB"
 title.TextColor3 = Color3.new(1, 1, 1)
 title.BackgroundTransparency = 1
 title.Font = Enum.Font.GothamBold
