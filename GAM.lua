@@ -14,7 +14,7 @@ local function notify(text)
 	print("Notify:", text)
 end
 
-notify("🛡️ DYHUB'S TEAM\nJoin our Discord (.gg/DYHUB)")
+notify("🛡️ DYHUB'S TEAM\nJoin our Discord (dsc.gg/dyhub)")
 
 -- GUI
 local gui = Instance.new("ScreenGui")
