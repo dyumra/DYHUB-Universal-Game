@@ -13,6 +13,8 @@ local function notify(text)
     end)
 end
 
+notify("DYHUB Load! for Ninja Tycoon")
+
 local gui = Instance.new("ScreenGui")
 gui.Name = "DYHUB | Auto Money | Ninja Tycoon"
 gui.ResetOnSpawn = false
@@ -60,7 +62,7 @@ end)
 -- ปุ่ม Shop
 local shopButton = Instance.new("TextButton", mainFrame)
 shopButton.Size = UDim2.new(0.7, 0, 0, 40)
-shopButton.Position = UDim2.new(0.15, 0, 0, 10)
+shopButton.Position = UDim2.new(0.15, 0, 0, 45) -- ปรับตำแหน่งให้ไม่ทับหัวข้อ
 shopButton.Text = "Shop"
 shopButton.Font = Enum.Font.GothamBold
 shopButton.TextScaled = true
@@ -90,7 +92,7 @@ end)
 
 local toggleButton = Instance.new("TextButton", mainFrame)
 toggleButton.Size = UDim2.new(0.7, 0, 0, 50)
-toggleButton.Position = UDim2.new(0.15, 0, 0, 60)
+toggleButton.Position = UDim2.new(0.15, 0, 0, 95) -- เลื่อนปุ่ม Auto Money ลงมา
 toggleButton.Text = "Auto Money: OFF"
 toggleButton.Font = Enum.Font.GothamBold
 toggleButton.TextScaled = true
@@ -100,7 +102,7 @@ Instance.new("UICorner", toggleButton).CornerRadius = UDim.new(0, 10)
 
 local delayBox = Instance.new("TextBox", mainFrame)
 delayBox.Size = UDim2.new(0.7, 0, 0, 40)
-delayBox.Position = UDim2.new(0.15, 0, 0, 130)
+delayBox.Position = UDim2.new(0.15, 0, 0, 150) -- เลื่อนกล่อง Delay ลงมาให้พอดี
 delayBox.PlaceholderText = "Delay Multiplier (x1 ~ x69)"
 delayBox.Text = "10"
 delayBox.Font = Enum.Font.Gotham
@@ -111,7 +113,7 @@ Instance.new("UICorner", delayBox).CornerRadius = UDim.new(0, 10)
 
 local warnLabel = Instance.new("TextLabel", mainFrame)
 warnLabel.Size = UDim2.new(0.7, 0, 0, 30)
-warnLabel.Position = UDim2.new(0.15, 0, 0, 180)
+warnLabel.Position = UDim2.new(0.15, 0, 0, 195)
 warnLabel.Text = "⚠️ Do not set above x69!"
 warnLabel.Font = Enum.Font.GothamBold
 warnLabel.TextScaled = true
