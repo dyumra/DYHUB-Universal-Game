@@ -14,7 +14,7 @@ local function notify(text)
     print("Notify:", text)
 end
 
-notify("🛡️ DYHUB'S TEAM\nJoin our Discord (.gg/DYHUB)")
+notify("🛡️ DYHUB'S TEAM\nJoin our Discord (dsc.gg/dyhub)")
 
 -- Main GUI
 local gui = Instance.new("ScreenGui")
@@ -51,7 +51,7 @@ end
 local title = Instance.new("TextLabel", mainFrame)
 title.Size = UDim2.new(1, 0, 0, 40)
 title.Position = UDim2.new(0, 0, 0, 0)
-title.Text = "Dupe | DYHUB"
+title.Text = "MET | DYHUB"
 title.TextColor3 = Color3.new(1, 1, 1)
 title.BackgroundTransparency = 1
 title.Font = Enum.Font.GothamBold
