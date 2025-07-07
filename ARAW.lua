@@ -171,6 +171,16 @@ RunService.RenderStepped:Connect(function()
     autoWinButton.BackgroundColor3 = getRainbowColor(tick())
 end)
 
+local warnLabel = Instance.new("TextLabel", mainFrame)
+warnLabel.Size = UDim2.new(0.9, 0, 0, 40)
+warnLabel.Position = UDim2.new(0.05, 0, 0, 230)
+warnLabel.Text = "⚠️ Be careful, Please press only once for the Auto-Win to run."
+warnLabel.Font = Enum.Font.GothamBold
+warnLabel.TextScaled = true
+warnLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+warnLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+Instance.new("UICorner", warnLabel).CornerRadius = UDim.new(0, 10)
+
 autoWinButton.MouseButton1Click:Connect(function()
     looping = not looping
     autoWinButton.Text = looping and "Auto Win: On" or "Auto Win: Off"
