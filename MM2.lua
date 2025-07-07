@@ -330,38 +330,3 @@ unlockEmoteButton.MouseButton1Click:Connect(function()
         notify("❌ Emotes not found!")
     end
 end)
-
-local dupeAllButton = Instance.new("TextButton", mainFrame)
-dupeAllButton.Size = UDim2.new(0.9, 0, 0, 40)
-dupeAllButton.Position = UDim2.new(0.05, 0, 0, 350)
-dupeAllButton.Text = "Dupe All Skins"
-dupeAllButton.Font = Enum.Font.GothamBold
-dupeAllButton.TextScaled = true
-Instance.new("UICorner", dupeAllButton).CornerRadius = UDim.new(0, 10)
-styleButton(dupeAllButton)
-
-local crate = "Halloween2024Box"
-local itemList = {
-    Harvester = "Harvester",
-    Gingerscope = "Gingerscope",
-    Icepiercer = "Icepiercer",
-    VampireGun = "VampireGun",
-    VampireAxe = "VampireAxe",
-    TravelerAxe = "TravelerAxe",
-    Spirit = "WraithKnife",
-    ChromaWatergun = "WatergunChroma"
-}
-
-local _R = game:GetService("ReplicatedStorage")
-local _B = _R:WaitForChild("Remotes"):WaitForChild("Shop"):WaitForChild("BoxController")
-
-local function fireBoxController(...)
-    _B:Fire(...)
-end
-
-dupeAllButton.MouseButton1Click:Connect(function()
-    for _, item in pairs(itemList) do
-        fireBoxController(crate, item)
-    end
-    notify("✅ Dupe All Skins Sent!")
-end)
