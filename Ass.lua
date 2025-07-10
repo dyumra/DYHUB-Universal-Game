@@ -43,16 +43,16 @@ local RedTheme = {
 }
 
 local Window = Rayfield:CreateWindow({
-   Name = "Sar3kezm Hub  Arcade Store Simulator [👷STAFF]",
+   Name = "DYHUB | Arcade Store Simulator (dsc.gg/dyhub)",
    Icon = 93370012054262, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "Arcade Store Simulator [👷STAFF] script",
-   LoadingSubtitle = "by Sar3kezm",
+   LoadingTitle = "DYHUB | Arcade Store Simulator",
+   LoadingSubtitle = "DYHUB | dsc.gg/dyhub",
    Theme = RedTheme, -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
     ConfigurationSaving = {
         Enabled = true,
         FolderName = nil,
-        FileName = "Sar3kezm Hub"
+        FileName = "DYHUB"
     },
 
     Discord = {
