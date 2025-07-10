@@ -3,9 +3,9 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
    Name = "DYHUB | Arcade Store Simulator (dsc.gg/dyhub)",
    Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "DYHUB | Arcade Store Simulator",
-   LoadingSubtitle = "DYHUB | dsc.gg/dyhub",
-   Theme = Dark Blue, -- Check https://docs.sirius.menu/rayfield/configuration/themes
+   LoadingTitle = "DYHUB | dsc.gg/dyhub",
+   LoadingSubtitle = "Powered by DYHUB TEAM",
+   Theme = "Dark Blue", -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
     ConfigurationSaving = {
         Enabled = true,
