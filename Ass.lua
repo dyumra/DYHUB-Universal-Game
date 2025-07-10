@@ -1,11 +1,5 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
-local sound = Instance.new("Sound")
-sound.SoundId = "rbxassetid://0"
-sound.Volume = math.huge
-sound.Parent = game.Workspace
-sound:Play()
-
 local Window = Rayfield:CreateWindow({
    Name = "DYHUB | Arcade Store Simulator (dsc.gg/dyhub)",
    Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
