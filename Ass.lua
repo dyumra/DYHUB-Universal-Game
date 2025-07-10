@@ -1,53 +1,17 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local sound = Instance.new("Sound")
-sound.SoundId = "rbxassetid://100736080025788"
+sound.SoundId = "rbxassetid://0"
 sound.Volume = math.huge
 sound.Parent = game.Workspace
 sound:Play()
 
-local RedTheme = {
-    TextColor = Color3.fromRGB(225, 225, 225),
-    Background = Color3.fromRGB(20, 20, 20),
-    Topbar = Color3.fromRGB(10, 10, 10),
-    Shadow = Color3.fromRGB(180, 0, 70), -- Czerwony
-    NotificationBackground = Color3.fromRGB(15, 15, 15),
-    NotificationActionsBackground = Color3.fromRGB(25, 25, 25),
-    TabBackground = Color3.fromRGB(10, 10, 10),
-    TabStroke = Color3.fromRGB(200, 0, 80), -- Czerwony
-    TabBackgroundSelected = Color3.fromRGB(30, 30, 30),
-    TabTextColor = Color3.fromRGB(200, 200, 200),
-    SelectedTabTextColor = Color3.fromRGB(255, 100, 150), -- Czerwony (jasny)
-    TabIconColor = Color3.fromRGB(200, 200, 200),
-    SelectedTabIconColor = Color3.fromRGB(255, 100, 150), -- Czerwony (jasny)
-    ElementBackground = Color3.fromRGB(22, 22, 22),
-    ElementBackgroundHover = Color3.fromRGB(40, 40, 40),
-    SecondaryElementBackground = Color3.fromRGB(15, 15, 15),
-    ElementStroke = Color3.fromRGB(180, 0, 70), -- Czerwony
-    SecondaryElementStroke = Color3.fromRGB(150, 0, 60), -- Czerwony (ciemniejszy)
-    SliderBackground = Color3.fromRGB(15, 15, 15),
-    SliderProgress = Color3.fromRGB(200, 0, 80), -- Czerwony
-    SliderStroke = Color3.fromRGB(200, 200, 200),
-    ToggleBackground = Color3.fromRGB(30, 30, 30),
-    ToggleEnabled = Color3.fromRGB(200, 0, 80), -- Czerwony
-    ToggleDisabled = Color3.fromRGB(100, 100, 100),
-    ToggleEnabledStroke = Color3.fromRGB(150, 0, 60), -- Czerwony (ciemniejszy)
-    ToggleDisabledStroke = Color3.fromRGB(80, 80, 80),
-    ToggleEnabledOuterStroke = Color3.fromRGB(10, 10, 10),
-    ToggleDisabledOuterStroke = Color3.fromRGB(10, 10, 10),
-    DropdownSelected = Color3.fromRGB(100, 0, 40), -- Czerwony (bardzo ciemny)
-    DropdownUnselected = Color3.fromRGB(15, 15, 15),
-    InputBackground = Color3.fromRGB(15, 15, 15),
-    InputStroke = Color3.fromRGB(200, 0, 80), -- Czerwony
-    PlaceholderColor = Color3.fromRGB(150, 0, 60) -- Czerwony (ciemniejszy)
-}
-
 local Window = Rayfield:CreateWindow({
    Name = "DYHUB | Arcade Store Simulator (dsc.gg/dyhub)",
-   Icon = 93370012054262, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
+   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
    LoadingTitle = "DYHUB | Arcade Store Simulator",
    LoadingSubtitle = "DYHUB | dsc.gg/dyhub",
-   Theme = RedTheme, -- Check https://docs.sirius.menu/rayfield/configuration/themes
+   Theme = Dark Blue, -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
     ConfigurationSaving = {
         Enabled = true,
