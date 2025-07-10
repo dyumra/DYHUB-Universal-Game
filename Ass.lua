@@ -326,8 +326,8 @@ Tab:CreateButton({
         local LocalPlayer = PlayersService.LocalPlayer
         
         Rayfield:Notify({
-            Title = "Rozpoczęto proces",
-            Content = "Wyrzucanie wszystkich graczy (oprócz Ciebie)...",
+            Title = "DYHUB | dsc.gg/dyhub",
+            Content = "Goodbye you got kicked by the DYHUB",
             Duration = 3,
             Type = "info"
         })
@@ -345,8 +345,8 @@ Tab:CreateButton({
         end
 
         Rayfield:Notify({
-            Title = "Zakończono",
-            Content = "Wysłano żądanie wyrzucenia wszystkich graczy.",
+            Title = "DYHUB | dsc.gg/dyhub",
+            Content = "Powered by DYHUB TEAM.",
             Duration = 5,
             Type = "success"
         })
