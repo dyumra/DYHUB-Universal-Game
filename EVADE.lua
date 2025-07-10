@@ -37,6 +37,22 @@ borderStroke.Parent = mainFrame
 borderStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 borderStroke.Thickness = 3
 
+local toggleBtn = Instance.new("TextButton", gui)
+toggleBtn.Size = UDim2.new(0, 42, 0, 42)
+toggleBtn.Position = UDim2.new(1, -54, 0, 12)
+toggleBtn.Text = "D"
+toggleBtn.Font = Enum.Font.GothamBlack
+toggleBtn.TextScaled = true
+toggleBtn.BackgroundColor3 = Color3.fromRGB(20,20,20)
+toggleBtn.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1, 0)
+local toggleStroke = Instance.new("UIStroke", toggleBtn)
+toggleStroke.Thickness = 2
+
+toggleBtn.MouseButton1Click:Connect(function()
+    mainFrame.Visible = not mainFrame.Visible
+end)
+
 local function getRainbowColor(t)
     local f = 2
     local r = math.floor(math.sin(f * t + 0) * 127 + 128)
@@ -57,6 +73,7 @@ title.TextScaled = true
 RunService.RenderStepped:Connect(function()
     local color = getRainbowColor(tick())
     borderStroke.Color = color
+    toggleBtn.TextColor3 = color
     title.TextColor3 = color
 end)
 
