@@ -10,7 +10,7 @@ local Window = Rayfield:CreateWindow({
     ConfigurationSaving = {
         Enabled = true,
         FolderName = nil,
-        FileName = "DYHUB"
+        FileName = "DYHUBASS"
     },
 
     Discord = {
