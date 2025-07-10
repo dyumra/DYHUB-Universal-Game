@@ -16,7 +16,7 @@ local Window = Rayfield:CreateWindow({
    ConfigurationSaving = {
       Enabled = true,
       FolderName = ud, -- Create a custom folder for your hub/game
-      FileName = "DYHUB"
+      FileName = "DYHUBTSB"
    },
 
    Discord = {
