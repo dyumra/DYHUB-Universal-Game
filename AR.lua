@@ -60,7 +60,7 @@ spawn(function()
 end)
 
 local gui = Instance.new("ScreenGui")
-gui.Name = "DupeDYHUBGui"
+gui.Name = "DYHUB | Dupe MCA | Anime Rails"
 gui.ResetOnSpawn = false
 gui.Enabled = false
 
@@ -389,9 +389,9 @@ end)
 
 task.spawn(function()
     wait(5)
-    key1InputGui.Enabled = false
-notify("🎮 Game: [ARISE] Anime Rails [Alpha]")
+    key1InputGui:Destroy()
+notify("🎮 Game: [UPDATE] Anime Rails [Alpha]")
 wait(1.5)
-notify("📊 Version: v692 (Final Version)")
+notify("📊 Version: v762 (Final Version)")
     gui.Enabled = true
 end)
