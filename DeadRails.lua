@@ -143,7 +143,7 @@ toggleButton.MouseButton1Click:Connect(function()
 
         -- ซ่อน GUI และรอ 3 วิ
         gui:Destroy()
-        task.wait(3)
+        task.wait(0.69)
 
         -- รันสคริป Bond
         if not game:IsLoaded() then game.Loaded:Wait() end
