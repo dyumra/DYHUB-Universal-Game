@@ -187,11 +187,11 @@ task.spawn(function()
             gui2.mainFrame.bondCount.Text = "Collected Bonds: " .. tostring(_G.Bond)
         end
 
-        if collectedBonds >= 60 then
+        if collectedBonds >= 85 then
             TeleportService:Teleport(116495829188952, player)
             break
-        elseif collectedBonds >= 50 then
-            task.wait(5)
+        elseif collectedBonds >= 60 then
+            task.wait(15)
             TeleportService:Teleport(116495829188952, player)
             break
         end
