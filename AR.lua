@@ -108,6 +108,10 @@ RunService.RenderStepped:Connect(function()
     toggleBtn.TextColor3 = color
 end)
 
+toggleBtn.MouseButton1Click:Connect(function()
+    mainFrame.Visible = not mainFrame.Visible
+end)
+
 local title = Instance.new("TextLabel", mainFrame)
 title.Size = UDim2.new(1, 0, 0, 40)
 title.Position = UDim2.new(0, 0, 0, 0)
