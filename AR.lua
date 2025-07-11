@@ -319,7 +319,7 @@ Instance.new("UICorner", gamepassBtn).CornerRadius = UDim.new(0, 10)
 gamepassBtn.MouseButton1Click:Connect(function()
     local data = player:FindFirstChild("Data")
     if data then
-        local gamepasses = {"DoubleCash", "AlrBoughtSkipSpin", "SecClass", "Emote", "CriticalHit", "SkipSpin"}
+        local gamepasses = {"DoubleCash", "AlrBoughtSkipSpin", "SecClass", "Emote2", "CriticalHit", "SkipSpin"}
         for _, gpName in ipairs(gamepasses) do
             local gp = data:FindFirstChild(gpName)
             if gp then
@@ -341,7 +341,7 @@ wait(1)
 wait(1)
         notify("🔓 2-Class Slots unlocked!")
 wait(1)
-        notify("🔓 Emote unlocked!")
+        notify("🔓 Emote 2 unlocked!")
 wait(1)
         notify("🔓 CriticalHit unlocked!")
 wait(1)
