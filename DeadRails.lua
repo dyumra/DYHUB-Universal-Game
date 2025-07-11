@@ -5,6 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TeleportService = game:GetService("TeleportService")
+local TweenService = game:GetService("TweenService")
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "DYHUB | Auto Bond | Menu"
@@ -43,11 +44,11 @@ title.Parent = mainFrame
 local infoLabel = Instance.new("TextLabel")
 infoLabel.Size = UDim2.new(1, -20, 0, 50)
 infoLabel.Position = UDim2.new(0, 10, 0, 50)
-infoLabel.Text = "⚠️ Script will auto run in 3 seconds!"
+infoLabel.Text = "⚠️ The script will auto run in 3 seconds!"
 infoLabel.Font = Enum.Font.GothamBold
 infoLabel.TextScaled = true
 infoLabel.BackgroundTransparency = 1
-infoLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
+infoLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
 infoLabel.Parent = mainFrame
 
 local toggleBtn = Instance.new("TextButton", gui)
@@ -198,3 +199,92 @@ task.spawn(function()
         task.wait(0.1)
     end
 end)
+
+local char = player.Character or player.CharacterAdded:Wait()
+local hrp = char:WaitForChild("HumanoidRootPart")
+local hum = char:WaitForChild("Humanoid")
+workspace.CurrentCamera.CameraSubject = hum
+hrp.Anchored = true
+task.wait(0.2)
+hrp.CFrame = CFrame.new(80, 3, -9000)
+repeat task.wait() until workspace.RuntimeItems:FindFirstChild("MaximGun")
+task.wait(0.2)
+
+for _, v in pairs(workspace.RuntimeItems:GetChildren()) do
+    if v.Name == "MaximGun" and v:FindFirstChild("VehicleSeat") then
+        v.VehicleSeat.Disabled = false
+        v.VehicleSeat:SetAttribute("Disabled", false)
+        v.VehicleSeat:Sit(hum)
+    end
+end
+
+task.wait(0.2)
+for _, v in pairs(workspace.RuntimeItems:GetChildren()) do
+    if v.Name == "MaximGun" and v:FindFirstChild("VehicleSeat") and (hrp.Position - v.VehicleSeat.Position).Magnitude < 400 then
+        hrp.CFrame = v.VehicleSeat.CFrame
+    end
+end
+
+task.wait(0.5)
+hrp.Anchored = false
+repeat task.wait(0.1) until hum.Sit
+task.wait(0.3)
+hum.Sit = false
+task.wait(0.2)
+repeat
+    for _, v in pairs(workspace.RuntimeItems:GetChildren()) do
+        if v.Name == "MaximGun" and v:FindFirstChild("VehicleSeat") and (hrp.Position - v.VehicleSeat.Position).Magnitude < 400 then
+            hrp.CFrame = v.VehicleSeat.CFrame
+        end
+    end
+    task.wait(0.2)
+until hum.Sit
+task.wait(0.4)
+
+for _, v in pairs(workspace:GetChildren()) do
+    if v:IsA("Model") and v:FindFirstChild("RequiredComponents") then
+        local seat = v.RequiredComponents:FindFirstChild("Controls")
+            and v.RequiredComponents.Controls:FindFirstChild("ConductorSeat")
+            and v.RequiredComponents.Controls.ConductorSeat:FindFirstChild("VehicleSeat")
+        if seat then
+            local tp = TweenService:Create(hrp, TweenInfo.new(15, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {CFrame = seat.CFrame * CFrame.new(0, 20, 0)})
+            tp:Play()
+            if not hrp:FindFirstChild("VelocityHandler") then
+                local bv = Instance.new("BodyVelocity", hrp)
+                bv.Name = "VelocityHandler"
+                bv.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+                bv.Velocity = Vector3.zero
+            end
+            tp.Completed:Wait()
+        end
+    end
+end
+
+task.wait(0.5)
+while true do
+    if hum.Sit then
+        local tp = TweenService:Create(hrp, TweenInfo.new(10, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), {CFrame = CFrame.new(0.5, -78, -49429)})
+        tp:Play()
+        if not hrp:FindFirstChild("VelocityHandler") then
+            local bv = Instance.new("BodyVelocity", hrp)
+            bv.Name = "VelocityHandler"
+            bv.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+            bv.Velocity = Vector3.zero
+        end
+        repeat task.wait() until workspace.RuntimeItems:FindFirstChild("Bond")
+        tp:Cancel()
+
+        for _, v in pairs(workspace.RuntimeItems:GetChildren()) do
+            if v.Name:find("Bond") and v:FindFirstChild("Part") then
+                repeat
+                    if v:FindFirstChild("Part") then
+                        hrp.CFrame = v.Part.CFrame
+                        ReplicatedStorage.Shared.Network.RemotePromise.Remotes.C_ActivateObject:FireServer(v)
+                    end
+                    task.wait(0.1)
+                until not v:FindFirstChild("Part")
+            end
+        end
+    end
+    task.wait(0.1)
+end
