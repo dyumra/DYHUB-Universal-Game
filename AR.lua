@@ -41,7 +41,7 @@ key1Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 key1Title.BackgroundTransparency = 0.5
 key1Title.Font = Enum.Font.GothamBold
 key1Title.TextSize = 22
-key1Title.Text = "🛡 DYHUB'S\n Join our (dsc.gg/dyhub)"
+key1Title.Text = "🛡 DYHUB\n Join our (dsc.gg/dyhub)"
 Instance.new("UICorner", key1Title).CornerRadius = UDim.new(0, 15)
 
 local spinner = Instance.new("ImageLabel", key1Frame)
@@ -93,8 +93,19 @@ local function getRainbowColor(tick)
     return Color3.fromRGB(red, green, blue)
 end
 
+local toggleBtn = Instance.new("TextButton", gui)
+toggleBtn.Size = UDim2.new(0, 42, 0, 42)
+toggleBtn.Position = UDim2.new(1, -54, 0, 12)
+toggleBtn.Text = "D"
+toggleBtn.Font = Enum.Font.GothamBlack
+toggleBtn.TextScaled = true
+toggleBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+toggleBtn.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1, 0)
+
 RunService.RenderStepped:Connect(function()
     borderStroke.Color = getRainbowColor(tick())
+    toggleBtn.TextColor3 = color
 end)
 
 local title = Instance.new("TextLabel", mainFrame)
