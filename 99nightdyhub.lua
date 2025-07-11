@@ -6,17 +6,17 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local Window = WindUI:CreateWindow({
-    Folder = "Ringta Scripts",   
-    Title = "RINGTA SCRIPTS",
+    Folder = "DYHUB Scripts",   
+    Title = "DYHUB | 99 Nights in the Forest",
     Icon = "star",
-    Author = "ringta",
+    Author = "DYHUB",
     Theme = "Dark",
     Size = UDim2.fromOffset(500, 350),
     HasOutline = true,
 })
 
 Window:EditOpenButton({
-    Title = "Open RINGTA SCRIPTS",
+    Title = "Open DYHUB",
     Icon = "monitor",
     CornerRadius = UDim.new(0, 6),
     StrokeThickness = 2,
