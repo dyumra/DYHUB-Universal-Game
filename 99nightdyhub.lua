@@ -9,7 +9,7 @@ local Window = WindUI:CreateWindow({
     Folder = "DYHUB Scripts",   
     Title = "DYHUB | 99 Nights in the Forest",
     Icon = "star",
-    Author = "DYHUB",
+    Author = "DYHUB (dsc.gg/dyhub)",
     Theme = "Dark",
     Size = UDim2.fromOffset(500, 350),
     HasOutline = true,
@@ -37,7 +37,7 @@ local infHungerActive = false
 local infHungerThread
 
 Tabs.Main:Toggle({
-    Title = "Inf hunger",
+    Title = "Inf Hunger",
     Default = false,
     Callback = function(state)
         infHungerActive = state
@@ -154,7 +154,7 @@ Tabs.Main:Slider({
 })
 
 Tabs.Main:Toggle({
-    Title = "Auto Hit (autoBreak)",
+    Title = "Auto Hit (Auto Break)",
     Default = false,
     Callback = function(state)
         autoBreakActive = state
@@ -208,7 +208,7 @@ Tabs.Teleport:Button({
     end
 })
 Tabs.Teleport:Button({
-    Title="Teleport to Trader",
+    Title="TP to NPC Trader",
     Callback=function()
         local pos = Vector3.new(-37.08, 3.98, -16.33)
         local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
@@ -314,7 +314,7 @@ Tabs.Bring:Button({Title="Bring Coal", Callback=function()
         end
     end
 end})
-Tabs.Bring:Button({Title="Bring Meat (Raw + Cooked)", Callback=function()
+Tabs.Bring:Button({Title="Bring Meat (Raw & Cooked)", Callback=function()
     local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     for _, item in pairs(workspace.Items:GetChildren()) do
         local name = item.Name:lower()
