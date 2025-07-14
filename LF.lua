@@ -10,7 +10,7 @@ local playerGui = player:WaitForChild("PlayerGui")
 local function notify(text)
     pcall(function()
         StarterGui:SetCore("SendNotification", {
-            Title = "🛡️ DYHUB | Loot Fish",
+            Title = "🐟 DYHUB | Loot Fish",
             Text = text,
             Duration = 3
         })
@@ -63,10 +63,28 @@ title.BackgroundTransparency = 1
 title.Font = Enum.Font.GothamBold
 title.TextScaled = true
 
+local toggleBtn = Instance.new("TextButton", gui)
+toggleBtn.Size = UDim2.new(0, 42, 0, 42)
+toggleBtn.Position = UDim2.new(1, -54, 0, 12)
+toggleBtn.Text = "D"
+toggleBtn.Font = Enum.Font.GothamBlack
+toggleBtn.TextScaled = true
+toggleBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+toggleBtn.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1, 0)
+
+local toggleStroke = Instance.new("UIStroke", toggleBtn)
+toggleStroke.Thickness = 2
+
+toggleBtn.MouseButton1Click:Connect(function()
+    mainFrame.Visible = not mainFrame.Visible
+end)
+
 RunService.RenderStepped:Connect(function()
     local color = getRainbowColor(tick())
     borderStroke.Color = color
     title.TextColor3 = color
+    toggleBtn.TextColor3 = color
 end)
 
 -- Dupe Fish Button
