@@ -28,7 +28,7 @@ local Window = Library:CreateWindow({
     Resizable = true,
     Footer = "DYHUB | Version: v187",
 	Icon = 0,
-	AutoLock = true,
+	AutoLock = false,
     ShowCustomCursor = true,
     NotifySide = "Right",
     TabPadding = 2,
@@ -336,8 +336,8 @@ _G.EspGuiTextColor = Value
 
 Main2Group:AddSlider("Text Size", {
     Text = "Text Size [ Gui ]",
-    Default = 7,
-    Min = 7,
+    Default = 5,
+    Min = 1,
     Max = 50,
     Rounding = 0,
     Compact = false,
@@ -461,7 +461,7 @@ Info:AddButton("Copy JobId", function()
 end)
 
 Info:AddInput("Join Job", {
-    Default = "Nah",
+    Default = "Put JobId in here",
     Numeric = false,
     Text = "Join Job",
     Placeholder = "UserJobId",
