@@ -271,9 +271,9 @@ PlayerTab:Toggle({
 
 local playerNameInput = ""
 PlayerTab:Input({
-    Title = "Teleport to Player (Roblox123 or Ro)",
+    Title = "Teleport to Player",
     Value = playerNameInput,
-    Placeholder = "Enter name",
+    Placeholder = "Enter name (Roblox123 or Ro)",
     Callback = function(text)
         playerNameInput = text
     end,
@@ -290,7 +290,7 @@ local function findPlayerByPartialName(partialName)
 end
 
 PlayerTab:Button({
-    Title = "Teleport to Player",
+    Title = "Teleport",
     Callback = function()
         if playerNameInput ~= "" then
             local p = findPlayerByPartialName(playerNameInput)
@@ -307,7 +307,7 @@ PlayerTab:Button({
 })
 
 PlayerTab:Button({
-    Title = "Teleport Random Player",
+    Title = "Teleport Random",
     Callback = function()
         local list = Players:GetPlayers()
         if #list > 1 then
