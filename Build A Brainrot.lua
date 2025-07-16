@@ -81,15 +81,10 @@ MainTab:Button({
 MainTab:Button({
     Title = "Infinite Cash",
     Callback = function()
-        if inf and type(inf) == "number" then
-            ReplicatedStorage.Remotes.giveRewards:FireServer("Cash", inf)
-            print("[DYHUB] Added cash:", inf)
-        else
-            warn("[DYHUB] Invalid cash amount:", inf)
-        end
+        ReplicatedStorage.Remotes.giveRewards:FireServer("Cash", inf)
+        print("[DYHUB] Added cash:", inf)
     end,
 })
-
 
 MainTab:Toggle({
     Title = "Auto Rebirth",
