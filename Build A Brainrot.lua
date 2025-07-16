@@ -37,8 +37,8 @@ local Window = WindUI:CreateWindow({
 local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
 local BuyTab = Window:Tab({ Title = "Shop", Icon = "shopping-cart" })
 local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
-local ConfigTab = Window:Tab({ Title = "Config", Icon = "file-cog" })
 local MiscTab = Window:Tab({ Title = "Misc", Icon = "cog" })
+local ConfigTab = Window:Tab({ Title = "Config", Icon = "file-cog" })
 
 -- ======= Main =======
 local cashInputValue = ""
@@ -271,22 +271,32 @@ PlayerTab:Toggle({
 
 local playerNameInput = ""
 PlayerTab:Input({
-    Title = "Teleport to Player (Enter name)",
+    Title = "Teleport to Player (Roblox123 or Ro)",
     Value = playerNameInput,
-    Placeholder = "PlayerName",
+    Placeholder = "Enter name",
     Callback = function(text)
         playerNameInput = text
     end,
 })
 
+local function findPlayerByPartialName(partialName)
+    partialName = partialName:lower()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player.Name:lower():sub(1, #partialName) == partialName then
+            return player
+        end
+    end
+    return nil
+end
+
 PlayerTab:Button({
     Title = "Teleport to Player",
     Callback = function()
         if playerNameInput ~= "" then
-            local p = Players:FindFirstChild(playerNameInput)
+            local p = findPlayerByPartialName(playerNameInput)
             if p and p.Character and LocalPlayer.Character then
                 LocalPlayer.Character:PivotTo(p.Character:GetPivot())
-                print("[DYHUB] Teleported to " .. playerNameInput)
+                print("[DYHUB] Teleported to " .. p.Name)
             else
                 warn("[DYHUB] Player not found or character missing")
             end
