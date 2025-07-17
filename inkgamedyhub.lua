@@ -1,19 +1,12 @@
---[[
-	Credits:
-	Inf Yield (a.k.a. Infinite Yield)
-    mspaint v2 - code organisation
-	Please notify me if you need credits
-]]
-
 if not getgenv().shared then
     getgenv().shared = {}
 end
 
-if not getgenv().voidware_loaded then
-    getgenv().voidware_loaded = true
+if not getgenv().DYHUB_loaded then
+    getgenv().DYHUB_loaded = true
 else
     local suc = pcall(function()
-        shared.Voidware_InkGame_Library:Unload()
+        shared.DYHUB_InkGame_Library:Unload()
     end)
     if not suc then
         return 
@@ -22,21 +15,21 @@ end
 
 local isNew = false
 pcall(function()
-    if not isfolder("voidware_linoria") then makefolder("voidware_linoria"); isNew = true; end
-    for _, v in pairs({"voidware_linoria/ink_game", "voidware_linoria/themes"}) do
+    if not isfolder("DYHUB_linoria") then makefolder("DYHUB_linoria"); isNew = true; end
+    for _, v in pairs({"DYHUB_linoria/ink_game", "DYHUB_linoria/themes"}) do
         if not isfolder(v) then makefolder(v); isNew = true; end
     end
-    for _, v in pairs({"voidware_linoria/ink_game/settings", "voidware_linoria/ink_game/themes"}) do
+    for _, v in pairs({"DYHUB_linoria/ink_game/settings", "DYHUB_linoria/ink_game/themes"}) do
         if not isfolder(v) then makefolder(v); isNew = true; end
     end
 
     if isNew then
-        writefile("voidware_linoria/themes/default.txt", "Jester")
+        writefile("DYHUB_linoria/themes/default.txt", "Jester")
         local suc = pcall(function()
-            writefile("voidware_linoria/ink_game/settings/default.json", game:HttpGet("https://raw.githubusercontent.com/Erchobg/VoidwareProfiles/refs/heads/main/InkGame/ink_game/settings/default.json", true))
+            writefile("DYHUB_linoria/ink_game/settings/default.json", game:HttpGet("https://raw.githubusercontent.com/Erchobg/VoidwareProfiles/refs/heads/main/InkGame/ink_game/settings/default.json", true))
         end)
         if suc then
-            writefile("voidware_linoria/ink_game/settings/autoload.txt", "default")
+            writefile("DYHUB_linoria/ink_game/settings/autoload.txt", "default")
         end
     end
 end)
@@ -62,7 +55,7 @@ local Options = getgenv().Linoria.Options
 local Toggles = getgenv().Linoria.Toggles
 
 local Window = Library:CreateWindow({
-	Title = "Voidware - Ink Game",
+	Title = "DYHUB - Ink Game",
 	Center = true,
 	AutoShow = true,
 	Resizable = true,
@@ -73,7 +66,7 @@ local Window = Library:CreateWindow({
 
 local Tabs = {
 	Main = Window:AddTab("Main"),
-    Visuals = Window:AddTab("Visuals"),
+        Visuals = Window:AddTab("Visuals"),
 	["UI Settings"] = Window:AddTab("UI Settings"),
 }
 
@@ -177,7 +170,7 @@ function Script.Functions.Alert(message: string, time_obj: number)
 end
 
 function Script.Functions.Warn(message: string)
-    warn("WARN - voidware:", message)
+    warn("WARN - DYHUB:", message)
 end
 
 function Script.Functions.ESP(args: ESP)
@@ -483,7 +476,7 @@ Script.Functions.RevealGlassBridge = function()
         AnnouncementOneLine = true,
         FasterTween = true,
         DisplayTime = 10,
-        AnnouncementDisplayText = "[Voidware]: Safe tiles are green, breakable tiles are red!"
+        AnnouncementDisplayText = "[DYHUB]: Safe tiles are green, breakable tiles are red!"
     })
 end
 
@@ -495,8 +488,8 @@ Script.Functions.OnLoad = function()
         end
     }
 
-    Script.Functions.EffectsNotification("Voidware - Ink Game loaded!", 5)
-    Script.Functions.EffectsNotification("Join discord.gg/voidware for updates :)", 5)
+    Script.Functions.EffectsNotification("DYHUB - Ink Game loaded!", 5)
+    Script.Functions.EffectsNotification("Join our (dsc.gg/dyhub)", 5)
 end
 
 function Script.Functions.EffectsNotification(text, dur)
@@ -815,7 +808,7 @@ Script.Functions.FireForkRemote = function()
 end
 
 Script.Functions.JoinDiscordServer = function()
-    local sInvite = "https://discord.com/invite/voidware"
+    local sInvite = "https://dsc.gg/dyhub"
     
     local function getInviteCode(sInvite)
         for i = #sInvite, 1, -1 do
@@ -860,11 +853,11 @@ Script.Functions.JoinDiscordServer = function()
         })
 	end
     pcall(function()
-        setclipboard("discord.gg/voidware")
+        setclipboard("dsc.gg/dyhub")
     end)
     game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Voidware Discord - discord.gg/voidware",
-        Text = "Copied to clipboard (discord.gg/voidware)",
+        Title = "DYHUB Discord - dsc.gg/dyhub",
+        Text = "Copied to clipboard (dsc.gg/dyhub)",
         Duration = 10,
     })
 end
@@ -1239,9 +1232,9 @@ local SelfGroupBox = Tabs.Visuals:AddRightGroupbox("Self") do
     })
 end
 
-local FunGroupBox = Tabs.Main:AddLeftGroupbox("Fun") do
+local FunGroupBox = Tabs.Main:AddLeftGroupbox("DYHUB") do
     FunGroupBox:AddToggle("InkGameAutowin", {
-        Text = "Autowin ⭐",
+        Text = "Auto Win (All)",
         Default = false
     })
 
@@ -1641,7 +1634,7 @@ local RebelGroup = Tabs.Main:AddLeftGroupbox("Rebel") do
 end
 
 local InformationGroup = Tabs.Main:AddRightGroupbox("Information") do
-    InformationGroup:AddLabel("Welcome to Voidware!")
+    InformationGroup:AddLabel("Welcome to DYHUB!")
     InformationGroup:AddLabel("Make sure to join our discord \n server for updates!")
     InformationGroup:AddLabel("")
     InformationGroup:AddButton("Join Discord Server", Script.Functions.JoinDiscordServer)
@@ -1838,9 +1831,9 @@ end)
 local PlayerGroupBox = Tabs.Main:AddLeftGroupbox("Player") do
     PlayerGroupBox:AddSlider("SpeedSlider", {
         Text = "Walk Speed",
-        Default = 30,
+        Default = 16,
         Min = 0,
-        Max = 100,
+        Max = 300,
         Rounding = 1
     })
     
@@ -1881,9 +1874,9 @@ local PlayerGroupBox = Tabs.Main:AddLeftGroupbox("Player") do
     
     PlayerGroupBox:AddSlider("FlySpeed", {
         Text = "Fly Speed",
-        Default = 40,
+        Default = 20,
         Min = 10,
-        Max = 100,
+        Max = 300,
         Rounding = 1,
         Compact = true,
     })
@@ -2099,7 +2092,7 @@ local SecurityGroupBox = Tabs.Main:AddRightGroupbox("Security") do
         end
     end)
     SecurityGroupBox:AddToggle("StaffDetector", {
-        Text = "Staff Detector",
+        Text = "Anti-Admin",
         Default = true
     })
     Toggles.StaffDetector:OnChanged(function(call)
@@ -2118,7 +2111,7 @@ local SecurityGroupBox = Tabs.Main:AddRightGroupbox("Security") do
                 end)
                 if success and rank and rank >= STAFF_MIN_RANK then
                     local roleName = staffRoles[rank] or ("rank " .. tostring(rank))
-                    Script.Functions.Alert("[StaffDetector] Staff detected: " .. player.Name .. " (" .. roleName .. ")", 10)
+                    Script.Functions.Alert("[Anti-Admin] Staff detected: " .. player.Name .. " (" .. roleName .. ")", 10)
                     Script.Temp.DetectedStaff[player.UserId] = {Name = player.Name, Role = roleName}
                     return true
                 end
@@ -2139,7 +2132,7 @@ local SecurityGroupBox = Tabs.Main:AddRightGroupbox("Security") do
             Script.Temp.StaffDetectorConnections.PlayerRemoving = Players.PlayerRemoving:Connect(function(player)
                 local staffInfo = Script.Temp.DetectedStaff and Script.Temp.DetectedStaff[player.UserId]
                 if staffInfo then
-                    Script.Functions.Alert("[StaffDetector] Staff left: " .. staffInfo.Name .. " (" .. staffInfo.Role .. ")", 10)
+                    Script.Functions.Alert("[Anti-Admin] Staff left: " .. staffInfo.Name .. " (" .. staffInfo.Role .. ")", 10)
                     Script.Temp.DetectedStaff[player.UserId] = nil
                 end
             end)
@@ -2151,7 +2144,7 @@ local SecurityGroupBox = Tabs.Main:AddRightGroupbox("Security") do
                 Script.Temp.StaffDetectorConnections = nil
             end
             Script.Temp.DetectedStaff = nil
-            Script.Functions.Alert("[StaffDetector] Staff detection disabled.", 3)
+            Script.Functions.Alert("[Anti-Admin] Staff detection disabled.", 3)
         end
     end)
 end
@@ -2208,7 +2201,7 @@ function Script.Functions.HandleAutowin()
     end)
 
     if States[Script.GameState] then
-        Script.Functions.Alert("[Autowin]: Running on "..tostring(Script.GameState))
+        Script.Functions.Alert("[Auto Win]: Running on "..tostring(Script.GameState))
         task.spawn(function()
             Script.Functions.EffectsNotification("[Autowin]: Running on "..tostring(Script.GameState), 10)
         end)
@@ -2217,7 +2210,7 @@ function Script.Functions.HandleAutowin()
         task.spawn(function()
             Script.Functions.EffectsNotification("[Autowin]: Waiting for the next game...", 10)
         end)
-        Script.Functions.Alert("[Autowin]: Waiting for the next game...")
+        Script.Functions.Alert("[Auto Win]: Waiting for the next game...")
     end
 end
 
@@ -2382,12 +2375,12 @@ MenuGroup:AddLabel("Menu bind"):AddKeyPicker("MenuKeybind", { Default = "RightSh
 MenuGroup:AddButton("Join Discord Server", Script.Functions.JoinDiscordServer)
 MenuGroup:AddButton("Unload", function() Library:Unload() end)
 
-CreditsGroup:AddLabel("erchodev#0 - script dev")
-CreditsGroup:AddLabel("Jorsan - Mingle Support & Godmode")
-CreditsGroup:AddLabel("linoria - ui library")
-CreditsGroup:AddLabel("mspaint v2")
-CreditsGroup:AddLabel("Inf Yield")
-CreditsGroup:AddLabel("Please notify me if you need \n credits (erchodev#0 on discord)")
+CreditsGroup:AddLabel("DYHUB'S TEAM - Python / Dex")
+CreditsGroup:AddLabel("DYHUB SCRIPTER - Feature All")
+CreditsGroup:AddLabel("DYHUB UI - Linoria Library")
+CreditsGroup:AddLabel("DYHUB BYPASS - Disable Anti-Cheat All")
+CreditsGroup:AddLabel("DYHUB LOOPHOLES - Infinite Yield / Dex / Remote Spy")
+CreditsGroup:AddLabel("Please notify me if you want to buy \n Premium (@dyumraisgoodguy#6969 on discord)")
 
 Library.ToggleKeybind = Options.MenuKeybind
 
@@ -2408,8 +2401,8 @@ SaveManager:IgnoreThemeSettings()
 SaveManager:SetIgnoreIndexes({  })
 -- "MenuKeybind"
 
-ThemeManager:SetFolder("voidware_linoria")
-SaveManager:SetFolder("voidware_linoria/ink_game")
+ThemeManager:SetFolder("DYHUB_linoria")
+SaveManager:SetFolder("DYHUB_linoria/ink_game")
 
 SaveManager:BuildConfigSection(Tabs["UI Settings"])
 
