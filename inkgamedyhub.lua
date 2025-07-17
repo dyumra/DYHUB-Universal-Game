@@ -1299,7 +1299,7 @@ local SelfGroupBox = Tabs.Visuals:AddRightGroupbox("Self") do
     })
 end
 
-local FunGroupBox = Tabs.Main:AddLeftGroupbox("DYHUB") do
+local FunGroupBox = Tabs.Main:AddLeftGroupbox("DYHUB / Feature") do
     FunGroupBox:AddToggle("InkGameAutowin", {
         Text = "Auto Win (All)",
         Default = false
@@ -1800,7 +1800,7 @@ function Script.Functions.PlayEmote(emoteId, emoteObject)
     end
 end
 
-local MiscGroup = Tabs.Main:AddRightGroupbox("Misc") do
+local MiscGroup = Tabs.Main:AddRightGroupbox("Misc / Dupe") do
     MiscGroup:AddDropdown("EmotesList", { 
         Text = 'Emotes List', 
         Values = {}, 
@@ -2270,12 +2270,12 @@ function Script.Functions.HandleAutowin()
     if States[Script.GameState] then
         Script.Functions.Alert("[Auto Win]: Running on "..tostring(Script.GameState))
         task.spawn(function()
-            Script.Functions.EffectsNotification("[Autowin]: Running on "..tostring(Script.GameState), 10)
+            Script.Functions.EffectsNotification("[Auto Win]: Running on "..tostring(Script.GameState), 10)
         end)
         lastCleanupFunction = States[Script.GameState]()
     else
         task.spawn(function()
-            Script.Functions.EffectsNotification("[Autowin]: Waiting for the next game...", 10)
+            Script.Functions.EffectsNotification("[Auto Win]: Waiting for the next game...", 10)
         end)
         Script.Functions.Alert("[Auto Win]: Waiting for the next game...")
     end
@@ -2342,7 +2342,7 @@ States = {
         if lplr:GetAttribute("IsHider") then
             Script.Functions.TeleportSafe()
         else
-            Script.Functions.Alert("[Autowin]: Hide and Seek support for Seekers soon...")
+            Script.Functions.Alert("[Auto Win]: Hide and Seek support for Seekers soon...")
         end
     end,
     LightsOut = Script.Functions.TeleportSafe,
