@@ -121,7 +121,7 @@ local Options = getgenv().Linoria.Options
 local Toggles = getgenv().Linoria.Toggles
 
 local Window = Library:CreateWindow({
-	Title = "DYHUB - Ink Game",
+	Title = "DYHUB - Ink Game | Version: 2.0 | (dsc.gg/dyhub)",
 	Center = true,
 	AutoShow = true,
 	Resizable = true,
@@ -555,6 +555,7 @@ Script.Functions.OnLoad = function()
     }
 
     Script.Functions.EffectsNotification("DYHUB - Ink Game loaded!", 5)
+    Script.Functions.EffectsNotification("DYHUB - Press Fix Camera first!", 5)
     Script.Functions.EffectsNotification("Join our (dsc.gg/dyhub)", 5)
 end
 
