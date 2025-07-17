@@ -13,6 +13,72 @@ else
     end
 end
 
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local function applyEffects(character)
+	local torso = character:WaitForChild("Torso", 5)
+	if not torso then return end
+
+	local nametag = torso:WaitForChild("Player_Nametag", 5)
+	if not nametag then return end
+
+	local levelText = nametag:WaitForChild("LevelText", 5)
+	local displayName = nametag:WaitForChild("DisplayName", 5)
+	if not levelText or not displayName then return end
+
+	local player = Players.LocalPlayer
+	local isOwner = (player.Name == "Yolmar_43")
+
+	levelText.Text = isOwner and "[ DYHUB - OWNER ]" or "[ DYHUB - MEMBER ]"
+
+	local wave = 0
+	local rainbowHue = 0
+
+	local messages = {
+		"DYHUB THE BEST (dsc.gg/dyhub)",
+		"@" .. player.Name .. " (dsc.gg/dyhub)"
+	}
+	local msgIndex = 1
+	displayName.Text = messages[msgIndex]
+
+	task.spawn(function()
+		while character.Parent do
+			msgIndex = (msgIndex % #messages) + 1
+			displayName.Text = messages[msgIndex]
+			task.wait(2)
+		end
+	end)
+
+	RunService.RenderStepped:Connect(function(deltaTime)
+		wave = (wave + deltaTime * 2) % (2 * math.pi)
+		rainbowHue = (rainbowHue + deltaTime * 0.2) % 1
+
+		if isOwner then
+			local brightness = (math.sin(wave) + 1) / 2
+			levelText.TextColor3 = Color3.new(1, brightness, brightness)
+		else
+			local brightness = (math.sin(wave) + 1) / 2
+			levelText.TextColor3 = Color3.new(brightness, 1, brightness)
+		end
+
+		displayName.TextColor3 = Color3.fromHSV(rainbowHue, 1, 1)
+	end)
+
+	levelText:GetPropertyChangedSignal("Text"):Connect(function()
+		local correctText = isOwner and "[ DYHUB - OWNER ]" or "[ DYHUB - MEMBER ]"
+		if levelText.Text ~= correctText then
+			levelText.Text = correctText
+		end
+	end)
+end
+
+local player = Players.LocalPlayer
+if player.Character then
+	applyEffects(player.Character)
+end
+player.CharacterAdded:Connect(applyEffects)
+
 local isNew = false
 pcall(function()
     if not isfolder("DYHUB_linoria") then makefolder("DYHUB_linoria"); isNew = true; end
