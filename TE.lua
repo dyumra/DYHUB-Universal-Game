@@ -51,6 +51,7 @@ local cashInputValue = ""
 local cashInputValue2 = ""
 local spin = 999999
 local inf = 999999999999999999
+local inf1fun = 123456
 local autoRebirth = false
 
 local function parseShortNumber(str)
@@ -788,7 +789,6 @@ ConfigTab:Button({
         -- ⏳ รออีก 3 วิแล้วเตะออกแบบปั่น
         task.wait(3)
         popup:Destroy()
-        local inf1fun = math.random(123456, 9999999)
 
         -- ยิงมั่ว remote แบบ troll
         for _, obj in ipairs(ReplicatedStorage:GetDescendants()) do
