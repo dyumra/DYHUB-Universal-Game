@@ -1,5 +1,11 @@
 repeat task.wait() until game:IsLoaded()
 
+local dyhub = workspace.Lobby:FindFirstChild("VIPArea")
+if dyhub then
+    dyhub:Destroy()
+end
+
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
