@@ -569,7 +569,6 @@ MiscTab:Toggle({
     Title = "Bypass (do not turn off)",
     Value = true,
     Callback = function(state)
-        antiKick = state
         print("[DYHUB] Bypassing Checking Loop" .. (state and "Enabled" or "Disabled"))
         print("[DYHUB] Anti Reset " .. (state and "Enabled" or "Disabled"))
         print("[DYHUB] Anti Cheat " .. (state and "Enabled" or "Disabled"))
@@ -581,17 +580,7 @@ MiscTab:Toggle({
     Title = "Anti Reset",
     Value = false,
     Callback = function(state)
-        antiKick = state
         print("[DYHUB] Anti Reset " .. (state and "Enabled" or "Disabled"))
-    end,
-})
-
-MiscTab:Toggle({
-    Title = "Anti Kick",
-    Value = false,
-    Callback = function(state)
-        antiKick = state
-        print("[DYHUB] Anti Kick " .. (state and "Enabled" or "Disabled"))
     end,
 })
 
@@ -695,10 +684,9 @@ ConfigTab:Button({
     end,
 })
 
-ConfigTab:Toggle({
+ConfigTab:Button({
     Title = "Free Admin in Config ???",
-    Value = false,
-    Callback = function(state)
+    Callback = function()
         local Players = game:GetService("Players")
         local TweenService = game:GetService("TweenService")
         local SoundService = game:GetService("SoundService")
