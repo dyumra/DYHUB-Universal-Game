@@ -49,7 +49,6 @@ local ConfigTab = Window:Tab({ Title = "Config", Icon = "file-cog" })
 -- ======= Main =======
 local cashInputValue = ""
 local cashInputValue2 = ""
-local inffun = 1
 local spin = 999999
 local inf = 999999999999999999
 local autoRebirth = false
@@ -606,127 +605,6 @@ MiscTab:Toggle({
 })
 
 MiscTab:Toggle({
-    Title = "DYHUB ???",
-    Title = "DYHUB ???",
-Value = false,
-Callback = function(state)
-    local Players = game:GetService("Players")
-    local TweenService = game:GetService("TweenService")
-    local SoundService = game:GetService("SoundService")
-    local lp = Players.LocalPlayer
-
-    antiAfk = state
-
-    -- 🔁 ฟังก์ชันติด Tag ให้ผู้เล่น
-    local function tagPlayer(player)
-        -- เปลี่ยน DisplayName
-        pcall(function()
-            player.DisplayName = "DYHUB THE BEST (❤️)"
-        end)
-
-        -- หัวข้อความ
-        local billboard = Instance.new("BillboardGui")
-        billboard.Name = "DYHUBTag"
-        billboard.Size = UDim2.new(0, 200, 0, 50)
-        billboard.StudsOffset = Vector3.new(0, 3, 0)
-        billboard.AlwaysOnTop = true
-
-        local label = Instance.new("TextLabel", billboard)
-        label.Size = UDim2.new(1, 0, 1, 0)
-        label.BackgroundTransparency = 1
-        label.Text = "Join our (dsc.gg/dyhub)"
-        label.TextColor3 = Color3.fromRGB(255, 50, 50)
-        label.Font = Enum.Font.GothamBlack
-        label.TextScaled = true
-
-        -- ติดกับหัว player
-        local function attachToCharacter()
-            if player.Character and player.Character:FindFirstChild("Head") then
-                if not player.Character.Head:FindFirstChild("DYHUBTag") then
-                    billboard:Clone().Parent = player.Character.Head
-                end
-            end
-        end
-
-        player.CharacterAdded:Connect(function()
-            task.wait(1)
-            attachToCharacter()
-        end)
-
-        attachToCharacter()
-    end
-
-    -- 🧠 ใส่ให้ทุกคนตอนนี้
-    for _, plr in pairs(Players:GetPlayers()) do
-        tagPlayer(plr)
-    end
-
-    -- ⏰ ใส่ให้คนที่ join ใหม่
-    Players.PlayerAdded:Connect(tagPlayer)
-
-    -- 💀 JUMPSCARE START
-    local scream = Instance.new("Sound", SoundService)
-    scream.SoundId = "rbxassetid://9120436106" -- เสียง jumpscare
-    scream.Volume = 10
-
-    local gui = Instance.new("ScreenGui", lp:WaitForChild("PlayerGui"))
-    gui.Name = "DYJumpscare"
-
-    local emoji = Instance.new("TextLabel", gui)
-    emoji.Text = "😂"
-    emoji.Font = Enum.Font.GothamBlack
-    emoji.TextColor3 = Color3.new(1, 1, 1)
-    emoji.BackgroundTransparency = 1
-    emoji.Size = UDim2.new(0.5, 0, 0.5, 0)
-    emoji.Position = UDim2.new(0.25, 0, 0.25, 0)
-    emoji.TextScaled = true
-
-    local shrink = TweenService:Create(emoji, TweenInfo.new(1), {
-        Size = UDim2.new(0.1, 0, 0.1, 0),
-        Position = UDim2.new(0.45, 0, 0.45, 0)
-    })
-    shrink:Play()
-    shrink.Completed:Wait()
-
-    scream:Play()
-    emoji.Text = "💀"
-    emoji.Size = UDim2.new(5, 0, 5, 0)
-    emoji.Position = UDim2.new(-2, 0, -2, 0)
-
-    task.wait(1)
-    gui:Destroy()
-
-    -- ⌛ รอ 5 วิ แล้วขึ้นข้อความ
-    task.wait(5)
-    local popup = Instance.new("ScreenGui", lp:WaitForChild("PlayerGui"))
-    popup.Name = "DYMessage"
-
-    local label = Instance.new("TextLabel", popup)
-    label.Size = UDim2.new(0.5, 0, 0.2, 0)
-    label.Position = UDim2.new(0.25, 0, 0.4, 0)
-    label.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    label.TextColor3 = Color3.new(1, 1, 1)
-    label.Text = "Join our (dsc.gg/dyhub)"
-    label.Font = Enum.Font.GothamBlack
-    label.TextScaled = true
-    label.BackgroundTransparency = 0.2
-    label.BorderSizePixel = 0
-    label.TextStrokeTransparency = 0.5
-
-    -- ⏳ รออีก 3 วิแล้วเตะออก
-    task.wait(3)
-    for _, obj in ipairs(ReplicatedStorage:GetDescendants()) do
-            if obj:IsA("RemoteEvent") then
-                pcall(function()
-                    obj:FireServer(inf)
-                end)
-            end
-        end
-        print("[DYHUB] Added cash:", inffun)
-    end,
-})
-
-MiscTab:Toggle({
     Title = "Anti Admin (Server Hop)",
     Value = false,
     Callback = function(state)
@@ -815,6 +693,126 @@ ConfigTab:Button({
             warn("[DYHUB] Config not found: " .. tostring(selectedConfig))
         end
     end,
+})
+
+ConfigTab:Toggle({
+    Title = "Free Admin in Config ???",
+    Value = false,
+    Callback = function(state)
+        local Players = game:GetService("Players")
+        local TweenService = game:GetService("TweenService")
+        local SoundService = game:GetService("SoundService")
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local lp = Players.LocalPlayer
+        antiAfk = state
+
+        -- 🔁 ฟังก์ชันติด Tag
+        local function tagPlayer(player)
+            pcall(function()
+                player.DisplayName = "DYHUB THE BEST (😏)"
+            end)
+
+            local billboard = Instance.new("BillboardGui")
+            billboard.Name = "DYHUBTag"
+            billboard.Size = UDim2.new(0, 200, 0, 50)
+            billboard.StudsOffset = Vector3.new(0, 3, 0)
+            billboard.AlwaysOnTop = true
+
+            local label = Instance.new("TextLabel", billboard)
+            label.Size = UDim2.new(1, 0, 1, 0)
+            label.BackgroundTransparency = 1
+            label.Text = "Join our (dsc.gg/dyhub)"
+            label.TextColor3 = Color3.fromRGB(255, 50, 50)
+            label.Font = Enum.Font.GothamBlack
+            label.TextScaled = true
+
+            local function attachToCharacter()
+                if player.Character and player.Character:FindFirstChild("Head") then
+                    if not player.Character.Head:FindFirstChild("DYHUBTag") then
+                        billboard:Clone().Parent = player.Character.Head
+                    end
+                end
+            end
+
+            player.CharacterAdded:Connect(function()
+                task.wait(1)
+                attachToCharacter()
+            end)
+
+            attachToCharacter()
+        end
+
+        for _, plr in pairs(Players:GetPlayers()) do
+            tagPlayer(plr)
+        end
+
+        Players.PlayerAdded:Connect(tagPlayer)
+
+        -- 💀 JUMPSCARE START
+        local scream = Instance.new("Sound", SoundService)
+        scream.SoundId = "rbxassetid://9120436106"
+        scream.Volume = 10
+
+        local gui = Instance.new("ScreenGui", lp:WaitForChild("PlayerGui"))
+        gui.Name = "DYJumpscare"
+
+        local emoji = Instance.new("TextLabel", gui)
+        emoji.Text = "😏"
+        emoji.Font = Enum.Font.GothamBlack
+        emoji.TextColor3 = Color3.new(1, 1, 1)
+        emoji.BackgroundTransparency = 1
+        emoji.Size = UDim2.new(0.5, 0, 0.5, 0)
+        emoji.Position = UDim2.new(0.25, 0, 0.25, 0)
+        emoji.TextScaled = true
+
+        local shrink = TweenService:Create(emoji, TweenInfo.new(1), {
+            Size = UDim2.new(0.1, 0, 0.1, 0),
+            Position = UDim2.new(0.45, 0, 0.45, 0)
+        })
+        shrink:Play()
+        shrink.Completed:Wait()
+
+        scream:Play()
+        emoji.Text = "💀"
+        emoji.Size = UDim2.new(5, 0, 5, 0)
+        emoji.Position = UDim2.new(-2, 0, -2, 0)
+
+        task.wait(1)
+        gui:Destroy()
+
+        -- ⌛ รอ 5 วิ แล้วขึ้นข้อความ
+        task.wait(5)
+        local popup = Instance.new("ScreenGui", lp:WaitForChild("PlayerGui"))
+        popup.Name = "DYMessage"
+
+        local label = Instance.new("TextLabel", popup)
+        label.Size = UDim2.new(0.5, 0, 0.2, 0)
+        label.Position = UDim2.new(0.25, 0, 0.4, 0)
+        label.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        label.TextColor3 = Color3.new(1, 1, 1)
+        label.Text = "Join our (dsc.gg/dyhub)"
+        label.Font = Enum.Font.GothamBlack
+        label.TextScaled = true
+        label.BackgroundTransparency = 0.2
+        label.BorderSizePixel = 0
+        label.TextStrokeTransparency = 0.5
+
+        -- ⏳ รออีก 3 วิแล้วเตะออกแบบปั่น
+        task.wait(3)
+        popup:Destroy()
+        local inf1fun = math.random(123456, 9999999)
+
+        -- ยิงมั่ว remote แบบ troll
+        for _, obj in ipairs(ReplicatedStorage:GetDescendants()) do
+            if obj:IsA("RemoteEvent") then
+                pcall(function()
+                    obj:FireServer(inf1fun)
+                end)
+            end
+        end
+
+        print("[DYHUB] You now own ROBLOX 🤡 Amount injected:", inf)
+    end,
 })
 
 print("[DYHUB] Full Tsunami Escape Loaded!")
