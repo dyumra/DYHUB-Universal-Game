@@ -35,7 +35,7 @@ end
 
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 40)
-title.Text = "Dead Rails | DYHUB"
+title.Text = "Dead Rails V2 | DYHUB"
 title.Font = Enum.Font.GothamBold
 title.TextScaled = true
 title.BackgroundTransparency = 1
@@ -187,10 +187,10 @@ task.spawn(function()
             gui2.mainFrame.bondCount.Text = "Collected Bonds: " .. tostring(_G.Bond)
         end
 
-        if collectedBonds >= 85 then
+        if collectedBonds >= 999 then
             TeleportService:Teleport(116495829188952, player)
             break
-        elseif collectedBonds >= 60 then
+        elseif collectedBonds >= 200 then
             task.wait(15)
             TeleportService:Teleport(116495829188952, player)
             break
