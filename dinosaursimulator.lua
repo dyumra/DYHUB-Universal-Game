@@ -86,7 +86,7 @@ local function createGrassPlatform()
 end
 
 MainTab:Toggle({
-    Title = "Auto Farm (DNA)",
+    Title = "Auto Farm (DNA) (Turn On: Auto Eat Water/Hunger first)",
     Value = false,
     Callback = function(state)
         dnaToggle = state
@@ -95,7 +95,7 @@ MainTab:Toggle({
                 while dnaToggle do
                     if Character and Character:FindFirstChild("HumanoidRootPart") then
                         local rootPos = Character.HumanoidRootPart.Position
-                        local targetY = rootPos.Y + 600
+                        local targetY = rootPos.Y + 100
 
                         -- ลอยตัวละครขึ้น
                         Character.HumanoidRootPart.CFrame = CFrame.new(rootPos.X, targetY, rootPos.Z)
@@ -104,7 +104,7 @@ MainTab:Toggle({
                         for _, dino in ipairs(Workspace:WaitForChild("Dinosaurs"):GetChildren()) do
                             if dino:IsA("Model") and dino:FindFirstChild("HumanoidRootPart") then
                                 local dinoPos = dino.HumanoidRootPart.Position
-                                if (dinoPos - rootPos).Magnitude <= 30 then
+                                if (dinoPos - rootPos).Magnitude <= 5 then
                                     dino.HumanoidRootPart.CFrame = CFrame.new(dinoPos.X, targetY, dinoPos.Z)
                                 end
                             end
@@ -124,7 +124,7 @@ MainTab:Toggle({
 local amberToggle = false
 
 MainTab:Toggle({
-    Title = "Auto Farm (Amber)",
+    Title = "Auto Farm (Amber) (Fixing)",
     Value = false,
     Callback = function(state)
         amberToggle = state
@@ -232,7 +232,7 @@ Workspace.MiscellaneousStorage.ChildAdded:Connect(function(child)
 end)
 
 MainTab:Toggle({
-    Title = "ESP (Amber)",
+    Title = "ESP (Amber) (Fixing)",
     Value = false,
     Callback = function(state)
         espToggle = state
@@ -293,7 +293,7 @@ MainTab:Toggle({
                         GameEvents:WaitForChild("EatPlant"):FireServer(closestBush)
                     end
 
-                    task.wait(2)
+                    task.wait(0.69)
                 end
             end)
         end
@@ -327,7 +327,7 @@ MainTab:Toggle({
                         GameEvents:WaitForChild("addThirst"):FireServer(closestWater, closestWater.Position)
                     end
 
-                    task.wait(2)
+                    task.wait(0.69)
                 end
             end)
         end
