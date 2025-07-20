@@ -65,7 +65,7 @@ local classInputValue = ""
 local auraInputValue = ""
 
 MainTab:Button({
-    Title = "Dupe All (New Update)",
+    Title = "Dupe All (Click me for All)",
     Icon = "atom",
     Callback = function()
         for _, name in ipairs(dupeNames) do
