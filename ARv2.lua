@@ -35,199 +35,173 @@ local Window = WindUI:CreateWindow({
 })
 
 local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
+local CashTab = Window:Tab({ Title = "Cash", Icon = "circle-dollar-sign" })
+local EquipTab = Window:Tab({ Title = "Equip", Icon = "book-check" })
 local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
-local TeleportTab = Window:Tab({ Title = "Equip", Icon = "map-pin" })
 local MiscTab = Window:Tab({ Title = "Misc", Icon = "cog" })
 local ConfigTab = Window:Tab({ Title = "Config", Icon = "file-cog" })
 
 -- ======= Main =======
 local cashInputValue = ""
 local cashInputValue2 = ""
-local spin = 999999
-local inf = 999999999999999999
-local autoRebirth = false
-
-local function parseShortNumber(str)
-    local m = { k=1e3, m=1e6, b=1e9, t=1e12, q=1e15, qi=1e18, s=1e21, sep=1e24, o=1e27 }
-    str = str:lower():gsub(",","")
-    local n,s = str:match("([%d%.]+)(%a*)")
-    local v = tonumber(n)
-    if not v then return nil end
-    if s == "" then return v end
-    if m[s] then return v * m[s] end
-    return nil
-end
+local dupeNames = {
+  "Infinity", "Solar", "Crimson", "DarkArcher", "PurpleAssasin", "WolfBoss", "Merchant", "SickCurse", "Tank",
+  "CrimsonMaster", "Lightning", "SunBreather", "KnightBoss", "Materials", "Baryon", "HeinEra", "Sukuna",
+  "Naruto", "SSGoku", "Tanjiro", "Goku", "Shadows", "Kaiser", "Puzzle", "Knight", "Shake", "Hapticss",
+  "MuzanAura", "MoonAura", "YellowAura", "MuzanClass", "KokoshiboClass", "CompassClass", "MuzanMorph",
+  "MoonMorph", "HakiPower", "InfinityVoid", "Dismantle", "Restriction", "BlackFlashAura", "ShadowAura",
+  "CriticalHit", "Gear4", "BlackFlash", "Toji", "InfinityEyes", "MasteredReflex", "LavaMasterClass",
+  "RedeemedWolfBoss", "RedeemedKnight", "LuffyMorph", "DoughMorph", "GravityAura", "DoughAura",
+  "LavaAura", "Gear5Class", "MochiClass", "Rinnegan", "Kurama", "Sasuke", "Pain", "EightGates", "Sed",
+  "Cid", "Gojo", "Assasin", "AntKing", "BlueFlames", "BloodKnight", "BloodMorph", "BloodMorphS",
+  "AntMorph", "AntMorphS", "AssasinMorph", "LightAura", "AlterAura", "Alter", "Saber", "SaberMorph", "AlterMorph",
+  "Hakai", "PridfulWarrior", "EarthWarrior", "GreatApe"
+}
 
 MainTab:Input({
-    Title = "Enter Desired Cash Amount",
-    Value = cashInputValue,
-    Placeholder = "Set Cash Amount (e.g, 1000, 1k)",
-    Callback = function(text)
-        cashInputValue = text
-    end,
+    Title = "Dupe Morph",
+    Placeholder = "Use the name from Npc Morph",
+    Callback = function(text)
+        cashinputvalue = text
+    end,
 })
 
 MainTab:Button({
-    Title = "Enter Cash",
-    Callback = function()
-        local amt = parseShortNumber(cashInputValue)
-        if amt then
-            for _, obj in ipairs(ReplicatedStorage:GetDescendants()) do
-                if obj:IsA("RemoteEvent") then
-                    pcall(function()
-                        obj:FireServer(amt)  -- ส่งตัวเลขแทน string
-                    end)
-                end
-            end
-            print("[DYHUB] Added cash:", amt)
-        else
-            warn("[DYHUB] Invalid cash amount:", cashInputValue)
-        end
-    end,
+    Title = "Unlock Morph",
+    Icon = "crown",
+    Callback = function()
+           for _, name in ipairs(dupeNames) do
+        event:FireServer("SetMorphBuy", name, 0
+        else
+            print("[DYHUB] Invalid Morph:", cashInputValue)
+        end
+    end,
 })
 
 MainTab:Input({
-    Title = "Enter Desired Spin Amount",
-    Value = cashInputValue2,
-    Placeholder = "Set Spin Amount (e.g, 5, 10)",
-    Callback = function(text)
-        cashInputValue2 = text
-    end,
+    Title = "Dupe Class",
+    Placeholder = "Use the name from Npc Morph",
+    Callback = function(text)
+        cashinputvalue = text
+    end,
 })
 
 MainTab:Button({
-    Title = "Enter Spin",
-    Callback = function()
-        local amt = parseShortNumber(cashInputValue2)
-        if amt then
-            for _, obj in ipairs(ReplicatedStorage:GetDescendants()) do
-                if obj:IsA("RemoteEvent") then
-                    pcall(function()
-                        obj:FireServer(amt)
-                    end)
-                end
-            end
-            print("[DYHUB] Added Spin:", amt)
-        else
-            warn("[DYHUB] Invalid Spin amount:", cashInputValue2)
-        end
-    end,
+    Title = "Unlock Class",
+    Icon = "swords",
+    Callback = function()
+           for _, name in ipairs(dupeNames) do
+        event:FireServer("SetClassBuy", name, 0
+        else
+            print("[DYHUB] Invalid Class:", cashInputValue)
+        end
+    end,
+})
+
+MainTab:Input({
+    Title = "Dupe Aura",
+    Placeholder = "Use the name from Npc Morph",
+    Callback = function(text)
+        cashinputvalue = text
+    end,
 })
 
 MainTab:Button({
-    Title = "Infinite Cash",
-    Callback = function()
-        for _, obj in ipairs(ReplicatedStorage:GetDescendants()) do
-            if obj:IsA("RemoteEvent") then
-                pcall(function()
-                    obj:FireServer(inf)
-                end)
-            end
-        end
-        print("[DYHUB] Added cash:", inf)
-    end,
+    Title = "Unlock Aura",
+    Icon = "flame",
+    Callback = function()
+           for _, name in ipairs(dupeNames) do
+        event:FireServer("SetAuraBuy", name, 0
+        else
+            print("[DYHUB] Invalid Aura:", cashInputValue)
+        end
+    end,
 })
 
 MainTab:Button({
-    Title = "Infinite Spin",
-    Callback = function()
-        local remote = ReplicatedStorage:FindFirstChild("Honeypot", true)
-        if remote then
-            local award = remote:FindFirstChild("Internal", true)
-            if award then
-                local storage = award:FindFirstChild("RemoteStorage", true)
-                if storage then
-                    local event = storage:FindFirstChild("AwardSpinCash")
-                    if event and event:IsA("RemoteEvent") then
-                        pcall(function()
-                            event:FireServer(spin)
-                            print("[DYHUB] Added Spin:", spin)
-                        end)
-                    end
-                end
-            end
-        end
-    end,
+    Title = "Unlock All",
+    Icon = "atom",
+    Callback = function()
+           for _, name in ipairs(dupeNames) do
+        event:FireServer("SetMorphBuy", name, 0 -- Morph Can buy all Class/Aura
+        else
+            print("[DYHUB] Invalid Morph:", cashInputValue)
+        end
+    end,
 })
 
--- สร้าง SafeZone part ถ้ามันยังไม่มี
-local SafeZonePart = workspace:FindFirstChild("DYHUB_SafeZonePart")
-if not SafeZonePart then
-    SafeZonePart = Instance.new("Part")
-    SafeZonePart.Name = "DYHUB_SafeZonePart"
-    SafeZonePart.Anchored = true
-    SafeZonePart.CanCollide = true
-    SafeZonePart.Size = Vector3.new(50, 1, 50)
-    SafeZonePart.Position = Vector3.new(0, 500, 0) -- สูงๆ นอกแมพ
-    SafeZonePart.Transparency = 0.5
-    SafeZonePart.Parent = workspace
-end
-
-local inSafeZone = false
-local originalCFrame = nil
-
-MainTab:Button({
-    Title = "Safe Zone",
-    Callback = function()
-        local character = LocalPlayer.Character
-        if character then
-            character:PivotTo(CFrame.new(SafeZonePart.Position + Vector3.new(0,5,0)))
-            inSafeZone = true
-            print("[DYHUB] Warped to Safe Zone.")
-        end
-    end,
+-- ======= Cash =======
+CashTab:Input({
+    Title = "Enter Dupe Cash Amount",
+    Placeholder = "100 ~ 10000",
+    Callback = function(text)
+        cashInputValue = text
+    end,
 })
 
-MainTab:Toggle({
-    Title = "Auto Safe 50% HP",
-    Value = false,
-    Callback = function(state)
-        local runServiceConnection
-        if state then
-            runServiceConnection = RunService.Heartbeat:Connect(function()
-                local character = LocalPlayer.Character
-                if character then
-                    local humanoid = character:FindFirstChildOfClass("Humanoid")
-                    if humanoid and humanoid.Health > 0 then
-                        if humanoid.Health <= humanoid.MaxHealth * 0.5 and not inSafeZone then
-                            originalCFrame = character:GetPivot()
-                            -- วาร์ปไป Safe Zone
-                            character:PivotTo(CFrame.new(SafeZonePart.Position + Vector3.new(0, 5, 0)))
-                            inSafeZone = true
-                            print("[DYHUB] Low HP detected, warped to Safe Zone.")
-                        end
-                    end
-                end
-            end)
-            -- เก็บการเชื่อมต่อไว้ปิดทีหลัง
-            MainTab.AutoSafeConnection = runServiceConnection
-        else
-            if MainTab.AutoSafeConnection then
-                MainTab.AutoSafeConnection:Disconnect()
-                MainTab.AutoSafeConnection = nil
-            end
-            inSafeZone = false
-            print("[DYHUB] Auto Safe 50% HP Disabled")
-        end
-    end,
+CashTab:Button({
+    Title = "Dupe Cash",
+    Icon = "dollar-sign",
+    Callback = function()
+        local input = tonumber(cashInputValue)
+        if input and input >= 100 and input <= 10000 then
+            local args = {
+                [1] = "Wins",
+                [2] = input,
+                [3] = "SABER"
+            }
+            ReplicatedStorage:WaitForChild("CodeEvent"):FireServer(unpack(args))
+            print("[DYHUB] Dupe Cash:", input)
+        else
+            print("[DYHUB] Invalid amount:", cashInputValue)
+        end
+    end,
 })
 
--- ปุ่ม Back to Game วาร์ปกลับตำแหน่งเดิม หรือถ้าไม่มีให้วาร์ปที่ (0,0,0) พร้อม CFrame ที่บอก
-MainTab:Button({
-    Title = "Back to Game",
-    Callback = function()
-        local character = LocalPlayer.Character
-        if character then
-            if originalCFrame then
-                character:PivotTo(originalCFrame)
-                print("[DYHUB] Warped back to original position.")
-            else
-                character:PivotTo(CFrame.new(0, 10, 0)) -- default position กลางแมพ
-                print("[DYHUB] Warped to default position (0,10,0).")
-            end
-            inSafeZone = false
-        end
-    end,
+-- Infinite Cash
+CashTab:Button({
+    Title = "Infinite Dupe Cash",
+    Icon = "infinity",
+    Callback = function()
+        local totalAmount = 999000000
+        local perFire = 999999
+        local times = math.floor(totalAmount / perFire)
+        task.spawn(function()
+            for i = 1, times do
+                local args = {
+                    [1] = "Wins",
+                    [2] = perFire,
+                    [3] = "DYHUB"
+                }
+                ReplicatedStorage:WaitForChild("CodeEvent"):FireServer(unpack(args))
+                task.wait(0.1)
+            end
+            print("[DYHUB] Completed Infinite Cash")
+        end)
+    end,
+})
+
+-- Infinite Spin (ให้เงิน 0)
+CashTab:Button({
+    Title = "Infinite Dupe Spin",
+    Icon = "rotate-ccw",
+    Callback = function()
+        local totalAmount = 999999
+        local perFire = 1
+        local times = math.floor(totalAmount / perFire)
+        task.spawn(function()
+            for i = 1, times do
+                local args = {
+                    [1] = "Wins",
+                    [2] = 0,
+                    [3] = "DYHUB"
+                }
+                ReplicatedStorage:WaitForChild("CodeEvent"):FireServer(unpack(args))
+                task.wait(0.05)
+            end
+            print("[DYHUB] Completed Infinite Dupe Spin")
+        end)
+    end,
 })
 
 -- ======= Player Tab =======
