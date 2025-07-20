@@ -163,7 +163,7 @@ MainTab:Button({
 local selectedGamepass = "All"
 GamepassTab:Dropdown({
     Title = "Select Gamepass",
-    Values = { "All", "DoubleCash", "AlrBoughtSkipSpin", "SecClass", "Emote", "CriticalHit", "SkipSpin" },
+    Values = { "All", "DoubleCash", "AlrBoughtSkipSpin", "SecClass", "Emotes", "CriticalHit", "SkipSpin" },
     Multi = false,
     Callback = function(selected)
         selectedGamepass = selected
@@ -176,14 +176,14 @@ GamepassTab:Button({
     Icon = "check",
     Callback = function()
         local player = LocalPlayer
-        local data = player:FindFirstChild("data")
+        local data = player:FindFirstChild("Data")
         if not data then
             warn("[DYHUB] Data not found!")
             return
         end
 
         if selectedGamepass == "All" then
-            local gamepasses = { "DoubleCash", "AlrBoughtSkipSpin", "SecClass", "Emote", "CriticalHit", "SkipSpin" }
+            local gamepasses = { "DoubleCash", "AlrBoughtSkipSpin", "SecClass", "Emotes", "CriticalHit", "SkipSpin" }
             for _, gpName in ipairs(gamepasses) do
                 local gp = data:FindFirstChild(gpName)
                 if gp then
