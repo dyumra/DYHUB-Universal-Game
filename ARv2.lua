@@ -12,7 +12,7 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 local Confirmed = false
 
 WindUI:Popup({
-    Title = "DYHUB Loaded! - Anime Rails V2",
+    Title = "DYHUB Loaded! - Anime Rails",
     Icon = "star",
     IconThemed = true,
     Content = "DYHUB'S TEAM | Join our (dsc.gg/dyhub)",
@@ -25,7 +25,7 @@ WindUI:Popup({
 repeat task.wait() until Confirmed
 
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB - Anime Rails V2",
+    Title = "DYHUB - Anime Rails",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
@@ -567,32 +567,6 @@ PlayerTab:Toggle({
     end,
 })
 
--- ======= Teleport Tab =======
-local teleportPositions = {
-    ["In-game"] = CFrame.new(0.126203626, -8.70080376, 224.518723, -0.436265141, 1.23078472e-08, -0.899818182, 4.95810468e-08, 1, -1.03605773e-08, 0.899818182, -4.91338845e-08, -0.436265141),
-    ["Lobby"] = CFrame.new(0.106019527, 3.49999976, -1.46082389, 0.99961549, 2.78097261e-08, 0.0277295075, -2.96380716e-08, 1, 6.55240555e-08, -0.0277295075, -6.63207018e-08, 0.99961549),
-    ["Gamepass"] = CFrame.new(42.0702209, 2.49999976, -0.357365221, -0.235460415, 2.975057e-08, -0.971883953, 7.9592489e-08, 1, 1.13281935e-08, 0.971883953, -7.46873212e-08, -0.235460415),
-    ["Shop"] = CFrame.new(79.8672714, 2.49999976, -58.3157539, -0.0260891877, -2.85041768e-09, -0.999659598, -6.67470132e-08, 1, -1.10941989e-09, 0.999659598, 6.66953568e-08, -0.0260891877),
-    ["Free Morph"] = CFrame.new(0.735759139, 2.49999976, -94.2842636, 0.991858304, 8.383455e-08, -0.127346292, -8.2608878e-08, 1, 1.49061545e-08, 0.127346292, -4.26485869e-09, 0.991858304),
-    ["Leaderboard"] = CFrame.new(-51.4132462, 2.5, -55.6683083, -0.0158058051, -1.25096076e-08, 0.999875069, -5.91185092e-08, 1, 1.15766383e-08, -0.999875069, -5.89281441e-08, -0.0158058051),
-    ["VIP"] = CFrame.new(-43.7592621, 2.49999976, 1.43719995, 0.16314514, -1.08637472e-08, 0.986602068, -7.76504265e-08, 1, 2.38515998e-08, -0.986602068, -8.05013443e-08, 0.16314514),
-}
-
-for name, cframe in pairs(teleportPositions) do
-    TeleportTab:Button({
-        Title = name,
-        Callback = function()
-            local char = game.Players.LocalPlayer.Character
-            if char and char:FindFirstChild("HumanoidRootPart") then
-                char.HumanoidRootPart.CFrame = cframe
-                print("[DYHUB] Teleported to", name)
-            else
-                warn("[DYHUB] Character or HumanoidRootPart not found.")
-            end
-        end,
-    })
-end
-
 -- ======= Misc Tab =======
 local antiKick = false
 local antiAfk = false
@@ -604,8 +578,8 @@ MiscTab:Toggle({
     Callback = function(state)
         print("[DYHUB] Bypassing Checking Loop" .. (state and "Enabled" or "Disabled"))
         print("[DYHUB] Anti Reset " .. (state and "Enabled" or "Disabled"))
-        print("[DYHUB] Anti Cheat " .. (state and "Enabled" or "Disabled"))
-        print("[DYHUB] Anti Ban " .. (state and "Enabled" or "Disabled"))
+        print("[DYHUB] Anti Admin" .. (state and "Enabled" or "Disabled"))
+        print("[DYHUB] Anti Moderator" .. (state and "Enabled" or "Disabled"))
     end,
 })
 
