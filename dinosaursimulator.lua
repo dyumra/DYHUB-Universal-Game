@@ -50,160 +50,257 @@ local Bushes = Props:WaitForChild("Bushes")
 local WaterTiles = Workspace:WaitForChild("GameMap"):WaitForChild("Water"):GetChildren()
 
 -- Smooth Move Function
-local function smoothMoveTo(position, duration)
-    local startPos = Character.HumanoidRootPart.Position
-    local startTime = tick()
-    local endTime = startTime + duration
-    while tick() < endTime do
-        local alpha = (tick() - startTime) / duration
-        local newPos = startPos:Lerp(position, alpha)
-        Character:PivotTo(CFrame.new(newPos))
-        RunService.RenderStepped:Wait()
-    end
-end
-
--- Main Tab: Auto Farm DNA
 local dnaToggle = false
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local Workspace = game:GetService("Workspace")
+
+local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 
+LocalPlayer.CharacterAdded:Connect(function(char)
+    Character = char
+end)
+
+-- ฟังก์ชันเคลื่อนที่แบบ smooth ขึ้นไปจุดสูง
+local function smoothMoveTo(position, duration)
+    if Character and Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = Character.HumanoidRootPart
+        local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear)
+        local goal = { Position = position }
+        local tween = TweenService:Create(hrp, tweenInfo, goal)
+        tween:Play()
+        tween.Completed:Wait() -- รอให้ tween เสร็จก่อน
+    end
+end
+
+-- ฟังก์ชันสร้างพื้นหญ้าใต้ตัวละคร (ลบพื้นเก่าก่อน)
+local function createGrassPlatform()
+    if Workspace:FindFirstChild("DNA FARM | GrassPlatform") then
+        Workspace["DNA FARM | GrassPlatform"]:Destroy()
+    end
+    if Character and Character:FindFirstChild("HumanoidRootPart") then
+        local part = Instance.new("Part")
+        part.Name = "DNA FARM | GrassPlatform"
+        part.Anchored = true
+        part.CanCollide = true
+        part.Size = Vector3.new(100, 1, 100)
+        part.Position = Character.HumanoidRootPart.Position - Vector3.new(0, 3, 0)
+        part.Material = Enum.Material.Grass
+        part.Color = Color3.fromRGB(106, 190, 48)
+        part.Parent = Workspace
+    end
+end
+
+MainTab:Toggle({
+    Title = "Auto Farm (DNA)",
+    Value = false,
+    Callback = function(state)
+        dnaToggle = state
+        if state then
+            task.spawn(function()
+                while dnaToggle do
+                    if Character and Character:FindFirstChild("HumanoidRootPart") then
+                        local pos = Character.HumanoidRootPart.Position
+                        local targetY = pos.Y + 600
+                        smoothMoveTo(Vector3.new(pos.X, targetY, pos.Z), 3) -- เคลื่อนที่ขึ้น
+                        task.wait(0.5) -- รอหน่อยเพื่อให้ตัวละครขึ้นถึงจุดจริง
+                        createGrassPlatform() -- ค่อยสร้างพื้น
+                    else
+                        Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                    end
+                    task.wait(5)
+                end
+            end)
+        end
+    end,
+})
+
+-- Main Tab: Auto Farm Amber
+local amberToggle = false
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local Workspace = game:GetService("Workspace")
+
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+
+LocalPlayer.CharacterAdded:Connect(function(char)
+    Character = char
+end)
+
+-- เคลื่อนที่แบบ Tween
+local function smoothMoveTo(position, duration)
+    if Character and Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = Character.HumanoidRootPart
+        local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear)
+        local goal = { Position = position }
+        local tween = TweenService:Create(hrp, tweenInfo, goal)
+        tween:Play()
+        tween.Completed:Wait()
+    end
+end
+
+MainTab:Toggle({
+    Title = "Auto Farm (Amber)",
+    Value = false,
+    Callback = function(state)
+        amberToggle = state
+        if state then
+            task.spawn(function()
+                local doneAmbers = {} -- เก็บ Amber ที่เคยกดไปแล้ว
+                while amberToggle do
+                    if not (Character and Character:FindFirstChild("HumanoidRootPart")) then
+                        Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                    end
+
+                    local rootPos = Character.HumanoidRootPart.Position
+                    for _, amber in ipairs(Workspace:WaitForChild("MiscellaneousStorage"):GetChildren()) do
+                        if amber.Name == "Amber" and amber:IsA("Model") and not doneAmbers[amber] then
+                            local prompt = amber:FindFirstChildOfClass("ProximityPrompt")
+                            local part = amber:FindFirstChildWhichIsA("BasePart")
+                            if prompt and part then
+                                local distance = (part.Position - rootPos).Magnitude
+                                if distance <= prompt.MaxActivationDistance then
+                                    fireproximityprompt(prompt)
+                                    doneAmbers[amber] = true
+                                    task.wait(0.3)
+                                else
+                                    smoothMoveTo(part.Position + Vector3.new(0, 3, 0), 1.5)
+                                    task.wait(0.3)
+                                    fireproximityprompt(prompt)
+                                    doneAmbers[amber] = true
+                                end
+                            end
+                        end
+                    end
+                    task.wait(0.5)
+                end
+            end)
+        end
+    end,
+})
+
+
+-- Main Tab: Amber ESP
+-- Services
+local Players      = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local Workspace    = game:GetService("Workspace")
+local RunService   = game:GetService("RunService")
+
+-- State
+local LocalPlayer  = Players.LocalPlayer
+local Character    = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local espToggle    = false
+local espObjects   = {}    -- [amberModel] = { highlight, billboard, textLabel }
+
+-- Update Character ref on respawn
 LocalPlayer.CharacterAdded:Connect(function(char)
     Character = char
 end)
 
-MainTab:Toggle({
-    Title = "Auto Farm (DNA)",
-    Value = false,
-    Callback = function(state)
-        dnaToggle = state
-        if state then
-            task.spawn(function()
-                while dnaToggle do
-                    if Character and Character:FindFirstChild("HumanoidRootPart") then
-                        local pos = Character.HumanoidRootPart.Position
-                        local targetY = pos.Y + 696
-                        -- เคลื่อนที่ไปตำแหน่งข้างบนก่อน
-                        smoothMoveTo(Vector3.new(pos.X, targetY, pos.Z), 5)
-                        -- พอถึงแล้วค่อยสร้างพื้นหญ้าใต้ตัวละคร
-                        createGrassPlatform()
-                    else
-                        Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-                    end
-                    task.wait(5)
-                end
-            end)
-        end
-    end,
-})
-
--- ฟังก์ชันสร้างพื้นหญ้าใต้ตัวละคร (ลบพื้นเก่าก่อน)
-local function createGrassPlatform()
-    if Workspace:FindFirstChild("DNA FARM | GrassPlatform") then
-        Workspace["DNA FARM | GrassPlatform"]:Destroy()
-    end
-    if Character and Character:FindFirstChild("HumanoidRootPart") then
-        local part = Instance.new("Part", Workspace)
-        part.Name = "DNA FARM | GrassPlatform"
-        part.Anchored = true
-        part.CanCollide = true
-        part.Size = Vector3.new(100, 1, 100)
-        part.Position = Character.HumanoidRootPart.Position - Vector3.new(0, 3, 0)
-        part.Material = Enum.Material.Grass
-        part.Color = Color3.fromRGB(106, 190, 48)
-    end
-end
-
--- Main Tab: Auto Farm Amber
-local amberToggle = false
-MainTab:Toggle({
-    Title = "Auto Farm (Amber)",
-    Value = false,
-    Callback = function(state)
-        amberToggle = state
-        if state then
-            task.spawn(function()
-                while amberToggle do
-                    for _, amber in ipairs(Workspace.MiscellaneousStorage:GetChildren()) do
-                        if amber.Name == "Amber" and amber:IsA("Model") and amber:FindFirstChildOfClass("ProximityPrompt") then
-                            local prompt = amber:FindFirstChildOfClass("ProximityPrompt")
-                            if prompt and amber.PrimaryPart then
-                                local pos = amber:GetPivot().Position
-                                smoothMoveTo(pos + Vector3.new(0, 3, 0), 3)
-                                task.wait(0.5)
-                                fireproximityprompt(prompt)
-                                task.wait(1)
-                            end
-                        end
-                    end
-                    task.wait(1)
-                end
-            end)
-        end
-    end,
-})
-
--- Main Tab: Amber ESP
-local espToggle = false
-local espObjects = {}
-
+-- สร้าง ESP ให้ Amber ตัวเดียว
 local function createEspAmber(amber)
-    if not amber.PrimaryPart then return end
-    local highlight = Instance.new("Highlight")
-    highlight.FillColor = Color3.fromRGB(255, 150, 0)
-    highlight.OutlineColor = Color3.new(1, 1, 1)
-    highlight.Name = "AmberESP"
-    highlight.Parent = amber
+    -- ตั้ง PrimaryPart ถ้ายังไม่มี
+    if not amber.PrimaryPart then
+        local root = amber:FindFirstChild("HumanoidRootPart") or amber:FindFirstChildWhichIsA("BasePart")
+        if root then
+            amber.PrimaryPart = root
+        else
+            return
+        end
+    end
 
+    -- Highlight
+    local highlight = Instance.new("Highlight")
+    highlight.Name         = "AmberESP"
+    highlight.Adornee      = amber
+    highlight.FillColor    = Color3.fromRGB(255, 150, 0)
+    highlight.OutlineColor = Color3.new(1, 1, 1)
+    highlight.Parent       = amber
+
+    -- BillboardGui + TextLabel
     local billboard = Instance.new("BillboardGui")
-    billboard.Name = "AmberLabel"
-    billboard.Size = UDim2.new(0, 100, 0, 50)
-    billboard.Adornee = amber.PrimaryPart
+    billboard.Name        = "AmberLabel"
+    billboard.Adornee     = amber.PrimaryPart
+    billboard.Size        = UDim2.new(0, 100, 0, 50)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
     billboard.AlwaysOnTop = true
-    billboard.Parent = amber
+    billboard.Parent      = amber
 
     local text = Instance.new("TextLabel")
-    text.Size = UDim2.new(1, 0, 1, 0)
+    text.Size               = UDim2.new(1, 0, 1, 0)
     text.BackgroundTransparency = 1
-    text.Text = "Amber"
-    text.TextColor3 = Color3.fromRGB(255, 150, 0)
-    text.TextScaled = true
-    text.Parent = billboard
+    text.TextScaled         = true
+    text.Font               = Enum.Font.SourceSansBold
+    text.TextColor3         = Color3.fromRGB(255, 150, 0)
+    text.Parent             = billboard
 
-    espObjects[amber] = {highlight, billboard}
+    espObjects[amber] = {
+        highlight   = highlight,
+        billboard   = billboard,
+        textLabel   = text,
+    }
 end
 
+-- ลบ ESP ของ Amber ตัวเดียว
 local function removeEspAmber(amber)
-    if espObjects[amber] then
-        for _, obj in pairs(espObjects[amber]) do
-            if obj and obj.Parent then obj:Destroy() end
-        end
+    local objs = espObjects[amber]
+    if objs then
+        if objs.highlight   then objs.highlight:Destroy() end
+        if objs.billboard   then objs.billboard:Destroy() end
+        -- textLabel ตายพร้อม BillboardGui
         espObjects[amber] = nil
     end
 end
 
+-- Auto-add เมื่อ Amber เกิดใหม่
+Workspace.MiscellaneousStorage.ChildAdded:Connect(function(child)
+    if espToggle and child:IsA("Model") and child.Name == "Amber" then
+        task.delay(0.1, function()
+            if not espObjects[child] then
+                createEspAmber(child)
+            end
+        end)
+    end
+end)
+
+-- Main Toggle
 MainTab:Toggle({
-    Title = "Esp (Amber)",
+    Title = "ESP (Amber)",
     Value = false,
     Callback = function(state)
         espToggle = state
+
         if state then
+            -- 1) สร้าง ESP ให้ Amber ที่มีอยู่แล้ว
+            for _, amber in ipairs(Workspace.MiscellaneousStorage:GetChildren()) do
+                if amber:IsA("Model") and amber.Name == "Amber" then
+                    createEspAmber(amber)
+                end
+            end
+
+            -- 2) Loop อัปเดตระยะ และ Clean up
             task.spawn(function()
                 while espToggle do
-                    for _, amber in ipairs(Workspace.MiscellaneousStorage:GetChildren()) do
-                        if amber.Name == "Amber" and not espObjects[amber] then
-                            createEspAmber(amber)
-                        end
-                    end
-
-                    -- Clean up disappeared ambers
-                    for amber in pairs(espObjects) do
-                        if not amber or not amber.Parent then
+                    local root = Character and Character:FindFirstChild("HumanoidRootPart")
+                    for amber, objs in pairs(espObjects) do
+                        -- ถ้า Amber หายไป ให้ลบ
+                        if not amber.Parent then
                             removeEspAmber(amber)
+                        elseif root then
+                            -- คำนวณระยะ
+                            local dist = (amber.PrimaryPart.Position - root.Position).Magnitude
+                            -- อัปเดตข้อความ (2 บรรทัด: ชื่อ + ระยะ)
+                            objs.textLabel.Text = string.format("Amber\n%.1f studs", dist)
                         end
                     end
-                    task.wait(2)
+                    task.wait(0.1)
                 end
             end)
         else
+            -- เคลียร์ทั้งหมดเมื่อปิด ESP
             for amber in pairs(espObjects) do
                 removeEspAmber(amber)
             end
