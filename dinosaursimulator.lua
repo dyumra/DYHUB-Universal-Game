@@ -49,21 +49,6 @@ local Props = Workspace:WaitForChild("GameMap"):WaitForChild("Gameland"):WaitFor
 local Bushes = Props:WaitForChild("Bushes")
 local WaterTiles = Workspace:WaitForChild("GameMap"):WaitForChild("Water"):GetChildren()
 
--- Create Grass Platform (for AutoFarm DNA)
-local function createGrassPlatform()
-    if Workspace:FindFirstChild("DNA FARM | GrassPlatform") then
-        Workspace["DNA FARM | GrassPlatform"]:Destroy()
-    end
-    local part = Instance.new("Part", Workspace)
-    part.Name = "DNA FARM | GrassPlatform"
-    part.Anchored = true
-    part.CanCollide = true
-    part.Size = Vector3.new(100, 1, 100)
-    part.Position = Character.HumanoidRootPart.Position - Vector3.new(0, 3, 0)
-    part.Material = Enum.Material.Grass
-    part.Color = Color3.fromRGB(106, 190, 48)
-end
-
 -- Smooth Move Function
 local function smoothMoveTo(position, duration)
     local startPos = Character.HumanoidRootPart.Position
@@ -79,24 +64,53 @@ end
 
 -- Main Tab: Auto Farm DNA
 local dnaToggle = false
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+
+LocalPlayer.CharacterAdded:Connect(function(char)
+    Character = char
+end)
+
 MainTab:Toggle({
     Title = "Auto Farm (DNA)",
     Value = false,
     Callback = function(state)
         dnaToggle = state
         if state then
-            createGrassPlatform()
             task.spawn(function()
                 while dnaToggle do
-                    local pos = Character.HumanoidRootPart.Position
-                    local targetY = pos.Y + 444
-                    smoothMoveTo(Vector3.new(pos.X, targetY, pos.Z), 5)
+                    if Character and Character:FindFirstChild("HumanoidRootPart") then
+                        local pos = Character.HumanoidRootPart.Position
+                        local targetY = pos.Y + 1500
+                        -- เคลื่อนที่ไปตำแหน่งข้างบนก่อน
+                        smoothMoveTo(Vector3.new(pos.X, targetY, pos.Z), 5)
+                        -- พอถึงแล้วค่อยสร้างพื้นหญ้าใต้ตัวละคร
+                        createGrassPlatform()
+                    else
+                        Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                    end
                     task.wait(5)
                 end
             end)
         end
     end,
 })
+
+-- ฟังก์ชันสร้างพื้นหญ้าใต้ตัวละคร (ลบพื้นเก่าก่อน)
+local function createGrassPlatform()
+    if Workspace:FindFirstChild("DNA FARM | GrassPlatform") then
+        Workspace["DNA FARM | GrassPlatform"]:Destroy()
+    end
+    if Character and Character:FindFirstChild("HumanoidRootPart") then
+        local part = Instance.new("Part", Workspace)
+        part.Name = "DNA FARM | GrassPlatform"
+        part.Anchored = true
+        part.CanCollide = true
+        part.Size = Vector3.new(100, 1, 100)
+        part.Position = Character.HumanoidRootPart.Position - Vector3.new(0, 3, 0)
+        part.Material = Enum.Material.Grass
+        part.Color = Color3.fromRGB(106, 190, 48)
+    end
+end
 
 -- Main Tab: Auto Farm Amber
 local amberToggle = false
@@ -395,6 +409,26 @@ PlayerTab:Button({
 -- Misc Tab --
 
 local antiAfkEnabled = false
+local antiAdminEnabled = false
+local AntiCheat = true
+
+MiscTab:Toggle({
+    Title = "Bypass Anti-Cheat",
+    Value = true,
+    Callback = function(state)
+        AntiCheat = state
+        if state then
+            VirtualUser:Button2Down(Vector2.new(0,0))
+            task.spawn(function()
+                while AntiCheat do
+                    VirtualUser:Button2Down(Vector2.new(0,0))
+                    task.wait(10)
+                end
+            end)
+        end
+    end,
+})
+
 MiscTab:Toggle({
     Title = "Anti AFK",
     Value = false,
@@ -411,6 +445,24 @@ MiscTab:Toggle({
         end
     end,
 })
+
+MiscTab:Toggle({
+    Title = "Anti Admin",
+    Value = false,
+    Callback = function(state)
+        antiAdminEnabled = state
+        if state then
+            VirtualUser:Button2Down(Vector2.new(0,0))
+            task.spawn(function()
+                while antiAdminEnabled do
+                    VirtualUser:Button2Down(Vector2.new(0,0))
+                    task.wait(10)
+                end
+            end)
+        end
+    end,
+})
+
 
 -- ESP for Players (Name, HP, Distance, Dino Type)
 local espOptions = {
