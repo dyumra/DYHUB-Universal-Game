@@ -36,6 +36,8 @@ local Window = WindUI:CreateWindow({
 -- Tabs
 local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
 local CashTab = Window:Tab({ Title = "Cash", Icon = "circle-dollar-sign" })
+-- local TeleportTab = Window:Tab({ Title = "Teleport", Icon = "map-pin" })
+-- local EquipTab = Window:Tab({ Title = "Equip", Icon = "star" })
 local GamepassTab = Window:Tab({ Title = "Gamepass", Icon = "cookie" })
 local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
 local MiscTab = Window:Tab({ Title = "Misc", Icon = "cog" })
@@ -61,6 +63,20 @@ local dupeNames = {
 local morphInputValue = ""
 local classInputValue = ""
 local auraInputValue = ""
+
+MainTab:Button({
+    Title = "Dupe All (New Update)",
+    Icon = "atom",
+    Callback = function()
+        for _, name in ipairs(dupeNames) do
+            event:FireServer("SetMorphBuy", name, 0)
+            event:FireServer("SetClassBuy", name, 0)
+            event:FireServer("SetAuraBuy", name, 0)
+            wait(0.05)
+        end
+        print("[DYHUB] All Morphs, Classes and Auras unlocked!")
+    end,
+})
 
 MainTab:Input({
     Title = "Dupe Morph",
@@ -143,20 +159,6 @@ MainTab:Button({
     end,
 })
 
-MainTab:Button({
-    Title = "Unlock All",
-    Icon = "atom",
-    Callback = function()
-        for _, name in ipairs(dupeNames) do
-            event:FireServer("SetMorphBuy", name, 0)
-            event:FireServer("SetClassBuy", name, 0)
-            event:FireServer("SetAuraBuy", name, 0)
-            wait(0.05)
-        end
-        print("[DYHUB] All Morphs, Classes and Auras unlocked!")
-    end,
-})
-
 -- Gamepass Tab
 local selectedGamepass = "All"
 GamepassTab:Dropdown({
@@ -228,7 +230,7 @@ CashTab:Button({
             local args = {
                 [1] = "Wins",
                 [2] = input,
-                [3] = "SABER"
+                [3] = "DYHUB"
             }
             ReplicatedStorage:WaitForChild("CodeEvent"):FireServer(unpack(args))
             print("[DYHUB] Dupe Cash:", input)
@@ -261,7 +263,7 @@ CashTab:Button({
 })
 
 CashTab:Button({
-    Title = "Infinite Dupe Spin (0 Cash)",
+    Title = "Infinite Dupe Spin",
     Icon = "rotate-ccw",
     Callback = function()
         local totalAmount = 999999
@@ -483,37 +485,8 @@ PlayerTab:Toggle({
 })
 
 -- Misc Tab
-
-local noclipEnabled = false
 local antiAfkEnabled = false
 local antiAdminEnabled = false
-
-MiscTab:Toggle({
-    Title = "Noclip",
-    Value = false,
-    Callback = function(state)
-        noclipEnabled = state
-        if noclipEnabled then
-            RunService.Stepped:Connect(function()
-                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("BasePart") then
-                    for _, part in ipairs(LocalPlayer.Character:GetChildren()) do
-                        if part:IsA("BasePart") then
-                            part.CanCollide = false
-                        end
-                    end
-                end
-            end)
-        else
-            if LocalPlayer.Character then
-                for _, part in ipairs(LocalPlayer.Character:GetChildren()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = true
-                    end
-                end
-            end
-        end
-    end,
-})
 
 MiscTab:Toggle({
     Title = "Anti AFK",
@@ -545,9 +518,7 @@ MiscTab:Toggle({
     end,
 })
 
--- Teleport Tab example with buttons (hardcoded locations)
-local TeleportTab = Window:Tab({ Title = "Teleport", Icon = "map-pin" })
-
+-- teleport 
 local teleportLocations = {
     {Name = "Spawn", CFrame = CFrame.new(0, 10, 0)},
     {Name = "Market", CFrame = CFrame.new(100, 10, 100)},
