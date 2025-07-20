@@ -12,7 +12,7 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 local Confirmed = false
 
 WindUI:Popup({
-    Title = "DYHUB Loaded! - Anime Rails",
+    Title = "DYHUB Loaded! - Anime Rails V2",
     Icon = "star",
     IconThemed = true,
     Content = "DYHUB'S TEAM | Join our (dsc.gg/dyhub)",
@@ -25,7 +25,7 @@ WindUI:Popup({
 repeat task.wait() until Confirmed
 
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB - Anime Rails",
+    Title = "DYHUB - Anime Rails V2",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
@@ -36,14 +36,16 @@ local Window = WindUI:CreateWindow({
 
 local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
 local CashTab = Window:Tab({ Title = "Cash", Icon = "circle-dollar-sign" })
-local EquipTab = Window:Tab({ Title = "Equip", Icon = "book-check" })
+--local EquipTab = Window:Tab({ Title = "Equip", Icon = "book-check" })
+local GamepassTab = Window:Tab({ Title = "Gamepass", Icon = "cookie" })
 local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
 local MiscTab = Window:Tab({ Title = "Misc", Icon = "cog" })
 local ConfigTab = Window:Tab({ Title = "Config", Icon = "file-cog" })
 
 -- ======= Main =======
-local cashInputValue = ""
-local cashInputValue2 = ""
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local event = ReplicatedStorage:WaitForChild("Events"):WaitForChild("ChangeValue")
+
 local dupeNames = {
   "Infinity", "Solar", "Crimson", "DarkArcher", "PurpleAssasin", "WolfBoss", "Merchant", "SickCurse", "Tank",
   "CrimsonMaster", "Lightning", "SunBreather", "KnightBoss", "Materials", "Baryon", "HeinEra", "Sukuna",
@@ -58,79 +60,166 @@ local dupeNames = {
   "Hakai", "PridfulWarrior", "EarthWarrior", "GreatApe"
 }
 
+-- เก็บค่าของแต่ละ Input แยกกัน
+local morphInputValue = ""
+local classInputValue = ""
+local auraInputValue = ""
+
+-- Morph Input
 MainTab:Input({
-    Title = "Dupe Morph",
-    Placeholder = "Use the name from Npc Morph",
-    Callback = function(text)
-        cashinputvalue = text
-    end,
+    Title = "Dupe Morph",
+    Placeholder = "Use the name from Npc Morph",
+    Callback = function(text)
+        morphInputValue = text
+    end,
 })
 
 MainTab:Button({
-    Title = "Unlock Morph",
-    Icon = "crown",
-    Callback = function()
-           for _, name in ipairs(dupeNames) do
-        event:FireServer("SetMorphBuy", name, 0
-        else
-            print("[DYHUB] Invalid Morph:", cashInputValue)
-        end
-    end,
+    Title = "Unlock Morph",
+    Icon = "crown",
+    Callback = function()
+        local found = false
+        for _, name in ipairs(dupeNames) do
+            if name:lower() == morphInputValue:lower() then
+                event:FireServer("SetMorphBuy", name, 0)
+                print("[DYHUB] Morph unlocked:", name)
+                found = true
+                break
+            end
+        end
+        if not found then
+            print("[DYHUB] Invalid Morph:", morphInputValue)
+        end
+    end,
 })
 
+-- Class Input
 MainTab:Input({
-    Title = "Dupe Class",
-    Placeholder = "Use the name from Npc Morph",
-    Callback = function(text)
-        cashinputvalue = text
-    end,
+    Title = "Dupe Class",
+    Placeholder = "Use the name from Npc Class",
+    Callback = function(text)
+        classInputValue = text
+    end,
 })
 
 MainTab:Button({
-    Title = "Unlock Class",
-    Icon = "swords",
-    Callback = function()
-           for _, name in ipairs(dupeNames) do
-        event:FireServer("SetClassBuy", name, 0
-        else
-            print("[DYHUB] Invalid Class:", cashInputValue)
-        end
-    end,
+    Title = "Unlock Class",
+    Icon = "swords",
+    Callback = function()
+        local found = false
+        for _, name in ipairs(dupeNames) do
+            if name:lower() == classInputValue:lower() then
+                event:FireServer("SetClassBuy", name, 0)
+                print("[DYHUB] Class unlocked:", name)
+                found = true
+                break
+            end
+        end
+        if not found then
+            print("[DYHUB] Invalid Class:", classInputValue)
+        end
+    end,
 })
 
+-- Aura Input
 MainTab:Input({
-    Title = "Dupe Aura",
-    Placeholder = "Use the name from Npc Morph",
-    Callback = function(text)
-        cashinputvalue = text
-    end,
+    Title = "Dupe Aura",
+    Placeholder = "Use the name from Npc Aura",
+    Callback = function(text)
+        auraInputValue = text
+    end,
 })
 
 MainTab:Button({
-    Title = "Unlock Aura",
-    Icon = "flame",
+    Title = "Unlock Aura",
+    Icon = "flame",
+    Callback = function()
+        local found = false
+        for _, name in ipairs(dupeNames) do
+            if name:lower() == auraInputValue:lower() then
+                event:FireServer("SetAuraBuy", name, 0)
+                print("[DYHUB] Aura unlocked:", name)
+                found = true
+                break
+            end
+        end
+        if not found then
+            print("[DYHUB] Invalid Aura:", auraInputValue)
+        end
+    end,
+})
+
+-- Unlock All (Morph + Class + Aura)
+MainTab:Button({
+    Title = "Unlock All",
+    Icon = "atom",
+    Callback = function()
+        for _, name in ipairs(dupeNames) do
+            event:FireServer("SetMorphBuy", name, 0)
+            event:FireServer("SetClassBuy", name, 0)
+            event:FireServer("SetAuraBuy", name, 0)
+            wait(0.05)
+        end
+        print("[DYHUB] All Morphs, Classes and Auras unlocked!")
+    end,
+})
+
+-- ======= Gamepass =======
+local selectedGamepass = "All" -- ค่าเริ่มต้น
+
+GamepassTab:Dropdown({
+    Title = "Select Gamepass",
+    Values = {"All", "DoubleCash", "AlrBoughtSkipSpin", "SecClass", "Emote", "CriticalHit", "SkipSpin"},
+    Multi = false,
+    Callback = function(selected)
+        selectedGamepass = selected -- เก็บตัวเลือกไว้ในตัวแปร
+        print("[DYHUB] Selected Gamepass:", selectedGamepass)
+    end,
+})
+
+GamepassTab:Button({
+    Title = "Enter Unlock",
+    Icon = "check",
     Callback = function()
-           for _, name in ipairs(dupeNames) do
-        event:FireServer("SetAuraBuy", name, 0
-        else
-            print("[DYHUB] Invalid Aura:", cashInputValue)
+        local player = game:GetService("Players").LocalPlayer
+        local data = player:FindFirstChild("data")
+        if not data then
+            warn("[DYHUB] Data not found!")
+            return
         end
-    end,
-})
 
-MainTab:Button({
-    Title = "Unlock All",
-    Icon = "atom",
-    Callback = function()
-           for _, name in ipairs(dupeNames) do
-        event:FireServer("SetMorphBuy", name, 0 -- Morph Can buy all Class/Aura
+        if selectedGamepass == "All" then
+            local gamepasses = {"DoubleCash", "AlrBoughtSkipSpin", "SecClass", "Emote", "CriticalHit", "SkipSpin"}
+            for _, gpName in ipairs(gamepasses) do
+                local gp = data:FindFirstChild(gpName)
+                if gp then
+                    gp.Value = true
+                    print("[DYHUB] Unlocked Gamepass:", gpName)
+                end
+            end
         else
-            print("[DYHUB] Invalid Morph:", cashInputValue)
+            local gp = data:FindFirstChild(selectedGamepass)
+            if gp then
+                gp.Value = true
+                print("[DYHUB] Unlocked Gamepass:", selectedGamepass)
+            else
+                warn("[DYHUB] Gamepass not found:", selectedGamepass)
+            end
+        end
+
+        -- แสดง Emotes GUI ถ้าเลือก Emote หรือ All
+        if selectedGamepass == "Emote" or selectedGamepass == "All" then
+            local emotes = player:FindFirstChild("PlayerGui"):FindFirstChild("HUD")
+            if emotes and emotes:FindFirstChild("Emotes") then
+                emotes.Emotes.Visible = true
+            end
         end
     end,
 })
 
 -- ======= Cash =======
+local cashInputValue = ""
+
 CashTab:Input({
     Title = "Enter Dupe Cash Amount",
     Placeholder = "100 ~ 10000",
@@ -205,195 +294,171 @@ CashTab:Button({
 })
 
 -- ======= Player Tab =======
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
 local espEnabled = false
+local espUpdateConnection
 local espOptions = {
-    ShowName = false,
-    ShowHealth = false,
-    ShowDistance = false,
-    HighlightColor = Color3.fromRGB(0, 255, 0),
-    Rainbow = false
+    ShowName = false,
+    ShowHealth = false,
+    ShowDistance = false,
+    ShowMorph = false,
+    ShowClass = false,
+    ShowAura = false,
+    HighlightColor = Color3.fromRGB(0, 255, 0),
+    Rainbow = false
 }
-local espHighlights = {}
-local espBillboards = {}
 
-local function getRainbowColor(tick)
-    local frequency = 0.5
-    local r = math.sin(frequency * tick + 0) * 0.5 + 0.5
-    local g = math.sin(frequency * tick + 2) * 0.5 + 0.5
-    local b = math.sin(frequency * tick + 4) * 0.5 + 0.5
-    return Color3.new(r, g, b)
-end
-
-local function createBillboard(player)
-    if espBillboards[player] then return end
-    if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
-
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name = "DYHUB_Billboard"
-    billboard.Adornee = player.Character.HumanoidRootPart
-    billboard.Size = UDim2.new(0, 150, 0, 50)
-    billboard.StudsOffset = Vector3.new(0, 3, 0)
-    billboard.AlwaysOnTop = true
-
-    local textLabel = Instance.new("TextLabel")
-    textLabel.Name = "TextLabel"
-    textLabel.Size = UDim2.new(1, 0, 1, 0)
-    textLabel.BackgroundTransparency = 1
-    textLabel.TextColor3 = espOptions.HighlightColor
-    textLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
-    textLabel.TextStrokeTransparency = 0
-    textLabel.Font = Enum.Font.SourceSansBold
-    textLabel.TextSize = 14
-    textLabel.Parent = billboard
-
-    billboard.Parent = player.Character or workspace
-    espBillboards[player] = billboard
-end
-
-local function updateBillboard(player)
-    if not espBillboards[player] then return end
-    local billboard = espBillboards[player]
-    local label = billboard:FindFirstChild("TextLabel")
-    if not label then return end
-    local nameStr = espOptions.ShowName and player.Name or ""
-    local healthStr = ""
-    if espOptions.ShowHealth and player.Character then
-        local hum = player.Character:FindFirstChildOfClass("Humanoid")
-        if hum then healthStr = string.format("HP:%.0f", hum.Health) end
-    end
-    local distStr = ""
-    if espOptions.ShowDistance and player.Character and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        local dist = (LocalPlayer.Character.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
-        distStr = string.format("Dist:%.1f", dist)
-    end
-    label.Text = nameStr .. healthStr .. distStr
-end
-
-local function removeBillboard(player)
-    if espBillboards[player] then
-        espBillboards[player]:Destroy()
-        espBillboards[player] = nil
-    end
-end
-
-local rainbowTick = 0
+-- 💡 อัปเดต ESP Text บนหัวตัวละคร
 local function updateESP()
-    rainbowTick = rainbowTick + task.wait()
+    for _, target in ipairs(Players:GetPlayers()) do
+        if target ~= LocalPlayer and target.Character and target.Character:FindFirstChild("Head") then
+            local head = target.Character.Head
+            local gui = head:FindFirstChild("DYESP") or Instance.new("BillboardGui", head)
+            gui.Name = "DYESP"
+            gui.Size = UDim2.new(0, 200, 0, 100)
+            gui.StudsOffset = Vector3.new(0, 2.5, 0)
+            gui.AlwaysOnTop = true
 
-    for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer then
-            if not espHighlights[p] then
-                local highlight = Instance.new("Highlight")
-                highlight.Name = "DYHUB_ESP"
-                highlight.Adornee = p.Character
-                highlight.OutlineColor = Color3.new(0, 0, 0)
-                highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-                highlight.Parent = workspace
-                espHighlights[p] = highlight
-            else
-                if espHighlights[p].Adornee ~= p.Character then
-                    espHighlights[p].Adornee = p.Character
-                end
-            end
+            -- ลบ Text เดิม
+            for _, child in ipairs(gui:GetChildren()) do
+                if child:IsA("TextLabel") then
+                    child:Destroy()
+                end
+            end
 
-            if espOptions.Rainbow then
-                local color = getRainbowColor(rainbowTick * 5)
-                espOptions.HighlightColor = color
-                espHighlights[p].FillColor = color
-            else
-                espHighlights[p].FillColor = espOptions.HighlightColor
-            end
+            local function addLine(text, yOffset)
+                local label = Instance.new("TextLabel", gui)
+                label.Size = UDim2.new(1, 0, 0, 20)
+                label.Position = UDim2.new(0, 0, 0, yOffset)
+                label.BackgroundTransparency = 1
+                label.TextColor3 = espOptions.Rainbow and Color3.fromHSV((tick() % 5) / 5, 1, 1) or espOptions.HighlightColor
+                label.TextStrokeTransparency = 0
+                label.TextScaled = true
+                label.Font = Enum.Font.SourceSansBold
+                label.Text = text
+            end
 
-            createBillboard(p)
-            updateBillboard(p)
-        end
-    end
+            local data = target:FindFirstChild("data")
+            local y = 0
+
+            if espOptions.ShowName then
+                addLine(target.Name, y)
+                y += 20
+            end
+
+            if espOptions.ShowHealth and target.Character:FindFirstChild("Humanoid") then
+                addLine("HP: "..math.floor(target.Character.Humanoid.Health), y)
+                y += 20
+            end
+
+            if espOptions.ShowDistance and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and target.Character:FindFirstChild("HumanoidRootPart") then
+                local dist = (LocalPlayer.Character.HumanoidRootPart.Position - target.Character.HumanoidRootPart.Position).Magnitude
+                addLine("Dist: "..math.floor(dist), y)
+                y += 20
+            end
+
+            if espOptions.ShowMorph and data and data:FindFirstChild("CurrMorph") then
+                addLine("Morph: "..data.CurrMorph.Value, y)
+                y += 20
+            end
+
+            if espOptions.ShowClass and data and data:FindFirstChild("CurrClass") then
+                addLine("Class: "..data.CurrClass.Value, y)
+                y += 20
+            end
+
+            if espOptions.ShowAura and data and data:FindFirstChild("CurrAura") then
+                addLine("Aura: "..data.CurrAura.Value, y)
+                y += 20
+            end
+        end
+    end
 end
 
+-- ❌ ลบ ESP ทั้งหมด
 local function clearESP()
-    for _, h in pairs(espHighlights) do if h then h:Destroy() end end
-    espHighlights = {}
-    for p,_ in pairs(espBillboards) do removeBillboard(p) end
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player.Character and player.Character:FindFirstChild("Head") then
+            local gui = player.Character.Head:FindFirstChild("DYESP")
+            if gui then
+                gui:Destroy()
+            end
+        end
+    end
 end
 
+-- 🔁 ฟังก์ชันเปิด/ปิด ESP
+function toggleESP(state)
+    espEnabled = state
+    if espEnabled then
+        updateESP()
+        espUpdateConnection = RunService.Heartbeat:Connect(updateESP)
+    else
+        clearESP()
+        if espUpdateConnection then
+            espUpdateConnection:Disconnect()
+            espUpdateConnection = nil
+        end
+    end
+end
+
+-- 🔔 เชื่อมเมื่อมีผู้เล่นใหม่
 Players.PlayerAdded:Connect(function(player)
-    if espEnabled then
-        task.defer(function()
-            player.CharacterAdded:Wait()
-            updateESP()
-        end)
-    end
+    if espEnabled then
+        task.defer(function()
+            player.CharacterAdded:Wait()
+            updateESP()
+        end)
+    end
 end)
 
-local espUpdateConnection
+----------------------------------------------------
+-- 🧩 WindUI GUI: ปุ่ม ESP
+----------------------------------------------------
+PlayerTab:Toggle({
+    Title = "Enable ESP",
+    Value = false,
+    Callback = function(state)
+        toggleESP(state)
+    end,
+})
 
 PlayerTab:Dropdown({
-    Title = "ESP Color",
-    Default = "Green",
-    Options = {
-        "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "White", "Black", "Rainbow"
-    },
-    Callback = function(colorName)
-        espOptions.Rainbow = false
-        local colors = {
-            Red = Color3.fromRGB(255, 0, 0),
-            Green = Color3.fromRGB(0, 255, 0),
-            Blue = Color3.fromRGB(0, 0, 255),
-            Yellow = Color3.fromRGB(255, 255, 0),
-            Purple = Color3.fromRGB(128, 0, 128),
-            Cyan = Color3.fromRGB(0, 255, 255),
-            White = Color3.fromRGB(255, 255, 255),
-            Black = Color3.fromRGB(0, 0, 0),
-        }
-        if colorName == "Rainbow" then
-            espOptions.Rainbow = true
-        else
-            espOptions.HighlightColor = colors[colorName] or Color3.fromRGB(0, 255, 0)
-        end
-    end,
+    Title = "ESP Color",
+    Default = "Green",
+    Options = {
+        "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "White", "Black", "Rainbow"
+    },
+    Callback = function(colorName)
+        espOptions.Rainbow = false
+        local colors = {
+            Red = Color3.fromRGB(255, 0, 0),
+            Green = Color3.fromRGB(0, 255, 0),
+            Blue = Color3.fromRGB(0, 0, 255),
+            Yellow = Color3.fromRGB(255, 255, 0),
+            Purple = Color3.fromRGB(128, 0, 128),
+            Cyan = Color3.fromRGB(0, 255, 255),
+            White = Color3.fromRGB(255, 255, 255),
+            Black = Color3.fromRGB(0, 0, 0),
+        }
+
+        if colorName == "Rainbow" then
+            espOptions.Rainbow = true
+        else
+            espOptions.HighlightColor = colors[colorName] or Color3.fromRGB(0, 255, 0)
+        end
+    end,
 })
 
-PlayerTab:Toggle({
-    Title = "Enable ESP",
-    Value = false,
-    Callback = function(state)
-        espEnabled = state
-        if espEnabled then
-            updateESP()
-            espUpdateConnection = RunService.Heartbeat:Connect(updateESP)
-        else
-            clearESP()
-            if espUpdateConnection then
-                espUpdateConnection:Disconnect()
-                espUpdateConnection = nil
-            end
-        end
-    end,
-})
-
-PlayerTab:Toggle({
-    Title = "Show Name",
-    Value = false,
-    Callback = function(state)
-        espOptions.ShowName = state
-    end,
-})
-
-PlayerTab:Toggle({
-    Title = "Show Health",
-    Value = false,
-    Callback = function(state)
-        espOptions.ShowHealth = state
-    end,
-})
-
-PlayerTab:Toggle({
-    Title = "Show Distance",
-    Value = false,
-    Callback = function(state)
-        espOptions.ShowDistance = state
-    end,
-})
+PlayerTab:Toggle({ Title = "Show Name", Value = false, Callback = function(state) espOptions.ShowName = state end })
+PlayerTab:Toggle({ Title = "Show Health", Value = false, Callback = function(state) espOptions.ShowHealth = state end })
+PlayerTab:Toggle({ Title = "Show Distance", Value = false, Callback = function(state) espOptions.ShowDistance = state end })
+PlayerTab:Toggle({ Title = "Show Morph", Value = false, Callback = function(state) espOptions.ShowMorph = state end })
+PlayerTab:Toggle({ Title = "Show Class", Value = false, Callback = function(state) espOptions.ShowClass = state end })
+PlayerTab:Toggle({ Title = "Show Aura", Value = false, Callback = function(state) espOptions.ShowAura = state end })
 
 local playerNameInput = ""
 PlayerTab:Input({
@@ -567,19 +632,6 @@ MiscTab:Toggle({
     Callback = function(state)
         antiAdmin = state
         print("[DYHUB] Anti Admin " .. (state and "Enabled" or "Disabled"))
-    end,
-})
-
-MiscTab:Toggle({
-    Title = "Multi Equip Tools (All)",
-    Value = false,
-    Callback = function(state)
-        if state then
-            for _, tool in ipairs(LocalPlayer.Backpack:GetChildren()) do
-                tool.Parent = LocalPlayer.Character
-            end
-            print("[DYHUB] Multi equipped all tools")
-        end
     end,
 })
 
