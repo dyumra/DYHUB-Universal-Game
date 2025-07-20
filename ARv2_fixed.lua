@@ -161,7 +161,7 @@ MainTab:Button({
 local selectedGamepass = "All"
 GamepassTab:Dropdown({
     Title = "Select Gamepass",
-    Values = { "All", "DoubleCash", "AlrBoughtSkipSpin", "SecClass", "Emotes", "CriticalHit", "SkipSpin" },
+    Values = { "All", "DoubleCash", "AlrBoughtSkipSpin", "SecClass", "Emote", "CriticalHit", "SkipSpin" },
     Multi = false,
     Callback = function(selected)
         selectedGamepass = selected
@@ -181,7 +181,7 @@ GamepassTab:Button({
         end
 
         if selectedGamepass == "All" then
-            local gamepasses = { "DoubleCash", "AlrBoughtSkipSpin", "SecClass", "Emotes", "CriticalHit", "SkipSpin" }
+            local gamepasses = { "DoubleCash", "AlrBoughtSkipSpin", "SecClass", "Emote", "CriticalHit", "SkipSpin" }
             for _, gpName in ipairs(gamepasses) do
                 local gp = data:FindFirstChild(gpName)
                 if gp then
@@ -264,7 +264,7 @@ CashTab:Button({
     Title = "Infinite Dupe Spin",
     Icon = "rotate-ccw",
     Callback = function()
-        local totalAmount = 999999
+        local totalAmount = 9999
         local perFire = 1
         local times = math.floor(totalAmount / perFire)
         task.spawn(function()
@@ -277,7 +277,7 @@ CashTab:Button({
                 ReplicatedStorage:WaitForChild("CodeEvent"):FireServer(unpack(args))
                 task.wait(0.05)
             end
-            print("[DYHUB] Completed Infinite Dupe Spin")
+            print("[DYHUB] Completed Infinite Dupe Spin +10 Spin")
         end)
     end,
 })
@@ -330,7 +330,7 @@ local function updateESP()
                 label.Parent = gui
             end
 
-            local data = target:FindFirstChild("data")
+            local data = target:FindFirstChild("Data")
             local y = 0
 
             if espOptions.ShowName then
