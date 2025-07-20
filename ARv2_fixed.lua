@@ -353,17 +353,17 @@ local function updateESP()
 
             if data and data:FindFirstChild("CurrMorph") and data.CurrMorph:IsA("StringValue") then
                 addLine("Morph: " .. data.CurrMorph.Value, y)
-                y += 20
+                y += 10
             end
 
             if data and data:FindFirstChild("CurrClass") and data.CurrClass:IsA("StringValue") then
                 addLine("Class: " .. data.CurrClass.Value, y)
-                y += 20
+                y += 10
             end
 
             if data and data:FindFirstChild("CurrAura") and data.CurrAura:IsA("StringValue") then
                 addLine("Aura: " .. data.CurrAura.Value, y)
-                y += 20
+                y += 10
             end
         end
     end
