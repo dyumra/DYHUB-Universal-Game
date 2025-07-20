@@ -572,24 +572,27 @@ ConfigTab:Dropdown({
     Title = "Select Config to Load",
     Values = { "DYHUBCONFIG-OLD", "DYHUBCONFIG-BEST", "DYHUBConfig-1" },
     Multi = false,
-    Callback = function(selected)
-        print("[DYHUB] Selected Loaded Config:", selected)
+    Callback = function()
+        print("[DYHUB] Selected Loaded Config")
     end,
 })
 
 ConfigTab:Button({
-    Title = "Save Config",
-    Callback = function()
-        print("[DYHUB] Config saved!")
-    end,
+    Title = "Save Config",
+    Icon = "swords",
+    Callback = function()
+        print("[DYHUB] Config saved!")
+    end,
 })
 
 ConfigTab:Button({
-    Title = "Load Config",
-    Callback = function()
-        print("[DYHUB] Config loaded!")
-    end,
+    Title = "Load Config",
+    Icon = "swords",
+    Callback = function()
+        print("[DYHUB] Config loaded!")
+    end,
 })
+
 
 -- Main loop
 RunService.Heartbeat:Connect(function()
