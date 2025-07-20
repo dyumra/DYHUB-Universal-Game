@@ -518,11 +518,11 @@ MiscTab:Toggle({
     Title = "Anti AFK",
     Value = false,
     Callback = function(state)
-        antiAfkEnabled = state
-        if antiAfkEnabled then
+        antiAfkEnabled2 = state
+        if antiAfkEnabled2 then
             VirtualUser:Button2Down(Vector2.new(0,0))
             task.spawn(function()
-                while antiAfkEnabled do
+                while antiAfkEnabled2 do
                     VirtualUser:Button2Down(Vector2.new(0,0))
                     task.wait(60)
                 end
@@ -535,11 +535,11 @@ MiscTab:Toggle({
     Title = "Anti Admin",
     Value = false,
     Callback = function(state)
-        antiAfkEnabled2 = state
-        if antiAfkEnabled2 then
+        antiAfkEnabled3 = state
+        if antiAfkEnabled3 then
             VirtualUser:Button2Down(Vector2.new(0,0))
             task.spawn(function()
-                while antiAfkEnabled2 do
+                while antiAfkEnabled3 do
                     VirtualUser:Button2Down(Vector2.new(0,0))
                     task.wait(60)
                 end
