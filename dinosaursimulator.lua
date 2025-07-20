@@ -6,6 +6,7 @@ local RunService = game:GetService("RunService")
 local TeleportService = game:GetService("TeleportService")
 local VirtualUser = game:GetService("VirtualUser")
 local Workspace = game:GetService("Workspace")
+local TweenService = game:GetService("TweenService")
 
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
@@ -51,158 +52,119 @@ local WaterTiles = Workspace:WaitForChild("GameMap"):WaitForChild("Water"):GetCh
 
 -- Smooth Move Function
 local dnaToggle = false
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local Workspace = game:GetService("Workspace")
 
-local LocalPlayer = Players.LocalPlayer
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-
-LocalPlayer.CharacterAdded:Connect(function(char)
-    Character = char
-end)
-
--- ฟังก์ชันเคลื่อนที่แบบ smooth ขึ้นไปจุดสูง
-local function smoothMoveTo(position, duration)
-    if Character and Character:FindFirstChild("HumanoidRootPart") then
-        local hrp = Character.HumanoidRootPart
-        local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear)
-        local goal = { Position = position }
-        local tween = TweenService:Create(hrp, tweenInfo, goal)
-        tween:Play()
-        tween.Completed:Wait() -- รอให้ tween เสร็จก่อน
-    end
-end
-
--- ฟังก์ชันสร้างพื้นหญ้าใต้ตัวละคร (ลบพื้นเก่าก่อน)
-local function createGrassPlatform()
-    if Workspace:FindFirstChild("DNA FARM | GrassPlatform") then
-        Workspace["DNA FARM | GrassPlatform"]:Destroy()
-    end
-    if Character and Character:FindFirstChild("HumanoidRootPart") then
-        local part = Instance.new("Part")
-        part.Name = "DNA FARM | GrassPlatform"
-        part.Anchored = true
-        part.CanCollide = true
-        part.Size = Vector3.new(100, 1, 100)
-        part.Position = Character.HumanoidRootPart.Position - Vector3.new(0, 3, 0)
-        part.Material = Enum.Material.Grass
-        part.Color = Color3.fromRGB(106, 190, 48)
-        part.Parent = Workspace
-    end
-end
-
-MainTab:Toggle({
-    Title = "Auto Farm (DNA)",
-    Value = false,
-    Callback = function(state)
-        dnaToggle = state
-        if state then
-            task.spawn(function()
-                while dnaToggle do
-                    if Character and Character:FindFirstChild("HumanoidRootPart") then
-                        local pos = Character.HumanoidRootPart.Position
-                        local targetY = pos.Y + 600
-                        smoothMoveTo(Vector3.new(pos.X, targetY, pos.Z), 3) -- เคลื่อนที่ขึ้น
-                        task.wait(0.5) -- รอหน่อยเพื่อให้ตัวละครขึ้นถึงจุดจริง
-                        createGrassPlatform() -- ค่อยสร้างพื้น
-                    else
-                        Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-                    end
-                    task.wait(5)
-                end
-            end)
-        end
-    end,
-})
-
--- Main Tab: Auto Farm Amber
-local amberToggle = false
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local Workspace = game:GetService("Workspace")
-
-local LocalPlayer = Players.LocalPlayer
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-
-LocalPlayer.CharacterAdded:Connect(function(char)
-    Character = char
-end)
-
--- เคลื่อนที่แบบ Tween
-local function smoothMoveTo(position, duration)
-    if Character and Character:FindFirstChild("HumanoidRootPart") then
-        local hrp = Character.HumanoidRootPart
-        local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear)
-        local goal = { Position = position }
-        local tween = TweenService:Create(hrp, tweenInfo, goal)
-        tween:Play()
-        tween.Completed:Wait()
-    end
-end
-
-MainTab:Toggle({
-    Title = "Auto Farm (Amber)",
-    Value = false,
-    Callback = function(state)
-        amberToggle = state
-        if state then
-            task.spawn(function()
-                local doneAmbers = {} -- เก็บ Amber ที่เคยกดไปแล้ว
-                while amberToggle do
-                    if not (Character and Character:FindFirstChild("HumanoidRootPart")) then
-                        Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-                    end
-
-                    local rootPos = Character.HumanoidRootPart.Position
-                    for _, amber in ipairs(Workspace:WaitForChild("MiscellaneousStorage"):GetChildren()) do
-                        if amber.Name == "Amber" and amber:IsA("Model") and not doneAmbers[amber] then
-                            local prompt = amber:FindFirstChildOfClass("ProximityPrompt")
-                            local part = amber:FindFirstChildWhichIsA("BasePart")
-                            if prompt and part then
-                                local distance = (part.Position - rootPos).Magnitude
-                                if distance <= prompt.MaxActivationDistance then
-                                    fireproximityprompt(prompt)
-                                    doneAmbers[amber] = true
-                                    task.wait(0.3)
-                                else
-                                    smoothMoveTo(part.Position + Vector3.new(0, 3, 0), 1.5)
-                                    task.wait(0.3)
-                                    fireproximityprompt(prompt)
-                                    doneAmbers[amber] = true
-                                end
-                            end
-                        end
-                    end
-                    task.wait(0.5)
-                end
-            end)
-        end
-    end,
-})
-
-
--- Main Tab: Amber ESP
--- Services
-local Players      = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local Workspace    = game:GetService("Workspace")
-local RunService   = game:GetService("RunService")
-
--- State
-local LocalPlayer  = Players.LocalPlayer
-local Character    = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local espToggle    = false
-local espObjects   = {}    -- [amberModel] = { highlight, billboard, textLabel }
-
--- Update Character ref on respawn
 LocalPlayer.CharacterAdded:Connect(function(char)
     Character = char
 end)
 
--- สร้าง ESP ให้ Amber ตัวเดียว
+local function smoothMoveTo(position, duration)
+    if Character and Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = Character.HumanoidRootPart
+        local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear)
+        local goal = { Position = position }
+        local tween = TweenService:Create(hrp, tweenInfo, goal)
+        tween:Play()
+        tween.Completed:Wait()
+    end
+end
+
+local function createGrassPlatform()
+    if Workspace:FindFirstChild("DNA FARM | GrassPlatform") then
+        Workspace["DNA FARM | GrassPlatform"]:Destroy()
+    end
+    if Character and Character:FindFirstChild("HumanoidRootPart") then
+        local part = Instance.new("Part")
+        part.Name = "DNA FARM | GrassPlatform"
+        part.Anchored = true
+        part.CanCollide = true
+        part.Size = Vector3.new(100, 1, 100)
+        part.Position = Character.HumanoidRootPart.Position - Vector3.new(0, 3, 0)
+        part.Material = Enum.Material.Grass
+        part.Color = Color3.fromRGB(106, 190, 48)
+        part.Parent = Workspace
+    end
+end
+
+MainTab:Toggle({
+    Title = "Auto Farm (DNA)",
+    Value = false,
+    Callback = function(state)
+        dnaToggle = state
+        if state then
+            task.spawn(function()
+                while dnaToggle do
+                    if Character and Character:FindFirstChild("HumanoidRootPart") then
+                        local pos = Character.HumanoidRootPart.Position
+                        local targetY = pos.Y + 600
+                        smoothMoveTo(Vector3.new(pos.X, targetY, pos.Z), 3)
+                        task.wait(0.5)
+                        createGrassPlatform()
+                    else
+                        Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                    end
+                    task.wait(5)
+                end
+            end)
+        end
+    end,
+})
+
+-- Auto Farm Amber
+local amberToggle = false
+
+LocalPlayer.CharacterAdded:Connect(function(char)
+    Character = char
+end)
+
+MainTab:Toggle({
+    Title = "Auto Farm (Amber)",
+    Value = false,
+    Callback = function(state)
+        amberToggle = state
+        if state then
+            task.spawn(function()
+                local doneAmbers = {}
+                while amberToggle do
+                    if not (Character and Character:FindFirstChild("HumanoidRootPart")) then
+                        Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                    end
+
+                    local rootPos = Character.HumanoidRootPart.Position
+                    for _, amber in ipairs(Workspace:WaitForChild("MiscellaneousStorage"):GetChildren()) do
+                        if amber.Name == "Amber" and amber:IsA("Model") and not doneAmbers[amber] then
+                            local prompt = amber:FindFirstChildOfClass("ProximityPrompt")
+                            local part = amber:FindFirstChildWhichIsA("BasePart")
+                            if prompt and part then
+                                local distance = (part.Position - rootPos).Magnitude
+                                if distance <= prompt.MaxActivationDistance then
+                                    fireproximityprompt(prompt)
+                                    doneAmbers[amber] = true
+                                    task.wait(0.3)
+                                else
+                                    smoothMoveTo(part.Position + Vector3.new(0, 3, 0), 1.5)
+                                    task.wait(0.3)
+                                    fireproximityprompt(prompt)
+                                    doneAmbers[amber] = true
+                                end
+                            end
+                        end
+                    end
+                    task.wait(0.5)
+                end
+            end)
+        end
+    end,
+})
+
+-- Amber ESP
+local espToggle = false
+local espObjects = {}
+
+LocalPlayer.CharacterAdded:Connect(function(char)
+    Character = char
+end)
+
 local function createEspAmber(amber)
-    -- ตั้ง PrimaryPart ถ้ายังไม่มี
     if not amber.PrimaryPart then
         local root = amber:FindFirstChild("HumanoidRootPart") or amber:FindFirstChildWhichIsA("BasePart")
         if root then
@@ -212,50 +174,45 @@ local function createEspAmber(amber)
         end
     end
 
-    -- Highlight
     local highlight = Instance.new("Highlight")
-    highlight.Name         = "AmberESP"
-    highlight.Adornee      = amber
-    highlight.FillColor    = Color3.fromRGB(255, 150, 0)
+    highlight.Name = "AmberESP"
+    highlight.Adornee = amber
+    highlight.FillColor = Color3.fromRGB(255, 150, 0)
     highlight.OutlineColor = Color3.new(1, 1, 1)
-    highlight.Parent       = amber
+    highlight.Parent = amber
 
-    -- BillboardGui + TextLabel
     local billboard = Instance.new("BillboardGui")
-    billboard.Name        = "AmberLabel"
-    billboard.Adornee     = amber.PrimaryPart
-    billboard.Size        = UDim2.new(0, 100, 0, 50)
+    billboard.Name = "AmberLabel"
+    billboard.Adornee = amber.PrimaryPart
+    billboard.Size = UDim2.new(0, 100, 0, 50)
     billboard.StudsOffset = Vector3.new(0, 3, 0)
     billboard.AlwaysOnTop = true
-    billboard.Parent      = amber
+    billboard.Parent = amber
 
     local text = Instance.new("TextLabel")
-    text.Size               = UDim2.new(1, 0, 1, 0)
+    text.Size = UDim2.new(1, 0, 1, 0)
     text.BackgroundTransparency = 1
-    text.TextScaled         = true
-    text.Font               = Enum.Font.SourceSansBold
-    text.TextColor3         = Color3.fromRGB(255, 150, 0)
-    text.Parent             = billboard
+    text.TextScaled = true
+    text.Font = Enum.Font.SourceSansBold
+    text.TextColor3 = Color3.fromRGB(255, 150, 0)
+    text.Parent = billboard
 
     espObjects[amber] = {
-        highlight   = highlight,
-        billboard   = billboard,
-        textLabel   = text,
+        highlight = highlight,
+        billboard = billboard,
+        textLabel = text,
     }
 end
 
--- ลบ ESP ของ Amber ตัวเดียว
 local function removeEspAmber(amber)
     local objs = espObjects[amber]
     if objs then
-        if objs.highlight   then objs.highlight:Destroy() end
-        if objs.billboard   then objs.billboard:Destroy() end
-        -- textLabel ตายพร้อม BillboardGui
+        if objs.highlight then objs.highlight:Destroy() end
+        if objs.billboard then objs.billboard:Destroy() end
         espObjects[amber] = nil
     end
 end
 
--- Auto-add เมื่อ Amber เกิดใหม่
 Workspace.MiscellaneousStorage.ChildAdded:Connect(function(child)
     if espToggle and child:IsA("Model") and child.Name == "Amber" then
         task.delay(0.1, function()
@@ -266,7 +223,6 @@ Workspace.MiscellaneousStorage.ChildAdded:Connect(function(child)
     end
 end)
 
--- Main Toggle
 MainTab:Toggle({
     Title = "ESP (Amber)",
     Value = false,
@@ -274,25 +230,20 @@ MainTab:Toggle({
         espToggle = state
 
         if state then
-            -- 1) สร้าง ESP ให้ Amber ที่มีอยู่แล้ว
             for _, amber in ipairs(Workspace.MiscellaneousStorage:GetChildren()) do
                 if amber:IsA("Model") and amber.Name == "Amber" then
                     createEspAmber(amber)
                 end
             end
 
-            -- 2) Loop อัปเดตระยะ และ Clean up
             task.spawn(function()
                 while espToggle do
                     local root = Character and Character:FindFirstChild("HumanoidRootPart")
                     for amber, objs in pairs(espObjects) do
-                        -- ถ้า Amber หายไป ให้ลบ
                         if not amber.Parent then
                             removeEspAmber(amber)
                         elseif root then
-                            -- คำนวณระยะ
                             local dist = (amber.PrimaryPart.Position - root.Position).Magnitude
-                            -- อัปเดตข้อความ (2 บรรทัด: ชื่อ + ระยะ)
                             objs.textLabel.Text = string.format("Amber\n%.1f studs", dist)
                         end
                     end
@@ -300,7 +251,6 @@ MainTab:Toggle({
                 end
             end)
         else
-            -- เคลียร์ทั้งหมดเมื่อปิด ESP
             for amber in pairs(espObjects) do
                 removeEspAmber(amber)
             end
@@ -382,7 +332,6 @@ local function smoothTeleportTo(position, duration)
     smoothMoveTo(position, duration)
 end
 
--- Amber Dropdown setup
 local amberList = {}
 do
     local count = 0
@@ -428,7 +377,6 @@ TeleportTab:Button({
     end,
 })
 
--- Region Centers
 local regionCenters = {
     Lab1 = Workspace.RegionCenter:FindFirstChild("Lab1") and Workspace.RegionCenter.Lab1.Position or nil,
     Lab2 = Workspace.RegionCenter:FindFirstChild("Lab2") and Workspace.RegionCenter.Lab2.Position or nil,
@@ -467,7 +415,6 @@ TeleportTab:Button({
 
 local speedValue = 16
 local jumpPowerValue = 50
-local walkSpeedChanged = false
 
 PlayerTab:Slider({
     Title = "WalkSpeed",
@@ -495,225 +442,211 @@ PlayerTab:Slider({
     end,
 })
 
-PlayerTab:Button({
-    Title = "Reset Character",
-    Icon = "refresh",
-    Callback = function()
-        LocalPlayer.Character:BreakJoints()
+-- ESP Dinosaurs --
+
+local espDinoToggle = false
+local espDinoObjects = {}
+
+local function addLabel(text)
+    local label = Instance.new("TextLabel")
+    label.BackgroundTransparency = 1
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.TextStrokeTransparency = 0
+    label.Font = Enum.Font.SourceSansBold
+    label.TextSize = 14
+    label.Text = text
+    return label
+end
+
+local function createEspDino(dinoModel)
+    if not dinoModel.PrimaryPart then
+        local rootPart = dinoModel:FindFirstChild("HumanoidRootPart") or dinoModel:FindFirstChildWhichIsA("BasePart")
+        if rootPart then
+            dinoModel.PrimaryPart = rootPart
+        else
+            return
+        end
+    end
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "DinoESP"
+    billboard.Adornee = dinoModel.PrimaryPart
+    billboard.Size = UDim2.new(0, 150, 0, 60)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
+    billboard.AlwaysOnTop = true
+    billboard.Parent = dinoModel
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, 0, 1, 0)
+    frame.BackgroundTransparency = 0.5
+    frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    frame.BorderSizePixel = 0
+    frame.Parent = billboard
+
+    local nameLabel = addLabel("Name: Unknown")
+    nameLabel.Parent = frame
+
+    local hpLabel = addLabel("HP: ???")
+    hpLabel.Position = UDim2.new(0, 0, 0, 18)
+    hpLabel.Parent = frame
+
+    local typeLabel = addLabel("Type: ???")
+    typeLabel.Position = UDim2.new(0, 0, 0, 36)
+    typeLabel.Parent = frame
+
+    espDinoObjects[dinoModel] = {
+        billboard = billboard,
+        nameLabel = nameLabel,
+        hpLabel = hpLabel,
+        typeLabel = typeLabel,
+    }
+end
+
+local function removeEspDino(dinoModel)
+    local objs = espDinoObjects[dinoModel]
+    if objs then
+        if objs.billboard then objs.billboard:Destroy() end
+        espDinoObjects[dinoModel] = nil
+    end
+end
+
+MainTab:Toggle({
+    Title = "ESP (Dino)",
+    Value = false,
+    Callback = function(state)
+        espDinoToggle = state
+        if state then
+            for _, dino in ipairs(Workspace.Dinosaurs:GetChildren()) do
+                if dino:IsA("Model") and not espDinoObjects[dino] then
+                    createEspDino(dino)
+                end
+            end
+
+            task.spawn(function()
+                while espDinoToggle do
+                    local root = Character and Character:FindFirstChild("HumanoidRootPart")
+                    for dino, objs in pairs(espDinoObjects) do
+                        if not dino.Parent then
+                            removeEspDino(dino)
+                        elseif root and dino.PrimaryPart then
+                            local dist = (dino.PrimaryPart.Position - root.Position).Magnitude
+
+                            -- Name
+                            local dinoName = dino.Name or "Unknown"
+                            objs.nameLabel.Text = "Name: " .. tostring(dinoName)
+
+                            -- HP
+                            local humanoid = dino:FindFirstChildOfClass("Humanoid")
+                            if humanoid and humanoid.Health then
+                                objs.hpLabel.Text = "HP: " .. math.floor(humanoid.Health)
+                            else
+                                objs.hpLabel.Text = "HP: ???"
+                            end
+
+                            -- Type (MemoryCard/CurrentDino StringValue safe check)
+                            local memCard = dino:FindFirstChild("MemoryCard")
+                            if memCard then
+                                local currentDino = memCard:FindFirstChild("CurrentDino")
+                                if currentDino and currentDino:IsA("StringValue") and currentDino.Value ~= nil then
+                                    objs.typeLabel.Text = "Type: " .. tostring(currentDino.Value)
+                                else
+                                    objs.typeLabel.Text = "Type: Unknown"
+                                end
+                            else
+                                objs.typeLabel.Text = "Type: Unknown"
+                            end
+                        end
+                    end
+                    task.wait(0.1)
+                end
+            end)
+        else
+            for dino in pairs(espDinoObjects) do
+                removeEspDino(dino)
+            end
+        end
     end,
 })
 
 -- Misc Tab --
 
 local antiAfkEnabled = false
-local antiAdminEnabled = false
-local AntiCheat = true
-
-MiscTab:Toggle({
-    Title = "Bypass Anti-Cheat",
-    Value = true,
-    Callback = function(state)
-        AntiCheat = state
-        if state then
-            VirtualUser:Button2Down(Vector2.new(0,0))
-            task.spawn(function()
-                while AntiCheat do
-                    VirtualUser:Button2Down(Vector2.new(0,0))
-                    task.wait(10)
-                end
-            end)
-        end
-    end,
-})
-
 MiscTab:Toggle({
     Title = "Anti AFK",
     Value = false,
     Callback = function(state)
         antiAfkEnabled = state
         if state then
-            VirtualUser:Button2Down(Vector2.new(0,0))
             task.spawn(function()
                 while antiAfkEnabled do
                     VirtualUser:Button2Down(Vector2.new(0,0))
-                    task.wait(10)
+                    task.wait(20)
                 end
             end)
         end
     end,
 })
 
-MiscTab:Toggle({
-    Title = "Anti Admin",
-    Value = false,
-    Callback = function(state)
-        antiAdminEnabled = state
-        if state then
-            VirtualUser:Button2Down(Vector2.new(0,0))
-            task.spawn(function()
-                while antiAdminEnabled do
-                    VirtualUser:Button2Down(Vector2.new(0,0))
-                    task.wait(10)
-                end
-            end)
-        end
-    end,
-})
+-- Config Save/Load --
 
+local ConfigFileName = "DYHUB_DinoSim_Config.json"
 
--- ESP for Players (Name, HP, Distance, Dino Type)
-local espOptions = {
-    ShowName = true,
-    ShowHealth = true,
-    ShowDistance = true,
-    ShowDino = true,
-    HighlightColor = Color3.new(1, 1, 1),
-    Rainbow = false,
-}
-
-PlayerTab:Toggle({
-    Title = "ESP Show Name",
-    Value = espOptions.ShowName,
-    Callback = function(state) espOptions.ShowName = state end,
-})
-PlayerTab:Toggle({
-    Title = "ESP Show Health",
-    Value = espOptions.ShowHealth,
-    Callback = function(state) espOptions.ShowHealth = state end,
-})
-PlayerTab:Toggle({
-    Title = "ESP Show Distance",
-    Value = espOptions.ShowDistance,
-    Callback = function(state) espOptions.ShowDistance = state end,
-})
-PlayerTab:Toggle({
-    Title = "ESP Show Dino Type",
-    Value = espOptions.ShowDino,
-    Callback = function(state) espOptions.ShowDino = state end,
-})
-PlayerTab:Toggle({
-    Title = "ESP Rainbow Color",
-    Value = espOptions.Rainbow,
-    Callback = function(state) espOptions.Rainbow = state end,
-})
-
-local function createEspGui(target)
-    if not target.Character then return end
-    local head = target.Character:FindFirstChild("Head")
-    if not head then return end
-    local gui = head:FindFirstChild("DYESP")
-    if not gui then
-        gui = Instance.new("BillboardGui")
-        gui.Name = "DYESP"
-        gui.Size = UDim2.new(0, 200, 0, 100)
-        gui.StudsOffset = Vector3.new(0, 2.5, 0)
-        gui.AlwaysOnTop = true
-        gui.Parent = head
-    end
-    return gui
+local function saveConfig()
+    local config = {
+        AutoFarmDNA = dnaToggle,
+        AutoFarmAmber = amberToggle,
+        AutoEatHunger = autoHunger,
+        AutoEatWater = autoWater,
+        ESPAmber = espToggle,
+        ESPDino = espDinoToggle,
+        WalkSpeed = speedValue,
+        JumpPower = jumpPowerValue,
+        SelectedAmber = selectedAmber,
+        SelectedRegion = selectedRegion,
+    }
+    local json = game:GetService("HttpService"):JSONEncode(config)
+    writefile(ConfigFileName, json)
 end
 
-local function updateEspGui()
-    for _, target in pairs(Players:GetPlayers()) do
-        if target ~= LocalPlayer and target.Character and target.Character:FindFirstChild("Head") then
-            local gui = createEspGui(target)
-            if gui then
-                -- Clear old labels
-                for _, child in pairs(gui:GetChildren()) do
-                    if child:IsA("TextLabel") then
-                        child:Destroy()
-                    end
-                end
+local function loadConfig()
+    if isfile(ConfigFileName) then
+        local json = readfile(ConfigFileName)
+        local config = game:GetService("HttpService"):JSONDecode(json)
+        dnaToggle = config.AutoFarmDNA or false
+        amberToggle = config.AutoFarmAmber or false
+        autoHunger = config.AutoEatHunger or false
+        autoWater = config.AutoEatWater or false
+        espToggle = config.ESPAmber or false
+        espDinoToggle = config.ESPDino or false
+        speedValue = config.WalkSpeed or 16
+        jumpPowerValue = config.JumpPower or 50
+        selectedAmber = config.SelectedAmber
+        selectedRegion = config.SelectedRegion
 
-                local yOffset = 0
-                local function addLabel(text)
-                    local label = Instance.new("TextLabel")
-                    label.Size = UDim2.new(1, 0, 0, 20)
-                    label.Position = UDim2.new(0, 0, 0, yOffset)
-                    label.BackgroundTransparency = 1
-                    label.TextColor3 = espOptions.Rainbow and Color3.fromHSV((tick() % 5) / 5, 1, 1) or espOptions.HighlightColor
-                    label.TextStrokeTransparency = 0
-                    label.TextScaled = true
-                    label.Font = Enum.Font.SourceSansBold
-                    label.Text = text
-                    label.Parent = gui
-                    yOffset += 20
-                end
-
-                if espOptions.ShowName then
-                    addLabel(target.Name)
-                end
-
-                if espOptions.ShowHealth then
-                    local humanoid = target.Character:FindFirstChild("Humanoid")
-                    if humanoid then
-                        addLabel("HP: " .. math.floor(humanoid.Health))
-                    end
-                end
-
-                if espOptions.ShowDistance then
-                    local hrpLocal = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                    local hrpTarget = target.Character:FindFirstChild("HumanoidRootPart")
-                    if hrpLocal and hrpTarget then
-                        local dist = (hrpLocal.Position - hrpTarget.Position).Magnitude
-                        addLabel("Dist: " .. math.floor(dist))
-                    end
-                end
-
-                if espOptions.ShowDino then
-                    local memCard = target:FindFirstChild("MemoryCard")
-                    if memCard then
-                        local currentDino = memCard:FindFirstChild("CurrentDino")
-                        if currentDino and currentDino:IsA("StringValue") then
-                            addLabel("Type: " .. currentDino.Value)
-                        else
-                            addLabel("Type: Unknown")
-                        end
-                    else
-                        addLabel("Type: Unknown")
-                    end
-                end
-            end
-        else
-            -- Remove ESP Gui if player doesn't have character or head
-            if target.Character and target.Character:FindFirstChild("Head") then
-                local head = target.Character.Head
-                local gui = head:FindFirstChild("DYESP")
-                if gui then
-                    gui:Destroy()
-                end
-            end
-        end
+        -- Apply values to toggles/sliders
+        MainTab:GetToggle("Auto Farm (DNA)").Value = dnaToggle
+        MainTab:GetToggle("Auto Farm (Amber)").Value = amberToggle
+        MainTab:GetToggle("Auto Eat Hunger").Value = autoHunger
+        MainTab:GetToggle("Auto Eat Water").Value = autoWater
+        MainTab:GetToggle("ESP (Amber)").Value = espToggle
+        MainTab:GetToggle("ESP (Dino)").Value = espDinoToggle
+        PlayerTab:GetSlider("WalkSpeed").Value = speedValue
+        PlayerTab:GetSlider("JumpPower").Value = jumpPowerValue
     end
 end
 
-RunService.RenderStepped:Connect(function()
-    updateEspGui()
-end)
+loadConfig()
 
--- Config Tab: Save & Load Config (example - needs implementation)
 ConfigTab:Button({
     Title = "Save Config",
-    Icon = "save",
-    Callback = function()
-        -- Implement config save here
-        print("Save Config clicked")
-    end,
+    Icon = "content-save",
+    Callback = saveConfig,
 })
+
 ConfigTab:Button({
     Title = "Load Config",
-    Icon = "load",
-    Callback = function()
-        -- Implement config load here
-        print("Load Config clicked")
-    end,
+    Icon = "folder-open",
+    Callback = loadConfig,
 })
 
--- Notify Player Loaded
-game.StarterGui:SetCore("SendNotification", {
-    Title = "DYHUB",
-    Text = "Dinosaur Simulator Script Loaded!",
-    Duration = 5,
-})
-
-print("DYHUB | Dinosaur Simulator Script Loaded!")
+return Window
