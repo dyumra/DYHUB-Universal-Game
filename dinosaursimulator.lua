@@ -70,6 +70,19 @@ LocalPlayer.CharacterAdded:Connect(function(char)
     Character = char
 end)
 
+-- ฟังก์ชัน smooth move
+local function smoothMoveTo(targetPos, duration)
+    local startPos = Character.HumanoidRootPart.Position
+    local startTime = tick()
+    local endTime = startTime + duration
+    while tick() < endTime do
+        local alpha = (tick() - startTime) / duration
+        local newPos = startPos:Lerp(targetPos, alpha)
+        Character:PivotTo(CFrame.new(newPos))
+        RunService.RenderStepped:Wait()
+    end
+end
+
 MainTab:Toggle({
     Title = "Auto Farm (DNA)",
     Value = false,
@@ -81,36 +94,28 @@ MainTab:Toggle({
                     if Character and Character:FindFirstChild("HumanoidRootPart") then
                         local pos = Character.HumanoidRootPart.Position
                         local targetY = pos.Y + 1500
-                        -- เคลื่อนที่ไปตำแหน่งข้างบนก่อน
+                        -- เคลื่อนที่ขึ้นไปตำแหน่งสูง
                         smoothMoveTo(Vector3.new(pos.X, targetY, pos.Z), 5)
-                        -- พอถึงแล้วค่อยสร้างพื้นหญ้าใต้ตัวละคร
-                        createGrassPlatform()
+
+                        -- ขยับตัวแบบสุ่มเล็กๆ เพื่อหลบ anti cheat
+                        for i = 1, 10 do
+                            if not dnaToggle then break end
+                            local offset = Vector3.new((math.random() - 0.5) * 2, 0, (math.random() - 0.5) * 2) -- ±1 stud
+                            local hrp = Character.HumanoidRootPart
+                            if hrp then
+                                hrp.CFrame = hrp.CFrame * CFrame.new(offset)
+                            end
+                            task.wait(1)
+                        end
                     else
                         Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
                     end
-                    task.wait(5)
+                    task.wait(1)
                 end
             end)
         end
     end,
 })
-
--- ฟังก์ชันสร้างพื้นหญ้าใต้ตัวละคร (ลบพื้นเก่าก่อน)
-local function createGrassPlatform()
-    if Workspace:FindFirstChild("DNA FARM | GrassPlatform") then
-        Workspace["DNA FARM | GrassPlatform"]:Destroy()
-    end
-    if Character and Character:FindFirstChild("HumanoidRootPart") then
-        local part = Instance.new("Part", Workspace)
-        part.Name = "DNA FARM | GrassPlatform"
-        part.Anchored = true
-        part.CanCollide = true
-        part.Size = Vector3.new(100, 1, 100)
-        part.Position = Character.HumanoidRootPart.Position - Vector3.new(0, 3, 0)
-        part.Material = Enum.Material.Grass
-        part.Color = Color3.fromRGB(106, 190, 48)
-    end
-end
 
 -- Main Tab: Auto Farm Amber
 local amberToggle = false
