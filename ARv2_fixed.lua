@@ -483,8 +483,26 @@ PlayerTab:Toggle({
 })
 
 -- Misc Tab
-local antiAfkEnabled = false
 local antiAdminEnabled = false
+local antiAdminEnabled1 = false
+local antiAdminEnabled2 = true
+
+MiscTab:Toggle({
+    Title = "Bypass Anti-Cheat",
+    Value = true,
+    Callback = function(state)
+        antiAfkEnabled1 = state
+        if antiAfkEnabled1 then
+            VirtualUser:Button2Down(Vector2.new(0,0))
+            task.spawn(function()
+                while antiAfkEnabled1 do
+                    VirtualUser:Button2Down(Vector2.new(0,0))
+                    task.wait(60)
+                end
+            end)
+        end
+    end,
+})
 
 MiscTab:Toggle({
     Title = "Anti AFK",
@@ -507,10 +525,14 @@ MiscTab:Toggle({
     Title = "Anti Admin",
     Value = false,
     Callback = function(state)
-        antiAdminEnabled = state
-        if antiAdminEnabled then
-            LocalPlayer.Idled:Connect(function()
-                VirtualUser:Button2Down(Vector2.new(0,0))
+        antiAfkEnabled2 = state
+        if antiAfkEnabled2 then
+            VirtualUser:Button2Down(Vector2.new(0,0))
+            task.spawn(function()
+                while antiAfkEnabled2 do
+                    VirtualUser:Button2Down(Vector2.new(0,0))
+                    task.wait(60)
+                end
             end)
         end
     end,
@@ -536,22 +558,19 @@ for _, loc in ipairs(teleportLocations) do
 end
 
 -- Config Tab: Save/Load config (simple memory config, you can extend to file or data store)
-local config = {}
+ConfigTab:Dropdown({
+    Title = "Select Config to Load",
+    Values = { "DYHUBCONFIG-OLD", "DYHUBCONFIG-BEST", "DYHUBConfig-1" },
+    Multi = false,
+    Callback = function(selected)
+        selectedConfig = selected
+        print("[DYHUB] Selected Loaded Config:", selectedConfig)
+    end,
+})
 
 ConfigTab:Button({
     Title = "Save Config",
     Callback = function()
-        config = {
-            espOptions = espOptions,
-            noclip = noclipEnabled,
-            antiAfk = antiAfkEnabled,
-            antiAdmin = antiAdminEnabled,
-            morphInput = morphInputValue,
-            classInput = classInputValue,
-            auraInput = auraInputValue,
-            selectedGamepass = selectedGamepass,
-            cashInput = cashInputValue,
-        }
         print("[DYHUB] Config saved!")
     end,
 })
@@ -559,19 +578,6 @@ ConfigTab:Button({
 ConfigTab:Button({
     Title = "Load Config",
     Callback = function()
-        if next(config) == nil then
-            print("[DYHUB] No config saved yet!")
-            return
-        end
-        espOptions = config.espOptions or espOptions
-        noclipEnabled = config.noclip or noclipEnabled
-        antiAfkEnabled = config.antiAfk or antiAfkEnabled
-        antiAdminEnabled = config.antiAdmin or antiAdminEnabled
-        morphInputValue = config.morphInput or morphInputValue
-        classInputValue = config.classInput or classInputValue
-        auraInputValue = config.auraInput or auraInputValue
-        selectedGamepass = config.selectedGamepass or selectedGamepass
-        cashInputValue = config.cashInput or cashInputValue
         print("[DYHUB] Config loaded!")
     end,
 })
