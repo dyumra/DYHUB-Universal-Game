@@ -70,8 +70,6 @@ MainTab:Button({
     Callback = function()
         for _, name in ipairs(dupeNames) do
             event:FireServer("SetMorphBuy", name, 0)
-            event:FireServer("SetClassBuy", name, 0)
-            event:FireServer("SetAuraBuy", name, 0)
             wait(0.05)
         end
         print("[DYHUB] All Morphs, Classes and Auras unlocked!")
@@ -120,7 +118,7 @@ MainTab:Button({
         local found = false
         for _, name in ipairs(dupeNames) do
             if name:lower() == classInputValue:lower() then
-                event:FireServer("SetClassBuy", name, 0)
+                event:FireServer("SetMorphBuy", name, 0)
                 print("[DYHUB] Class unlocked:", name)
                 found = true
                 break
@@ -147,7 +145,7 @@ MainTab:Button({
         local found = false
         for _, name in ipairs(dupeNames) do
             if name:lower() == auraInputValue:lower() then
-                event:FireServer("SetAuraBuy", name, 0)
+                event:FireServer("SetMorphBuy", name, 0)
                 print("[DYHUB] Aura unlocked:", name)
                 found = true
                 break
