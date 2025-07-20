@@ -57,7 +57,7 @@ local dupeNames = {
     "LavaAura", "Gear5Class", "MochiClass", "Rinnegan", "Kurama", "Sasuke", "Pain", "EightGates", "Sed",
     "Cid", "Gojo", "Assasin", "AntKing", "BlueFlames", "BloodKnight", "BloodMorph", "BloodMorphS",
     "AntMorph", "AntMorphS", "AssasinMorph", "LightAura", "AlterAura", "Alter", "Saber", "SaberMorph", "AlterMorph",
-    "Hakai", "PridfulWarrior", "EarthWarrior", "GreatApe", "BeerusMorph", "VegetaMorph"
+    "Hakai", "PridfulWarrior", "EarthWarrior", "GreatApe", "BeerusMorph", "VegetaMorph", "BeerusBoss", "Mahoraga"
 }
 
 local morphInputValue = ""
@@ -349,8 +349,8 @@ local function updateESP()
                 y += 20
             end
 
-            if data and data:FindFirstChild("CurrMorph") and data.CurrMorph:IsA("StringValue") then
-                addLine("Morph: " .. data.CurrMorph.Value, y)
+            if data and data:FindFirstChild("CurrChar") and data.CurrMorph:IsA("StringValue") then
+                addLine("Morph: " .. data.CurrChar.Value, y)
                 y += 10
             end
 
@@ -359,8 +359,18 @@ local function updateESP()
                 y += 10
             end
 
-            if data and data:FindFirstChild("CurrAura") and data.CurrAura:IsA("StringValue") then
-                addLine("Aura: " .. data.CurrAura.Value, y)
+            if data and data:FindFirstChild("CurrClassSec") and data.CurrClassSec:IsA("StringValue") then
+                addLine("Class Stol-2: " .. data.CurrClassSec.Value, y)
+                y += 10
+            end
+
+            if data and data:FindFirstChild("CurrTitle") and data.CurrTitle:IsA("StringValue") then
+                addLine("Title: " .. data.CurrTitle.Value, y)
+                y += 10
+            end
+
+            if data and data:FindFirstChild("CurrSelect") and data.CurrSelect:IsA("StringValue") then
+                addLine("Aura: " .. data.CurrSelect.Value, y)
                 y += 10
             end
         end
@@ -559,27 +569,26 @@ end
 
 -- Config Tab: Save/Load config (simple memory config, you can extend to file or data store)
 ConfigTab:Dropdown({
-    Title = "Select Config to Load",
-    Values = { "DYHUBCONFIG-OLD", "DYHUBCONFIG-BEST", "DYHUBConfig-1" },
-    Multi = false,
-    Callback = function(selected)
-        selectedConfig = selected
-        print("[DYHUB] Selected Loaded Config:", selectedConfig)
-    end,
+    Title = "Select Config to Load",
+    Values = { "DYHUBCONFIG-OLD", "DYHUBCONFIG-BEST", "DYHUBConfig-1" },
+    Multi = false,
+    Callback = function(selected)
+        print("[DYHUB] Selected Loaded Config:", selected)
+    end,
 })
 
 ConfigTab:Button({
-    Title = "Save Config",
-    Callback = function()
-        print("[DYHUB] Config saved!")
-    end,
+    Title = "Save Config",
+    Callback = function()
+        print("[DYHUB] Config saved!")
+    end,
 })
 
 ConfigTab:Button({
-    Title = "Load Config",
-    Callback = function()
-        print("[DYHUB] Config loaded!")
-    end,
+    Title = "Load Config",
+    Callback = function()
+        print("[DYHUB] Config loaded!")
+    end,
 })
 
 -- Main loop
