@@ -36,8 +36,10 @@ local Window = WindUI:CreateWindow({
 -- Tabs
 local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
 local CashTab = Window:Tab({ Title = "Cash", Icon = "circle-dollar-sign" })
--- local TeleportTab = Window:Tab({ Title = "Teleport", Icon = "map-pin" })
--- local EquipTab = Window:Tab({ Title = "Equip", Icon = "star" })
+local TeleportTab = Window:Tab({ Title = "Teleport", Icon = "map-pin" })
+local PartyTab = Window:Tab({ Title = "Auto Join", Icon = "handshake" })
+local SpinTab = Window:Tab({ Title = "Spin", Icon = "ferris-wheel" })
+local GUI = Window:Tab({ Title = "Equip", Icon = "flame" })
 local GamepassTab = Window:Tab({ Title = "Gamepass", Icon = "cookie" })
 local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
 local MiscTab = Window:Tab({ Title = "Misc", Icon = "cog" })
@@ -493,66 +495,296 @@ PlayerTab:Toggle({
 })
 
 -- Misc Tab
-local antiAdminEnabled = false
-local antiAdminEnabled1 = false
-local antiAdminEnabled2 = true
+local Players = game:GetService("Players")
+local TeleportService = game:GetService("TeleportService")
+local VirtualUser = game:GetService("VirtualUser")
+local LocalPlayer = Players.LocalPlayer
 
+-- ตัวแปรสำหรับการเปิด/ปิดระบบ
+local antiAfkEnabled = false
+local antiAdminEnabled = false
+local fakeBypassEnabled = false
+
+-- 🌌 Bypass Anti-Cheat (ปลอม)
 MiscTab:Toggle({
-    Title = "Bypass Anti-Cheat",
+    Title = "Bypass Anti-Cheat (by rhy)",
     Value = true,
     Callback = function(state)
-        antiAfkEnabled1 = state
-        if antiAfkEnabled1 then
-            VirtualUser:Button2Down(Vector2.new(0,0))
-            task.spawn(function()
-                while antiAfkEnabled1 do
-                    VirtualUser:Button2Down(Vector2.new(0,0))
-                    task.wait(60)
-                end
-            end)
+        fakeBypassEnabled = state
+        if fakeBypassEnabled then
+            print("[DYHUB] Bypassing Anti-Cheat... ✅(DYHUB'S TEAM)")
+            Notify({
+                Title = "Bypass Enabled",
+                Description = "Finished: bypass enabled. Just for looks 😉",
+                Duration = 3
+            })
+        else
+            print("[DYHUB] Bypass Anti-Cheat disabled.")
         end
     end,
 })
 
+-- 💤 Anti AFK
 MiscTab:Toggle({
     Title = "Anti AFK",
     Value = false,
     Callback = function(state)
-        antiAfkEnabled2 = state
-        if antiAfkEnabled2 then
-            VirtualUser:Button2Down(Vector2.new(0,0))
+        antiAfkEnabled = state
+        if antiAfkEnabled then
             task.spawn(function()
-                while antiAfkEnabled2 do
+                while antiAfkEnabled do
                     VirtualUser:Button2Down(Vector2.new(0,0))
                     task.wait(60)
+                end
+            end)
+            print("[DYHUB] Anti AFK enabled")
+        else
+            print("[DYHUB] Anti AFK disabled")
+        end
+    end,
+})
+
+-- 👮 Anti Admin (Auto ServerHop ถ้าเจอ Roblox123)
+MiscTab:Toggle({
+    Title = "Anti Admin (Auto Hop)",
+    Value = false,
+    Callback = function(state)
+        antiAdminEnabled = state
+        if antiAdminEnabled then
+            print("[DYHUB] Anti Admin enabled - Scanning players... (every: 15 sec)")
+            task.spawn(function()
+                while antiAdminEnabled do
+                    for _, player in ipairs(Players:GetPlayers()) do
+                        if player.Name == "Roblox123" then
+                            print("[DYHUB] Detected admin: Roblox123, hopping server...")
+                            Notify({
+                                Title = "Anti Admin",
+                                Description = "Detected admin 'Roblox123'. Hopping server...",
+                                Duration = 3
+                            })
+                            task.wait(1)
+                            TeleportService:Teleport(game.PlaceId, LocalPlayer)
+                            return
+                        end
+                    end
+                    task.wait(15) -- ตรวจสอบทุก 5 วินาที
+                end
+            end)
+        else
+            print("[DYHUB] Anti Admin disabled")
+        end
+    end,
+})
+
+local indexList = {
+    "Infinity", "Solar", "Crimson", "DarkArcher", "PurpleAssasin", "WolfBoss", "Merchant", "SickCurse", "Tank",
+    "CrimsonMaster", "Lightning", "SunBreather", "KnightBoss", "Materials", "Baryon", "HeinEra", "Sukuna",
+    "Naruto", "SSGoku", "Tanjiro", "Goku", "Shadows", "Kaiser", "Puzzle", "Knight", "Shake", "Hapticss",
+    "MuzanAura", "MoonAura", "YellowAura", "MuzanClass", "KokoshiboClass", "CompassClass", "MuzanMorph",
+    "MoonMorph", "HakiPower", "InfinityVoid", "Dismantle", "Restriction", "BlackFlashAura", "ShadowAura",
+    "CriticalHit", "Gear4", "BlackFlash", "Toji", "InfinityEyes", "MasteredReflex", "LavaMasterClass",
+    "RedeemedWolfBoss", "RedeemedKnight", "LuffyMorph", "DoughMorph", "GravityAura", "DoughAura",
+    "LavaAura", "Gear5Class", "MochiClass", "Rinnegan", "Kurama", "Sasuke", "Pain", "EightGates", "Sed",
+    "Cid", "Gojo", "Assasin", "AntKing", "BlueFlames", "BloodKnight", "BloodMorph", "BloodMorphS",
+    "AntMorph", "AntMorphS", "AssasinMorph", "LightAura", "AlterAura", "Alter", "Saber", "SaberMorph", "AlterMorph",
+    "Hakai", "PridfulWarrior", "EarthWarrior", "GreatApe", "BeerusMorph", "VegetaMorph", "BeerusBoss", "Mahoraga"
+}
+
+-- Dropdown สำหรับดู index ทั้งหมด
+GUI:Dropdown({
+    Title = "Index List",
+    Values = indexList,
+    Multi = false,
+    Callback = function(value)
+        print("[DYHUB] Selected index:", value)
+    end,
+})
+
+-- ฟังก์ชันกลางสำหรับปุ่ม FireServer
+local function fireChangeValue(key, value)
+    local args = { key, value }
+    game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("ChangeValue"):FireServer(unpack(args))
+    print("[DYHUB] Sent", key, value)
+end
+
+-- Input: SetCurrChar
+GUI:Input({
+    Title = "Set Character",
+    Placeholder = "Type character name...",
+    Callback = function(value)
+        fireChangeValue("SetCurrChar", value)
+    end,
+})
+
+-- Input: SetCurClass
+GUI:Input({
+    Title = "Set Class (Slot 1)",
+    Placeholder = "Type class name...",
+    Callback = function(value)
+        fireChangeValue("SetCurClass", value)
+    end,
+})
+
+-- Input: SetCurClass2 (Gamepass Slot 2)
+GUI:Input({
+    Title = "Set Class (Slot 2)",
+    Placeholder = "Type class2 name...",
+    Callback = function(value)
+        fireChangeValue("SetCurClass2", value)
+    end,
+})
+
+-- Input: SetCurAura
+GUI:Input({
+    Title = "Set Aura",
+    Placeholder = "Type aura name...",
+    Callback = function(value)
+        fireChangeValue("SetCurAura", value)
+    end,
+})
+
+local allowFriend = false
+local nightmareMode = false
+local maxPlayers = 1
+
+-- Dropdown สำหรับ Allow Friend และ Nightmare
+PartyTab:Dropdown({
+    Title = "Allow Friend Join",
+    Values = { "Enabled", "Disabled" },
+    Default = "Disabled",
+    Multi = false,
+    Callback = function(selected)
+        allowFriend = (selected == "Enabled")
+    end,
+})
+
+PartyTab:Dropdown({
+    Title = "Nightmare Mode",
+    Values = { "Enabled", "Disabled" },
+    Default = "Disabled",
+    Multi = false,
+    Callback = function(selected)
+        nightmareMode = (selected == "Enabled")
+    end,
+})
+
+-- Slider เลือกจำนวนผู้เล่น (1-8)
+PartyTab:Slider({
+    Title = "Max Players",
+    Min = 1,
+    Max = 8,
+    Default = 1,
+    Callback = function(value)
+        maxPlayers = value
+    end,
+})
+
+-- ปุ่ม Auto Join
+PartyTab:Button({
+    Title = "Auto Join",
+    Callback = function()
+        local args = {
+            allowFriend,  -- Allow Friend Join
+            maxPlayers,   -- Max players
+            nightmareMode -- Nightmare Mode
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("ApplyTP"):FireServer(unpack(args))
+        print("[DYHUB] Auto Join sent:", allowFriend, maxPlayers, nightmareMode)
+    end
+})
+
+local GotValue = "N/A"
+local CurrSpin = 0
+
+-- ป้ายบอกจำนวน spin และสิ่งที่ได้
+local SpinInfoLabel = SpinTab:Label("Spin: Loading...\nGot: " .. GotValue)
+
+-- ดึงค่าจาก player.Data.Spin และ CurrClass.Value
+local function updateSpinLabel()
+    local player = game:GetService("Players").LocalPlayer
+    local dataFolder = player:FindFirstChild("Data")
+    local currClass = player:FindFirstChild("CurrClass")
+    
+    if dataFolder and dataFolder:FindFirstChild("Spin") then
+        CurrSpin = dataFolder.Spin.Value
+    end
+
+    if currClass then
+        GotValue = currClass.Value
+    end
+
+    SpinInfoLabel:Set("Spin: " .. CurrSpin .. "\nGot: " .. GotValue)
+end
+
+-- ติดตามการเปลี่ยนแปลงของค่าแบบอัตโนมัติ
+task.spawn(function()
+    while task.wait(0.5) do
+        updateSpinLabel()
+    end
+end)
+
+-- ปุ่มสุ่ม
+local autoSpinEnabled = false
+
+SpinTab:Toggle({
+    Title = "Auto Spin",
+    Value = false,
+    Callback = function(state)
+        autoSpinEnabled = state
+        if autoSpinEnabled then
+            task.spawn(function()
+                while autoSpinEnabled do
+                    local args = { "Spin" }
+                    game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("ChangeValue"):FireServer(unpack(args))
+                    task.wait(1) -- ปรับความถี่การสุ่มได้ (หน่วย: วินาที)
                 end
             end)
         end
     end,
 })
 
-MiscTab:Toggle({
-    Title = "Anti Admin",
-    Value = false,
-    Callback = function(state)
-        antiAfkEnabled3 = state
-        if antiAfkEnabled3 then
-            VirtualUser:Button2Down(Vector2.new(0,0))
-            task.spawn(function()
-                while antiAfkEnabled3 do
-                    VirtualUser:Button2Down(Vector2.new(0,0))
-                    task.wait(60)
-                end
-            end)
-        end
+SpinTab:Button({
+    Title = "Spin Class",
+    Callback = function()
+        local args = { "Spin" }
+        game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("ChangeValue"):FireServer(unpack(args))
+    end,
+})
+
+-- Input สำหรับสิ่งที่อยากได้
+local lockedClass = "None"
+SpinTab:Input({
+    Title = "Lock Class",
+    Default = "",
+    Placeholder = "Enter class name to lock...",
+    Callback = function(input)
+        lockedClass = input
+    end,
+})
+
+-- ปุ่ม Lock
+SpinTab:Button({
+    Title = "Set Locked Class",
+    Callback = function()
+        local args = {
+            "SetClass",
+            lockedClass,
+            true
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("ChangeValue"):FireServer(unpack(args))
     end,
 })
 
 -- teleport 
 local teleportLocations = {
-    {Name = "Spawn", CFrame = CFrame.new(0, 10, 0)},
-    {Name = "Market", CFrame = CFrame.new(100, 10, 100)},
-    {Name = "Boss Arena", CFrame = CFrame.new(200, 50, 200)},
+    {Name = "Aura Shop", CFrame = CFrame.new(-5.7536335, 188.169067, -131.537506, -0.10051205, 8.16659522e-08, 0.99493587, -3.84045897e-08, 1, -8.59613962e-08, -0.99493587, -4.68502606e-08, -0.10051205)},
+    {Name = "Class Shop", CFrame = CFrame.new(-3.96356249, 188.169052, -99.7206345, 0.217696652, 4.36522107e-08, 0.976016462, 1.9954145e-08, 1, -4.9175565e-08, -0.976016462, 3.0180928e-08, 0.217696652)},
+    {Name = "Morph Shop", CFrame = CFrame.new(8.6613245, 188.169067, -97.1435318, 0.779245794, -3.30689467e-08, -0.626718462, -1.24927118e-08, 1, -6.82983554e-08, 0.626718462, 6.10506206e-08, 0.779245794)},
+    {Name = "Spin", CFrame = CFrame.new(8.35407925, 188.169067, -132.966141, -0.510008216, -1.13285189e-07, -0.86016953, 1.64339864e-09, 1, -1.32675396e-07, 0.86016953, -6.90791424e-08, -0.510008216)},
+    {Name = "Title Shop", CFrame = CFrame.new(-14.3617506, 188.169052, -27.776825, -0.999740958, 5.87875304e-09, -0.0227609444, 5.73739145e-09, 1, 6.27602681e-09, 0.0227609444, 6.14381257e-09, -0.999740958)},
+    {Name = "Tutorial", CFrame = CFrame.new(1.71302092, 188.169052, -60.757412, -0.999253094, 9.66736309e-08, 0.0386431366, 9.36806828e-08, 1, -7.92618096e-08, -0.0386431366, -7.55824914e-08, -0.999253094)},
+    {Name = "AFK World", CFrame = CFrame.new(18.6007061, 188.169052, -24.452446, -0.940061092, -3.15264685e-08, 0.34100607, -2.33052724e-08, 1, 2.82050365e-08, -0.34100607, 1.85672189e-08, -0.940061092)},
+    {Name = "Battle Royale", CFrame = CFrame.new(0.462113261, 188.169067, -142.787186, 0.987219155, 5.76863819e-08, -0.159368694, -5.34411058e-08, 1, 3.09239034e-08, 0.159368694, -2.20118288e-08, 0.987219155)},
 }
 
 for _, loc in ipairs(teleportLocations) do
@@ -567,7 +799,19 @@ for _, loc in ipairs(teleportLocations) do
     })
 end
 
--- Config Tab: Save/Load config (simple memory config, you can extend to file or data store)
+
+-- Config Tab
+ConfigTab:Button({
+    Title = "Coming Soon",
+    Callback = function()
+        Notify({
+            Title = "Coming Soon!",
+            Description = "Config Settings feature is not yet available.",
+            Duration = 3, -- วินาที
+        })
+        print("[DYHUB] Config Settings, Coming Soon")
+    end,
+})
 
 -- Main loop
 RunService.Heartbeat:Connect(function()
