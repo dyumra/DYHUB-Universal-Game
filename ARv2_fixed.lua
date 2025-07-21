@@ -36,9 +36,9 @@ local Window = WindUI:CreateWindow({
 -- Tabs
 local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
 local CashTab = Window:Tab({ Title = "Cash", Icon = "circle-dollar-sign" })
---local TeleportTab = Window:Tab({ Title = "Teleport", Icon = "map-pin" })
+local TeleportTab = Window:Tab({ Title = "Teleport", Icon = "map-pin" })
 local PartyTab = Window:Tab({ Title = "Auto Join", Icon = "handshake" })
---local SpinTab = Window:Tab({ Title = "Spin", Icon = "ferris-wheel" })
+local SpinTab = Window:Tab({ Title = "Spin", Icon = "ferris-wheel" })
 local GUI = Window:Tab({ Title = "Equip", Icon = "flame" })
 local GamepassTab = Window:Tab({ Title = "Gamepass", Icon = "cookie" })
 local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
@@ -637,48 +637,45 @@ GUI:Input({
     end,
 })
 
-local allowFriend = false
-local nightmareMode = false
+-- auto join
+-- ตัวแปรเริ่มต้น
 local maxPlayers = 1
+local allowFriend = true
+local nightmareMode = false
 
--- Dropdown สำหรับ Allow Friend และ Nightmare
-PartyTab:Dropdown({
-    Title = "Allow Friend Join",
-    Values = { "Enabled", "Disabled" },
-    Default = "Disabled",
-    Multi = false,
-    Callback = function(selected)
-        allowFriend = (selected == "Enabled")
-    end,
-})
-
-PartyTab:Dropdown({
-    Title = "Nightmare Mode",
-    Values = { "Enabled", "Disabled" },
-    Default = "Disabled",
-    Multi = false,
-    Callback = function(selected)
-        nightmareMode = (selected == "Enabled")
-    end,
-})
-
--- Slider เลือกจำนวนผู้เล่น (1-8)
--- กำหนดค่าเริ่มต้น maxPlayers
-PartyTab:Textbox({
+-- Input สำหรับ Max Players
+PartyTab:Input({
     Title = "Max Players",
-    Default = tostring(maxPlayers),  -- ค่าเริ่มต้นเป็นสตริง
-    Placeholder = "Enter max players (1-8)",
-    Numeric = true,  -- กรองให้พิมพ์ได้แค่ตัวเลข
-    Callback = function(value)
-        -- แปลงเป็นตัวเลขและตรวจสอบขอบเขต
-        local num = tonumber(value)
+    Placeholder = "Enter 1 ~ 8",
+    Callback = function(text)
+        local num = tonumber(text)
         if num and num >= 1 and num <= 8 then
             maxPlayers = num
+            print("[DYHUB] Max Players set to:", maxPlayers)
         else
-            print("[DYHUB] Invalid max players input, must be 1-8")
-            -- ถ้าต้องการ ให้ reset กลับเป็นค่าเดิม
-            -- หรือแจ้งผู้ใช้ผ่าน UI
+            warn("[DYHUB] Invalid max players input, must be between 1 and 8")
+            -- หาก WindUI มี notify: WindUI:Notify("Invalid input", "Please enter a number from 1 to 8")
         end
+    end,
+})
+
+-- Toggle สำหรับ Allow Friend Join
+PartyTab:Toggle({
+    Title = "Allow Friend Join",
+    Default = true,
+    Callback = function(state)
+        allowFriend = state
+        print("[DYHUB] Allow Friend Join:", state)
+    end,
+})
+
+-- Toggle สำหรับ Nightmare Mode
+PartyTab:Toggle({
+    Title = "Nightmare Mode",
+    Default = false,
+    Callback = function(state)
+        nightmareMode = state
+        print("[DYHUB] Nightmare Mode:", state)
     end,
 })
 
@@ -687,17 +684,16 @@ PartyTab:Button({
     Title = "Auto Join",
     Callback = function()
         local args = {
-            allowFriend,  -- Allow Friend Join
-            maxPlayers,   -- Max players (ตอนนี้รับค่าจาก Input Box)
-            nightmareMode -- Nightmare Mode
+            allowFriend,
+            maxPlayers,
+            nightmareMode
         }
         game:GetService("ReplicatedStorage"):WaitForChild("ApplyTP"):FireServer(unpack(args))
         print("[DYHUB] Auto Join sent:", allowFriend, maxPlayers, nightmareMode)
-    end
+    end,
 })
 
 --- spin
-
 local GotValue = "N/A"
 local CurrSpin = 0
 
@@ -756,34 +752,7 @@ SpinTab:Button({
     end,
 })
 
--- Input สำหรับสิ่งที่อยากได้
-local lockedClass = "None"
-SpinTab:Input({
-    Title = "Lock Class",
-    Default = "",
-    Placeholder = "Enter class name to lock...",
-    Callback = function(input)
-        lockedClass = input
-    end,
-})
-
--- ปุ่ม Lock
-SpinTab:Button({
-    Title = "Set Locked Class",
-    Callback = function()
-        local args = {
-            "SetClass",
-            lockedClass,
-            true
-        }
-        game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("ChangeValue"):FireServer(unpack(args))
-    end,
-})
-
 -- teleport 
--- สมมติว่า Window และ TeleportTab สร้างไว้แล้ว เช่น
--- local TeleportTab = Window:AddTab({ Title = "Teleport", Icon = "🌍" })
-
 TeleportTab:Button({
     Title = "Teleport to Aura Shop",
     Callback = function()
@@ -818,7 +787,7 @@ TeleportTab:Button({
 })
 
 TeleportTab:Button({
-    Title = "Teleport to Spin",
+    Title = "Teleport to Npc Spin",
     Callback = function()
         local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
         if hrp then
