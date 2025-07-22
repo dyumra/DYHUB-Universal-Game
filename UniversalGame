@@ -1,0 +1,328 @@
+--[[
+    Dyhub Universal UI - Full Feature
+    Tabs: Main, Teleport, Utility, Debug
+--]]
+
+repeat task.wait() until game:IsLoaded()
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TeleportService = game:GetService("TeleportService")
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+local HumanoidRootPart = LocalPlayer.Character and LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+
+local TeleportLocations = {}
+local selectedTeleportName = nil
+local selectedPlayer = nil
+local flyEnabled = false
+local re = game:GetService("ReplicatedStorage")
+
+-- UI Loader (WindUI)
+local Library = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/library.lua"))()
+local Window = Library:Window({ Name = "DYHUB - UNIVERSAL" })
+
+----------------------------------
+-- 🧰 MAIN TAB -------------------
+----------------------------------
+local MainTab = Window:Tab({ Name = "Main" })
+
+-- No Delay ProximityPrompt
+MainTab:Toggle({
+    Title = "No Prompt Delay",
+    Default = false,
+    Callback = function(state)
+        getgenv().NoDelay = state
+        while NoDelay do
+            for _, v in pairs(game:GetDescendants()) do
+                if v:IsA("ProximityPrompt") then
+                    v.HoldDuration = 0
+                end
+            end
+            task.wait(1)
+        end
+    end
+})
+
+-- Infinite Jump
+MainTab:Toggle({
+    Title = "Infinite Jump",
+    Default = false,
+    Callback = function(state)
+        getgenv().InfiniteJump = state
+    end
+})
+UserInputService.JumpRequest:Connect(function()
+    if InfiniteJump and LocalPlayer.Character then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+    end
+end)
+
+-- Noclip (Toggle N)
+MainTab:Toggle({
+    Title = "Noclip (Press N)",
+    Default = false,
+    Callback = function(state)
+        getgenv().Noclip = state
+    end
+})
+UserInputService.InputBegan:Connect(function(key, gp)
+    if not gp and key.KeyCode == Enum.KeyCode.N and Noclip then
+        LocalPlayer.Character:FindFirstChild("Humanoid").PlatformStand = not LocalPlayer.Character:FindFirstChild("Humanoid").PlatformStand
+    end
+end)
+
+-- Anti-AFK
+MainTab:Toggle({
+    Title = "Anti-AFK",
+    Default = true,
+    Callback = function(state)
+        if state then
+            local vu = game:GetService("VirtualUser")
+            LocalPlayer.Idled:Connect(function()
+                vu:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+                task.wait(1)
+                vu:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+            end)
+        end
+    end
+})
+
+----------------------------------
+-- 📍 TELEPORT TAB --------------
+----------------------------------
+local TeleportTab = Window:Tab({ Name = "Teleport" })
+
+TeleportTab:Button({
+    Title = "Set Teleport",
+    Callback = function()
+        if HumanoidRootPart then
+            local name = "Set_" .. tostring(#TeleportLocations + 1)
+            TeleportLocations[name] = HumanoidRootPart.CFrame
+        end
+    end
+})
+
+TeleportTab:Dropdown({
+    Title = "Select Location",
+    Values = function()
+        local keys = {}
+        for k, _ in pairs(TeleportLocations) do table.insert(keys, k) end
+        return keys
+    end,
+    Callback = function(value)
+        selectedTeleportName = value
+    end
+})
+
+TeleportTab:Button({
+    Title = "Teleport to Set",
+    Callback = function()
+        if selectedTeleportName and TeleportLocations[selectedTeleportName] then
+            HumanoidRootPart.CFrame = TeleportLocations[selectedTeleportName]
+        end
+    end
+})
+
+TeleportTab:Dropdown({
+    Title = "Select Player",
+    Values = function()
+        local names = {}
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer then
+                table.insert(names, plr.Name)
+            end
+        end
+        return names
+    end,
+    Callback = function(value)
+        selectedPlayer = value
+    end
+})
+
+TeleportTab:Button({
+    Title = "Teleport to Player",
+    Callback = function()
+        if selectedPlayer then
+            local target = Players:FindFirstChild(selectedPlayer)
+            if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+                HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame
+            end
+        end
+    end
+})
+
+----------------------------------
+-- 🔧 UTILITY TAB ---------------
+----------------------------------
+local UtilityTab = Window:Tab({ Name = "Utility" })
+
+UtilityTab:Toggle({
+    Title = "Fly (Press F)",
+    Default = false,
+    Callback = function(state)
+        flyEnabled = state
+    end
+})
+
+UserInputService.InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.F and flyEnabled then
+        local fly = true
+        local bv = Instance.new("BodyVelocity")
+        bv.MaxForce = Vector3.new(1e9, 1e9, 1e9)
+        bv.Velocity = Vector3.zero
+        bv.Parent = HumanoidRootPart
+        task.spawn(function()
+            while fly do
+                bv.Velocity = LocalPlayer:GetMouse().Hit.LookVector * 50
+                task.wait()
+            end
+        end)
+        task.delay(3, function()
+            fly = false
+            bv:Destroy()
+        end)
+    end
+end)
+
+UtilityTab:Button({
+    Title = "Click Teleport",
+    Callback = function()
+        Mouse.Button1Down:Connect(function()
+            if Mouse.Target then
+                HumanoidRootPart.CFrame = CFrame.new(Mouse.Hit.p + Vector3.new(0, 5, 0))
+            end
+        end)
+    end
+})
+
+UtilityTab:Button({
+    Title = "Rejoin Server",
+    Callback = function()
+        TeleportService:Teleport(game.PlaceId, LocalPlayer)
+    end
+})
+
+UtilityTab:Button({
+    Title = "Server Hop",
+    Callback = function()
+        local servers = {}
+        local req = game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100")
+        local data = game:GetService("HttpService"):JSONDecode(req)
+        for _, v in pairs(data.data) do
+            if v.playing < v.maxPlayers then
+                table.insert(servers, v.id)
+            end
+        end
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)], LocalPlayer)
+    end
+})
+
+UtilityTab:Button({
+    Title = "Copy Player CFrame",
+    Callback = function()
+        setclipboard(tostring(HumanoidRootPart.CFrame))
+    end
+})
+
+UtilityTab:Button({
+    Title = "Freeze Position",
+    Callback = function()
+        LocalPlayer.Character.HumanoidRootPart.Anchored = not LocalPlayer.Character.HumanoidRootPart.Anchored
+    end
+})
+
+UtilityTab:Button({
+    Title = "Godmode",
+    Callback = function()
+        local char = LocalPlayer.Character
+        char.Humanoid.Name = "God"
+    end
+})
+
+----------------------------------
+-- 🧪 DEBUG TAB ------------------
+----------------------------------
+local DebugTab = Window:Tab({ Name = "Debug" })
+
+DebugTab:Button({
+    Title = "Show All ProximityPrompts",
+    Callback = function()
+        for _, v in ipairs(workspace:GetDescendants()) do
+            if v:IsA("ProximityPrompt") then
+                print("Prompt at:", v:GetFullName())
+            end
+        end
+    end
+})
+
+DebugTab:Button({
+    Title = "View Hitboxes",
+    Callback = function()
+        for _, v in ipairs(workspace:GetDescendants()) do
+            if v:IsA("BasePart") and v.CanCollide then
+                v.Transparency = 0.5
+                v.Color = Color3.new(1, 0, 0)
+            end
+        end
+    end
+})
+
+DebugTab:Button({
+    Title = "Show All NPCs",
+    Callback = function()
+        for _, v in pairs(workspace:GetDescendants()) do
+            if v:IsA("Model") and v:FindFirstChild("Humanoid") then
+                print("NPC:", v.Name)
+            end
+        end
+    end
+})
+
+local FlingTab = Window:Tab({ Title = "Fling System", Icon = "tool" })
+
+FlingTab:Toggle({
+    Title = "Fling Toggle",
+    Value = false,
+    Callback = function(state)
+        flingEnabled = state
+    end,
+})
+
+FlingTab:Slider({
+    Title = "Fling Power",
+    Min = 100,
+    Max = 100000,
+    Default = 15000,
+    Float = 0,
+    Callback = function(value)
+        flingPower = value
+    end,
+})
+
+local function fling()
+    local hrp, char, vel, movel = nil, nil, nil, 0.1
+    while true do
+        RunService.Heartbeat:Wait()
+        if flingEnabled then
+            char = LocalPlayer.Character
+            hrp = char and char:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                vel = hrp.Velocity
+                hrp.Velocity = vel * flingPower + Vector3.new(0, flingPower, 0)
+                RunService.RenderStepped:Wait()
+                if hrp.Parent then
+                    hrp.Velocity = vel
+                end
+                RunService.Stepped:Wait()
+                if hrp.Parent then
+                    hrp.Velocity = vel + Vector3.new(0, movel, 0)
+                    movel = movel * -1
+                end
+            end
+        end
+    end
+end
+
+task.spawn(fling)
