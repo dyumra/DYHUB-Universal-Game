@@ -150,6 +150,49 @@ local originalColorCorrectionEnabled = game.Lighting.ColorCorrection.Enabled
 local originalSaturation = game.Lighting.ColorCorrection.Saturation
 local originalContrast = game.Lighting.ColorCorrection.Contrast
 
+local function applyFullBrightness()
+    game.Lighting.Brightness = 2
+    game.Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+    game.Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+    game.Lighting.GlobalShadows = false
+end
+
+local function removeFullBrightness()
+    game.Lighting.Brightness = originalBrightness
+    game.Lighting.OutdoorAmbient = originalOutdoorAmbient
+    game.Lighting.Ambient = originalAmbient
+    game.Lighting.GlobalShadows = originalGlobalShadows
+end
+
+local function applySuperFullBrightness()
+    game.Lighting.Brightness = 5
+    game.Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+    game.Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+    game.Lighting.GlobalShadows = false
+end
+
+local function applyNoFog()
+    game.Lighting.FogEnd = 1000000
+    game.Lighting.FogStart = 999999
+end
+
+local function removeNoFog()
+    game.Lighting.FogEnd = originalFogEnd
+    game.Lighting.FogStart = originalFogStart
+end
+
+local function applyVibrant()
+    game.Lighting.ColorCorrection.Enabled = true
+    game.Lighting.ColorCorrection.Saturation = 0.5
+    game.Lighting.ColorCorrection.Contrast = 0.2
+end
+
+local function removeVibrant()
+    game.Lighting.ColorCorrection.Enabled = originalColorCorrectionEnabled
+    game.Lighting.ColorCorrection.Saturation = originalSaturation
+    game.Lighting.ColorCorrection.Contrast = originalContrast
+end
+
 MiscTab:Toggle({
     Title = "Full Brightness",
     Default = false,
@@ -202,6 +245,19 @@ MiscTab:Toggle({
     end
 })
 
+if FullbrightEnabled then
+    applyFullBrightness()
+end
+if NoFogEnabled then
+    applyNoFog()
+end
+if SuperFullBrightnessEnabled then
+    applySuperFullBrightness()
+end
+if VibrantEnabled then
+    applyVibrant()
+end
+
 local selectedMapNumber = 1
 local autoVoteEnabled = false
 local voteConnection = nil
@@ -247,6 +303,28 @@ VoteTab:Toggle({
         end
     end
 })
+
+local function fireVoteServer(selectedMapNumber)
+    local eventsFolder = ReplicatedStorage:WaitForChild("Events", 10)
+    if eventsFolder then
+        local playerFolder = eventsFolder:WaitForChild("Player", 10)
+        if playerFolder then
+            local voteEvent = playerFolder:WaitForChild("Vote", 10)
+            if voteEvent and typeof(voteEvent) == "Instance" and voteEvent:IsA("RemoteEvent") then
+                local args = {
+                    [1] = selectedMapNumber
+                }
+                voteEvent:FireServer(unpack(args))
+            else
+                warn("Vote RemoteEvent not found or is not a RemoteEvent.")
+            end
+        else
+            warn("Player folder not found under Events.")
+        end
+    else
+        warn("Events folder not found in ReplicatedStorage.")
+    end
+end
 
 GameTab:Toggle({
     Title = "Auto Farm Win",
@@ -593,7 +671,16 @@ FakeTab:Toggle({
     end
 }) 
 
-
+Players.LocalPlayer.CharacterAdded:Connect(function(character)
+    if headlessEnabled then
+        task.wait(0.1) -- Small delay to ensure character fully loads
+        applyHeadless()
+    end
+    if korbloxEnabled then
+        task.wait(0.1) -- Small delay
+        applyKorbloxRightLeg()
+    end
+end)
 
 -- ==== nigga
 SkullTab:Button({
@@ -897,95 +984,5 @@ RunService.Heartbeat:Connect(function()
                 print("[DYHUB] ✅ Auto-Revived!")
             end
         end
-    end
-end)
-
-local function applyFullBrightness()
-    game.Lighting.Brightness = 2
-    game.Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
-    game.Lighting.Ambient = Color3.fromRGB(255, 255, 255)
-    game.Lighting.GlobalShadows = false
-end
-
-local function removeFullBrightness()
-    game.Lighting.Brightness = originalBrightness
-    game.Lighting.OutdoorAmbient = originalOutdoorAmbient
-    game.Lighting.Ambient = originalAmbient
-    game.Lighting.GlobalShadows = originalGlobalShadows
-end
-
-local function applySuperFullBrightness()
-    game.Lighting.Brightness = 5
-    game.Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
-    game.Lighting.Ambient = Color3.fromRGB(255, 255, 255)
-    game.Lighting.GlobalShadows = false
-end
-
-local function applyNoFog()
-    game.Lighting.FogEnd = 1000000
-    game.Lighting.FogStart = 999999
-end
-
-local function removeNoFog()
-    game.Lighting.FogEnd = originalFogEnd
-    game.Lighting.FogStart = originalFogStart
-end
-
-local function applyVibrant()
-    game.Lighting.ColorCorrection.Enabled = true
-    game.Lighting.ColorCorrection.Saturation = 0.5
-    game.Lighting.ColorCorrection.Contrast = 0.2
-end
-
-local function removeVibrant()
-    game.Lighting.ColorCorrection.Enabled = originalColorCorrectionEnabled
-    game.Lighting.ColorCorrection.Saturation = originalSaturation
-    game.Lighting.ColorCorrection.Contrast = originalContrast
-end
-
-if FullbrightEnabled then
-    applyFullBrightness()
-end
-if NoFogEnabled then
-    applyNoFog()
-end
-if SuperFullBrightnessEnabled then
-    applySuperFullBrightness()
-end
-if VibrantEnabled then
-    applyVibrant()
-end
-
---- ====== Vote Tab ======
-local function fireVoteServer(mapNumber)
-    local eventsFolder = ReplicatedStorage:WaitForChild("Events", 10)
-    if eventsFolder then
-        local playerFolder = eventsFolder:WaitForChild("Player", 10)
-        if playerFolder then
-            local voteEvent = playerFolder:WaitForChild("Vote", 10)
-            if voteEvent and typeof(voteEvent) == "Instance" and voteEvent:IsA("RemoteEvent") then
-                local args = {
-                    [1] = mapNumber
-                }
-                voteEvent:FireServer(unpack(args))
-            else
-                warn("Vote RemoteEvent not found or is not a RemoteEvent.")
-            end
-        else
-            warn("Player folder not found under Events.")
-        end
-    else
-        warn("Events folder not found in ReplicatedStorage.")
-    end
-end
-
-Players.LocalPlayer.CharacterAdded:Connect(function(character)
-    if headlessEnabled then
-        task.wait(0.1) -- Small delay to ensure character fully loads
-        applyHeadless()
-    end
-    if korbloxEnabled then
-        task.wait(0.1) -- Small delay
-        applyKorbloxRightLeg()
     end
 end)
