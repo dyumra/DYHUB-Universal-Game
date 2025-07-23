@@ -371,7 +371,7 @@ local summerEventLoopConnection = nil
 
 
 EspTab:Toggle({
-    Text = "Players ESP",
+    Title = "Players ESP",
     Callback = function(state)
         ActiveEspPlayers = state
         if ActiveEspPlayers then
@@ -417,7 +417,7 @@ EspTab:Toggle({
 })
 
 EspTab:Toggle({
-    Text = "NextBots ESP",
+    Title = "NextBots ESP",
     Callback = function(state)
         ActiveEspBots = state
         if ActiveEspBots then
@@ -453,7 +453,7 @@ EspTab:Toggle({
 })
 
 EspTab:Toggle({
-    Text = "Summer Event ESP",
+    Title = "Summer Event ESP",
     Callback = function(state)
         ActiveEspSummerEvent = state
         if ActiveEspSummerEvent then
@@ -487,7 +487,7 @@ EspTab:Toggle({
 })
 
 EspTab:Toggle({
-    Text = "Distance ESP",
+    Title = "Distance ESP",
     Callback = function(state)
         ActiveDistanceEsp = state
         if ActiveDistanceEsp then
@@ -710,7 +710,7 @@ VoteTab:Dropdown({
 })
 
 VoteTab:Button({
-    Text = "Vote!",
+    Title = "Vote!",
     Callback = function()
         fireVoteServer(selectedMapNumber)
     end
@@ -930,7 +930,7 @@ FakeTab:Toggle({
 local removeAllHatw = false
 
 FakeTab:Toggle({
-    Text = "Remove All Hats",
+    Title = "Remove All Hats",
     Callback = function(state)
         removeAllHatw = state
         if state then
@@ -952,3 +952,17 @@ Players.LocalPlayer.CharacterAdded:Connect(function(character)
         applyKorbloxRightLeg()
     end
 end)
+
+SkullTab:Button({
+    Title = "Testing",
+    Callback = function()
+       print("[DYHUB] SKIBIDI TESTING")
+    end
+}) 
+
+SkullTab:Button({
+    Title = "DYHUB - Discord",
+    Callback = function()
+       print("[DYHUB] dsc.gg/dyhub")
+    end
+}) 
