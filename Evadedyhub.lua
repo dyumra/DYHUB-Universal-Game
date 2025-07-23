@@ -44,7 +44,7 @@ WindUI:Popup({
 repeat task.wait() until Confirmed
 
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB - Evade | V2.7",
+    Title = "DYHUB - Evade (Version: 2.0)",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
@@ -166,24 +166,21 @@ GameTab:Toggle({
                     local rootPart = character and character:FindFirstChild("HumanoidRootPart")
 
                     if character and rootPart then
-                        -- Check if we are downed first
                         if character:GetAttribute("Downed") then
                             ReplicatedStorage.Events.Player.ChangePlayerMode:FireServer(true)
                             print("[DYHUB] Revived for Auto Farm-Money!")
                             task.wait(0.5)
                         end
 
-                        -- Try to find a downed player to revive (if that's how money is earned)
                         local downedPlayerFound = false
                         local playersInGame = Workspace:FindFirstChild("Game") and Workspace.Game:FindFirstChild("Players")
                         if playersInGame then
                             for _, v in pairs(playersInGame:GetChildren()) do
                                 if v:IsA("Model") and v:FindFirstChildOfClass("Humanoid") and v:GetAttribute("Downed") then
-                                    -- Found a downed player, warp and revive
                                     rootPart.CFrame = v.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
                                     ReplicatedStorage.Events.Character.Interact:FireServer("Revive", true, v)
                                     print("[DYHUB] Reviving player for Farm Money!")
-                                    task.wait(0.5) -- Wait after interaction
+                                    task.wait(0.5)
                                     downedPlayerFound = true
                                     break
                                 end
@@ -194,7 +191,6 @@ GameTab:Toggle({
                             print("[DYHUB] ⚠️ No downed player found for Auto Farm Money, waiting...")
                         end
 
-                        -- Safety warp to sky to prevent getting stuck (if needed)
                         local securityPart = Instance.new("Part")
                         securityPart.Name = "SecurityPartTemp"
                         securityPart.Size = Vector3.new(10, 1, 10)
@@ -208,7 +204,7 @@ GameTab:Toggle({
                     else
                         print("[DYHUB] Character or HumanoidRootPart not found, waiting for spawn.")
                     end
-                    task.wait(1) -- Wait before next loop iteration
+                    task.wait(1)
                 end
             end)
         else
@@ -367,7 +363,7 @@ EspTab:Toggle({
 })
 
 EspTab:Toggle({
-    Title = "NextBots ESP",
+    Title = "Bots ESP",
     Callback = function(state)
         ActiveEspBots = state
         if ActiveEspBots then
@@ -533,19 +529,6 @@ MiscTab:Toggle({
     end
 })
 
-MiscTab:Toggle({
-    Title = "Anti AFK",
-    Default = true,
-    Callback = function(state)
-        AntiAfkEnabled = state
-        if state then
-            print("[DYHUB] Anti AFK Enabled")
-        else
-            print("[DYHUB] Anti AFK Disabled")
-        end
-    end
-})
-
 local FullbrightEnabled = false
 local NoFogEnabled = false
 local SuperFullBrightnessEnabled = false
@@ -670,7 +653,6 @@ if VibrantEnabled then
     applyVibrant()
 end
 
--- ========= Skull Tab =======
 local WhiteModeEnabled = false
 
 local function getLocalPlayerCharacter()
@@ -730,16 +712,10 @@ if WhiteModeEnabled then
     ApplyWhiteModeToCharacter()
 end
 
---- ====== Fake Tab ======
 local headlessEnabled = false
 local korbloxEnabled = false
 
 local KORBLOX_RIGHT_LEG_ID = 139607718
-
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local InsertService = game:GetService("InsertService")
 
 local function getLocalPlayerCharacter()
     local player = Players.LocalPlayer
@@ -770,7 +746,7 @@ local function applyHeadless()
             end
         end
     end
-end
+})
 
 local function removeHeadless()
     local character = getLocalPlayerCharacter()
@@ -891,71 +867,4 @@ Players.LocalPlayer.CharacterAdded:Connect(function(character)
         task.wait(0.1)
         applyKorbloxRightLeg()
     end
-})
-
-if Players.LocalPlayer.Character then
-    if headlessEnabled then
-        applyHeadless()
-    end
-    if korbloxEnabled then
-        applyKorbloxRightLeg()
-    end
-end
-
---- ====== Vote Tab ======
-local selectedMapNumber = 1 -- Default selected map
-local autoVoteEnabled = false
-local voteConnection = nil
-
-local function fireVoteServer(mapNumber)
-    local voteEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("Player"):WaitForChild("Vote")
-    local args = {
-        [1] = mapNumber
-    }
-    voteEvent:FireServer(unpack(args))
-end
-
-VoteTab:Dropdown({
-    Title = "Select Map",
-    Options = {"Map 1", "Map 2", "Map 3", "Map 4"},
-    Default = "Map 1",
-    Callback = function(value)
-        if value == "Map 1" then
-            selectedMapNumber = 1
-        elseif value == "Map 2" then
-            selectedMapNumber = 2
-        elseif value == "Map 3" then
-            selectedMapNumber = 3
-        elseif value == "Map 4" then
-            selectedMapNumber = 4
-        end
-    end
-})
-
-VoteTab:Toggle({
-    Title = "Vote",
-    Default = false,
-    Callback = function(state)
-        if state then
-            fireVoteServer(selectedMapNumber)
-        end
-    end
-})
-
-VoteTab:Toggle({
-    Title = "Auto Vote",
-    Default = false,
-    Callback = function(state)
-        autoVoteEnabled = state
-        if autoVoteEnabled then
-            voteConnection = game:GetService("RunService").Heartbeat:Connect(function()
-                fireVoteServer(selectedMapNumber)
-            end)
-        else
-            if voteConnection then
-                voteConnection:Disconnect()
-                voteConnection = nil
-            end
-        end
-    end
-})
+end)
