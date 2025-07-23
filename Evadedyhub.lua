@@ -67,6 +67,13 @@ local Niggatab = Window:Tab({ Title = "dsc.gg/dyhub", Icon = "link" })
 
 local ValueSpeed = 16
 local ActiveSpeedBoost = false
+local headlessEnabled = false
+local korbloxEnabled = false
+
+local FullbrightEnabled = false
+local NoFogEnabled = false
+local SuperFullBrightnessEnabled = false
+local VibrantEnabled = false
 
 PlayerTab:Input({
     Title = "Set Speed (1-100)",
@@ -104,6 +111,52 @@ PlayerTab:Toggle({
             end)
         else
             print("[DYHUB] Speed Boost Disabled!")
+        end
+    end
+})
+
+local selectedMapNumber = 1
+local autoVoteEnabled = false
+local voteConnection = nil
+
+VoteTab:Dropdown({
+    Title = "Select Map",
+    Values = {"Map 1", "Map 2", "Map 3", "Map 4"},
+    Callback = function(value)
+        if value == "Map 1" then
+            selectedMapNumber = 1
+        elseif value == "Map 2" then
+            selectedMapNumber = 2
+        elseif value == "Map 3" then
+            selectedMapNumber = 3
+        elseif value == "Map 4" then
+            selectedMapNumber = 4
+        end
+    end
+})
+
+VoteTab:Button({
+    Title = "Vote!",
+    Callback = function()
+        fireVoteServer(selectedMapNumber)
+    end
+})
+
+VoteTab:Toggle({
+    Title = "Auto Vote",
+    Callback = function(state)
+        autoVoteEnabled = state
+        if autoVoteEnabled then
+            if not voteConnection then
+                voteConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                    fireVoteServer(selectedMapNumber)
+                end)
+            end
+        else
+            if voteConnection then
+                voteConnection:Disconnect()
+                voteConnection = nil
+            end
         end
     end
 })
@@ -265,6 +318,87 @@ GameTab:Toggle({
         end
     end
 })
+
+local loopFakeBundleConnection = nil
+local loopFakeBundleEnabled = false
+local Niggastats = true
+
+SkullTab:Toggle({
+    Title = "Anti Nigga",
+    Callback = function(state)
+        Niggastats = state
+        print("Nigga")
+    end
+})
+
+FakeTab:Dropdown({
+    Title = "Fake Bundle (Visual)",
+    Values = {"Headless", "Korblox"},
+    Multi = true,
+    Callback = function(values)
+        if table.find(values, "Headless") and not headlessEnabled then
+            headlessEnabled = true
+            applyHeadless()
+        elseif not table.find(values, "Headless") and headlessEnabled then
+            headlessEnabled = false
+            removeHeadless()
+        end
+
+        if table.find(values, "Korblox") and not korbloxEnabled then
+            korbloxEnabled = true
+            applyKorbloxRightLeg()
+        elseif not table.find(values, "Korblox") and korbloxEnabled then
+            korbloxEnabled = false
+            removeKorbloxRightLeg()
+        end
+    end
+})
+
+FakeTab:Toggle({
+    Title = "Loop Fake Bundle",
+    Callback = function(state)
+        loopFakeBundleEnabled = state
+        if loopFakeBundleEnabled then
+            if not loopFakeBundleConnection then
+                loopFakeBundleConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                    applyKorbloxRightLeg()
+                    applyHeadless()
+                end)
+            end
+        else
+            if loopFakeBundleConnection then
+                loopFakeBundleConnection:Disconnect()
+                loopFakeBundleConnection = nil
+            end
+        end
+    end
+})
+
+local removeAllHatw = false
+
+FakeTab:Toggle({
+    Title = "Remove All Hats",
+    Callback = function(state)
+        removeAllHatw = state
+        if state then
+            removeAllHats()
+        end
+    end
+}) 
+
+SkullTab:Button({
+    Title = "Testing",
+    Callback = function()
+       print("[DYHUB] SKIBIDI TESTING")
+    end
+}) 
+
+SkullTab:Button({
+    Title = "DYHUB - Discord",
+    Callback = function()
+       print("[DYHUB] dsc.gg/dyhub")
+    end
+}) 
 
 -- ===== Esp Tab
 local ActiveEspPlayers = false
@@ -542,11 +676,6 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
-local FullbrightEnabled = false
-local NoFogEnabled = false
-local SuperFullBrightnessEnabled = false
-local VibrantEnabled = false
-
 local originalBrightness = game.Lighting.Brightness
 local originalOutdoorAmbient = game.Lighting.OutdoorAmbient
 local originalAmbient = game.Lighting.Ambient
@@ -667,10 +796,6 @@ if VibrantEnabled then
 end
 
 --- ====== Vote Tab ======
-local selectedMapNumber = 1
-local autoVoteEnabled = false
-local voteConnection = nil
-
 local function fireVoteServer(mapNumber)
     local eventsFolder = ReplicatedStorage:WaitForChild("Events", 10)
     if eventsFolder then
@@ -693,64 +818,7 @@ local function fireVoteServer(mapNumber)
     end
 end
 
-VoteTab:Dropdown({
-    Title = "Select Map",
-    Values = {"Map 1", "Map 2", "Map 3", "Map 4"},
-    Callback = function(value)
-        if value == "Map 1" then
-            selectedMapNumber = 1
-        elseif value == "Map 2" then
-            selectedMapNumber = 2
-        elseif value == "Map 3" then
-            selectedMapNumber = 3
-        elseif value == "Map 4" then
-            selectedMapNumber = 4
-        end
-    end
-})
-
-VoteTab:Button({
-    Title = "Vote!",
-    Callback = function()
-        fireVoteServer(selectedMapNumber)
-    end
-})
-
-VoteTab:Toggle({
-    Title = "Auto Vote",
-    Callback = function(state)
-        autoVoteEnabled = state
-        if autoVoteEnabled then
-            if not voteConnection then
-                voteConnection = game:GetService("RunService").Heartbeat:Connect(function()
-                    fireVoteServer(selectedMapNumber)
-                end)
-            end
-        else
-            if voteConnection then
-                voteConnection:Disconnect()
-                voteConnection = nil
-            end
-        end
-    end
-})
-
--- ==== skulltab
-local Niggastats = true
-
-SkullTab:Toggle({
-    Title = "Anti Nigga",
-    Callback = function(state)
-        Niggastats = state
-        print("Nigga")
-    end
-})
-
 -- ==== FakeTab
-
-local headlessEnabled = false
-local korbloxEnabled = false
-
 local KORBLOX_RIGHT_LEG_ID = 139607718
 
 local function getLocalPlayerCharacter()
@@ -799,8 +867,6 @@ local function removeHeadless()
             if humanoid then
                 local originalDescription = Players:GetHumanoidDescriptionFromUserId(Players.LocalPlayer.UserId)
                 if originalDescription then
-                    -- To ensure the head mesh reverts, it's best to apply the full description.
-                    -- This might affect other parts of the character as well, but guarantees the head returns.
                     humanoid:ApplyDescription(originalDescription)
                 end
             end
@@ -880,68 +946,6 @@ local function removeAllHats()
     end
 end
 
---- Add UI Elements to GameTab ---
-local loopFakeBundleConnection = nil
-local loopFakeBundleEnabled = false
-
-FakeTab:Dropdown({
-    Title = "Fake Bundle (Visual)",
-    Values = {"Headless", "Korblox"},
-    Multi = true,
-    Callback = function(values)
-        if table.find(values, "Headless") and not headlessEnabled then
-            headlessEnabled = true
-            applyHeadless()
-        elseif not table.find(values, "Headless") and headlessEnabled then
-            headlessEnabled = false
-            removeHeadless()
-        end
-
-        if table.find(values, "Korblox") and not korbloxEnabled then
-            korbloxEnabled = true
-            applyKorbloxRightLeg()
-        elseif not table.find(values, "Korblox") and korbloxEnabled then
-            korbloxEnabled = false
-            removeKorbloxRightLeg()
-        end
-    end
-})
-
-FakeTab:Toggle({
-    Title = "Loop Fake Bundle",
-    Callback = function(state)
-        loopFakeBundleEnabled = state
-        if loopFakeBundleEnabled then
-            if not loopFakeBundleConnection then
-                loopFakeBundleConnection = game:GetService("RunService").Heartbeat:Connect(function()
-                    applyKorbloxRightLeg()
-                    applyHeadless()
-                end)
-            end
-        else
-            if loopFakeBundleConnection then
-                loopFakeBundleConnection:Disconnect()
-                loopFakeBundleConnection = nil
-            end
-        end
-    end
-})
-
-local removeAllHatw = false
-
-FakeTab:Toggle({
-    Title = "Remove All Hats",
-    Callback = function(state)
-        removeAllHatw = state
-        if state then
-            removeAllHats()
-        end
-    end
-}) 
-        
-
---- Handle Character Respawns ---
-
 Players.LocalPlayer.CharacterAdded:Connect(function(character)
     if headlessEnabled then
         task.wait(0.1) -- Small delay to ensure character fully loads
@@ -952,17 +956,3 @@ Players.LocalPlayer.CharacterAdded:Connect(function(character)
         applyKorbloxRightLeg()
     end
 end)
-
-SkullTab:Button({
-    Title = "Testing",
-    Callback = function()
-       print("[DYHUB] SKIBIDI TESTING")
-    end
-}) 
-
-SkullTab:Button({
-    Title = "DYHUB - Discord",
-    Callback = function()
-       print("[DYHUB] dsc.gg/dyhub")
-    end
-}) 
