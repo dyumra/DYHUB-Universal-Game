@@ -8,6 +8,7 @@ local TeleportService = game:GetService("TeleportService")
 local VirtualUser = game:GetService("VirtualUser")
 local Workspace = game:GetService("Workspace")
 local InsertService = game:GetService("InsertService") -- Make sure InsertService is defined
+local StarterGui = game:GetService("StarterGui")
 
 local WindUI = nil
 local success, errorMessage = pcall(function()
@@ -65,8 +66,6 @@ local SkullTab = Window:Tab({ Title = "Best", Icon = "skull" })
 local MiscTab = Window:Tab({ Title = "Misc", Icon = "settings-2" })
 local Niggatab = Window:Tab({ Title = "dsc.gg/dyhub", Icon = "link" })
 
-local ValueSpeed = 16
-local ActiveSpeedBoost = false
 local headlessEnabled = false
 local korbloxEnabled = false
 
@@ -75,42 +74,140 @@ local NoFogEnabled = false
 local SuperFullBrightnessEnabled = false
 local VibrantEnabled = false
 
+local ValueSpeed = 16 
+local ActiveCFrameSpeedBoost = false
+local ActiveWalkSpeedBoost = false
+local OriginalWalkSpeed = 16 
+
+local cframeSpeedConnection = nil
+local walkSpeedConnection = nil
+
 PlayerTab:Input({
-    Title = "Set Speed (1-100)",
-    placeholder = "Set Speed on Fixing!",
+    Title = "Set Base Speed",
+    placeholder = "Enter Speed Value (1-1000)",
     onChanged = function(value)
         local num = tonumber(value)
-        if num and num >= 1 and num <= 100 then
+        if num and num >= 1 and num <= 1000 then
             ValueSpeed = num
+            print("[DYHUB] Speed value set to: " .. ValueSpeed)
+            if ActiveWalkSpeedBoost and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+                LocalPlayer.Character.Humanoid.WalkSpeed = ValueSpeed
+            end
         else
-            ValueSpeed = 16
-            print("[DYHUB] Invalid speed value. Please enter a number between 1 and 100.")
+            ValueSpeed = 16 
+            print("[DYHUB] Invalid speed value. Please enter a number between 1 and 100. Reverted to 16.")
         end
     end
 })
 
 PlayerTab:Toggle({
-    Title = "Enable Speed Boost",
+    Title = "Speed Boost (WalkSpeed)",
     Callback = function(state)
-        ActiveSpeedBoost = state
-        if ActiveSpeedBoost then
-            print("[DYHUB] Speed Boost Enabled!")
-            spawn(function()
-                while ActiveSpeedBoost do
-                    local character = LocalPlayer.Character
-                    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-                    local hrp = character and character:FindFirstChild("HumanoidRootPart")
+        ActiveWalkSpeedBoost = state
+        local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
 
-                    if character and humanoid and hrp then
-                        local lookVector = hrp.CFrame.LookVector
-                        local newPos = hrp.Position + lookVector * (ValueSpeed / 10)
-                        humanoid:MoveTo(newPos)
+        if humanoid then
+            if ActiveWalkSpeedBoost then
+                OriginalWalkSpeed = humanoid.WalkSpeed 
+                humanoid.WalkSpeed = ValueSpeed
+                print("[DYHUB] Walk Speed Boost Enabled! Speed set to: " .. ValueSpeed)
+                StarterGui:SetCore("SendNotification", { Title = "Walk Speed Enabled", Text = "Walk speed set to " .. ValueSpeed .. ".", Duration = 3 })
+            else
+                humanoid.WalkSpeed = OriginalWalkSpeed 
+                print("[DYHUB] Walk Speed Boost Disabled! Reverted to original speed: " .. OriginalWalkSpeed)
+                StarterGui:SetCore("SendNotification", { Title = "Walk Speed Disabled", Text = "Walk speed reverted to " .. OriginalWalkSpeed .. ".", Duration = 3 })
+            end
+        else
+            print("[DYHUB] Humanoid not found. Cannot toggle Walk Speed Boost.")
+            ActiveWalkSpeedBoost = false
+        end
+    end
+})
+
+PlayerTab:Toggle({
+    Title = "Speed Boost (Cframe)",
+    Callback = function(state)
+        ActiveCFrameSpeedBoost = state
+        if ActiveCFrameSpeedBoost then
+            print("[DYHUB] CFrame Speed Boost Enabled!")
+            StarterGui:SetCore("SendNotification", { Title = "CFrame Speed Enabled", Text = "CFrame movement activated.", Duration = 3 })
+
+            if cframeSpeedConnection then
+                cframeSpeedConnection:Disconnect()
+                cframeSpeedConnection = nil
+            end
+
+            cframeSpeedConnection = RunService.RenderStepped:Connect(function()
+                local character = LocalPlayer.Character
+                local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+                local hrp = character and character:FindFirstChild("HumanoidRootPart")
+
+                if character and humanoid and hrp then
+                    local moveDir = humanoid.MoveDirection
+                    if moveDir.Magnitude > 0 then
+                        hrp.CFrame = hrp.CFrame + moveDir * math.max(ValueSpeed, 1) * 0.016
                     end
-                    task.wait(0.1)
                 end
             end)
         else
-            print("[DYHUB] Speed Boost Disabled!")
+            print("[DYHUB] CFrame Speed Boost Disabled!")
+            StarterGui:SetCore("SendNotification", { Title = "CFrame Speed Disabled", Text = "CFrame movement deactivated.", Duration = 3 })
+            if cframeSpeedConnection then
+                cframeSpeedConnection:Disconnect()
+                cframeSpeedConnection = nil
+            end
+        end
+    end
+})
+
+MiscTab:Toggle({
+    Title = "Full Brightness",
+    Default = false,
+    Callback = function(state)
+        FullbrightEnabled = state
+        if state then
+            applyFullBrightness()
+        else
+            removeFullBrightness()
+        end
+    end
+})
+
+MiscTab:Toggle({
+    Title = "No Fog",
+    Default = false,
+    Callback = function(state)
+        NoFogEnabled = state
+        if state then
+            applyNoFog()
+        else
+            removeNoFog()
+        end
+    end
+})
+
+MiscTab:Toggle({
+    Title = "Super Full Brightness",
+    Default = false,
+    Callback = function(state)
+        SuperFullBrightnessEnabled = state
+        if state then
+            applySuperFullBrightness()
+        else
+            removeFullBrightness()
+        end
+    end
+})
+
+MiscTab:Toggle({
+    Title = "Vibrant +200%",
+    Default = false,
+    Callback = function(state)
+        VibrantEnabled = state
+        if state then
+            applyVibrant()
+        else
+            removeVibrant()
         end
     end
 })
@@ -393,10 +490,24 @@ SkullTab:Button({
     end
 }) 
 
-SkullTab:Button({
+Niggatab:Button({
+    Title = "DYHUB - Thank you for choosing our script",
+    Callback = function()
+       print("[DYHUB] Join our Discord To view script update news")
+    end
+}) 
+ 
+Niggatab:Button({
+    Title = "DYHUB - Subscribe",
+    Callback = function()
+       print("[DYHUB] https://www.youtube.com/@officialdyhub")
+    end
+}) 
+
+Niggatab:Button({
     Title = "DYHUB - Discord",
     Callback = function()
-       print("[DYHUB] dsc.gg/dyhub")
+       print("[DYHUB] https://www.dsc.gg/dyhub")
     end
 }) 
 
@@ -729,58 +840,6 @@ local function removeVibrant()
     game.Lighting.ColorCorrection.Saturation = originalSaturation
     game.Lighting.ColorCorrection.Contrast = originalContrast
 end
-
-MiscTab:Toggle({
-    Title = "Full Brightness",
-    Default = false,
-    Callback = function(state)
-        FullbrightEnabled = state
-        if state then
-            applyFullBrightness()
-        else
-            removeFullBrightness()
-        end
-    end
-})
-
-MiscTab:Toggle({
-    Title = "No Fog",
-    Default = false,
-    Callback = function(state)
-        NoFogEnabled = state
-        if state then
-            applyNoFog()
-        else
-            removeNoFog()
-        end
-    end
-})
-
-MiscTab:Toggle({
-    Title = "Super Full Brightness",
-    Default = false,
-    Callback = function(state)
-        SuperFullBrightnessEnabled = state
-        if state then
-            applySuperFullBrightness()
-        else
-            removeFullBrightness()
-        end
-    end
-})
-
-MiscTab:Toggle({
-    Title = "Vibrant +200%",
-    Default = false,
-    Callback = function(state)
-        VibrantEnabled = state
-        if state then
-            applyVibrant()
-        else
-            removeVibrant()
-        end
-    end
-})
 
 if FullbrightEnabled then
     applyFullBrightness()
