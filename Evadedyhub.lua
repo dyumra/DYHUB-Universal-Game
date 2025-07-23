@@ -267,13 +267,6 @@ GameTab:Toggle({
     end
 })
 
-game.Players.LocalPlayer.Idled:Connect(function()
-    if AntiAfkEnabled then
-        VirtualUser:CaptureController()
-        VirtualUser:ClickButton2(Vector2.new())
-    end
-end)
-
 local ActiveEspPlayers = false
 local ActiveEspBots = false
 local ActiveEspSummerEvent = false
