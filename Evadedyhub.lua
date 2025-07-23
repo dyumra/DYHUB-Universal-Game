@@ -696,7 +696,6 @@ end
 VoteTab:Dropdown({
     Title = "Select Map",
     Values = {"Map 1", "Map 2", "Map 3", "Map 4"},
-    Default = "Map 1",
     Callback = function(value)
         if value == "Map 1" then
             selectedMapNumber = 1
@@ -710,19 +709,15 @@ VoteTab:Dropdown({
     end
 })
 
-VoteTab:Toggle({
-    Title = "Vote Once",
-    Default = false,
-    Callback = function(state)
-        if state then
-            fireVoteServer(selectedMapNumber)
-        end
+VoteTab:Button({
+    Text = "Vote!",
+    Callback = function()
+        fireVoteServer(selectedMapNumber)
     end
 })
 
 VoteTab:Toggle({
     Title = "Auto Vote",
-    Default = false,
     Callback = function(state)
         autoVoteEnabled = state
         if autoVoteEnabled then
@@ -741,11 +736,12 @@ VoteTab:Toggle({
 })
 
 -- ==== skulltab
+local Niggastats = true
 
 SkullTab:Toggle({
     Title = "Anti Nigga",
-    Default = false,
     Callback = function(state)
+        Niggastats = state
         print("Nigga")
     end
 })
@@ -912,8 +908,7 @@ FakeTab:Dropdown({
 })
 
 FakeTab:Toggle({
-    Text = "Loop Fake Bundle",
-    Default = false,
+    Title = "Loop Fake Bundle",
     Callback = function(state)
         loopFakeBundleEnabled = state
         if loopFakeBundleEnabled then
@@ -932,15 +927,18 @@ FakeTab:Toggle({
     end
 })
 
+local removeAllHatw = false
+
 FakeTab:Toggle({
     Text = "Remove All Hats",
-    Default = false,
     Callback = function(state)
+        removeAllHatw = state
         if state then
             removeAllHats()
         end
     end
-})
+}) 
+        
 
 --- Handle Character Respawns ---
 
