@@ -33,7 +33,7 @@ end
 
 local Confirmed = false
 WindUI:Popup({
-    Title = "DYHUB Loaded! - Evade (Version: 2.0)",
+    Title = "DYHUB Loaded! - Evade (Version: 2.6)",
     Icon = "star",
     IconThemed = true,
     Content = "DYHUB'S TEAM | Join our (dsc.gg/dyhub)",
@@ -46,7 +46,7 @@ WindUI:Popup({
 repeat task.wait() until Confirmed
 
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB - Evade (Version: 2.0)",
+    Title = "DYHUB - Evade (Version: 2.6)",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
