@@ -33,7 +33,7 @@ end
 
 local Confirmed = false
 WindUI:Popup({
-    Title = "DYHUB Loaded! - Evade (Version: 2.6)",
+    Title = "DYHUB Loaded! - Evade (Version: 2.83)",
     Icon = "star",
     IconThemed = true,
     Content = "DYHUB'S TEAM | Join our (dsc.gg/dyhub)",
@@ -46,7 +46,7 @@ WindUI:Popup({
 repeat task.wait() until Confirmed
 
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB - Evade (Version: 2.6)",
+    Title = "DYHUB - Evade (Version: 2.83)",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
@@ -74,20 +74,25 @@ local NoFogEnabled = false
 local SuperFullBrightnessEnabled = false
 local VibrantEnabled = false
 
+local ActiveAutoWin = false
+local ActiveAutoFarmMoney = false
+local AutoFarmSummerEvent = false
+local AntiAfkEnabled = true
+local AntiTp = true
+local AntiBypass = true
+
 local ValueSpeed = 16 
 local ActiveCFrameSpeedBoost = false
-local ActiveWalkSpeedBoost = false
 local OriginalWalkSpeed = 16 
 
 local cframeSpeedConnection = nil
-local walkSpeedConnection = nil
 
 PlayerTab:Input({
     Title = "Set Base Speed",
     placeholder = "Enter Speed Value (1-1000)",
     onChanged = function(value)
         local num = tonumber(value)
-        if num and num >= 1 and num <= 1000 then
+        if num and num >= 1 and num <= 5000 then
             ValueSpeed = num
             print("[DYHUB] Speed value set to: " .. ValueSpeed)
             if ActiveWalkSpeedBoost and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
@@ -96,30 +101,6 @@ PlayerTab:Input({
         else
             ValueSpeed = 16 
             print("[DYHUB] Invalid speed value. Please enter a number between 1 and 100. Reverted to 16.")
-        end
-    end
-})
-
-PlayerTab:Toggle({
-    Title = "Speed Boost (WalkSpeed)",
-    Callback = function(state)
-        ActiveWalkSpeedBoost = state
-        local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-
-        if humanoid then
-            if ActiveWalkSpeedBoost then
-                OriginalWalkSpeed = humanoid.WalkSpeed 
-                humanoid.WalkSpeed = ValueSpeed
-                print("[DYHUB] Walk Speed Boost Enabled! Speed set to: " .. ValueSpeed)
-                StarterGui:SetCore("SendNotification", { Title = "Walk Speed Enabled", Text = "Walk speed set to " .. ValueSpeed .. ".", Duration = 3 })
-            else
-                humanoid.WalkSpeed = OriginalWalkSpeed 
-                print("[DYHUB] Walk Speed Boost Disabled! Reverted to original speed: " .. OriginalWalkSpeed)
-                StarterGui:SetCore("SendNotification", { Title = "Walk Speed Disabled", Text = "Walk speed reverted to " .. OriginalWalkSpeed .. ".", Duration = 3 })
-            end
-        else
-            print("[DYHUB] Humanoid not found. Cannot toggle Walk Speed Boost.")
-            ActiveWalkSpeedBoost = false
         end
     end
 })
@@ -257,13 +238,6 @@ VoteTab:Toggle({
         end
     end
 })
-
-local ActiveAutoWin = false
-local ActiveAutoFarmMoney = false
-local AutoFarmSummerEvent = false
-local AntiAfkEnabled = true
-local AntiTp = true
-local AntiBypass = true
 
 GameTab:Toggle({
     Title = "Auto Farm Win",
@@ -428,6 +402,133 @@ SkullTab:Toggle({
     end
 })
 
+local KORBLOX_RIGHT_LEG_ID = 139607718
+
+local function getLocalPlayerCharacter()
+    local player = Players.LocalPlayer
+    if player then
+        return player.Character or player.CharacterAdded:Wait()
+    end
+    return nil
+end
+
+local function applyHeadless()
+    local character = getLocalPlayerCharacter()
+    if character then
+        local head = character:FindFirstChild("Head")
+        if head then
+            head.Transparency = 1
+            local face = head:FindFirstChildOfClass("Decal")
+            if face then
+                face.Transparency = 1
+            end
+            local mesh = head:FindFirstChildOfClass("SpecialMesh") or head:FindFirstChildOfClass("CylinderMesh")
+            if mesh then
+                mesh.MeshId = ""
+            end
+            for _, child in ipairs(head:GetChildren()) do
+                if child:IsA("Accessory") and child.AccessoryType == Enum.AccessoryType.Face then
+                    child.Handle.Transparency = 1
+                end
+            end
+        end
+    end
+end
+
+local function removeHeadless()
+    local character = getLocalPlayerCharacter()
+    if character then
+        local head = character:FindFirstChild("Head")
+        if head then
+            head.Transparency = 0
+            local face = head:FindFirstChildOfClass("Decal")
+            if face then
+                face.Transparency = 0
+            end
+            -- Re-apply original head mesh/appearance by applying the humanoid description
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                local originalDescription = Players:GetHumanoidDescriptionFromUserId(Players.LocalPlayer.UserId)
+                if originalDescription then
+                    humanoid:ApplyDescription(originalDescription)
+                end
+            end
+        end
+    end
+end
+
+local loadedKorbloxAccessory = nil
+
+local function applyKorbloxRightLeg()
+    local character = getLocalPlayerCharacter()
+    if character and character:FindFirstChildOfClass("Humanoid") then
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+        if loadedKorbloxAccessory and loadedKorbloxAccessory.Parent == character then
+            return -- Already applied
+        end
+
+        local success, asset = pcall(function()
+            return InsertService:LoadAsset(KORBLOX_RIGHT_LEG_ID)
+        end)
+
+        if success and asset then
+            local accessory = asset:FindFirstChildOfClass("Accessory")
+            if accessory then
+                -- Remove existing right leg accessories to prevent duplicates or conflicts
+                for _, child in ipairs(character:GetChildren()) do
+                    if child:IsA("Accessory") and child.Name == "Right Leg" then
+                        child:Destroy()
+                    end
+                end
+                humanoid:AddAccessory(accessory)
+                loadedKorbloxAccessory = accessory
+            end
+        else
+            warn("Failed to load Korblox Right Leg asset: " .. (asset or "Unknown error"))
+        end
+    end
+end
+
+local function removeKorbloxRightLeg()
+    local character = getLocalPlayerCharacter()
+    if character then
+        if loadedKorbloxAccessory and loadedKorbloxAccessory.Parent == character then
+            loadedKorbloxAccessory:Destroy()
+            loadedKorbloxAccessory = nil
+        else
+            -- Fallback: if loadedKorbloxAccessory wasn't tracked, try to find and destroy by MeshId
+            for _, child in ipairs(character:GetChildren()) do
+                if child:IsA("Accessory") and child.Handle and child.Handle:FindFirstChildOfClass("SpecialMesh") then
+                    if child.Handle:FindFirstChildOfClass("SpecialMesh").MeshId == "rbxassetid://" .. KORBLOX_RIGHT_LEG_ID then
+                        child:Destroy()
+                    end
+                end
+            end
+        end
+
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            -- Re-apply the original character description to restore the default leg
+            local originalDescription = Players:GetHumanoidDescriptionFromUserId(Players.LocalPlayer.UserId)
+            if originalDescription then
+                humanoid:ApplyDescription(originalDescription)
+            end
+        end
+    end
+end
+
+local function removeAllHats()
+    local character = getLocalPlayerCharacter()
+    if character then
+        for _, child in ipairs(character:GetChildren()) do
+            if child:IsA("Accessory") and (child.AccessoryType == Enum.AccessoryType.Hat or child.AccessoryType == Enum.AccessoryType.Hair or child.AccessoryType == Enum.AccessoryType.Face or child.AccessoryType == Enum.AccessoryType.Neck or child.AccessoryType == Enum.AccessoryType.Shoulder or child.AccessoryType == Enum.AccessoryType.Front or child.AccessoryType == Enum.AccessoryType.Back or child.AccessoryType == Enum.AccessoryType.Waist) then
+                child:Destroy()
+            end
+        end
+    end
+end
+
 FakeTab:Dropdown({
     Title = "Fake Bundle (Visual)",
     Values = {"Headless", "Korblox"},
@@ -483,6 +584,9 @@ FakeTab:Toggle({
     end
 }) 
 
+
+
+-- ==== nigga
 SkullTab:Button({
     Title = "Testing",
     Callback = function()
@@ -874,134 +978,6 @@ local function fireVoteServer(mapNumber)
         end
     else
         warn("Events folder not found in ReplicatedStorage.")
-    end
-end
-
--- ==== FakeTab
-local KORBLOX_RIGHT_LEG_ID = 139607718
-
-local function getLocalPlayerCharacter()
-    local player = Players.LocalPlayer
-    if player then
-        return player.Character or player.CharacterAdded:Wait()
-    end
-    return nil
-end
-
-local function applyHeadless()
-    local character = getLocalPlayerCharacter()
-    if character then
-        local head = character:FindFirstChild("Head")
-        if head then
-            head.Transparency = 1
-            local face = head:FindFirstChildOfClass("Decal")
-            if face then
-                face.Transparency = 1
-            end
-            local mesh = head:FindFirstChildOfClass("SpecialMesh") or head:FindFirstChildOfClass("CylinderMesh")
-            if mesh then
-                mesh.MeshId = ""
-            end
-            for _, child in ipairs(head:GetChildren()) do
-                if child:IsA("Accessory") and child.AccessoryType == Enum.AccessoryType.Face then
-                    child.Handle.Transparency = 1
-                end
-            end
-        end
-    end
-end
-
-local function removeHeadless()
-    local character = getLocalPlayerCharacter()
-    if character then
-        local head = character:FindFirstChild("Head")
-        if head then
-            head.Transparency = 0
-            local face = head:FindFirstChildOfClass("Decal")
-            if face then
-                face.Transparency = 0
-            end
-            -- Re-apply original head mesh/appearance by applying the humanoid description
-            local humanoid = character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                local originalDescription = Players:GetHumanoidDescriptionFromUserId(Players.LocalPlayer.UserId)
-                if originalDescription then
-                    humanoid:ApplyDescription(originalDescription)
-                end
-            end
-        end
-    end
-end
-
-local loadedKorbloxAccessory = nil
-
-local function applyKorbloxRightLeg()
-    local character = getLocalPlayerCharacter()
-    if character and character:FindFirstChildOfClass("Humanoid") then
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-
-        if loadedKorbloxAccessory and loadedKorbloxAccessory.Parent == character then
-            return -- Already applied
-        end
-
-        local success, asset = pcall(function()
-            return InsertService:LoadAsset(KORBLOX_RIGHT_LEG_ID)
-        end)
-
-        if success and asset then
-            local accessory = asset:FindFirstChildOfClass("Accessory")
-            if accessory then
-                -- Remove existing right leg accessories to prevent duplicates or conflicts
-                for _, child in ipairs(character:GetChildren()) do
-                    if child:IsA("Accessory") and child.Name == "Right Leg" then
-                        child:Destroy()
-                    end
-                end
-                humanoid:AddAccessory(accessory)
-                loadedKorbloxAccessory = accessory
-            end
-        else
-            warn("Failed to load Korblox Right Leg asset: " .. (asset or "Unknown error"))
-        end
-    end
-end
-
-local function removeKorbloxRightLeg()
-    local character = getLocalPlayerCharacter()
-    if character then
-        if loadedKorbloxAccessory and loadedKorbloxAccessory.Parent == character then
-            loadedKorbloxAccessory:Destroy()
-            loadedKorbloxAccessory = nil
-        else
-            -- Fallback: if loadedKorbloxAccessory wasn't tracked, try to find and destroy by MeshId
-            for _, child in ipairs(character:GetChildren()) do
-                if child:IsA("Accessory") and child.Handle and child.Handle:FindFirstChildOfClass("SpecialMesh") then
-                    if child.Handle:FindFirstChildOfClass("SpecialMesh").MeshId == "rbxassetid://" .. KORBLOX_RIGHT_LEG_ID then
-                        child:Destroy()
-                    end
-                end
-            end
-        end
-
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            -- Re-apply the original character description to restore the default leg
-            local originalDescription = Players:GetHumanoidDescriptionFromUserId(Players.LocalPlayer.UserId)
-            if originalDescription then
-                humanoid:ApplyDescription(originalDescription)
-            end
-        end
-    end
-end
-
-local function removeAllHats()
-    local character = getLocalPlayerCharacter()
-    if character then
-        for _, child in ipairs(character:GetChildren()) do
-            if child:IsA("Accessory") and (child.AccessoryType == Enum.AccessoryType.Hat or child.AccessoryType == Enum.AccessoryType.Hair or child.AccessoryType == Enum.AccessoryType.Face or child.AccessoryType == Enum.AccessoryType.Neck or child.AccessoryType == Enum.AccessoryType.Shoulder or child.AccessoryType == Enum.AccessoryType.Front or child.AccessoryType == Enum.AccessoryType.Back or child.AccessoryType == Enum.AccessoryType.Waist) then
-                child:Destroy()
-            end
-        end
     end
 end
 
