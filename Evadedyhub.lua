@@ -111,8 +111,7 @@ PlayerTab:Toggle({
         ActiveCFrameSpeedBoost = state
         if ActiveCFrameSpeedBoost then
             print("[DYHUB] CFrame Speed Boost Enabled!")
-            StarterGui:SetCore("SendNotification", { Title = "CFrame Speed Enabled", Text = "CFrame movement activated.", Duration = 3 })
-
+            
             if cframeSpeedConnection then
                 cframeSpeedConnection:Disconnect()
                 cframeSpeedConnection = nil
@@ -132,7 +131,6 @@ PlayerTab:Toggle({
             end)
         else
             print("[DYHUB] CFrame Speed Boost Disabled!")
-            StarterGui:SetCore("SendNotification", { Title = "CFrame Speed Disabled", Text = "CFrame movement deactivated.", Duration = 3 })
             if cframeSpeedConnection then
                 cframeSpeedConnection:Disconnect()
                 cframeSpeedConnection = nil
