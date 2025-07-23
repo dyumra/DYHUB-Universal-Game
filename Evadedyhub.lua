@@ -694,7 +694,7 @@ local function fireVoteServer(mapNumber)
 end
 
 VoteTab:Dropdown({
-    Text = "Select Map",
+    Title = "Select Map",
     Values = {"Map 1", "Map 2", "Map 3", "Map 4"},
     Default = "Map 1",
     Callback = function(value)
@@ -711,7 +711,7 @@ VoteTab:Dropdown({
 })
 
 VoteTab:Toggle({
-    Text = "Vote Once",
+    Title = "Vote Once",
     Default = false,
     Callback = function(state)
         if state then
@@ -721,7 +721,7 @@ VoteTab:Toggle({
 })
 
 VoteTab:Toggle({
-    Text = "Auto Vote",
+    Title = "Auto Vote",
     Default = false,
     Callback = function(state)
         autoVoteEnabled = state
@@ -885,9 +885,11 @@ local function removeAllHats()
 end
 
 --- Add UI Elements to GameTab ---
+local loopFakeBundleConnection = nil
+local loopFakeBundleEnabled = false
 
 FakeTab:Dropdown({
-    Text = "Fake Bundle (Visual)",
+    Title = "Fake Bundle (Visual)",
     Values = {"Headless", "Korblox"},
     Multi = true,
     Callback = function(values)
@@ -909,10 +911,34 @@ FakeTab:Dropdown({
     end
 })
 
-FakeTab:Button({
+FakeTab:Toggle({
+    Text = "Loop Fake Bundle",
+    Default = false,
+    Callback = function(state)
+        loopFakeBundleEnabled = state
+        if loopFakeBundleEnabled then
+            if not loopFakeBundleConnection then
+                loopFakeBundleConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                    applyKorbloxRightLeg()
+                    applyHeadless()
+                end)
+            end
+        else
+            if loopFakeBundleConnection then
+                loopFakeBundleConnection:Disconnect()
+                loopFakeBundleConnection = nil
+            end
+        end
+    end
+})
+
+FakeTab:Toggle({
     Text = "Remove All Hats",
-    Callback = function()
-        removeAllHats()
+    Default = false,
+    Callback = function(state)
+        if state then
+            removeAllHats()
+        end
     end
 })
 
