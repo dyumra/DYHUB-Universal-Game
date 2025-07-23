@@ -141,6 +141,17 @@ PlayerTab:Toggle({
     end
 })
 
+local originalBrightness = game.Lighting.Brightness
+local originalOutdoorAmbient = game.Lighting.OutdoorAmbient
+local originalAmbient = game.Lighting.Ambient
+local originalGlobalShadows = game.Lighting.GlobalShadows
+local originalFogEnd = game.Lighting.FogEnd
+local originalFogStart = game.Lighting.FogStart
+local originalFogColor = game.Lighting.FogColor
+local originalColorCorrectionEnabled = game.Lighting.ColorCorrection.Enabled
+local originalSaturation = game.Lighting.ColorCorrection.Saturation
+local originalContrast = game.Lighting.ColorCorrection.Contrast
+
 MiscTab:Toggle({
     Title = "Full Brightness",
     Default = false,
@@ -890,17 +901,6 @@ RunService.Heartbeat:Connect(function()
         end
     end
 end)
-
-local originalBrightness = game.Lighting.Brightness
-local originalOutdoorAmbient = game.Lighting.OutdoorAmbient
-local originalAmbient = game.Lighting.Ambient
-local originalGlobalShadows = game.Lighting.GlobalShadows
-local originalFogEnd = game.Lighting.FogEnd
-local originalFogStart = game.Lighting.FogStart
-local originalFogColor = game.Lighting.FogColor
-local originalColorCorrectionEnabled = game.Lighting.ColorCorrection.Enabled
-local originalSaturation = game.Lighting.ColorCorrection.Saturation
-local originalContrast = game.Lighting.ColorCorrection.Contrast
 
 local function applyFullBrightness()
     game.Lighting.Brightness = 2
