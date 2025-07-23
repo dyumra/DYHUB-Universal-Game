@@ -7,6 +7,7 @@ local RunService = game:GetService("RunService")
 local TeleportService = game:GetService("TeleportService")
 local VirtualUser = game:GetService("VirtualUser")
 local Workspace = game:GetService("Workspace")
+local InsertService = game:GetService("InsertService") -- Make sure InsertService is defined
 
 local WindUI = nil
 local success, errorMessage = pcall(function()
@@ -53,6 +54,7 @@ local Window = WindUI:CreateWindow({
     Theme = "Dark",
 })
 
+--- Add UI Elements to GameTab ---
 local GameTab = Window:Tab({ Title = "Main", Icon = "rocket" })
 local VoteTab = Window:Tab({ Title = "Vote", Icon = "map" })
 local EspTab = Window:Tab({ Title = "Esp", Icon = "eye" })
@@ -61,6 +63,7 @@ local ReviveTab = Window:Tab({ Title = "Revive", Icon = "shield-plus" })
 local FakeTab = Window:Tab({ Title = "Fake", Icon = "sparkles" })
 local SkullTab = Window:Tab({ Title = "Best", Icon = "skull" })
 local MiscTab = Window:Tab({ Title = "Misc", Icon = "settings-2" })
+local Niggatab = Window:Tab({ Title = "dsc.gg/dyhub", Icon = "link" })
 
 local ValueSpeed = 16
 local ActiveSpeedBoost = false
@@ -263,6 +266,7 @@ GameTab:Toggle({
     end
 })
 
+-- ===== Esp Tab
 local ActiveEspPlayers = false
 local ActiveEspBots = false
 local ActiveEspSummerEvent = false
@@ -330,29 +334,79 @@ local function RemoveEsp(Char, ParentPart)
     end
 end
 
+-- Function to handle creating ESP for a single player
+local function handlePlayerEsp(player)
+    if player ~= LocalPlayer and player.Character then
+        local function createPlayerEspOnCharacter(character)
+            if ActiveEspPlayers and character:FindFirstChild("Head") then
+                CreateEsp(character, Color3.fromRGB(0, 255, 0), player.Name, character.Head, 1)
+            end
+        end
+
+        -- Check current character
+        createPlayerEspOnCharacter(player.Character)
+
+        -- Connect to CharacterAdded for respawns
+        player.CharacterAdded:Connect(function(newCharacter)
+            task.wait(0.1) -- Small delay for character to fully load
+            createPlayerEspOnCharacter(newCharacter)
+        end)
+
+        -- Connect to CharacterRemoving to clean up ESP when character is destroyed
+        player.CharacterRemoving:Connect(function(oldCharacter)
+            if oldCharacter:FindFirstChild("Head") then
+                RemoveEsp(oldCharacter, oldCharacter.Head)
+            end
+        end)
+    end
+end
+
+-- Store connections to disconnect them cleanly
+local playerAddedConnection = nil
+local playerRemovingConnections = {}
+local characterAddedConnections = {}
+local characterRemovingConnections = {}
+local botLoopConnection = nil
+local summerEventLoopConnection = nil
+
+
 EspTab:Toggle({
-    Title = "Players ESP",
+    Text = "Players ESP",
     Callback = function(state)
         ActiveEspPlayers = state
         if ActiveEspPlayers then
             print("[DYHUB] Players ESP Enabled!")
-            spawn(function()
-                while ActiveEspPlayers do
-                    for _, plr in pairs(Players:GetPlayers()) do
-                        if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("Head") then
-                            CreateEsp(plr.Character, Color3.fromRGB(0, 255, 0), plr.Name, plr.Character.Head, 1)
-                        end
-                    end
-                    task.wait(0.5)
-                end
-                for _, plr in pairs(Players:GetPlayers()) do
-                    if plr.Character and plr.Character:FindFirstChild("Head") then
-                        RemoveEsp(plr.Character, plr.Character.Head)
-                    end
+            -- Apply ESP to all existing players
+            for _, plr in pairs(Players:GetPlayers()) do
+                handlePlayerEsp(plr)
+            end
+
+            -- Connect to PlayerAdded for new players
+            playerAddedConnection = Players.PlayerAdded:Connect(function(newPlayer)
+                handlePlayerEsp(newPlayer)
+            end)
+
+            -- Connect to PlayerRemoving to clean up ESP for leaving players
+            playerRemovingConnections[playerAddedConnection] = Players.PlayerRemoving:Connect(function(leavingPlayer)
+                if leavingPlayer.Character and leavingPlayer.Character:FindFirstChild("Head") then
+                    RemoveEsp(leavingPlayer.Character, leavingPlayer.Character.Head)
                 end
             end)
+
         else
             print("[DYHUB] Players ESP Disabled!")
+            -- Disconnect PlayerAdded listener
+            if playerAddedConnection then
+                playerAddedConnection:Disconnect()
+                playerAddedConnection = nil
+            end
+            -- Disconnect PlayerRemoving listener
+            if playerRemovingConnections[playerAddedConnection] then
+                playerRemovingConnections[playerAddedConnection]:Disconnect()
+                playerRemovingConnections[playerAddedConnection] = nil
+            end
+            
+            -- Remove ESP from all current players
             for _, plr in pairs(Players:GetPlayers()) do
                 if plr.Character and plr.Character:FindFirstChild("Head") then
                     RemoveEsp(plr.Character, plr.Character.Head)
@@ -363,36 +417,28 @@ EspTab:Toggle({
 })
 
 EspTab:Toggle({
-    Title = "Bots ESP",
+    Text = "NextBots ESP",
     Callback = function(state)
         ActiveEspBots = state
         if ActiveEspBots then
-            print("[DYHUB] Bots ESP Enabled!")
-            spawn(function()
-                while ActiveEspBots do
-                    local botsFolder = Workspace:FindFirstChild("Game") and Workspace.Game:FindFirstChild("Players")
-                    if botsFolder then
-                        for _, bot in pairs(botsFolder:GetChildren()) do
-                            if bot:IsA("Model") and bot:FindFirstChild("Hitbox") then
-                                bot.Hitbox.Transparency = 0.5
-                                CreateEsp(bot, Color3.fromRGB(255, 0, 0), bot.Name, bot.Hitbox, -2)
-                            end
-                        end
-                    end
-                    task.wait(0.5)
-                end
+            print("[DYHUB] NextBots ESP Enabled!")
+            botLoopConnection = game:GetService("RunService").Heartbeat:Connect(function()
                 local botsFolder = Workspace:FindFirstChild("Game") and Workspace.Game:FindFirstChild("Players")
                 if botsFolder then
                     for _, bot in pairs(botsFolder:GetChildren()) do
                         if bot:IsA("Model") and bot:FindFirstChild("Hitbox") then
-                            bot.Hitbox.Transparency = 1
-                            RemoveEsp(bot, bot.Hitbox)
+                            bot.Hitbox.Transparency = 0.5
+                            CreateEsp(bot, Color3.fromRGB(255, 0, 0), bot.Name, bot.Hitbox, -2)
                         end
                     end
                 end
             end)
         else
-            print("[DYHUB] Bots ESP Disabled!")
+            print("[DYHUB] NextBots ESP Disabled!")
+            if botLoopConnection then
+                botLoopConnection:Disconnect()
+                botLoopConnection = nil
+            end
             local botsFolder = Workspace:FindFirstChild("Game") and Workspace.Game:FindFirstChild("Players")
             if botsFolder then
                 for _, bot in pairs(botsFolder:GetChildren()) do
@@ -407,34 +453,27 @@ EspTab:Toggle({
 })
 
 EspTab:Toggle({
-    Title = "Summer Event ESP",
+    Text = "Summer Event ESP",
     Callback = function(state)
         ActiveEspSummerEvent = state
         if ActiveEspSummerEvent then
             print("[DYHUB] Summer Event ESP Enabled!")
-            spawn(function()
-                while ActiveEspSummerEvent do
-                    local ticketsFolder = Workspace:FindFirstChild("Game") and Workspace.Game:FindFirstChild("Effects") and Workspace.Game.Effects:FindFirstChild("Tickets")
-                    if ticketsFolder then
-                        for _, ticket in pairs(ticketsFolder:GetChildren()) do
-                            if ticket and ticket.PrimaryPart and ticket.Name == "Visual" then
-                                CreateEsp(ticket, Color3.fromRGB(255, 255, 0), "Ticket", ticket.PrimaryPart, -2)
-                            end
-                        end
-                    end
-                    task.wait(0.5)
-                end
+            summerEventLoopConnection = game:GetService("RunService").Heartbeat:Connect(function()
                 local ticketsFolder = Workspace:FindFirstChild("Game") and Workspace.Game:FindFirstChild("Effects") and Workspace.Game.Effects:FindFirstChild("Tickets")
                 if ticketsFolder then
                     for _, ticket in pairs(ticketsFolder:GetChildren()) do
-                        if ticket and ticket.PrimaryPart then
-                            RemoveEsp(ticket, ticket.PrimaryPart)
+                        if ticket and ticket.PrimaryPart and ticket.Name == "Visual" then
+                            CreateEsp(ticket, Color3.fromRGB(255, 255, 0), "Ticket", ticket.PrimaryPart, -2)
                         end
                     end
                 end
             end)
         else
             print("[DYHUB] Summer Event ESP Disabled!")
+            if summerEventLoopConnection then
+                summerEventLoopConnection:Disconnect()
+                summerEventLoopConnection = nil
+            end
             local ticketsFolder = Workspace:FindFirstChild("Game") and Workspace.Game:FindFirstChild("Effects") and Workspace.Game.Effects:FindFirstChild("Tickets")
             if ticketsFolder then
                 for _, ticket in pairs(ticketsFolder:GetChildren()) do
@@ -448,7 +487,7 @@ EspTab:Toggle({
 })
 
 EspTab:Toggle({
-    Title = "Distance ESP",
+    Text = "Distance ESP",
     Callback = function(state)
         ActiveDistanceEsp = state
         if ActiveDistanceEsp then
@@ -502,32 +541,6 @@ RunService.Heartbeat:Connect(function()
         end
     end
 end)
-
-MiscTab:Toggle({
-    Title = "Anti Bypassing (By rhy)",
-    Default = true,
-    Callback = function(state)
-        AntiBypass = state
-        if state then
-            print("[DYHUB] Anti Bypassing Enabled (Hidden)")
-        else
-            print("[DYHUB] Anti Bypassing Disabled")
-        end
-    end
-})
-
-MiscTab:Toggle({
-    Title = "Anti Teleport (By rhy)",
-    Default = true,
-    Callback = function(state)
-        AntiTp = state
-        if state then
-            print("[DYHUB] Anti Teleport Enabled")
-        else
-            print("[DYHUB] Anti Teleport Disabled")
-        end
-    end
-})
 
 local FullbrightEnabled = false
 local NoFogEnabled = false
@@ -653,64 +666,91 @@ if VibrantEnabled then
     applyVibrant()
 end
 
-local WhiteModeEnabled = false
+--- ====== Vote Tab ======
+local selectedMapNumber = 1
+local autoVoteEnabled = false
+local voteConnection = nil
 
-local function getLocalPlayerCharacter()
-    local player = Players.LocalPlayer
-    if player then
-        return player.Character or player.CharacterAdded:Wait()
-    end
-    return nil
-end
-
-function ApplyWhiteModeToCharacter()
-    local myCharacter = getLocalPlayerCharacter()
-
-    if myCharacter and WhiteModeEnabled then
-        myCharacter:SetOutlineColor(Color.White)
-        myCharacter:EnableOutline(true)
-        myCharacter:SetMaterial("SolidWhiteMaterial")
-        myCharacter:SetTintColor(Color.RGB(255, 255, 255))
-        myCharacter:SetTransparency(0)
-        myCharacter:SetRenderMode("UnlitSolidColor")
-    end
-end
-
-function RemoveWhiteModeFromCharacter()
-    local myCharacter = getLocalPlayerCharacter()
-
-    if myCharacter then
-        myCharacter:EnableOutline(false)
-        myCharacter:ResetMaterial()
-        myCharacter:SetTintColor(Color.None)
-        myCharacter:SetTransparency(0)
-        myCharacter:SetRenderMode("Default")
+local function fireVoteServer(mapNumber)
+    local eventsFolder = ReplicatedStorage:WaitForChild("Events", 10)
+    if eventsFolder then
+        local playerFolder = eventsFolder:WaitForChild("Player", 10)
+        if playerFolder then
+            local voteEvent = playerFolder:WaitForChild("Vote", 10)
+            if voteEvent and typeof(voteEvent) == "Instance" and voteEvent:IsA("RemoteEvent") then
+                local args = {
+                    [1] = mapNumber
+                }
+                voteEvent:FireServer(unpack(args))
+            else
+                warn("Vote RemoteEvent not found or is not a RemoteEvent.")
+            end
+        else
+            warn("Player folder not found under Events.")
+        end
+    else
+        warn("Events folder not found in ReplicatedStorage.")
     end
 end
+
+VoteTab:Dropdown({
+    Text = "Select Map",
+    Values = {"Map 1", "Map 2", "Map 3", "Map 4"},
+    Default = "Map 1",
+    Callback = function(value)
+        if value == "Map 1" then
+            selectedMapNumber = 1
+        elseif value == "Map 2" then
+            selectedMapNumber = 2
+        elseif value == "Map 3" then
+            selectedMapNumber = 3
+        elseif value == "Map 4" then
+            selectedMapNumber = 4
+        end
+    end
+})
+
+VoteTab:Toggle({
+    Text = "Vote Once",
+    Default = false,
+    Callback = function(state)
+        if state then
+            fireVoteServer(selectedMapNumber)
+        end
+    end
+})
+
+VoteTab:Toggle({
+    Text = "Auto Vote",
+    Default = false,
+    Callback = function(state)
+        autoVoteEnabled = state
+        if autoVoteEnabled then
+            if not voteConnection then
+                voteConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                    fireVoteServer(selectedMapNumber)
+                end)
+            end
+        else
+            if voteConnection then
+                voteConnection:Disconnect()
+                voteConnection = nil
+            end
+        end
+    end
+})
+
+-- ==== skulltab
 
 SkullTab:Toggle({
     Title = "Anti Nigga",
     Default = false,
     Callback = function(state)
-        WhiteModeEnabled = state
-        if state then
-            ApplyWhiteModeToCharacter()
-        else
-            RemoveWhiteModeFromCharacter()
-        end
+        print("Nigga")
     end
 })
 
-Players.LocalPlayer.CharacterAdded:Connect(function(character)
-    if WhiteModeEnabled then
-        task.wait(0.1)
-        ApplyWhiteModeToCharacter()
-    end
-end)
-
-if WhiteModeEnabled then
-    ApplyWhiteModeToCharacter()
-end
+-- ==== FakeTab
 
 local headlessEnabled = false
 local korbloxEnabled = false
@@ -746,7 +786,7 @@ local function applyHeadless()
             end
         end
     end
-})
+end
 
 local function removeHeadless()
     local character = getLocalPlayerCharacter()
@@ -757,6 +797,16 @@ local function removeHeadless()
             local face = head:FindFirstChildOfClass("Decal")
             if face then
                 face.Transparency = 0
+            end
+            -- Re-apply original head mesh/appearance by applying the humanoid description
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                local originalDescription = Players:GetHumanoidDescriptionFromUserId(Players.LocalPlayer.UserId)
+                if originalDescription then
+                    -- To ensure the head mesh reverts, it's best to apply the full description.
+                    -- This might affect other parts of the character as well, but guarantees the head returns.
+                    humanoid:ApplyDescription(originalDescription)
+                end
             end
         end
     end
@@ -770,7 +820,7 @@ local function applyKorbloxRightLeg()
         local humanoid = character:FindFirstChildOfClass("Humanoid")
 
         if loadedKorbloxAccessory and loadedKorbloxAccessory.Parent == character then
-            return
+            return -- Already applied
         end
 
         local success, asset = pcall(function()
@@ -780,6 +830,7 @@ local function applyKorbloxRightLeg()
         if success and asset then
             local accessory = asset:FindFirstChildOfClass("Accessory")
             if accessory then
+                -- Remove existing right leg accessories to prevent duplicates or conflicts
                 for _, child in ipairs(character:GetChildren()) do
                     if child:IsA("Accessory") and child.Name == "Right Leg" then
                         child:Destroy()
@@ -788,6 +839,8 @@ local function applyKorbloxRightLeg()
                 humanoid:AddAccessory(accessory)
                 loadedKorbloxAccessory = accessory
             end
+        else
+            warn("Failed to load Korblox Right Leg asset: " .. (asset or "Unknown error"))
         end
     end
 end
@@ -799,6 +852,7 @@ local function removeKorbloxRightLeg()
             loadedKorbloxAccessory:Destroy()
             loadedKorbloxAccessory = nil
         else
+            -- Fallback: if loadedKorbloxAccessory wasn't tracked, try to find and destroy by MeshId
             for _, child in ipairs(character:GetChildren()) do
                 if child:IsA("Accessory") and child.Handle and child.Handle:FindFirstChildOfClass("SpecialMesh") then
                     if child.Handle:FindFirstChildOfClass("SpecialMesh").MeshId == "rbxassetid://" .. KORBLOX_RIGHT_LEG_ID then
@@ -810,9 +864,11 @@ local function removeKorbloxRightLeg()
 
         local humanoid = character:FindFirstChildOfClass("Humanoid")
         if humanoid then
+            -- Re-apply the original character description to restore the default leg
             local originalDescription = Players:GetHumanoidDescriptionFromUserId(Players.LocalPlayer.UserId)
-            local newDescription = originalDescription:Clone()
-            humanoid:ApplyDescription(newDescription)
+            if originalDescription then
+                humanoid:ApplyDescription(originalDescription)
+            end
         end
     end
 end
@@ -828,9 +884,11 @@ local function removeAllHats()
     end
 end
 
+--- Add UI Elements to GameTab ---
+
 FakeTab:Dropdown({
-    Title = "Fake Bundle (Visual)",
-    Options = {"Headless", "Korblox"},
+    Text = "Fake Bundle (Visual)",
+    Values = {"Headless", "Korblox"},
     Multi = true,
     Callback = function(values)
         if table.find(values, "Headless") and not headlessEnabled then
@@ -852,19 +910,21 @@ FakeTab:Dropdown({
 })
 
 FakeTab:Button({
-    Title = "Remove All Hats",
+    Text = "Remove All Hats",
     Callback = function()
         removeAllHats()
     end
 })
 
+--- Handle Character Respawns ---
+
 Players.LocalPlayer.CharacterAdded:Connect(function(character)
     if headlessEnabled then
-        task.wait(0.1)
+        task.wait(0.1) -- Small delay to ensure character fully loads
         applyHeadless()
     end
     if korbloxEnabled then
-        task.wait(0.1)
+        task.wait(0.1) -- Small delay
         applyKorbloxRightLeg()
     end
 end)
