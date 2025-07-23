@@ -367,7 +367,7 @@ EspTab:Toggle({
 })
 
 EspTab:Toggle({
-    Title = "Bots ESP",
+    Title = "NextBots ESP",
     Callback = function(state)
         ActiveEspBots = state
         if ActiveEspBots then
