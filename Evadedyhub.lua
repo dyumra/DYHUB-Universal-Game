@@ -31,7 +31,7 @@ end
 
 local Confirmed = false
 WindUI:Popup({
-    Title = "DYHUB Loaded! - Evade",
+    Title = "DYHUB Loaded! - Evade (Version: 2.0)",
     Icon = "star",
     IconThemed = true,
     Content = "DYHUB'S TEAM | Join our (dsc.gg/dyhub)",
@@ -44,7 +44,7 @@ WindUI:Popup({
 repeat task.wait() until Confirmed
 
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB - Evade",
+    Title = "DYHUB - Evade (Version: 2.0)",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
@@ -54,19 +54,20 @@ local Window = WindUI:CreateWindow({
 })
 
 local GameTab = Window:Tab({ Title = "Main", Icon = "rocket" })
+local VoteTab = Window:Tab({ Title = "Vote", Icon = "map" })
 local EspTab = Window:Tab({ Title = "Esp", Icon = "eye" })
 local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
 local ReviveTab = Window:Tab({ Title = "Revive", Icon = "shield-plus" })
 local FakeTab = Window:Tab({ Title = "Fake", Icon = "sparkles" })
+local SkullTab = Window:Tab({ Title = "Best", Icon = "skull" })
 local MiscTab = Window:Tab({ Title = "Misc", Icon = "settings-2" })
-local SkullTab = Window:Tab({ Title = "DYHUB", Icon = "skull" })
 
 local ValueSpeed = 16
 local ActiveSpeedBoost = false
 
 PlayerTab:Input({
     Title = "Set Speed (1-100)",
-    placeholder = "Enter speed",
+    placeholder = "Set Speed on Fixing!",
     onChanged = function(value)
         local num = tonumber(value)
         if num and num >= 1 and num <= 100 then
@@ -108,6 +109,8 @@ local ActiveAutoWin = false
 local ActiveAutoFarmMoney = false
 local AutoFarmSummerEvent = false
 local AntiAfkEnabled = true
+local AntiTp = true
+local AntiBypass = true
 
 GameTab:Toggle({
     Title = "Auto Farm Win",
@@ -117,20 +120,30 @@ GameTab:Toggle({
             print("[DYHUB] Auto Farm Win Enabled!")
             spawn(function()
                 while ActiveAutoWin do
-                    local character = LocalPlayer.Character
-                    if character and character:FindFirstChild("HumanoidRootPart") and not character:GetAttribute("Downed") then
-                        local securityPart = Instance.new("Part")
-                        securityPart.Name = "SecurityPartTemp"
-                        securityPart.Size = Vector3.new(10, 1, 10)
-                        securityPart.Position = Vector3.new(0, 500, 0)
-                        securityPart.Anchored = true
-                        securityPart.Transparency = 1
-                        securityPart.CanCollide = false
-                        securityPart.Parent = Workspace
+                    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                    local rootPart = character:FindFirstChild("HumanoidRootPart")
 
-                        character.HumanoidRootPart.CFrame = securityPart.CFrame + Vector3.new(0, 3, 0)
-                        task.wait(0.5)
-                        securityPart:Destroy()
+                    if character and rootPart then
+                        if character:GetAttribute("Downed") then
+                            ReplicatedStorage.Events.Player.ChangePlayerMode:FireServer(true)
+                            print("[DYHUB] Revived for Auto Win!")
+                            task.wait(0.5)
+                        end
+
+                        if not character:GetAttribute("Downed") then
+                            local securityPart = Instance.new("Part")
+                            securityPart.Name = "SecurityPartTemp"
+                            securityPart.Size = Vector3.new(10, 1, 10)
+                            securityPart.Position = Vector3.new(0, 500, 0)
+                            securityPart.Anchored = true
+                            securityPart.Transparency = 1
+                            securityPart.CanCollide = false
+                            securityPart.Parent = Workspace
+
+                            rootPart.CFrame = securityPart.CFrame + Vector3.new(0, 3, 0)
+                            task.wait(0.5)
+                            securityPart:Destroy()
+                        end
                     end
                     task.wait(0.1)
                 end
@@ -149,25 +162,53 @@ GameTab:Toggle({
             print("[DYHUB] Auto Farm Money Enabled!")
             spawn(function()
                 while ActiveAutoFarmMoney do
-                    local character = LocalPlayer.Character
-                    if character and character:FindFirstChild("HumanoidRootPart") and not character:GetAttribute("Downed") then
-                        local downedPlayer = nil
+                    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                    local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+
+                    if character and rootPart then
+                        -- Check if we are downed first
+                        if character:GetAttribute("Downed") then
+                            ReplicatedStorage.Events.Player.ChangePlayerMode:FireServer(true)
+                            print("[DYHUB] Revived for Auto Farm-Money!")
+                            task.wait(0.5)
+                        end
+
+                        -- Try to find a downed player to revive (if that's how money is earned)
+                        local downedPlayerFound = false
                         local playersInGame = Workspace:FindFirstChild("Game") and Workspace.Game:FindFirstChild("Players")
                         if playersInGame then
-                            for _,v in pairs(playersInGame:GetChildren()) do
+                            for _, v in pairs(playersInGame:GetChildren()) do
                                 if v:IsA("Model") and v:FindFirstChildOfClass("Humanoid") and v:GetAttribute("Downed") then
-                                    downedPlayer = v
+                                    -- Found a downed player, warp and revive
+                                    rootPart.CFrame = v.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
+                                    ReplicatedStorage.Events.Character.Interact:FireServer("Revive", true, v)
+                                    print("[DYHUB] Reviving player for Farm Money!")
+                                    task.wait(0.5) -- Wait after interaction
+                                    downedPlayerFound = true
                                     break
                                 end
                             end
                         end
-                        if downedPlayer and downedPlayer:FindFirstChild("HumanoidRootPart") then
-                            character.HumanoidRootPart.CFrame = downedPlayer.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
-                            ReplicatedStorage.Events.Character.Interact:FireServer("Revive", true, downedPlayer)
-                            task.wait(0.5)
+
+                        if not downedPlayerFound then
+                            print("[DYHUB] ⚠️ No downed player found for Auto Farm Money, waiting...")
                         end
+
+                        -- Safety warp to sky to prevent getting stuck (if needed)
+                        local securityPart = Instance.new("Part")
+                        securityPart.Name = "SecurityPartTemp"
+                        securityPart.Size = Vector3.new(10, 1, 10)
+                        securityPart.Position = Vector3.new(0, 500, 0)
+                        securityPart.Anchored = true
+                        securityPart.Transparency = 1
+                        securityPart.CanCollide = false
+                        securityPart.Parent = Workspace
+                        rootPart.CFrame = securityPart.CFrame + Vector3.new(0, 3, 0)
+
+                    else
+                        print("[DYHUB] Character or HumanoidRootPart not found, waiting for spawn.")
                     end
-                    task.wait(0.1)
+                    task.wait(1) -- Wait before next loop iteration
                 end
             end)
         else
@@ -213,8 +254,6 @@ GameTab:Toggle({
                             securityPart.CanCollide = false
                             securityPart.Parent = Workspace
                             rootPart.CFrame = securityPart.CFrame + Vector3.new(0, 3, 0)
-                            task.wait(0.5)
-                            securityPart:Destroy()
                         end
                     else
                         print("[DYHUB] ⚠️ Tickets not found for Summer Event!")
@@ -479,9 +518,9 @@ MiscTab:Toggle({
     Title = "Anti Bypassing (By rhy)",
     Default = true,
     Callback = function(state)
-        AntiAfkEnabled = state
+        AntiBypass = state
         if state then
-            print("[DYHUB] Anti Bypassing Enabled")
+            print("[DYHUB] Anti Bypassing Enabled (Hidden)")
         else
             print("[DYHUB] Anti Bypassing Disabled")
         end
@@ -492,7 +531,7 @@ MiscTab:Toggle({
     Title = "Anti Teleport (By rhy)",
     Default = true,
     Callback = function(state)
-        AntiAfkEnabled = state
+        AntiTp = state
         if state then
             print("[DYHUB] Anti Teleport Enabled")
         else
@@ -514,12 +553,166 @@ MiscTab:Toggle({
     end
 })
 
+local FullbrightEnabled = false
+local NoFogEnabled = false
+local SuperFullBrightnessEnabled = false
+local VibrantEnabled = false
 
+local originalBrightness = game.Lighting.Brightness
+local originalOutdoorAmbient = game.Lighting.OutdoorAmbient
+local originalAmbient = game.Lighting.Ambient
+local originalGlobalShadows = game.Lighting.GlobalShadows
+local originalFogEnd = game.Lighting.FogEnd
+local originalFogStart = game.Lighting.FogStart
+local originalFogColor = game.Lighting.FogColor
+local originalColorCorrectionEnabled = game.Lighting.ColorCorrection.Enabled
+local originalSaturation = game.Lighting.ColorCorrection.Saturation
+local originalContrast = game.Lighting.ColorCorrection.Contrast
+
+local function applyFullBrightness()
+    game.Lighting.Brightness = 2
+    game.Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+    game.Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+    game.Lighting.GlobalShadows = false
+end
+
+local function removeFullBrightness()
+    game.Lighting.Brightness = originalBrightness
+    game.Lighting.OutdoorAmbient = originalOutdoorAmbient
+    game.Lighting.Ambient = originalAmbient
+    game.Lighting.GlobalShadows = originalGlobalShadows
+end
+
+local function applySuperFullBrightness()
+    game.Lighting.Brightness = 5
+    game.Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+    game.Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+    game.Lighting.GlobalShadows = false
+end
+
+local function applyNoFog()
+    game.Lighting.FogEnd = 1000000
+    game.Lighting.FogStart = 999999
+end
+
+local function removeNoFog()
+    game.Lighting.FogEnd = originalFogEnd
+    game.Lighting.FogStart = originalFogStart
+end
+
+local function applyVibrant()
+    game.Lighting.ColorCorrection.Enabled = true
+    game.Lighting.ColorCorrection.Saturation = 0.5
+    game.Lighting.ColorCorrection.Contrast = 0.2
+end
+
+local function removeVibrant()
+    game.Lighting.ColorCorrection.Enabled = originalColorCorrectionEnabled
+    game.Lighting.ColorCorrection.Saturation = originalSaturation
+    game.Lighting.ColorCorrection.Contrast = originalContrast
+end
+
+MiscTab:Toggle({
+    Title = "Full Brightness",
+    Default = false,
+    Callback = function(state)
+        FullbrightEnabled = state
+        if state then
+            applyFullBrightness()
+        else
+            removeFullBrightness()
+        end
+    end
+})
+
+MiscTab:Toggle({
+    Title = "No Fog",
+    Default = false,
+    Callback = function(state)
+        NoFogEnabled = state
+        if state then
+            applyNoFog()
+        else
+            removeNoFog()
+        end
+    end
+})
+
+MiscTab:Toggle({
+    Title = "Super Full Brightness",
+    Default = false,
+    Callback = function(state)
+        SuperFullBrightnessEnabled = state
+        if state then
+            applySuperFullBrightness()
+        else
+            removeFullBrightness()
+        end
+    end
+})
+
+MiscTab:Toggle({
+    Title = "Vibrant +200%",
+    Default = false,
+    Callback = function(state)
+        VibrantEnabled = state
+        if state then
+            applyVibrant()
+        else
+            removeVibrant()
+        end
+    end
+})
+
+if FullbrightEnabled then
+    applyFullBrightness()
+end
+if NoFogEnabled then
+    applyNoFog()
+end
+if SuperFullBrightnessEnabled then
+    applySuperFullBrightness()
+end
+if VibrantEnabled then
+    applyVibrant()
+end
 
 -- ========= Skull Tab =======
 local WhiteModeEnabled = false
 
--- UI Toggle for WhiteMode
+local function getLocalPlayerCharacter()
+    local player = Players.LocalPlayer
+    if player then
+        return player.Character or player.CharacterAdded:Wait()
+    end
+    return nil
+end
+
+function ApplyWhiteModeToCharacter()
+    local myCharacter = getLocalPlayerCharacter()
+
+    if myCharacter and WhiteModeEnabled then
+        myCharacter:SetOutlineColor(Color.White)
+        myCharacter:EnableOutline(true)
+        myCharacter:SetMaterial("SolidWhiteMaterial")
+        myCharacter:SetTintColor(Color.RGB(255, 255, 255))
+        myCharacter:SetTransparency(0)
+        myCharacter:SetRenderMode("UnlitSolidColor")
+    end
+end
+
+function RemoveWhiteModeFromCharacter()
+    local myCharacter = getLocalPlayerCharacter()
+
+    if myCharacter then
+        myCharacter:EnableOutline(false)
+        myCharacter:ResetMaterial()
+        myCharacter:SetTintColor(Color.None)
+        myCharacter:SetTransparency(0)
+        myCharacter:SetRenderMode("Default")
+    end
+end
+
 SkullTab:Toggle({
     Title = "Anti Nigga",
     Default = false,
@@ -533,48 +726,12 @@ SkullTab:Toggle({
     end
 })
 
--- --- CORE FUNCTIONS FOR CHARACTER VISUALS ---
-
-function ApplyWhiteModeToCharacter()
-    local myCharacter = GetLocalPlayerCharacter()
-
-    if myCharacter and WhiteModeEnabled then
-        myCharacter:SetOutlineColor(Color.White)
-        myCharacter:EnableOutline(true)
-        myCharacter:SetMaterial("SolidWhiteMaterial")
-        myCharacter:SetTintColor(Color.RGB(255, 255, 255))
-        myCharacter:SetTransparency(0)
-        myCharacter:SetRenderMode("UnlitSolidColor")
-    end
-end
-
-function RemoveWhiteModeFromCharacter()
-    local myCharacter = GetLocalPlayerCharacter()
-
-    if myCharacter then
-        myCharacter:EnableOutline(false)
-        myCharacter:ResetMaterial()
-        myCharacter:SetTintColor(Color.None)
-        myCharacter:SetTransparency(1)
-        myCharacter:SetRenderMode("Default")
-    end
-end
-
--- --- PERSISTENCE THROUGH DEATH/RESPAWN ---
-
-function OnCharacterSpawned(character)
-    if character == GetLocalPlayerCharacter() and WhiteModeEnabled then
-        ApplyWhiteModeToCharacter()
-    end
-end
-
-function PeriodicallyCheckCharacter()
+Players.LocalPlayer.CharacterAdded:Connect(function(character)
     if WhiteModeEnabled then
+        task.wait(0.1)
         ApplyWhiteModeToCharacter()
-    else
-        RemoveWhiteModeFromCharacter()
     end
-end
+end)
 
 if WhiteModeEnabled then
     ApplyWhiteModeToCharacter()
@@ -588,6 +745,8 @@ local KORBLOX_RIGHT_LEG_ID = 139607718
 
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local InsertService = game:GetService("InsertService")
 
 local function getLocalPlayerCharacter()
     local player = Players.LocalPlayer
@@ -609,9 +768,7 @@ local function applyHeadless()
             end
             local mesh = head:FindFirstChildOfClass("SpecialMesh") or head:FindFirstChildOfClass("CylinderMesh")
             if mesh then
-                mesh.RenderFidelity = Enum.RenderFidelity.Precise
                 mesh.MeshId = ""
-                mesh.VertexColor = Vector3.new(0, 0, 0)
             end
             for _, child in ipairs(head:GetChildren()) do
                 if child:IsA("Accessory") and child.AccessoryType == Enum.AccessoryType.Face then
@@ -636,15 +793,32 @@ local function removeHeadless()
     end
 end
 
+local loadedKorbloxAccessory = nil
+
 local function applyKorbloxRightLeg()
     local character = getLocalPlayerCharacter()
-    if character then
+    if character and character:FindFirstChildOfClass("Humanoid") then
         local humanoid = character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            local currentDescription = humanoid:GetAppliedDescription()
-            local newDescription = currentDescription:Clone()
-            newDescription.RightLeg = KORBLOX_RIGHT_LEG_ID
-            humanoid:ApplyDescription(newDescription)
+
+        if loadedKorbloxAccessory and loadedKorbloxAccessory.Parent == character then
+            return
+        end
+
+        local success, asset = pcall(function()
+            return InsertService:LoadAsset(KORBLOX_RIGHT_LEG_ID)
+        end)
+
+        if success and asset then
+            local accessory = asset:FindFirstChildOfClass("Accessory")
+            if accessory then
+                for _, child in ipairs(character:GetChildren()) do
+                    if child:IsA("Accessory") and child.Name == "Right Leg" then
+                        child:Destroy()
+                    end
+                end
+                humanoid:AddAccessory(accessory)
+                loadedKorbloxAccessory = accessory
+            end
         end
     end
 end
@@ -652,6 +826,19 @@ end
 local function removeKorbloxRightLeg()
     local character = getLocalPlayerCharacter()
     if character then
+        if loadedKorbloxAccessory and loadedKorbloxAccessory.Parent == character then
+            loadedKorbloxAccessory:Destroy()
+            loadedKorbloxAccessory = nil
+        else
+            for _, child in ipairs(character:GetChildren()) do
+                if child:IsA("Accessory") and child.Handle and child.Handle:FindFirstChildOfClass("SpecialMesh") then
+                    if child.Handle:FindFirstChildOfClass("SpecialMesh").MeshId == "rbxassetid://" .. KORBLOX_RIGHT_LEG_ID then
+                        child:Destroy()
+                    end
+                end
+            end
+        end
+
         local humanoid = character:FindFirstChildOfClass("Humanoid")
         if humanoid then
             local originalDescription = Players:GetHumanoidDescriptionFromUserId(Players.LocalPlayer.UserId)
@@ -711,7 +898,7 @@ Players.LocalPlayer.CharacterAdded:Connect(function(character)
         task.wait(0.1)
         applyKorbloxRightLeg()
     end
-end)
+})
 
 if Players.LocalPlayer.Character then
     if headlessEnabled then
@@ -721,3 +908,61 @@ if Players.LocalPlayer.Character then
         applyKorbloxRightLeg()
     end
 end
+
+--- ====== Vote Tab ======
+local selectedMapNumber = 1 -- Default selected map
+local autoVoteEnabled = false
+local voteConnection = nil
+
+local function fireVoteServer(mapNumber)
+    local voteEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("Player"):WaitForChild("Vote")
+    local args = {
+        [1] = mapNumber
+    }
+    voteEvent:FireServer(unpack(args))
+end
+
+VoteTab:Dropdown({
+    Title = "Select Map",
+    Options = {"Map 1", "Map 2", "Map 3", "Map 4"},
+    Default = "Map 1",
+    Callback = function(value)
+        if value == "Map 1" then
+            selectedMapNumber = 1
+        elseif value == "Map 2" then
+            selectedMapNumber = 2
+        elseif value == "Map 3" then
+            selectedMapNumber = 3
+        elseif value == "Map 4" then
+            selectedMapNumber = 4
+        end
+    end
+})
+
+VoteTab:Toggle({
+    Title = "Vote",
+    Default = false,
+    Callback = function(state)
+        if state then
+            fireVoteServer(selectedMapNumber)
+        end
+    end
+})
+
+VoteTab:Toggle({
+    Title = "Auto Vote",
+    Default = false,
+    Callback = function(state)
+        autoVoteEnabled = state
+        if autoVoteEnabled then
+            voteConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                fireVoteServer(selectedMapNumber)
+            end)
+        else
+            if voteConnection then
+                voteConnection:Disconnect()
+                voteConnection = nil
+            end
+        end
+    end
+})
