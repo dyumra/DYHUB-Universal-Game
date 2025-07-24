@@ -117,39 +117,8 @@ MainTab:Toggle({
     end
 })
 
-MainTab:Button({
-    Title = "Infinite Money",
-    Icon = "badge-dollar-sign",
-    Callback = function()
-        local launch = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Launch")
-        launch:FireServer()
-
-        local char = LocalPlayer.Character
-        if not char or not char:FindFirstChildOfClass("Humanoid") then return end
-
-        local humanoid = char:FindFirstChildOfClass("Humanoid")
-        if humanoid.SeatPart and humanoid.SeatPart:IsA("VehicleSeat") then
-            local seat = humanoid.SeatPart
-            local dir = seat.CFrame.LookVector
-            local targetPos = seat.CFrame + dir * 50000000
-
-            -- ย้ายที่นั่ง
-            seat.CFrame = targetPos
-            -- ย้ายตัวละครด้วย (ถ้ามี PrimaryPart)
-            if char.PrimaryPart then
-                char:SetPrimaryPartCFrame(targetPos)
-            end
-        end
-
-        -- รีเทเลพอร์ตไป instance เดิมหลัง delay 3 วินาที
-        task.delay(3, function()
-            TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
-        end)
-    end
-})
-
 MainTab:Toggle({
-    Title = "Auto Farm (1sec - 1M+)",
+    Title = "Auto Farm (1sec - 100K)",
     Icon = "badge-dollar-sign",
     Default = false,
     Callback = function(state)
@@ -180,6 +149,36 @@ MainTab:Toggle({
         end
     end
 })
+
+MainTab:Button({
+    Title = "Infinite Money",
+    Icon = "badge-dollar-sign",
+    Callback = function()
+        local launchRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Launch")
+        launchRemote:FireServer()
+        task.wait(3)
+
+        local char = LocalPlayer.Character
+        if not char or not char:FindFirstChildOfClass("Humanoid") then return end
+
+        local humanoid = char:FindFirstChildOfClass("Humanoid")
+        if humanoid.SeatPart and humanoid.SeatPart:IsA("VehicleSeat") then
+            local seat = humanoid.SeatPart
+            local dir = seat.CFrame.LookVector
+            local targetPos = seat.CFrame + dir * 50000000 -- ลดระยะลงเพื่อความปลอดภัย
+
+            if char.PrimaryPart then
+                char:SetPrimaryPartCFrame(targetPos)
+            end
+        end
+
+        -- รีเทเลพอร์ตกลับไปยัง instance เดิมหลังจาก 3 วินาที
+        task.delay(8, function()
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
+        end)
+    end
+})
+
 
 local ShopList = {
     "block_1", 
