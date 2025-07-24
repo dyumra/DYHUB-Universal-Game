@@ -24,7 +24,7 @@ WindUI:Popup({
 repeat task.wait() until Confirmed
 
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB - Anime Rails @ Lobby (Final Version)",
+    Title = "DYHUB - Anime Rails",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
@@ -33,21 +33,12 @@ local Window = WindUI:CreateWindow({
     Theme = "Dark",
 })
 
-Window:EditOpenButton({
-    Title = "DYHUB - Open",
-    Icon = "monitor",
-    CornerRadius = UDim.new(0, 6),
-    StrokeThickness = 2,
-    Color = ColorSequence.new(Color3.fromRGB(30, 30, 30), Color3.fromRGB(255, 255, 255)),
-    Draggable = true,
-})
-
 -- Tabs
 local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
 local CashTab = Window:Tab({ Title = "Cash", Icon = "circle-dollar-sign" })
-local TeleportTab = Window:Tab({ Title = "Teleport", Icon = "map-pin" })
+--local TeleportTab = Window:Tab({ Title = "Teleport", Icon = "map-pin" })
 local PartyTab = Window:Tab({ Title = "Auto Join", Icon = "handshake" })
-local SpinTab = Window:Tab({ Title = "Spin", Icon = "ferris-wheel" })
+--local SpinTab = Window:Tab({ Title = "Spin", Icon = "ferris-wheel" })
 local GUI = Window:Tab({ Title = "Equip", Icon = "flame" })
 local GamepassTab = Window:Tab({ Title = "Gamepass", Icon = "cookie" })
 local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
@@ -168,65 +159,6 @@ MainTab:Button({
     end,
 })
 
--- spin
-local GotValue = "N/A"
-local CurrSpin = 0
-
--- ป้ายบอกจำนวน spin และสิ่งที่ได้
-local SpinInfoLabel = SpinTab:Label("Spin: Loading...\nGot: " .. GotValue)
-
--- ดึงค่าจาก player.Data.Spin และ CurrClass.Value
-local function updateSpinLabel()
-    local player = game:GetService("Players").LocalPlayer
-    local dataFolder = player:FindFirstChild("Data")
-    local currClass = player:FindFirstChild("CurrClass")
-    
-    if dataFolder and dataFolder:FindFirstChild("Spin") then
-        CurrSpin = dataFolder.Spin.Value
-    end
-
-    if currClass then
-        GotValue = currClass.Value
-    end
-
-    SpinInfoLabel:Set("Spin: " .. CurrSpin .. "\nGot: " .. GotValue)
-end
-
--- ติดตามการเปลี่ยนแปลงของค่าแบบอัตโนมัติ
-task.spawn(function()
-    while task.wait(0.5) do
-        updateSpinLabel()
-    end
-end)
-
--- ปุ่มสุ่ม
-local autoSpinEnabled = false
-
-SpinTab:Toggle({
-    Title = "Auto Spin",
-    Value = false,
-    Callback = function(state)
-        autoSpinEnabled = state
-        if autoSpinEnabled then
-            task.spawn(function()
-                while autoSpinEnabled do
-                    local args = { "Spin" }
-                    game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("ChangeValue"):FireServer(unpack(args))
-                    task.wait(1) -- ปรับความถี่การสุ่มได้ (หน่วย: วินาที)
-                end
-            end)
-        end
-    end,
-})
-
-SpinTab:Button({
-    Title = "Spin Class",
-    Callback = function()
-        local args = { "Spin" }
-        game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("ChangeValue"):FireServer(unpack(args))
-    end,
-})
-
 -- Gamepass Tab
 local selectedGamepass = "All"
 GamepassTab:Dropdown({
@@ -278,7 +210,106 @@ GamepassTab:Button({
     end,
 })
 
--- teleport 
+-- Cash Tab
+local cashInputValue = ""
+
+CashTab:Input({
+    Title = "Enter Dupe Cash Amount",
+    Placeholder = "100 ~ 10000",
+    Callback = function(text)
+        cashInputValue = text
+    end,
+})
+
+CashTab:Button({
+    Title = "Dupe Cash",
+    Icon = "dollar-sign",
+    Callback = function()
+        local input = tonumber(cashInputValue)
+        if input and input >= 100 and input <= 10000 then
+            local args = {
+                [1] = "Wins",
+                [2] = input,
+                [3] = "DYHUB"
+            }
+            ReplicatedStorage:WaitForChild("CodeEvent"):FireServer(unpack(args))
+            print("[DYHUB] Dupe Cash:", input)
+        else
+            print("[DYHUB] Invalid amount:", cashInputValue)
+        end
+    end,
+})
+
+CashTab:Button({
+    Title = "Infinite Dupe Cash",
+    Icon = "infinity",
+    Callback = function()
+        local totalAmount = 999000000
+        local perFire = 999999
+        local times = math.floor(totalAmount / perFire)
+        task.spawn(function()
+            for i = 1, times do
+                local args = {
+                    [1] = "Wins",
+                    [2] = perFire,
+                    [3] = "DYHUB"
+                }
+                ReplicatedStorage:WaitForChild("CodeEvent"):FireServer(unpack(args))
+                task.wait(0.1)
+            end
+            print("[DYHUB] Completed Infinite Cash")
+        end)
+    end,
+})
+
+CashTab:Button({
+    Title = "Infinite Dupe Spin",
+    Icon = "rotate-ccw",
+    Callback = function()
+        local totalAmount = 9999
+        local perFire = 1
+        local times = math.floor(totalAmount / perFire)
+        task.spawn(function()
+            for i = 1, times do
+                local args = {
+                    [1] = "Wins",
+                    [2] = 0,
+                    [3] = "DYHUB"
+                }
+                ReplicatedStorage:WaitForChild("CodeEvent"):FireServer(unpack(args))
+                task.wait(0.05)
+            end
+            print("[DYHUB] Completed Infinite Dupe Spin +10 Spin")
+        end)
+    end,
+})
+
+-- save tab
+ConfigTab:Button({
+    Title = "Save Config",
+    Callback = function()
+        Notify({
+            Title = "Coming Soon!",
+            Description = "Config Settings feature is not yet available.",
+            Duration = 3, -- วินาที
+        })
+        print("[DYHUB] Config Settings, Coming Soon")
+    end,
+})
+
+ConfigTab:Button({
+    Title = "Load Config",
+    Callback = function()
+        Notify({
+            Title = "Coming Soon!",
+            Description = "Config Settings feature is not yet available.",
+            Duration = 3, -- วินาที
+        })
+        print("[DYHUB] Config Settings, Coming Soon")
+    end,
+})
+
+-- teleport tab
 TeleportTab:Button({
     Title = "Teleport to Aura Shop",
     Callback = function()
@@ -367,82 +398,7 @@ TeleportTab:Button({
     end,
 })
 
--- Cash Tab
-local cashInputValue = ""
-
-CashTab:Input({
-    Title = "Enter Dupe Cash Amount",
-    Placeholder = "100 ~ 10000",
-    Callback = function(text)
-        cashInputValue = text
-    end,
-})
-
-CashTab:Button({
-    Title = "Dupe Cash",
-    Icon = "dollar-sign",
-    Callback = function()
-        local input = tonumber(cashInputValue)
-        if input and input >= 100 and input <= 10000 then
-            local args = {
-                [1] = "Wins",
-                [2] = input,
-                [3] = "DYHUB"
-            }
-            ReplicatedStorage:WaitForChild("CodeEvent"):FireServer(unpack(args))
-            print("[DYHUB] Dupe Cash:", input)
-        else
-            print("[DYHUB] Invalid amount:", cashInputValue)
-        end
-    end,
-})
-
-CashTab:Button({
-    Title = "Infinite Dupe Cash",
-    Icon = "infinity",
-    Callback = function()
-        local totalAmount = 999000000
-        local perFire = 999999
-        local times = math.floor(totalAmount / perFire)
-        task.spawn(function()
-            for i = 1, times do
-                local args = {
-                    [1] = "Wins",
-                    [2] = perFire,
-                    [3] = "DYHUB"
-                }
-                ReplicatedStorage:WaitForChild("CodeEvent"):FireServer(unpack(args))
-                task.wait(0.1)
-            end
-            print("[DYHUB] Completed Infinite Cash")
-        end)
-    end,
-})
-
-CashTab:Button({
-    Title = "Infinite Dupe Spin",
-    Icon = "rotate-ccw",
-    Callback = function()
-        local totalAmount = 9999
-        local perFire = 1
-        local times = math.floor(totalAmount / perFire)
-        task.spawn(function()
-            for i = 1, times do
-                local args = {
-                    [1] = "Wins",
-                    [2] = 0,
-                    [3] = "DYHUB"
-                }
-                ReplicatedStorage:WaitForChild("CodeEvent"):FireServer(unpack(args))
-                task.wait(0.05)
-            end
-            print("[DYHUB] Completed Infinite Dupe Spin +10 Spin")
-        end)
-    end,
-})
-
 -- Player Tab
-
 local espEnabled = false
 local espUpdateConnection
 local espOptions = {
@@ -651,30 +607,6 @@ PlayerTab:Toggle({
     end,
 })
 
-ConfigTab:Button({
-    Title = "Save Config",
-    Callback = function()
-        Notify({
-            Title = "Coming Soon!",
-            Description = "Config Settings feature is not yet available.",
-            Duration = 3, -- วินาที
-        })
-        print("[DYHUB] Config Settings, Coming Soon")
-    end,
-})
-
-ConfigTab:Button({
-    Title = "Load Config",
-    Callback = function()
-        Notify({
-            Title = "Coming Soon!",
-            Description = "Config Settings feature is not yet available.",
-            Duration = 3, -- วินาที
-        })
-        print("[DYHUB] Config Settings, Coming Soon")
-    end,
-})
-
 -- Misc Tab
 local antiAfkEnabled = false
 local antiAdminEnabled = false
@@ -871,6 +803,65 @@ PartyTab:Button({
         }
         game:GetService("ReplicatedStorage"):WaitForChild("ApplyTP"):FireServer(unpack(args))
         print("[DYHUB] Auto Join sent:", allowFriend, maxPlayers, nightmareMode)
+    end,
+})
+
+--- spin
+local GotValue = "N/A"
+local CurrSpin = 0
+
+-- ป้ายบอกจำนวน spin และสิ่งที่ได้
+local SpinInfoLabel = SpinTab:Label("Spin: Loading...\nGot: " .. GotValue)
+
+-- ดึงค่าจาก player.Data.Spin และ CurrClass.Value
+local function updateSpinLabel()
+    local player = game:GetService("Players").LocalPlayer
+    local dataFolder = player:FindFirstChild("Data")
+    local currClass = player:FindFirstChild("CurrClass")
+    
+    if dataFolder and dataFolder:FindFirstChild("Spin") then
+        CurrSpin = dataFolder.Spin.Value
+    end
+
+    if currClass then
+        GotValue = currClass.Value
+    end
+
+    SpinInfoLabel:Set("Spin: " .. CurrSpin .. "\nGot: " .. GotValue)
+end
+
+-- ติดตามการเปลี่ยนแปลงของค่าแบบอัตโนมัติ
+task.spawn(function()
+    while task.wait(0.5) do
+        updateSpinLabel()
+    end
+end)
+
+-- ปุ่มสุ่ม
+local autoSpinEnabled = false
+
+SpinTab:Toggle({
+    Title = "Auto Spin",
+    Value = false,
+    Callback = function(state)
+        autoSpinEnabled = state
+        if autoSpinEnabled then
+            task.spawn(function()
+                while autoSpinEnabled do
+                    local args = { "Spin" }
+                    game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("ChangeValue"):FireServer(unpack(args))
+                    task.wait(1) -- ปรับความถี่การสุ่มได้ (หน่วย: วินาที)
+                end
+            end)
+        end
+    end,
+})
+
+SpinTab:Button({
+    Title = "Spin Class",
+    Callback = function()
+        local args = { "Spin" }
+        game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("ChangeValue"):FireServer(unpack(args))
     end,
 })
 
