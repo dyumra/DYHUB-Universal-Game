@@ -33,7 +33,7 @@ end
 
 local Confirmed = false
 WindUI:Popup({
-    Title = "DYHUB Loaded! - Evade (Version: 2.83)",
+    Title = "DYHUB Loaded! - Evade",
     Icon = "star",
     IconThemed = true,
     Content = "DYHUB'S TEAM | Join our (dsc.gg/dyhub)",
@@ -46,13 +46,22 @@ WindUI:Popup({
 repeat task.wait() until Confirmed
 
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB - Evade (Version: 2.83)",
+    Title = "DYHUB - Evade @ Normal Server (Version: 2.85)",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
     Size = UDim2.fromOffset(720, 500),
     Transparent = true,
     Theme = "Dark",
+})
+
+Window:EditOpenButton({
+    Title = "DYHUB - Open",
+    Icon = "monitor",
+    CornerRadius = UDim.new(0, 6),
+    StrokeThickness = 2,
+    Color = ColorSequence.new(Color3.fromRGB(30, 30, 30), Color3.fromRGB(255, 255, 255)),
+    Draggable = true,
 })
 
 --- Add UI Elements to GameTab ---
