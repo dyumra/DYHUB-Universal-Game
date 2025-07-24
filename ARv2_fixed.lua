@@ -362,27 +362,27 @@ local function updateESP()
 
             if data and data:FindFirstChild("CurrChar") and data.CurrMorph:IsA("StringValue") then
                 addLine("Morph: " .. data.CurrChar.Value, y)
-                y += 10
+                y += 20
             end
 
             if data and data:FindFirstChild("CurrClass") and data.CurrClass:IsA("StringValue") then
                 addLine("Class: " .. data.CurrClass.Value, y)
-                y += 10
+                y += 20
             end
 
             if data and data:FindFirstChild("CurrClassSec") and data.CurrClassSec:IsA("StringValue") then
                 addLine("Class Stol-2: " .. data.CurrClassSec.Value, y)
-                y += 10
+                y += 20
             end
 
             if data and data:FindFirstChild("CurrTitle") and data.CurrTitle:IsA("StringValue") then
                 addLine("Title: " .. data.CurrTitle.Value, y)
-                y += 10
+                y += 20
             end
 
             if data and data:FindFirstChild("CurrSelect") and data.CurrSelect:IsA("StringValue") then
                 addLine("Aura: " .. data.CurrSelect.Value, y)
-                y += 10
+                y += 20
             end
         end
     end
@@ -502,6 +502,12 @@ PlayerTab:Toggle({
         espOptions.ShowAura = state
     end,
 })
+
+RunService.Heartbeat:Connect(function()
+    if espEnabled then
+        updateESP()
+    end
+end)
 
 -- Misc Tab
 local antiAfkEnabled = false
@@ -702,34 +708,6 @@ PartyTab:Button({
     end,
 })
 
---- spin
-local autoSpinEnabled = false
-
-SpinTab:Toggle({
-    Title = "Auto Spin",
-    Value = false,
-    Callback = function(state)
-        autoSpinEnabled = state
-        if autoSpinEnabled then
-            task.spawn(function()
-                while autoSpinEnabled do
-                    local args = { "Spin" }
-                    game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("ChangeValue"):FireServer(unpack(args))
-                    task.wait(1) -- ปรับความถี่การสุ่มได้ (หน่วย: วินาที)
-                end
-            end)
-        end
-    end,
-})
-
-SpinTab:Button({
-    Title = "Spin Class",
-    Callback = function()
-        local args = { "Spin" }
-        game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("ChangeValue"):FireServer(unpack(args))
-    end,
-})
-
 -- teleport 
 TeleportTab:Button({
     Title = "Teleport to Aura Shop",
@@ -843,12 +821,5 @@ ConfigTab:Button({
         print("[DYHUB] Config Settings, Coming Soon")
     end,
 })
-
--- Main loop
-RunService.Heartbeat:Connect(function()
-    if espEnabled then
-        updateESP()
-    end
-end)
 
 print("[DYHUB] Script loaded successfully!")
