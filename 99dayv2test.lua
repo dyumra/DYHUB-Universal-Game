@@ -35,6 +35,149 @@ local Tabs = {
     Misc = Window:Tab({ Title = "Misc", Icon = "tool" }),
 }
 
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local VirtualInput = game:GetService("VirtualInputManager")
+local CoreGui = game:GetService("CoreGui")
+
+local LocalPlayer = Players.LocalPlayer
+
+local afkPart
+local autoFarmActive = false
+local autoFarmThread
+
+local function createAfkPlatform()
+    if afkPart then
+        afkPart:Destroy()
+    end
+    afkPart = Instance.new("Part")
+    afkPart.Size = Vector3.new(10, 1, 10)
+    afkPart.Anchored = true
+    afkPart.CanCollide = false
+    afkPart.Transparency = 0.5
+    local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        afkPart.CFrame = hrp.CFrame + Vector3.new(0, 500, 0)
+    else
+        afkPart.CFrame = CFrame.new(0, 500, 0)
+    end
+    afkPart.Name = "AFKPad"
+    afkPart.Parent = workspace
+end
+
+local function tweenToAfk()
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp or not afkPart then return end
+
+    local tween = TweenService:Create(hrp, TweenInfo.new(8, Enum.EasingStyle.Linear), {
+        CFrame = afkPart.CFrame + Vector3.new(0, 3, 0)
+    })
+    tween:Play()
+    tween.Completed:Wait()
+
+    afkPart.Transparency = 1
+    afkPart.CanCollide = false
+
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum.Sit = true
+    end
+end
+
+local function startAutoFarm()
+    if autoFarmActive then return end
+    autoFarmActive = true
+
+    createAfkPlatform()
+    tweenToAfk()
+
+    local RequestConsumeItem = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("RequestConsumeItem")
+
+    local lastPos = nil
+    local stuckCounter = 0
+
+    autoFarmThread = task.spawn(function()
+        while autoFarmActive do
+            pcall(function()
+                RequestConsumeItem:InvokeServer(Instance.new("Model"))
+            end)
+
+            -- Anti AFK - move mouse click every 300 seconds (5 minutes)
+            task.spawn(function()
+                while autoFarmActive do
+                    VirtualInput:SendMouseButtonEvent(0, 0, 0, true, nil, 0)
+                    task.wait(300)
+                end
+            end)
+
+            -- Anti Stuck check every second
+            task.spawn(function()
+                while autoFarmActive do
+                    local char = LocalPlayer.Character
+                    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                    if hrp then
+                        if lastPos and (hrp.Position - lastPos).Magnitude < 1 then
+                            stuckCounter = stuckCounter + 1
+                            if stuckCounter >= 10 then
+                                tweenToAfk()
+                                stuckCounter = 0
+                            end
+                        else
+                            stuckCounter = 0
+                            lastPos = hrp.Position
+                        end
+                    end
+                    task.wait(1)
+                end
+            end)
+
+            -- Auto reconnect check
+            task.spawn(function()
+                while autoFarmActive do
+                    local reconnectUI = CoreGui:FindFirstChild("RobloxPromptGui")
+                    if reconnectUI and reconnectUI:FindFirstChild("ErrorPrompt") then
+                        local button = reconnectUI.ErrorPrompt:FindFirstChild("ButtonPrimary")
+                        if button and button:IsA("TextButton") and button.Visible then
+                            task.wait(2)
+                            pcall(function()
+                                button:Activate()
+                            end)
+                        end
+                    end
+                    task.wait(5)
+                end
+            end)
+
+            task.wait(1)
+        end
+    end)
+end
+
+local function stopAutoFarm()
+    autoFarmActive = false
+    if afkPart and afkPart.Parent then
+        afkPart:Destroy()
+    end
+    if autoFarmThread then
+        task.cancel(autoFarmThread)
+        autoFarmThread = nil
+    end
+end
+
+Tabs.Main:Toggle({
+    Title = "Auto Farm (Days)",
+    Default = false,
+    Callback = function(state)
+        if state then
+            startAutoFarm()
+        else
+            stopAutoFarm()
+        end
+    end
+})
 
 local infHungerActive = false
 local infHungerThread
@@ -747,29 +890,59 @@ Tabs.Player:Button({
     end
 })
 
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local noclipConnection
+
 Tabs.Player:Toggle({
-    Title = "No Clip",
+    Title = "No Clip",
+    Default = false,
+    Callback = function(state)
+        if state then
+            noclipConnection = RunService.Stepped:Connect(function()
+                local Character = LocalPlayer.Character
+                if Character then
+                    for _, part in pairs(Character:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+            end)
+        else
+            if noclipConnection then
+                noclipConnection:Disconnect()
+                noclipConnection = nil
+            end
+            local Character = LocalPlayer.Character
+            if Character then
+                for _, part in pairs(Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = true
+                    end
+                end
+            end
+        end
+    end
+})
+
+
+Tabs.Player:Toggle({
+    Title = "No Cooldown (Good Axe Only)",
     Default = false,
     Callback = function(state)
         local LocalPlayer = game:GetService("Players").LocalPlayer
-        local Character = LocalPlayer.Character
-        if Character then
-            local Humanoid = Character:FindFirstChildOfClass("Humanoid")
-            if Humanoid then
-                Humanoid.WalkSpeed = 16
-                Humanoid.JumpPower = 50
-            end
-            for _, part in pairs(Character:GetChildren()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = not state
-                end
-            end
+        local Humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if Humanoid then
+            Humanoid.BreakJointsOnDeath = not state
         end
     end
 })
 
 Tabs.Player:Toggle({
-    Title = "No Fall Damage",
+    Title = "God mode (In development)",
     Default = false,
     Callback = function(state)
         local LocalPlayer = game:GetService("Players").LocalPlayer
