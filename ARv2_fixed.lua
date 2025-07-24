@@ -294,6 +294,7 @@ CashTab:Button({
 })
 
 -- Player Tab
+
 local espEnabled = false
 local espUpdateConnection
 local espOptions = {
@@ -760,21 +761,7 @@ SpinTab:Button({
     end,
 })
 
-ConfigTab:Button({
-    Title = "Save Config",
-    Callback = function()
-        print("[DYHUB] Config Settings, Coming Soon")
-    end,
-})
-
-ConfigTab:Button({
-    Title = "Load Config",
-    Callback = function()
-        print("[DYHUB] Config Settings, Coming Soon")
-    end,
-})
-
--- teleport tab
+-- teleport 
 TeleportTab:Button({
     Title = "Teleport to Aura Shop",
     Callback = function()
@@ -860,6 +847,31 @@ TeleportTab:Button({
             hrp.CFrame = CFrame.new(0.462113261, 188.169067, -142.787186, 0.987219155, 5.76863819e-08, -0.159368694, -5.34411058e-08, 1, 3.09239034e-08, 0.159368694, -2.20118288e-08, 0.987219155)
             print("[DYHUB] Teleported to Battle Royale")
         end
+    end,
+})
+
+-- Config Tab
+ConfigTab:Button({
+    Title = "Save Config",
+    Callback = function()
+        Notify({
+            Title = "Coming Soon!",
+            Description = "Config Settings feature is not yet available.",
+            Duration = 3, -- วินาที
+        })
+        print("[DYHUB] Config Settings, Coming Soon")
+    end,
+})
+
+ConfigTab:Button({
+    Title = "Load Config",
+    Callback = function()
+        Notify({
+            Title = "Coming Soon!",
+            Description = "Config Settings feature is not yet available.",
+            Duration = 3, -- วินาที
+        })
+        print("[DYHUB] Config Settings, Coming Soon")
     end,
 })
 
