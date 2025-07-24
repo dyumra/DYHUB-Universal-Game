@@ -29,13 +29,22 @@ repeat task.wait() until Confirmed
 
 -- Main Window
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB - Aether Adventure",
+    Title = "DYHUB - Aether Adventure @ Free Version",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
     Size = UDim2.fromOffset(720, 500),
     Transparent = true,
     Theme = "Dark",
+})
+
+Window:EditOpenButton({
+    Title = "Open DYHUB",
+    Icon = "monitor",
+    CornerRadius = UDim.new(0, 6),
+    StrokeThickness = 2,
+    Color = ColorSequence.new(Color3.fromRGB(30, 30, 30), Color3.fromRGB(255, 255, 255)),
+    Draggable = true,
 })
 
 local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
