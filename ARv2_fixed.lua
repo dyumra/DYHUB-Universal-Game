@@ -36,7 +36,7 @@ local Window = WindUI:CreateWindow({
 -- Tabs
 local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
 local CashTab = Window:Tab({ Title = "Cash", Icon = "circle-dollar-sign" })
---local TeleportTab = Window:Tab({ Title = "Teleport", Icon = "map-pin" })
+local TeleportTab = Window:Tab({ Title = "Teleport", Icon = "map-pin" })
 local PartyTab = Window:Tab({ Title = "Auto Join", Icon = "handshake" })
 --local SpinTab = Window:Tab({ Title = "Spin", Icon = "ferris-wheel" })
 local GUI = Window:Tab({ Title = "Equip", Icon = "flame" })
