@@ -10,7 +10,7 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 
 local Confirmed = false
 WindUI:Popup({
-    Title = "DYHUB Loaded!",
+    Title = "DYHUB Loaded! - Build A Plane",
     Icon = "star",
     IconThemed = true,
     Content = "DYHUB TEAM - Join us at dsc.gg/dyhub",
@@ -24,7 +24,7 @@ repeat task.wait() until Confirmed
 local Window = WindUI:CreateWindow({
     Title = "DYHUB - Build A Plane",
     IconThemed = true,
-    Icon = "rocket",
+    Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
     Size = UDim2.fromOffset(720, 500),
     Transparent = true,
