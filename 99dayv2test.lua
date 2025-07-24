@@ -1,4 +1,7 @@
+repeat task.wait() until game:IsLoaded()
+
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
@@ -6,14 +9,28 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local UserInputService = game:GetService("UserInputService")
 
+local Confirmed = false
+WindUI:Popup({
+    Title = "DYHUB Loaded! - 99 Night in the Forest",
+    Icon = "star",
+    IconThemed = true,
+    Content = "DYHUB'S TEAM | Join our (dsc.gg/dyhub)",
+    Buttons = {
+        { Title = "Cancel", Variant = "Secondary", Callback = function() end },
+        { Title = "Continue", Icon = "arrow-right", Callback = function() Confirmed = true end, Variant = "Primary" }
+    }
+})
+repeat task.wait() until Confirmed
+
 local Window = WindUI:CreateWindow({
-    Folder = "DYHUB Config | 99-N-I-T-F V2",
-    Title = "DYHUB | 99 Nights in the Forest",
+    Folder = "DYHUB Config | 99NitF | V3",
+    Title = "DYHUB - 99 Night in the Forest @ In-game (Beta)",
+    IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
+    Size = UDim2.fromOffset(720, 500),
+    Transparent = true,
     Theme = "Dark",
-    Size = UDim2.fromOffset(500, 350),
-    HasOutline = true,
 })
 
 Window:EditOpenButton({
