@@ -51,8 +51,8 @@ local PartyTab = Window:Tab({ Title = "Auto Join", Icon = "handshake" })
 local GUI = Window:Tab({ Title = "Equip", Icon = "flame" })
 local GamepassTab = Window:Tab({ Title = "Gamepass", Icon = "cookie" })
 local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
-local MiscTab = Window:Tab({ Title = "Misc", Icon = "cog" })
-local ConfigTab = Window:Tab({ Title = "Config", Icon = "file-cog" })
+local MiscTab = Window:Tab({ Title = "Misc", Icon = "file-cog" })
+local ConfigTab = Window:Tab({ Title = "Config", Icon = "cog" })
 
 -- Main Tab
 local event = ReplicatedStorage:WaitForChild("Events"):WaitForChild("ChangeValue")
@@ -703,37 +703,6 @@ PartyTab:Button({
 })
 
 --- spin
-local GotValue = "N/A"
-local CurrSpin = 0
-
--- ป้ายบอกจำนวน spin และสิ่งที่ได้
-local SpinInfoLabel = SpinTab:Label("Spin: Loading...\nGot: " .. GotValue)
-
--- ดึงค่าจาก player.Data.Spin และ CurrClass.Value
-local function updateSpinLabel()
-    local player = game:GetService("Players").LocalPlayer
-    local dataFolder = player:FindFirstChild("Data")
-    local currClass = player:FindFirstChild("CurrClass")
-    
-    if dataFolder and dataFolder:FindFirstChild("Spin") then
-        CurrSpin = dataFolder.Spin.Value
-    end
-
-    if currClass then
-        GotValue = currClass.Value
-    end
-
-    SpinInfoLabel:Set("Spin: " .. CurrSpin .. "\nGot: " .. GotValue)
-end
-
--- ติดตามการเปลี่ยนแปลงของค่าแบบอัตโนมัติ
-task.spawn(function()
-    while task.wait(0.5) do
-        updateSpinLabel()
-    end
-end)
-
--- ปุ่มสุ่ม
 local autoSpinEnabled = false
 
 SpinTab:Toggle({
