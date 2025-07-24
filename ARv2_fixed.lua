@@ -36,7 +36,7 @@ local Window = WindUI:CreateWindow({
 -- Tabs
 local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
 local CashTab = Window:Tab({ Title = "Cash", Icon = "circle-dollar-sign" })
-local TeleportTab = Window:Tab({ Title = "Teleport", Icon = "map-pin" })
+--local TeleportTab = Window:Tab({ Title = "Teleport", Icon = "map-pin" })
 local PartyTab = Window:Tab({ Title = "Auto Join", Icon = "handshake" })
 --local SpinTab = Window:Tab({ Title = "Spin", Icon = "ferris-wheel" })
 local GUI = Window:Tab({ Title = "Equip", Icon = "flame" })
@@ -281,120 +281,6 @@ CashTab:Button({
             end
             print("[DYHUB] Completed Infinite Dupe Spin +10 Spin")
         end)
-    end,
-})
-
--- save tab
-ConfigTab:Button({
-    Title = "Save Config",
-    Callback = function()
-        Notify({
-            Title = "Coming Soon!",
-            Description = "Config Settings feature is not yet available.",
-            Duration = 3, -- วินาที
-        })
-        print("[DYHUB] Config Settings, Coming Soon")
-    end,
-})
-
-ConfigTab:Button({
-    Title = "Load Config",
-    Callback = function()
-        Notify({
-            Title = "Coming Soon!",
-            Description = "Config Settings feature is not yet available.",
-            Duration = 3, -- วินาที
-        })
-        print("[DYHUB] Config Settings, Coming Soon")
-    end,
-})
-
--- teleport tab
-TeleportTab:Button({
-    Title = "Teleport to Aura Shop",
-    Callback = function()
-        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            hrp.CFrame = CFrame.new(-5.7536335, 188.169067, -131.537506, -0.10051205, 8.16659522e-08, 0.99493587, -3.84045897e-08, 1, -8.59613962e-08, -0.99493587, -4.68502606e-08, -0.10051205)
-            print("[DYHUB] Teleported to Aura Shop")
-        end
-    end,
-})
-
-TeleportTab:Button({
-    Title = "Teleport to Class Shop",
-    Callback = function()
-        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            hrp.CFrame = CFrame.new(-3.96356249, 188.169052, -99.7206345, 0.217696652, 4.36522107e-08, 0.976016462, 1.9954145e-08, 1, -4.9175565e-08, -0.976016462, 3.0180928e-08, 0.217696652)
-            print("[DYHUB] Teleported to Class Shop")
-        end
-    end,
-})
-
-TeleportTab:Button({
-    Title = "Teleport to Morph Shop",
-    Callback = function()
-        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            hrp.CFrame = CFrame.new(8.6613245, 188.169067, -97.1435318, 0.779245794, -3.30689467e-08, -0.626718462, -1.24927118e-08, 1, -6.82983554e-08, 0.626718462, 6.10506206e-08, 0.779245794)
-            print("[DYHUB] Teleported to Morph Shop")
-        end
-    end,
-})
-
-TeleportTab:Button({
-    Title = "Teleport to Npc Spin",
-    Callback = function()
-        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            hrp.CFrame = CFrame.new(8.35407925, 188.169067, -132.966141, -0.510008216, -1.13285189e-07, -0.86016953, 1.64339864e-09, 1, -1.32675396e-07, 0.86016953, -6.90791424e-08, -0.510008216)
-            print("[DYHUB] Teleported to Spin")
-        end
-    end,
-})
-
-TeleportTab:Button({
-    Title = "Teleport to Title Shop",
-    Callback = function()
-        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            hrp.CFrame = CFrame.new(-14.3617506, 188.169052, -27.776825, -0.999740958, 5.87875304e-09, -0.0227609444, 5.73739145e-09, 1, 6.27602681e-09, 0.0227609444, 6.14381257e-09, -0.999740958)
-            print("[DYHUB] Teleported to Title Shop")
-        end
-    end,
-})
-
-TeleportTab:Button({
-    Title = "Teleport to Tutorial",
-    Callback = function()
-        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            hrp.CFrame = CFrame.new(1.71302092, 188.169052, -60.757412, -0.999253094, 9.66736309e-08, 0.0386431366, 9.36806828e-08, 1, -7.92618096e-08, -0.0386431366, -7.55824914e-08, -0.999253094)
-            print("[DYHUB] Teleported to Tutorial")
-        end
-    end,
-})
-
-TeleportTab:Button({
-    Title = "Teleport to AFK World",
-    Callback = function()
-        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            hrp.CFrame = CFrame.new(18.6007061, 188.169052, -24.452446, -0.940061092, -3.15264685e-08, 0.34100607, -2.33052724e-08, 1, 2.82050365e-08, -0.34100607, 1.85672189e-08, -0.940061092)
-            print("[DYHUB] Teleported to AFK World")
-        end
-    end,
-})
-
-TeleportTab:Button({
-    Title = "Teleport to Battle Royale",
-    Callback = function()
-        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            hrp.CFrame = CFrame.new(0.462113261, 188.169067, -142.787186, 0.987219155, 5.76863819e-08, -0.159368694, -5.34411058e-08, 1, 3.09239034e-08, 0.159368694, -2.20118288e-08, 0.987219155)
-            print("[DYHUB] Teleported to Battle Royale")
-        end
     end,
 })
 
@@ -862,6 +748,109 @@ SpinTab:Button({
     Callback = function()
         local args = { "Spin" }
         game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("ChangeValue"):FireServer(unpack(args))
+    end,
+})
+
+ConfigTab:Button({
+    Title = "Save Config",
+    Callback = function()
+        print("[DYHUB] Config Settings, Coming Soon")
+    end,
+})
+
+ConfigTab:Button({
+    Title = "Load Config",
+    Callback = function()
+        print("[DYHUB] Config Settings, Coming Soon")
+    end,
+})
+
+-- teleport tab
+TeleportTab:Button({
+    Title = "Teleport to Aura Shop",
+    Callback = function()
+        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.CFrame = CFrame.new(-5.7536335, 188.169067, -131.537506, -0.10051205, 8.16659522e-08, 0.99493587, -3.84045897e-08, 1, -8.59613962e-08, -0.99493587, -4.68502606e-08, -0.10051205)
+            print("[DYHUB] Teleported to Aura Shop")
+        end
+    end,
+})
+
+TeleportTab:Button({
+    Title = "Teleport to Class Shop",
+    Callback = function()
+        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.CFrame = CFrame.new(-3.96356249, 188.169052, -99.7206345, 0.217696652, 4.36522107e-08, 0.976016462, 1.9954145e-08, 1, -4.9175565e-08, -0.976016462, 3.0180928e-08, 0.217696652)
+            print("[DYHUB] Teleported to Class Shop")
+        end
+    end,
+})
+
+TeleportTab:Button({
+    Title = "Teleport to Morph Shop",
+    Callback = function()
+        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.CFrame = CFrame.new(8.6613245, 188.169067, -97.1435318, 0.779245794, -3.30689467e-08, -0.626718462, -1.24927118e-08, 1, -6.82983554e-08, 0.626718462, 6.10506206e-08, 0.779245794)
+            print("[DYHUB] Teleported to Morph Shop")
+        end
+    end,
+})
+
+TeleportTab:Button({
+    Title = "Teleport to Npc Spin",
+    Callback = function()
+        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.CFrame = CFrame.new(8.35407925, 188.169067, -132.966141, -0.510008216, -1.13285189e-07, -0.86016953, 1.64339864e-09, 1, -1.32675396e-07, 0.86016953, -6.90791424e-08, -0.510008216)
+            print("[DYHUB] Teleported to Spin")
+        end
+    end,
+})
+
+TeleportTab:Button({
+    Title = "Teleport to Title Shop",
+    Callback = function()
+        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.CFrame = CFrame.new(-14.3617506, 188.169052, -27.776825, -0.999740958, 5.87875304e-09, -0.0227609444, 5.73739145e-09, 1, 6.27602681e-09, 0.0227609444, 6.14381257e-09, -0.999740958)
+            print("[DYHUB] Teleported to Title Shop")
+        end
+    end,
+})
+
+TeleportTab:Button({
+    Title = "Teleport to Tutorial",
+    Callback = function()
+        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.CFrame = CFrame.new(1.71302092, 188.169052, -60.757412, -0.999253094, 9.66736309e-08, 0.0386431366, 9.36806828e-08, 1, -7.92618096e-08, -0.0386431366, -7.55824914e-08, -0.999253094)
+            print("[DYHUB] Teleported to Tutorial")
+        end
+    end,
+})
+
+TeleportTab:Button({
+    Title = "Teleport to AFK World",
+    Callback = function()
+        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.CFrame = CFrame.new(18.6007061, 188.169052, -24.452446, -0.940061092, -3.15264685e-08, 0.34100607, -2.33052724e-08, 1, 2.82050365e-08, -0.34100607, 1.85672189e-08, -0.940061092)
+            print("[DYHUB] Teleported to AFK World")
+        end
+    end,
+})
+
+TeleportTab:Button({
+    Title = "Teleport to Battle Royale",
+    Callback = function()
+        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.CFrame = CFrame.new(0.462113261, 188.169067, -142.787186, 0.987219155, 5.76863819e-08, -0.159368694, -5.34411058e-08, 1, 3.09239034e-08, 0.159368694, -2.20118288e-08, 0.987219155)
+            print("[DYHUB] Teleported to Battle Royale")
+        end
     end,
 })
 
