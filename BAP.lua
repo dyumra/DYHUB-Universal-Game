@@ -151,32 +151,34 @@ MainTab:Toggle({
 })
 
 MainTab:Button({
-    Title = "Infinite Money",
-    Icon = "badge-dollar-sign",
-    Callback = function()
-        local launchRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Launch")
-        launchRemote:FireServer()
-        task.wait(3)
+    Title = "Infinite Money",
+    Icon = "badge-dollar-sign",
+    Callback = function()
+        task.spawn(function()
+            local launchRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Launch")
+            launchRemote:FireServer()
+            task.wait(3)
 
-        local char = LocalPlayer.Character
-        if not char or not char:FindFirstChildOfClass("Humanoid") then return end
+            local char = LocalPlayer.Character
+            if not char or not char:FindFirstChildOfClass("Humanoid") then return end
 
-        local humanoid = char:FindFirstChildOfClass("Humanoid")
-        if humanoid.SeatPart and humanoid.SeatPart:IsA("VehicleSeat") then
-            local seat = humanoid.SeatPart
-            local dir = seat.CFrame.LookVector
-            local targetPos = seat.CFrame + dir * 50000000 -- ลดระยะลงเพื่อความปลอดภัย
+            local humanoid = char:FindFirstChildOfClass("Humanoid")
+            if humanoid.SeatPart and humanoid.SeatPart:IsA("VehicleSeat") then
+                local seat = humanoid.SeatPart
+                local dir = seat.CFrame.LookVector
+                local targetPos = seat.CFrame + dir * 50000000
 
-            if char.PrimaryPart then
-                char:SetPrimaryPartCFrame(targetPos)
-            end
-        end
+                seat.CFrame = targetPos
+                if char.PrimaryPart then
+                    char:SetPrimaryPartCFrame(targetPos)
+                end
 
-        -- รีเทเลพอร์ตกลับไปยัง instance เดิมหลังจาก 3 วินาที
-        task.delay(8, function()
-            TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
-        end)
-    end
+                task.delay(8, function()
+                    TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
+                end)
+            end
+        end)
+    end
 })
 
 
