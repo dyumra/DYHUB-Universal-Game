@@ -137,7 +137,7 @@ MainTab:Toggle({
                     if humanoid.SeatPart and humanoid.SeatPart:IsA("VehicleSeat") then
                         local seat = humanoid.SeatPart
                         local dir = seat.CFrame.LookVector
-                        local targetPos = seat.CFrame + dir * 10000000
+                        local targetPos = seat.CFrame + dir * 22222222
 
                         seat.CFrame = targetPos
                         if char.PrimaryPart then
@@ -166,7 +166,7 @@ MainTab:Button({
             if humanoid.SeatPart and humanoid.SeatPart:IsA("VehicleSeat") then
                 local seat = humanoid.SeatPart
                 local dir = seat.CFrame.LookVector
-                local targetPos = seat.CFrame + dir * 50000000
+                local targetPos = seat.CFrame + dir * 33333333
 
                 seat.CFrame = targetPos
                 if char.PrimaryPart then
