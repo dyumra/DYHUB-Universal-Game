@@ -28,7 +28,7 @@ Window:EditOpenButton({
 local Tabs = {
     Main = Window:Tab({ Title = "Main", Icon = "star" }),
     Teleport = Window:Tab({ Title = "Teleport", Icon = "rocket" }),
-    Player = Window:Tab({ Title = "Player", Icon = "user" }),
+    --Player = Window:Tab({ Title = "Player", Icon = "user" }),
     Esp = Window:Tab({ Title = "Esp", Icon = "eye" }),
     Bring = Window:Tab({ Title = "Bring Items", Icon = "package" }),
     Hitbox = Window:Tab({ Title = "Hitbox", Icon = "target" }),
