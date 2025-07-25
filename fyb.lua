@@ -382,7 +382,7 @@ local function createNotif(title, content, duration)
 end
 
 -- Test notification (fixed - was outside a function)
-createNotif("???", "Welcome to Viper Join our Discord Community You will find Scripts There! ", 5)
+createNotif("Notification", "Welcome to DYHUB Join our Discord Community for Update! ", 5)
 
 -- Check if essential components loaded
 if not Fluent then
@@ -395,12 +395,12 @@ local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- Load notification
-createNotif("Viper", "Script Loaded Successfully", 3)
+createNotif("DYHUB", "Script Loaded Successfully", 3)
 
 -- Create Fluent window
 local Window = Fluent:CreateWindow({
-    Title = "Feed Your Brainrot | by Viper",
-    SubTitle = "",
+    Title = "DYHUB - Feed Your Brainrot @ Update! (Beta)",
+    SubTitle = "DYHUB (dsc.gg/dyhub)",
     TabWidth = 100,
     Size = UDim2.fromOffset(540, 460),
     Acrylic = true,
@@ -410,11 +410,11 @@ local Window = Fluent:CreateWindow({
 
 -- Tabs
 local Tabs = {
-    AutoBuy = Window:AddTab({ Title = "AutoBuy", Icon = "shopping-cart" }),
-    AutoUpgrade = Window:AddTab({ Title = "AutoUpgrade", Icon = "arrow-up" }),
-    Auto = Window:AddTab({ Title = "Auto", Icon = "arrow-left-right" }),
-    Info = Window:AddTab({ Title = "Info", Icon = "info" }),
-    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
+    Auto = Window:AddTab({ Title = "Main", Icon = "rocket" }),
+    AutoBuy = Window:AddTab({ Title = "Auto Buy", Icon = "shopping-cart" }),
+    AutoUpgrade = Window:AddTab({ Title = "Auto Upgrade", Icon = "arrow-up" }),
+    Info = Window:AddTab({ Title = "Misc", Icon = "file-cog" }),
+    Settings = Window:AddTab({ Title = "Config", Icon = "cog" })
 }
 
 -- Variables
@@ -492,25 +492,20 @@ local relicOptions = {
 
 -- HOME TAB
 Tabs.Info:AddParagraph({
-    Title = "Viper Supported Games",
-    Content = " • Something Evil Will Happen\n • Tower of Hell\n • SlapBattle\n • Troll Tower 2\n • Shrink hide & seek\nJoin my Discord Community for Scripts!"
+    Title = "Join Our DYHUB",
+    Content = "DYHUB • Discord: (dsc.gg/dyhub)"
 })
 
 Tabs.Info:AddButton({
-    Title = "Copy Discord Invite Let other people join too share it",
+    Title = "Copy Link Discord",
     Callback = function() 
         pcall(function()
-            setclipboard("https://discord.gg/f5fSKTykmh")
+            setclipboard("dsc.gg/dyhub")
             if createNotif then
                 createNotif("Copied!", "Discord link copied to clipboard", 3)
             end
         end)
     end
-})
-
-Tabs.Info:AddParagraph({
-    Title = "BTW",
-    Content = "This will be Updated or something soon!!"
 })
 
 -- AUTOBUY TAB - Fixed tab references
@@ -523,9 +518,9 @@ local PotionDropdown = Tabs.AutoBuy:AddDropdown("PotionDropdown", {
         selectedPotions = Value or {}
         if createNotif then
             if #selectedPotions > 0 then
-                createNotif("Viper", "Potions Selected!", 3)
+                createNotif("DYHUB", "Potions Selected!", 3)
             else
-                createNotif("Viper", "No potions selected!", 2)
+                createNotif("DYHUB", "No potions selected!", 2)
             end
         end
     end
@@ -547,7 +542,7 @@ local BuySelectedToggle = Tabs.AutoBuy:AddToggle("BuySelectedPotion", {
             end
             
             if createNotif then
-                createNotif("Viper", "Buy Selected Potions On!", 3)
+                createNotif("DYHUB", "Buy Selected Potions On!", 3)
             end
             
             autoBuyConnection = RunService.Heartbeat:Connect(function()
@@ -564,7 +559,7 @@ local BuySelectedToggle = Tabs.AutoBuy:AddToggle("BuySelectedPotion", {
             end)
         else
             if createNotif then
-                createNotif("Viper", "Buy Selected Potions Off", 3)
+                createNotif("DYHUB", "Buy Selected Potions Off", 3)
             end
             
             if autoBuyConnection then
@@ -583,7 +578,7 @@ local AutoBuyAllToggle = Tabs.AutoBuy:AddToggle("AutoBuyAllPotions", {
         
         if autoBuyAllEnabled then
             if createNotif then
-                createNotif("Viper", "AutoBuy All Potions Started!", 3)
+                createNotif("DYHUB", "AutoBuy All Potions Started!", 3)
             end
             
             buyAllConnection = RunService.Heartbeat:Connect(function()
@@ -600,7 +595,7 @@ local AutoBuyAllToggle = Tabs.AutoBuy:AddToggle("AutoBuyAllPotions", {
             end)
         else
             if createNotif then
-                createNotif("Viper", "AutoBuy All Potions Off", 3)
+                createNotif("DYHUB", "AutoBuy All Potions Off", 3)
             end
             
             if buyAllConnection then
@@ -620,9 +615,9 @@ local RelicDropdown = Tabs.AutoBuy:AddDropdown("RelicDropdown", {
         selectedRelics = Value or {}
         if createNotif then
             if #selectedRelics > 0 then
-                createNotif("Viper", "Relics Selected!", 3)
+                createNotif("DYHUB", "Relics Selected!", 3)
             else
-                createNotif("Viper", "No relics selected", 2)
+                createNotif("DYHUB", "No relics selected", 2)
             end
         end
     end
@@ -644,7 +639,7 @@ local BuySelectedRelicsToggle = Tabs.AutoBuy:AddToggle("BuySelectedRelics", {
             end
             
             if createNotif then
-                createNotif("Viper", "Buy Selected Relics On", 3)
+                createNotif("DYHUB", "Buy Selected Relics On", 3)
             end
             
             autoBuyRelicsConnection = RunService.Heartbeat:Connect(function()
@@ -661,7 +656,7 @@ local BuySelectedRelicsToggle = Tabs.AutoBuy:AddToggle("BuySelectedRelics", {
             end)
         else
             if createNotif then
-                createNotif("Viper", "Buy Selected Relics Off", 3)
+                createNotif("DYHUB", "Buy Selected Relics Off", 3)
             end
             
             if autoBuyRelicsConnection then
@@ -680,7 +675,7 @@ local AutoBuyAllRelicsToggle = Tabs.AutoBuy:AddToggle("AutoBuyAllRelics", {
         
         if autoBuyAllRelicsEnabled then
             if createNotif then
-                createNotif("Viper", "AutoBuy All Relics Started!", 3)
+                createNotif("DYHUB", "AutoBuy All Relics Started!", 3)
             end
             
             buyAllRelicsConnection = RunService.Heartbeat:Connect(function()
@@ -697,7 +692,7 @@ local AutoBuyAllRelicsToggle = Tabs.AutoBuy:AddToggle("AutoBuyAllRelics", {
             end)
         else
             if createNotif then
-                createNotif("Viper", "AutoBuy All Relics Stopped!", 3)
+                createNotif("DYHUB", "AutoBuy All Relics Stopped!", 3)
             end
             
             if buyAllRelicsConnection then
@@ -718,7 +713,7 @@ local AutoUpgradeBaseFarmToggle = Tabs.AutoUpgrade:AddToggle("AutoUpgradeAllBase
         
         if autoUpgradeBaseFarmEnabled then
             if createNotif then
-                createNotif("Viper", "AutoUpgrade Base Farm On", 3)
+                createNotif("DYHUB", "AutoUpgrade Base Farm On", 3)
             end
             
             baseFarmUpgradeConnection = RunService.Heartbeat:Connect(function()
@@ -736,7 +731,7 @@ local AutoUpgradeBaseFarmToggle = Tabs.AutoUpgrade:AddToggle("AutoUpgradeAllBase
             end)
         else
             if createNotif then
-                createNotif("Viper", "AutoUpgrade Base Farm Off", 3)
+                createNotif("DYHUB", "AutoUpgrade Base Farm Off", 3)
             end
             
             if baseFarmUpgradeConnection then
@@ -756,7 +751,7 @@ local AutoUpgradeBaseSpecialToggle = Tabs.AutoUpgrade:AddToggle("AutoUpgradeBase
         
         if autoUpgradeBaseSpecialEnabled then
             if createNotif then
-                createNotif("Viper", "AutoUpgrade Base SpecialUpgrade On", 3)
+                createNotif("DYHUB", "AutoUpgrade Base SpecialUpgrade On", 3)
             end
             
             baseSpecialUpgradeConnection = RunService.Heartbeat:Connect(function()
@@ -780,7 +775,7 @@ local AutoUpgradeBaseSpecialToggle = Tabs.AutoUpgrade:AddToggle("AutoUpgradeBase
             end)
         else
             if createNotif then
-                createNotif("Viper", "AutoUpgrade Base Special Off", 3)
+                createNotif("DYHUB", "AutoUpgrade Base Special Off", 3)
             end
             
             if baseSpecialUpgradeConnection then
@@ -800,7 +795,7 @@ local AutoUpgradeLassoToggle = Tabs.AutoUpgrade:AddToggle("AutoUpgradeLasso", {
         
         if autoUpgradeLassoEnabled then
             if createNotif then
-                createNotif("Viper", "AutoUpgrade Lasso On", 3)
+                createNotif("DYHUB", "AutoUpgrade Lasso On", 3)
             end
             
             lassoUpgradeConnection = RunService.Heartbeat:Connect(function()
@@ -818,7 +813,7 @@ local AutoUpgradeLassoToggle = Tabs.AutoUpgrade:AddToggle("AutoUpgradeLasso", {
             end)
         else
             if createNotif then
-                createNotif("Viper", "AutoUpgrade Lasso Off", 3)
+                createNotif("DYHUB", "AutoUpgrade Lasso Off", 3)
             end
             
             if lassoUpgradeConnection then
@@ -867,7 +862,7 @@ local function createFarmToggle(farmName)
                 end)
             else
                 if createNotif then
-                    createNotif("Viper", farmName .. " AutoUpgrade Off", 2)
+                    createNotif("DYHUB", farmName .. " AutoUpgrade Off", 2)
                 end
             end
         end
@@ -1146,14 +1141,14 @@ Window:SelectTab(1)
 local function createMiniToggle()
     local success, err = pcall(function()
         -- Remove existing toggle
-        local existing = playerGui:FindFirstChild("ViperToggle")
+        local existing = playerGui:FindFirstChild("DYHUBToggle")
         if existing then
             existing:Destroy()
         end
         
         -- Create main ScreenGui
         local screenGui = Instance.new("ScreenGui")
-        screenGui.Name = "ViperToggle"
+        screenGui.Name = "DYHUBToggle"
         screenGui.ResetOnSpawn = false
         screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
         screenGui.Parent = playerGui
@@ -1209,8 +1204,8 @@ local function createMiniToggle()
         local toggleButton = Instance.new("TextButton")
         toggleButton.Size = UDim2.new(1, 0, 1, 0)
         toggleButton.BackgroundTransparency = 1
-        toggleButton.Text = "V"
-        toggleButton.TextColor3 = Color3.fromRGB(255, 80, 80)
+        toggleButton.Text = "D"
+        toggleButton.TextColor3 = Color3.fromRGB(255, 0, 0)
         toggleButton.TextScaled = true
         toggleButton.Font = Enum.Font.GothamBold
         toggleButton.ZIndex = 102
@@ -1581,7 +1576,7 @@ end)
 
 -- Final notification
 if createNotif then
-    createNotif("Viper", "High-performance script loaded! Optimized for 2K-5K operations", 3)
+    createNotif("DYHUB", "High-performance script loaded! Optimized for 2K-5K operations", 3)
 end
 
 -- Enhanced cleanup on player leaving
