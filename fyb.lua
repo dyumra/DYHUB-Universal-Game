@@ -399,8 +399,8 @@ createNotif("DYHUB", "Script Loaded Successfully", 3)
 
 -- Create Fluent window
 local Window = Fluent:CreateWindow({
-    Title = "DYHUB - Feed Your Brainrot @ Update! (Beta)",
-    SubTitle = "DYHUB (dsc.gg/dyhub)",
+    Title = "DYHUB - Feed Your Brainrot (dsc.gg/dyhub)",
+    SubTitle = "Powered by DYHUB TEAM",
     TabWidth = 100,
     Size = UDim2.fromOffset(540, 460),
     Acrylic = true,
