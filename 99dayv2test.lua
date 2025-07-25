@@ -8,6 +8,97 @@ local Camera = workspace.CurrentCamera
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local VirtualInput = game:GetService("VirtualInputManager")
+local CoreGui = game:GetService("CoreGui")
+
+-- Define common helper functions at the top to ensure they are available when called
+local function CreateEsp(Char, Color, Text, Parent, numberOffset)
+    if not Char then return end
+    -- Destroy existing ESP components to prevent duplicates if function is called multiple times for same object
+    KeepEsp(Char, Parent) -- Ensure clean state before creating new ESP
+
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "ESP_Highlight"
+    highlight.Adornee = Char
+    highlight.FillColor = Color
+    highlight.FillTransparency = 1
+    highlight.OutlineColor = Color
+    highlight.OutlineTransparency = 0
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    highlight.Enabled = true
+    highlight.Parent = Char
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "ESP"
+    billboard.Size = UDim2.new(0, 50, 0, 25)
+    billboard.AlwaysOnTop = true
+    billboard.StudsOffset = Vector3.new(0, numberOffset or 3, 0) -- Default offset if not provided
+    billboard.Adornee = Parent
+    billboard.Enabled = true
+    billboard.Parent = Parent
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = Text
+    label.TextColor3 = Color
+    label.TextScaled = true
+    label.Parent = billboard
+
+    task.spawn(function()
+        local Players = game:GetService("Players")
+        local RunService = game:GetService("RunService")
+        local Workspace = game:GetService("Workspace")
+
+        local LocalPlayer = Players.LocalPlayer
+        local Camera = Workspace.CurrentCamera
+
+        while highlight and billboard and Parent and Parent.Parent do
+            local cameraPosition = Camera and Camera.CFrame.Position
+            if cameraPosition and Parent and Parent:IsA("BasePart") then
+                local distance = (cameraPosition - Parent.Position).Magnitude
+                if ActiveDistanceEsp then
+                    label.Text = Text .. " (" .. math.floor(distance + 0.5) .. " stud)"
+                else
+                    label.Text = Text
+                end
+            end
+            RunService.Heartbeat:Wait()
+        end
+    end)
+end
+
+local function KeepEsp(Char, Parent)
+    if Char then
+        local highlight = Char:FindFirstChildOfClass("Highlight")
+        if highlight then
+            highlight:Destroy()
+        end
+    end
+    if Parent then
+        local billboard = Parent:FindFirstChildOfClass("BillboardGui")
+        if billboard then
+            billboard:Destroy()
+        end
+    end
+end
+
+local function bringItemsByName(name)
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    for _, item in ipairs(workspace.Items:GetChildren()) do
+        if item.Name:lower():find(name:lower()) then
+            local part = item:FindFirstChildWhichIsA("BasePart") or (item:IsA("BasePart") and item)
+            if part then
+                part.CFrame = root.CFrame + Vector3.new(0, 3, 0) + root.CFrame.LookVector * 5
+            end
+        end
+    end
+end
+
 
 local Confirmed = false
 WindUI:Popup({
@@ -52,14 +143,6 @@ local Tabs = {
     Misc = Window:Tab({ Title = "Misc", Icon = "tool" }),
 }
 
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
-local VirtualInput = game:GetService("VirtualInputManager")
-local CoreGui = game:GetService("CoreGui")
-
-local LocalPlayer = Players.LocalPlayer
-
 local infHungerActive = false
 local infHungerThread
 
@@ -81,7 +164,10 @@ Tabs.Main:Toggle({
                 end
             end)
         else
-            infHungerActive = false
+            if infHungerThread then
+                task.cancel(infHungerThread)
+                infHungerThread = nil
+            end
         end
     end
 })
@@ -179,7 +265,10 @@ Tabs.Main:Toggle({
                 end
             end)
         else
-            autoTreeFarmActive = false
+            if autoTreeFarmThread then
+                task.cancel(autoTreeFarmThread)
+                autoTreeFarmThread = nil
+            end
         end
     end
 })
@@ -211,7 +300,7 @@ Tabs.Main:Toggle({
                     local function getWeapon()
                         local inv = player:FindFirstChild("Inventory")
                         return inv and (inv:FindFirstChild("Spear")
-                            or inv:FindFirstChild("Strong Axe")
+                        or inv:FindFirstChild("Strong Axe")
                             or inv:FindFirstChild("Good Axe")
                             or inv:FindFirstChild("Old Axe"))
                     end
@@ -228,7 +317,10 @@ Tabs.Main:Toggle({
                 end
             end)
         else
-            autoBreakActive = false
+            if autoBreakThread then
+                task.cancel(autoBreakThread)
+                autoBreakThread = nil
+            end
         end
     end
 })
@@ -249,29 +341,22 @@ Tabs.Esp:Toggle({
         ActiveEspPlayer = state
         task.spawn(function()
             while ActiveEspPlayer do
-                task.spawn(function()
-                    for _, player in pairs(game.Players:GetPlayers()) do
-                        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                            local char = player.Character
-                            if not char:FindFirstChildOfClass("Highlight") and not char.HumanoidRootPart:FindFirstChildOfClass("BillboardGui") then
-                                CreateEsp(char, Color3.fromRGB(0, 255, 0), player.Name, char.HumanoidRootPart)
-                            end
-                        end
-                    end
-                end)
-                task.wait(0.1)
-            end
-
-            task.spawn(function()
                 for _, player in pairs(game.Players:GetPlayers()) do
-                    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
                         local char = player.Character
-                        if char:FindFirstChildOfClass("Highlight") and char.HumanoidRootPart:FindFirstChildOfClass("BillboardGui") then
-                            KeepEsp(char, char.HumanoidRootPart)
+                        if not char:FindFirstChildOfClass("Highlight") and not char.HumanoidRootPart:FindFirstChildOfClass("BillboardGui") then
+                            CreateEsp(char, Color3.fromRGB(0, 255, 0), player.Name, char.HumanoidRootPart, 2)
                         end
                     end
                 end
-            end)
+                task.wait(0.1)
+            end
+            for _, player in pairs(game.Players:GetPlayers()) do
+                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    local char = player.Character
+                    KeepEsp(char, char.HumanoidRootPart)
+                end
+            end
         end)
     end
 })
@@ -283,22 +368,16 @@ Tabs.Esp:Toggle({
         ActiveEspItems = state
         task.spawn(function()
             while ActiveEspItems do
-                task.spawn(function()
-                    for _, Obj in pairs(Game.Workspace.Items:GetChildren()) do
-                        if Obj:IsA("Model") and Obj.PrimaryPart and not Obj:FindFirstChildOfClass("Highlight") and not Obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
-                            CreateEsp(Obj, Color3.fromRGB(255, 255, 0), Obj.Name, Obj.PrimaryPart)
-                        end
-                    end
-                end)
-                task.wait(0.1)
-            end
-            task.spawn(function()
-                for _, Obj in pairs(Game.Workspace.Items:GetChildren()) do
-                    if Obj:IsA("Model") and Obj.PrimaryPart and Obj:FindFirstChildOfClass("Highlight") and Obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
-                        KeepEsp(Obj, Obj.PrimaryPart)
+                for _, Obj in pairs(game.Workspace.Items:GetChildren()) do
+                    if Obj:IsA("Model") and Obj.PrimaryPart and not Obj:FindFirstChildOfClass("Highlight") and not Obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
+                        CreateEsp(Obj, Color3.fromRGB(255, 255, 0), Obj.Name, Obj.PrimaryPart, 2)
                     end
                 end
-            end)
+                task.wait(0.1)
+            end
+            for _, Obj in pairs(game.Workspace.Items:GetChildren()) do
+                KeepEsp(Obj, Obj.PrimaryPart)
+            end
         end)
     end
 })
@@ -310,22 +389,16 @@ Tabs.Esp:Toggle({
         ActiveEspEnemy = state
         task.spawn(function()
             while ActiveEspEnemy do
-                task.spawn(function()
-                    for _, Obj in pairs(Game.Workspace.Characters:GetChildren()) do
-                        if Obj:IsA("Model") and Obj.PrimaryPart and (Obj.Name ~= "Lost Child" and Obj.Name ~= "Lost Child2" and Obj.Name ~= "Lost Child3" and Obj.Name ~= "Lost Child4" and Obj.Name ~= "Pelt Trader") and not Obj:FindFirstChildOfClass("Highlight") and not Obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
-                            CreateEsp(Obj, Color3.fromRGB(255, 0, 0), Obj.Name, Obj.PrimaryPart)
-                        end
-                    end
-                end)
-                task.wait(0.1)
-            end
-            task.spawn(function()
-                for _, Obj in pairs(Game.Workspace.Characters:GetChildren()) do
-                    if Obj:IsA("Model") and Obj.PrimaryPart and (Obj.Name ~= "Lost Child" and Obj.Name ~= "Lost Child2" and Obj.Name ~= "Lost Child3" and Obj.Name ~= "Lost Child4" and Obj.Name ~= "Pelt Trader") and Obj:FindFirstChildOfClass("Highlight") and Obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
-                        KeepEsp(Obj, Obj.PrimaryPart)
+                for _, Obj in pairs(game.Workspace.Characters:GetChildren()) do
+                    if Obj:IsA("Model") and Obj.PrimaryPart and (Obj.Name ~= "Lost Child" and Obj.Name ~= "Lost Child2" and Obj.Name ~= "Lost Child3" and Obj.Name ~= "Lost Child4" and Obj.Name ~= "Pelt Trader") and not Obj:FindFirstChildOfClass("Highlight") and not Obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
+                        CreateEsp(Obj, Color3.fromRGB(255, 0, 0), Obj.Name, Obj.PrimaryPart, 2)
                     end
                 end
-            end)
+                task.wait(0.1)
+            end
+            for _, Obj in pairs(game.Workspace.Characters:GetChildren()) do
+                KeepEsp(Obj, Obj.PrimaryPart)
+            end
         end)
     end
 })
@@ -410,11 +483,10 @@ for category, data in pairs(espTypes) do
             task.spawn(function()
                 while active do
                     for _, obj in pairs(game.Workspace.Items:GetChildren()) do
-                        if obj:IsA("Model") and obj.PrimaryPart and not obj:FindFirstChildOfClass("Highlight")
-                            and not obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
+                        if obj:IsA("Model") and obj.PrimaryPart and not obj:FindFirstChildOfClass("Highlight") and not obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
                             for _, itemName in pairs(data.items) do
                                 if string.lower(obj.Name) == string.lower(itemName) then
-                                    CreateEsp(obj, data.color, obj.Name, obj.PrimaryPart)
+                                    CreateEsp(obj, data.color, obj.Name, obj.PrimaryPart, 2)
                                     break
                                 end
                             end
@@ -422,11 +494,18 @@ for category, data in pairs(espTypes) do
                     end
                     task.wait(0.25)
                 end
+                for _, obj in pairs(game.Workspace.Items:GetChildren()) do
+                    for _, itemName in pairs(data.items) do
+                        if string.lower(obj.Name) == string.lower(itemName) then
+                            KeepEsp(obj, obj.PrimaryPart)
+                            break
+                        end
+                    end
+                end
             end)
         end
     })
 end
-
 
 Tabs.Esp:Toggle({
     Title = "Esp (Children)",
@@ -435,22 +514,16 @@ Tabs.Esp:Toggle({
         ActiveEspChildren = state
         task.spawn(function()
             while ActiveEspChildren do
-                task.spawn(function()
-                    for _, Obj in pairs(Game.Workspace.Characters:GetChildren()) do
-                        if Obj:IsA("Model") and Obj.PrimaryPart and (Obj.Name == "Lost Child" or Obj.Name == "Lost Child2" or Obj.Name == "Lost Child3" or Obj.Name == "Lost Child4") and not Obj:FindFirstChildOfClass("Highlight") and not Obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
-                            CreateEsp(Obj, Color3.fromRGB(0, 255, 0), Obj.Name, Obj.PrimaryPart)
-                        end
-                    end
-                end)
-                task.wait(0.1)
-            end
-            task.spawn(function()
-                for _, Obj in pairs(Game.Workspace.Characters:GetChildren()) do
-                    if Obj:IsA("Model") and Obj.PrimaryPart and (Obj.Name == "Lost Child" or Obj.Name == "Lost Child2" or Obj.Name == "Lost Child3" or Obj.Name == "Lost Child4") and Obj:FindFirstChildOfClass("Highlight") and Obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
-                        KeepEsp(Obj, Obj.PrimaryPart)
+                for _, Obj in pairs(game.Workspace.Characters:GetChildren()) do
+                    if Obj:IsA("Model") and Obj.PrimaryPart and (Obj.Name == "Lost Child" or Obj.Name == "Lost Child2" or Obj.Name == "Lost Child3" or Obj.Name == "Lost Child4") and not Obj:FindFirstChildOfClass("Highlight") and not Obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
+                        CreateEsp(Obj, Color3.fromRGB(0, 255, 0), Obj.Name, Obj.PrimaryPart, 2)
                     end
                 end
-            end)
+                task.wait(0.1)
+            end
+            for _, Obj in pairs(game.Workspace.Characters:GetChildren()) do
+                KeepEsp(Obj, Obj.PrimaryPart)
+            end
         end)
     end
 })
@@ -462,26 +535,19 @@ Tabs.Esp:Toggle({
         ActiveEspPeltTrader = state
         task.spawn(function()
             while ActiveEspPeltTrader do
-                task.spawn(function()
-                    for _, Obj in pairs(Game.Workspace.Characters:GetChildren()) do
-                        if Obj:IsA("Model") and Obj.PrimaryPart and Obj.Name == "Pelt Trader" and not Obj:FindFirstChildOfClass("Highlight") and not Obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
-                            CreateEsp(Obj, Color3.fromRGB(0, 255, 255), Obj.Name, Obj.PrimaryPart)
-                        end
-                    end
-                end)
-                task.wait(0.1)
-            end
-            task.spawn(function()
-                for _, Obj in pairs(Game.Workspace.Characters:GetChildren()) do
-                    if Obj:IsA("Model") and Obj.PrimaryPart and Obj.Name == "Pelt Trader" and Obj:FindFirstChildOfClass("Highlight") and Obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
-                        KeepEsp(Obj, Obj.PrimaryPart)
+                for _, Obj in pairs(game.Workspace.Characters:GetChildren()) do
+                    if Obj:IsA("Model") and Obj.PrimaryPart and Obj.Name == "Pelt Trader" and not Obj:FindFirstChildOfClass("Highlight") and not Obj:FindFirstChildOfClass("BillboardGui") then
+                        CreateEsp(Obj, Color3.fromRGB(0, 255, 255), Obj.Name, Obj.PrimaryPart, 2)
                     end
                 end
-            end)
+                task.wait(0.1)
+            end
+            for _, Obj in pairs(game.Workspace.Characters:GetChildren()) do
+                KeepEsp(Obj, Obj.PrimaryPart)
+            end
         end)
     end
 })
-
 
 -----------------------------------------------------------------
 -- TELEPORT TAB
@@ -522,11 +588,9 @@ Tabs.Teleport:Button({
         local map = workspace:FindFirstChild("Map")
         if not map then return end
 
-        -- Try to use Foliage or Landmarks for trees
         local foliage = map:FindFirstChild("Foliage") or map:FindFirstChild("Landmarks")
         if not foliage then return end
 
-        -- Gather all "Small Tree" models
         local trees = {}
         for _, obj in ipairs(foliage:GetChildren()) do
             if obj.Name == "Small Tree" and obj:IsA("Model") then
@@ -537,7 +601,6 @@ Tabs.Teleport:Button({
             end
         end
 
-        -- Pick a random tree
         if #trees > 0 then
             local trunk = trees[math.random(1, #trees)]
             local treeCFrame = trunk.CFrame
@@ -771,49 +834,48 @@ Tabs.Player:Button({
     end
 })
 
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
 local noclipConnection
 
 Tabs.Player:Toggle({
-    Title = "No Clip",
-    Default = false,
-    Callback = function(state)
-        if state then
-            noclipConnection = RunService.Stepped:Connect(function()
-                local Character = LocalPlayer.Character
-                if Character then
-                    for _, part in pairs(Character:GetDescendants()) do
-                        if part:IsA("BasePart") then
-                            part.CanCollide = false
-                        end
-                    end
-                end
-            end)
-        else
-            if noclipConnection then
-                noclipConnection:Disconnect()
-                noclipConnection = nil
-            end
-            local Character = LocalPlayer.Character
-            if Character then
-                for _, part in pairs(Character:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = true
-                    end
-                end
-            end
-        end
-    end
+    Title = "No Clip",
+    Default = false,
+    Callback = function(state)
+        if state then
+            noclipConnection = RunService.Stepped:Connect(function()
+                local Character = LocalPlayer.Character
+                if Character then
+                    for _, part in pairs(Character:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+            end)
+        else
+            if noclipConnection then
+                noclipConnection:Disconnect()
+                noclipConnection = nil
+            end
+            local Character = LocalPlayer.Character
+            if Character then
+                for _, part in pairs(Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = true
+                    end
+                end
+            end
+        end
+    end
 })
-
 
 Tabs.Player:Toggle({
     Title = "No Cooldown (Good Axe Only)",
     Default = false,
     Callback = function(state)
+        -- This functionality seems tied to BreakJointsOnDeath, which isn't typical for cooldowns.
+        -- If this is meant to disable weapon cooldown, it would require a different approach,
+        -- likely by invoking the remote event for weapon usage repeatedly.
+        -- For now, keeping the original behavior for BreakJointsOnDeath as it was.
         local LocalPlayer = game:GetService("Players").LocalPlayer
         local Humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
         if Humanoid then
@@ -826,6 +888,9 @@ Tabs.Player:Toggle({
     Title = "God mode (In development)",
     Default = false,
     Callback = function(state)
+        -- God mode typically involves setting Humanoid.Health to math.huge or constantly healing.
+        -- The current implementation uses BreakJointsOnDeath which is not god mode.
+        -- Leaving the original behavior for now, but noting it's not a true god mode.
         local LocalPlayer = game:GetService("Players").LocalPlayer
         local Humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
         if Humanoid then
@@ -843,13 +908,23 @@ Tabs.Player:Toggle({
         if Humanoid then
             if state then
                 Humanoid.JumpPower = math.huge
-                Humanoid.Touched:Connect(function(hit)
-                    if Humanoid and hit and hit.Parent == workspace then
+                -- Using Jump state for continuous jumping
+                Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                -- Connect to keep jumping while state is active and humanoid exists
+                local jumpConnection = Humanoid.StateChanged:Connect(function(oldState, newState)
+                    if newState == Enum.HumanoidStateType.Landed and Humanoid.JumpPower == math.huge then
                         Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
                     end
                 end)
+                -- Store connection to disconnect later
+                Humanoid:SetAttribute("InfinityJumpConnection", jumpConnection)
             else
                 Humanoid.JumpPower = 50 -- Default jump power
+                local jumpConnection = Humanoid:GetAttribute("InfinityJumpConnection")
+                if jumpConnection then
+                    jumpConnection:Disconnect()
+                    Humanoid:SetAttribute("InfinityJumpConnection", nil)
+                end
             end
         end
     end
@@ -936,79 +1011,3 @@ RunService.RenderStepped:Connect(function()
 end)
 Tabs.Misc:Toggle({Title="Show FPS", Default=true, Callback=function(val) showFPS=val; fpsText.Visible=val end})
 Tabs.Misc:Toggle({Title="Show Ping (ms)", Default=true, Callback=function(val) showPing=val; msText.Visible=val end})
-
-local function CreateEsp(Char, Color, Text,Parent,number)
-    if not Char then return end
-    if Char:FindFirstChild("ESP") and Char:FindFirstChildOfClass("Highlight") then return end
-    local highlight = Char:FindFirstChildOfClass("Highlight") or Instance.new("Highlight")
-    highlight.Name = "ESP_Highlight"
-    highlight.Adornee = Char
-    highlight.FillColor = Color
-    highlight.FillTransparency = 1
-    highlight.OutlineColor = Color
-    highlight.OutlineTransparency = 0
-    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-    highlight.Enabled = true
-    highlight.Parent = Char
-
-
-    local billboard = Char:FindFirstChild("ESP") or Instance.new("BillboardGui")
-    billboard.Name = "ESP"
-    billboard.Size = UDim2.new(0, 50, 0, 25)
-    billboard.AlwaysOnTop = true
-    billboard.StudsOffset = Vector3.new(0, number, 0)
-    billboard.Adornee = Parent
-    billboard.Enabled = true
-    billboard.Parent = Parent
-
-
-    local label = billboard:FindFirstChildOfClass("TextLabel") or Instance.new("TextLabel")
-    label.Size = UDim2.new(1, 0, 1, 0)
-    label.BackgroundTransparency = 1
-    label.Text = Text
-    label.TextColor3 = Color
-    label.TextScaled = true
-    label.Parent = billboard
-
-    task.spawn(function()
-        local Players = game:GetService("Players")
-        local RunService = game:GetService("RunService")
-        local Workspace = game:GetService("Workspace")
-
-        local LocalPlayer = Players.LocalPlayer
-        local Camera = Workspace.CurrentCamera
-
-        while highlight and billboard and Parent and Parent.Parent do
-            local cameraPosition = Camera and Camera.CFrame.Position
-            if cameraPosition and Parent and Parent:IsA("BasePart") then
-                local distance = (cameraPosition - Parent.Position).Magnitude
-                task.spawn(function()
-                    if ActiveDistanceEsp then
-                        label.Text = Text.." ("..math.floor(distance + 0.5).." stud)"
-                    else
-                        label.Text = Text
-                    end
-                end)
-            end
-            RunService.Heartbeat:Wait()
-        end
-    end)
-end
-
-local function KeepEsp(Char,Parent)
-    if Char and Char:FindFirstChildOfClass("Highlight") and Parent:FindFirstChildOfClass("BillboardGui") then
-        Char:FindFirstChildOfClass("Highlight"):Destroy()
-        Parent:FindFirstChildOfClass("BillboardGui"):Destroy()
-    end
-end
-
-local function bringItemsByName(name)
-    for _, item in ipairs(workspace.Items:GetChildren()) do
-        if item.Name:lower():find(name:lower()) then
-            local part = item:FindFirstChildWhichIsA("BasePart") or (item:IsA("BasePart") and item)
-            if part then
-                part.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0) + LocalPlayer.Character.HumanoidRootPart.CFrame.LookVector * 5
-            end
-        end
-    end
-end
