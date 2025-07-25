@@ -12,20 +12,20 @@ local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
 local Window = Fluent:CreateWindow({
-    Title = "Murder Mystery 2 Menu",
-    SubTitle = "by Goiaba.lua",
+    Title = "DYHUB - Murder Mystery 2 (dsc.gg/dyhub)",
+    SubTitle = "Powered by DYHUB TEAM",
     TabWidth = 100,
     Size = UDim2.fromOffset(670, 460),
     Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
-    Theme = "Dark",
+    Theme = "Darker",
     MinimizeKey = Enum.KeyCode.LeftControl -- Used when theres no MinimizeKeybind
 })
 
 --Fluent provides Lucide Icons https://lucide.dev/icons/ for the tabs, icons are optional
 local Tabs = {
-    Main = Window:AddTab({ Title = "Main", Icon = "home" }),
+    Main = Window:AddTab({ Title = "Main", Icon = "rocket" }),
     Movement = Window:AddTab({ Title = "Movement", Icon = "user" }),
-    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
+    Settings = Window:AddTab({ Title = "Config", Icon = "file-cog" })
 }
 
 local ESPSection = Tabs.Main:AddSection("ESP")
