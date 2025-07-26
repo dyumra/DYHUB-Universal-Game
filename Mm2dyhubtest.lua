@@ -1060,54 +1060,65 @@ local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 
+-- อัปเดต character กับ humanoidRootPart ทุกครั้งที่รีเกิด
+player.CharacterAdded:Connect(function(char)
+	character = char
+	humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+end)
+
 -- Toggle UI
 local CoinSection = Tabs.Farmment:AddSection("Coin")
 
 local CoinToggle = Tabs.Farmment:AddToggle("Auto Farm (Coin)", {
-    Title = "Coin",
-    Default = false,
-    Description = "Enable Auto-Farm (Collect Coin)."
+	Title = "Coin",
+	Default = false,
+	Description = "Enable Auto-Farm (Collect Coin)."
 })
 
 local CoinEnabled = false
 CoinToggle:OnChanged(function(state)
-    CoinEnabled = state
+	CoinEnabled = state
 end)
 
--- Helper: หาเหรียญที่ใกล้ที่สุด
+-- หาเหรียญที่ใกล้ที่สุด
 local function getNearestCoin()
-    local nearestCoin = nil
-    local shortestDistance = math.huge
+	local nearestCoin = nil
+	local shortestDistance = math.huge
 
-    for _, container in ipairs(Workspace:GetChildren()) do
-        if container:IsA("Model") and container.Name == "CoinContainer" then
-            for _, coin in ipairs(container:GetChildren()) do
-                if coin.Name == "Coin_Server" and coin:IsA("BasePart") then
-                    local distance = (humanoidRootPart.Position - coin.Position).Magnitude
-                    if distance < shortestDistance then
-                        shortestDistance = distance
-                        nearestCoin = coin
-                    end
-                end
-            end
-        end
-    end
+	for _, container in ipairs(Workspace:GetChildren()) do
+		if container:IsA("Model") and container.Name == "CoinContainer" then
+			for _, coin in ipairs(container:GetChildren()) do
+				if coin:IsA("BasePart") and coin.Name == "Coin_Server" and coin.Parent then
+					local distance = (humanoidRootPart.Position - coin.Position).Magnitude
+					if distance < shortestDistance then
+						shortestDistance = distance
+						nearestCoin = coin
+					end
+				end
+			end
+		end
+	end
 
-    return nearestCoin
+	return nearestCoin
 end
 
--- Move logic
-RunService.Stepped:Connect(function()
-    if not CoinEnabled then return end
-    if not humanoidRootPart or not humanoidRootPart.Parent then return end
+-- เคลื่อนที่ไปหาเหรียญ
+RunService.Stepped:Connect(function(_, deltaTime)
+	if not CoinEnabled then return end
+	if not humanoidRootPart or not humanoidRootPart.Parent then return end
 
-    local targetCoin = getNearestCoin()
-    if targetCoin then
-        local direction = (targetCoin.Position - humanoidRootPart.Position).Unit
-        local speed = 15
-        humanoidRootPart.CFrame = humanoidRootPart.CFrame + (direction * speed * RunService.Heartbeat:Wait())
-    end
+	local targetCoin = getNearestCoin()
+	if targetCoin and targetCoin.Parent then
+		local direction = (targetCoin.Position - humanoidRootPart.Position)
+		if direction.Magnitude > 1 then
+			local speed = 15
+			local moveVec = direction.Unit * speed * deltaTime
+			-- เคลื่อนที่ในแนวราบ (ไม่ลอยขึ้นหรือลง)
+			humanoidRootPart.CFrame = humanoidRootPart.CFrame + Vector3.new(moveVec.X, 0, moveVec.Z)
+		end
+	end
 end)
+
 
 playerAddedConnection = Players.PlayerAdded:Connect(function(player)
     TeleportDropdown:SetValues(getPlayerNames())
