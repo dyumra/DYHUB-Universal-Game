@@ -11,6 +11,13 @@ local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
+local DYHUB_1 = game.Players.LocalPlayer
+local DYHUB_2 = game:GetService("ReplicatedStorage")
+local DYHUB_3 = DYHUB_1:FindFirstChild("PlayerGui")
+local DYHUB_4 = DYHUB_3:FindFirstChild("MainGUI")
+local DYHUB_5 = DYHUB_4 and DYHUB_4:FindFirstChild("Game") and DYHUB_4.Game:FindFirstChild("Emotes")
+local DYHUB_6 = Tabs.Main:AddSection("Emote")
+
 local Window = Fluent:CreateWindow({
     Title = "DYHUB - Murder Mystery 2 (dsc.gg/dyhub)",
     SubTitle = "Powered by DYHUB TEAM",
@@ -25,39 +32,9 @@ local Window = Fluent:CreateWindow({
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "rocket" }),
     Movement = Window:AddTab({ Title = "Movement", Icon = "user" }),
-    DupeTab = Window:AddTab({ Title = "Dupe", Icon = "target" }),
-    Settings = Window:AddTab({ Title = "Config", Icon = "file-cog" })
+    DupeTab = Window:AddTab({ Title = "Dupe", Icon = "calendar-cog" }),
+    Settings = Window:AddTab({ Title = "Config", Icon = "cog" })
 }
-
-local DupeESection = Tabs.DupeTab:AddSection("Emote")
-
-Tabs.DupeTab:AddButton({
-    Title = "Emote All",
-    Description = "Add emote all",
-    Callback = function()
-        local player = game.Players.LocalPlayer
-        local ReplicatedStorage = game:GetService("ReplicatedStorage")
-        local PlayerGui = player:FindFirstChild("PlayerGui")
-        if not PlayerGui then return end
-
-        local MainGUI = PlayerGui:FindFirstChild("MainGUI")
-        local Emotes = MainGUI and MainGUI:FindFirstChild("Game") and MainGUI.Game:FindFirstChild("Emotes")
-        if Emotes then
-            local Modules = ReplicatedStorage:FindFirstChild("Modules")
-            if Modules then
-                local success, EmoteModule = pcall(require, Modules:FindFirstChild("EmoteModule"))
-                if success and EmoteModule and EmoteModule.GeneratePage then
-                    EmoteModule.GeneratePage(
-                        {"headless", "zombie", "zen", "ninja", "floss", "dab", "sit"},
-                        Emotes,
-                        "Free Emotes"
-                    )
-                end
-            end
-        end
-    end
-})
-
 
 local ESPSection = Tabs.Main:AddSection("ESP")
 
@@ -1040,6 +1017,29 @@ game:GetService("UserInputService").WindowFocused:Connect(function()
         playerRemovedConnection:Disconnect()
     end
 end)
+
+local EDSection = Tabs.Settings:AddSection("Emote")
+
+Tabs.DupeTab:AddButton({
+    Title = "Emote All",
+    Description = "Add emote all",
+    Callback = function()
+        if not DYHUB_3 then return end
+        if DYHUB_5 then
+            local DYHUB_7 = DYHUB_2:FindFirstChild("Modules")
+            if DYHUB_7 then
+                local success, DYHUB_8 = pcall(require, DYHUB_7:FindFirstChild("EmoteModule"))
+                if success and DYHUB_8 and DYHUB_8.GeneratePage then
+                    DYHUB_8.GeneratePage(
+                        {"headless", "zombie", "zen", "ninja", "floss", "dab", "sit"},
+                        DYHUB_5,
+                        "Free Emotes"
+                    )
+                end
+            end
+        end
+    end
+})
 
 -- Addons:
 -- SaveManager (Allows you to have a configuration system)
