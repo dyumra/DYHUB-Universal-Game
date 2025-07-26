@@ -24,7 +24,7 @@ local Window = Fluent:CreateWindow({
 --Fluent provides Lucide Icons https://lucide.dev/icons/ for the tabs, icons are optional
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "rocket" }),
-    Farmment = Window:AddTab({ Title = "Auto Farm", Icon = "atom" }),
+    Farmment = Window:AddTab({ Title = "Auto Farm", Icon = "crown" }),
     Movement = Window:AddTab({ Title = "Player", Icon = "user" }),
     Dupement = Window:AddTab({ Title = "Dupe", Icon = "star" }),
     Settings = Window:AddTab({ Title = "Config", Icon = "cog" })
@@ -1043,7 +1043,7 @@ Tabs.Dupement:AddButton({
             emoteModule.GeneratePage(
                 {"headless", "zombie", "zen", "ninja", "floss", "dab", "sit"},
                 emoteFrame,
-                "Free Emotes"
+                "DYHUB EMOTES"
             )
             print("Emotes unlocked successfully!")
         else
@@ -1070,7 +1070,7 @@ end)
 local CoinSection = Tabs.Farmment:AddSection("Coin")
 
 local CoinToggle = Tabs.Farmment:AddToggle("Auto Farm (Coin)", {
-	Title = "Coin",
+	Title = "Auto Coin",
 	Default = false,
 	Description = "Enable Auto-Farm (Collect Coin)."
 })
