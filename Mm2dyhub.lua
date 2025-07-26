@@ -25,6 +25,7 @@ local Window = Fluent:CreateWindow({
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "rocket" }),
     Movement = Window:AddTab({ Title = "Movement", Icon = "user" }),
+    Dupe = Window:AddTab({ Title = "Dupe", Icon = "target" }),
     Settings = Window:AddTab({ Title = "Config", Icon = "file-cog" })
 }
 
@@ -1009,6 +1010,46 @@ game:GetService("UserInputService").WindowFocused:Connect(function()
         playerRemovedConnection:Disconnect()
     end
 end)
+
+local New = Tabs.Dupe:AddSection("Emote")
+
+Tabs.Dupe:AddButton({
+    Title = "Dupe Emote All",
+    Description = "Add all Emotes instantly",
+    Callback = function()
+        local PlayerGui = player:FindFirstChild("PlayerGui")
+        if not PlayerGui then return end
+
+        local Emotes = PlayerGui:FindFirstChild("MainGUI")
+        if Emotes then
+            Emotes = Emotes:FindFirstChild("Game")
+            if Emotes then
+                Emotes = Emotes:FindFirstChild("Emotes")
+            end
+        end
+
+        if Emotes then
+            local EmoteModule = require(ReplicatedStorage:WaitForChild("Modules"):WaitForChild("EmoteModule"))
+            EmoteModule.GeneratePage(
+                {"headless", "zombie", "zen", "ninja", "floss", "dab", "sit"},
+                Emotes,
+                "Free Emotes"
+            )
+
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "✅ Emotes Added",
+                Text = "All emotes have been successfully added.",
+                Duration = 5
+            })
+        else
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "❌ Emotes Not Found",
+                Text = "Please make sure the GUI is fully loaded.",
+                Duration = 5
+            })
+        end
+    end
+})
 
 -- Addons:
 -- SaveManager (Allows you to have a configuration system)
