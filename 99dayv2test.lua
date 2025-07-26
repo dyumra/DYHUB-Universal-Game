@@ -647,31 +647,50 @@ Tabs.Bring:Button({Title="Bring Everything (Fixed Lag)",Callback=function()
         end
     end
 end})
-Tabs.Bring:Button({
-    Title = "Bring Lost Child (All)",
-    Callback = function()
-        local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if not root then return end
-
-        local targetNames = {
-            "Lost Child",
-            "Lost Child2",
-            "Lost Child3",
-            "Lost Child4"
-        }
-
-        for _, item in pairs(workspace.Characters:GetChildren()) do
-            for _, targetName in ipairs(targetNames) do
-                if item.Name == targetName and item:IsA("Model") then
-                    local main = item:FindFirstChildWhichIsA("BasePart")
-                    if main then
-                        main.CFrame = root.CFrame * CFrame.new(math.random(-10,10), 0, math.random(-10,10))
-                    end
-                end
-            end
-        end
-    end
-})
+Tabs.Bring:Button({Title="Bring Lost Child 1", Callback=function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    for _, item in pairs(workspace.Characters:GetChildren()) do
+        if item.Name:lower():find("Lost Child") and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
+end})
+Tabs.Bring:Button({Title="Bring Lost Child 2", Callback=function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    for _, item in pairs(workspace.Characters:GetChildren()) do
+        if item.Name:lower():find("Lost Child2") and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
+end})
+Tabs.Bring:Button({Title="Bring Lost Child 3", Callback=function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    for _, item in pairs(workspace.Characters:GetChildren()) do
+        if item.Name:lower():find("Lost Child3") and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
+end})
+Tabs.Bring:Button({Title="Bring Lost Child 4", Callback=function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    for _, item in pairs(workspace.Characters:GetChildren()) do
+        if item.Name:lower():find("Lost Child4") and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
+end})
 Tabs.Bring:Button({Title="Bring Logs", Callback=function()
     local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     for _, item in pairs(workspace.Items:GetChildren()) do
@@ -874,6 +893,20 @@ Tabs.Player:Slider({
     end
 })
 
+local speedBoostEnabled = false
+
+Tabs.Player:Button({
+    Title = "Boost Speed by DYHUB",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            speedBoostEnabled = not speedBoostEnabled
+            humanoid.WalkSpeed = speedBoostEnabled and 100 or 16
+        end
+    end
+})
+
 Tabs.Player:Button({
     Title = "Fly (Beta)",
     Callback = function()
@@ -975,6 +1008,47 @@ Tabs.Player:Toggle({
             end
         end
     end
+})
+
+local instantPrompt = false
+local connection -- เก็บ connection ไว้
+
+Tabs.Misc:Button({
+    Title = "Instant ProximityPrompt (0sec)",
+    Callback = function()
+        instantPrompt = not instantPrompt
+
+        if instantPrompt then
+            -- ปรับทุก prompt ที่มีอยู่ใน workspace ให้เป็น 0
+            for _, prompt in ipairs(workspace:GetDescendants()) do
+                if prompt:IsA("ProximityPrompt") then
+                    prompt.HoldDuration = 0
+                end
+            end
+
+            -- สร้าง connection แค่ครั้งเดียว
+            if not connection then
+                connection = workspace.DescendantAdded:Connect(function(descendant)
+                    if descendant:IsA("ProximityPrompt") then
+                        descendant.HoldDuration = 0
+                    end
+                end)
+            end
+        else
+            -- รีเซ็ต HoldDuration กลับเป็นปกติ
+            for _, prompt in ipairs(workspace:GetDescendants()) do
+                if prompt:IsA("ProximityPrompt") then
+                    prompt.HoldDuration = 0.5
+                end
+            end
+
+            -- ตัดการเชื่อมต่อเมื่อปิด
+            if connection then
+                connection:Disconnect()
+                connection = nil
+            end
+        end
+    end
 })
 
 Tabs.Misc:Button({
