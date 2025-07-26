@@ -1063,7 +1063,7 @@ local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 -- Toggle UI
 local CoinSection = Tabs.Farmment:AddSection("Coin")
 
-local CoinToggle = Tabs.Movement:AddToggle("Auto Farm (Coin)", {
+local CoinToggle = Tabs.Farmment:AddToggle("Auto Farm (Coin)", {
     Title = "Coin",
     Default = false,
     Description = "Enable Auto-Farm (Collect Coin)."
