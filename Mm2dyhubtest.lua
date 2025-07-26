@@ -24,6 +24,7 @@ local Window = Fluent:CreateWindow({
 --Fluent provides Lucide Icons https://lucide.dev/icons/ for the tabs, icons are optional
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "rocket" }),
+    Farmment = Window:AddTab({ Title = "Auto Farm", Icon = "atom" }),
     Movement = Window:AddTab({ Title = "Player", Icon = "user" }),
     Dupement = Window:AddTab({ Title = "Dupe", Icon = "star" }),
     Settings = Window:AddTab({ Title = "Config", Icon = "cog" })
@@ -1050,6 +1051,63 @@ Tabs.Dupement:AddButton({
         end
     end
 })
+
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+
+-- Toggle UI
+local CoinSection = Tabs.Farmment:AddSection("Coin")
+
+local CoinToggle = Tabs.Movement:AddToggle("Auto Farm (Coin)", {
+    Title = "Coin",
+    Default = false,
+    Description = "Enable Auto-Farm (Collect Coin)."
+})
+
+local CoinEnabled = false
+CoinToggle:OnChanged(function(state)
+    CoinEnabled = state
+end)
+
+-- Helper: หาเหรียญที่ใกล้ที่สุด
+local function getNearestCoin()
+    local nearestCoin = nil
+    local shortestDistance = math.huge
+
+    for _, container in ipairs(Workspace:GetChildren()) do
+        if container:IsA("Model") and container.Name == "CoinContainer" then
+            for _, coin in ipairs(container:GetChildren()) do
+                if coin.Name == "Coin_Server" and coin:IsA("BasePart") then
+                    local distance = (humanoidRootPart.Position - coin.Position).Magnitude
+                    if distance < shortestDistance then
+                        shortestDistance = distance
+                        nearestCoin = coin
+                    end
+                end
+            end
+        end
+    end
+
+    return nearestCoin
+end
+
+-- Move logic
+RunService.Stepped:Connect(function()
+    if not CoinEnabled then return end
+    if not humanoidRootPart or not humanoidRootPart.Parent then return end
+
+    local targetCoin = getNearestCoin()
+    if targetCoin then
+        local direction = (targetCoin.Position - humanoidRootPart.Position).Unit
+        local speed = 15
+        humanoidRootPart.CFrame = humanoidRootPart.CFrame + (direction * speed * RunService.Heartbeat:Wait())
+    end
+end)
 
 playerAddedConnection = Players.PlayerAdded:Connect(function(player)
     TeleportDropdown:SetValues(getPlayerNames())
