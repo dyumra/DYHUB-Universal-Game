@@ -906,30 +906,6 @@ Tabs.Movement:AddButton({
     end
 })
 
-local EmoteSection = Tabs.Settings:AddSection("Emote")
-
-Tabs.DupeTab:AddButton({
-    Title = "Emote All",
-    Description = "Add emote all",
-    Callback = function()
-        if not DYHUB_3 then return end
-        if DYHUB_5 then
-            local DYHUB_7 = DYHUB_2:FindFirstChild("Modules")
-            if DYHUB_7 then
-                local success, DYHUB_8 = pcall(require, DYHUB_7:FindFirstChild("EmoteModule"))
-                if success and DYHUB_8 and DYHUB_8.GeneratePage then
-                    DYHUB_8.GeneratePage(
-                        {"headless", "zombie", "zen", "ninja", "floss", "dab", "sit"},
-                        DYHUB_5,
-                        "Free Emotes"
-                    )
-                end
-            end
-        end
-    end
-})
-
-
 local utilitiesSection = Tabs.Settings:AddSection("Utilities")
 
 Tabs.Settings:AddButton({
