@@ -24,8 +24,9 @@ local Window = Fluent:CreateWindow({
 --Fluent provides Lucide Icons https://lucide.dev/icons/ for the tabs, icons are optional
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "rocket" }),
-    Movement = Window:AddTab({ Title = "Movement", Icon = "user" }),
-    Settings = Window:AddTab({ Title = "Config", Icon = "file-cog" })
+    Movement = Window:AddTab({ Title = "Player", Icon = "user" }),
+    Dupement = Window:AddTab({ Title = "Dupe", Icon = "sparkles" }),
+    Settings = Window:AddTab({ Title = "Config", Icon = "cog" })
 }
 
 local ESPSection = Tabs.Main:AddSection("ESP")
@@ -989,6 +990,63 @@ Tabs.Settings:AddButton({
                 Content = "An error occurred: " .. tostring(err),
                 Duration = 5
             })
+        end
+    end
+})
+
+local EmoteSection = Tabs.Dupement:AddSection("Emote")
+
+Tabs.Dupement:AddButton({
+    Title = "Dupe Emote All",
+    Description = "Unlock all emotes by pressing this button.",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local replicatedStorage = game:GetService("ReplicatedStorage")
+        local playerGui = player:FindFirstChild("PlayerGui")
+        if not playerGui then
+            warn("PlayerGui not found")
+            return
+        end
+
+        local mainGui = playerGui:FindFirstChild("MainGUI")
+        if not mainGui then
+            warn("MainGUI not found")
+            return
+        end
+
+        local emoteFrame = mainGui:FindFirstChild("Game") and mainGui.Game:FindFirstChild("Emotes")
+        if not emoteFrame then
+            warn("Emote frame not found")
+            return
+        end
+
+        local modulesFolder = replicatedStorage:FindFirstChild("Modules")
+        if not modulesFolder then
+            warn("Modules folder not found in ReplicatedStorage")
+            return
+        end
+
+        local emoteModuleScript = modulesFolder:FindFirstChild("EmoteModule")
+        if not emoteModuleScript then
+            warn("EmoteModule not found")
+            return
+        end
+
+        local success, emoteModule = pcall(require, emoteModuleScript)
+        if not success then
+            warn("Failed to require EmoteModule:", emoteModule)
+            return
+        end
+
+        if emoteModule and typeof(emoteModule.GeneratePage) == "function" then
+            emoteModule.GeneratePage(
+                {"headless", "zombie", "zen", "ninja", "floss", "dab", "sit"},
+                emoteFrame,
+                "Free Emotes"
+            )
+            print("Emotes unlocked successfully!")
+        else
+            warn("GeneratePage function not found in EmoteModule")
         end
     end
 })
