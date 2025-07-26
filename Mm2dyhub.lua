@@ -29,7 +29,7 @@ local Tabs = {
     Settings = Window:AddTab({ Title = "Config", Icon = "file-cog" })
 }
 
-local DupeSection = Tabs.DupeTab:AddSection("Dupe")
+local DupeESection = Tabs.DupeTab:AddSection("Emote")
 
 Tabs.DupeTab:AddButton({
     Title = "Emote All",
