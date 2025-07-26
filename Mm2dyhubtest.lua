@@ -25,7 +25,7 @@ local Window = Fluent:CreateWindow({
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "rocket" }),
     Movement = Window:AddTab({ Title = "Player", Icon = "user" }),
-    Dupement = Window:AddTab({ Title = "Dupe", Icon = "sparkles" }),
+    Dupement = Window:AddTab({ Title = "Dupe", Icon = "star" }),
     Settings = Window:AddTab({ Title = "Config", Icon = "cog" })
 }
 
