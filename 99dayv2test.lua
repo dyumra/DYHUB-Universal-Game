@@ -140,7 +140,7 @@ local Tabs = {
     Esp = Window:Tab({ Title = "Esp", Icon = "eye" }),
     Bring = Window:Tab({ Title = "Bring Items", Icon = "package" }),
     Hitbox = Window:Tab({ Title = "Hitbox", Icon = "target" }),
-    Misc = Window:Tab({ Title = "Misc", Icon = "tool" }),
+    Misc = Window:Tab({ Title = "Misc", Icon = "file-cog" }),
 }
 
 local infHungerActive = false
@@ -191,7 +191,7 @@ local autoTreeFarmActive = false
 local autoTreeFarmThread
 
 Tabs.Main:Toggle({
-    Title = "Auto Tree Farm",
+    Title = "Auto Tree Farm (Old Axe)",
     Default = false,
     Callback = function(state)
         autoTreeFarmActive = state
@@ -643,10 +643,35 @@ Tabs.Bring:Button({Title="Bring Everything (Fixed Lag)",Callback=function()
     for _, item in ipairs(workspace.Items:GetChildren()) do
         local part = item:FindFirstChildWhichIsA("BasePart") or item:IsA("BasePart") and item
         if part then
-            part.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame + Vector3.new(math.random(-7,7), 0, math.random(-7,7))
+            part.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame + Vector3.new(math.random(-44,44), 0, math.random(-44,44))
         end
     end
 end})
+Tabs.Bring:Button({
+    Title = "Bring Lost Child (All)",
+    Callback = function()
+        local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if not root then return end
+
+        local targetNames = {
+            "Lost Child",
+            "Lost Child2",
+            "Lost Child3",
+            "Lost Child4"
+        }
+
+        for _, item in pairs(workspace.Characters:GetChildren()) do
+            for _, targetName in ipairs(targetNames) do
+                if item.Name == targetName and item:IsA("Model") then
+                    local main = item:FindFirstChildWhichIsA("BasePart")
+                    if main then
+                        main.CFrame = root.CFrame * CFrame.new(math.random(-10,10), 0, math.random(-10,10))
+                    end
+                end
+            end
+        end
+    end
+})
 Tabs.Bring:Button({Title="Bring Logs", Callback=function()
     local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     for _, item in pairs(workspace.Items:GetChildren()) do
@@ -763,59 +788,81 @@ Tabs.Bring:Button({Title="Bring Old Axe", Callback=function() bringItemsByName("
 Tabs.Bring:Button({Title="Bring Rifle Ammo", Callback=function() bringItemsByName("Rifle Ammo") end})
 Tabs.Bring:Button({Title="Bring Revolver Ammo", Callback=function() bringItemsByName("Revolver Ammo") end})
 
-local hitboxSettings = {Wolf=false, Bunny=false, Cultist=false, Show=false, Size=10}
+local hitboxSettings = {
+    Wolf = false,
+    Bunny = false,
+    Cultist = false,
+    All = false, -- ขยายทุก model ที่มี HumanoidRootPart
+    Show = false,
+    Size = 10
+}
 
 local function updateHitboxForModel(model)
-    local root = model:FindFirstChild("HumanoidRootPart")
-    if not root then return end
-    local name = model.Name:lower()
-    local shouldResize =
-        (hitboxSettings.Wolf and (name:find("wolf") or name:find("alpha"))) or
-        (hitboxSettings.Bunny and name:find("bunny")) or
-        (hitboxSettings.Cultist and (name:find("cultist") or name:find("cross")))
-    if shouldResize then
-        root.Size = Vector3.new(hitboxSettings.Size, hitboxSettings.Size, hitboxSettings.Size)
-        root.Transparency = hitboxSettings.Show and 0.5 or 1
-        root.Color = Color3.fromRGB(255, 255, 255)
-        root.Material = Enum.Material.Neon
-        root.CanCollide = false
-    end
+    local root = model:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    local name = model.Name:lower()
+
+    -- ถ้าเปิด All จะไม่สนชื่อ
+    if hitboxSettings.All then
+        root.Size = Vector3.new(hitboxSettings.Size, hitboxSettings.Size, hitboxSettings.Size)
+        root.Transparency = hitboxSettings.Show and 0.5 or 1
+        root.Color = Color3.fromRGB(255, 255, 255)
+        root.Material = Enum.Material.Neon
+        root.CanCollide = false
+        return
+    end
+
+    -- ตรวจชื่อเฉพาะถ้า All ไม่ได้เปิด
+    local shouldResize =
+        (hitboxSettings.Wolf and (name:find("wolf") or name:find("alpha"))) or
+        (hitboxSettings.Bunny and name:find("bunny")) or
+        (hitboxSettings.Cultist and (name:find("cultist") or name:find("cross")))
+
+    if shouldResize then
+        root.Size = Vector3.new(hitboxSettings.Size, hitboxSettings.Size, hitboxSettings.Size)
+        root.Transparency = hitboxSettings.Show and 0.5 or 1
+        root.Color = Color3.fromRGB(255, 255, 255)
+        root.Material = Enum.Material.Neon
+        root.CanCollide = false
+    end
 end
 
 task.spawn(function()
-    while true do
-        for _, model in ipairs(workspace:GetDescendants()) do
-            if model:IsA("Model") and model:FindFirstChild("HumanoidRootPart") then
-                updateHitboxForModel(model)
-            end
-        end
-        task.wait(2)
-    end
+    while true do
+        for _, model in ipairs(workspace:GetDescendants()) do
+            if model:IsA("Model") and model:FindFirstChild("HumanoidRootPart") then
+                updateHitboxForModel(model)
+            end
+        end
+        task.wait(2)
+    end
 end)
 
+-- UI
 Tabs.Hitbox:Toggle({Title="Expand Wolf Hitbox", Default=false, Callback=function(val) hitboxSettings.Wolf=val end})
 Tabs.Hitbox:Toggle({Title="Expand Bunny Hitbox", Default=false, Callback=function(val) hitboxSettings.Bunny=val end})
 Tabs.Hitbox:Toggle({Title="Expand Cultist Hitbox", Default=false, Callback=function(val) hitboxSettings.Cultist=val end})
-Tabs.Hitbox:Slider({Title="Hitbox Size", Value={Min=2, Max=100, Default=10}, Step=1, Callback=function(val) hitboxSettings.Size=val end})
+Tabs.Hitbox:Toggle({Title="Expand All Hitbox", Default=false, Callback=function(val) hitboxSettings.All=val end}) -- ปุ่มใหม่
+Tabs.Hitbox:Slider({Title="Hitbox Size", Value={Min=2, Max=250, Default=10}, Step=1, Callback=function(val) hitboxSettings.Size=val end})
 Tabs.Hitbox:Toggle({Title="Show Hitbox (Transparency)", Default=false, Callback=function(val) hitboxSettings.Show=val end})
 
 Tabs.Player:Slider({
-    Title = "Set WalkSpeed",
-    Min = 16,
-    Max = 500,
-    Default = 16,
-    Callback = function(val)
-        local player = game.Players.LocalPlayer
-        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.WalkSpeed = val
-        end
-    end
+    Title = "Set WalkSpeed",
+    Min = 5,
+    Max = 500,
+    Default = 16,
+    Callback = function(val)
+        local player = game.Players.LocalPlayer
+        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = val
+        end
+    end
 })
 
 Tabs.Player:Slider({
     Title = "Set JumpPower",
-    Min = 50,
+    Min = 10,
     Max = 500,
     Default = 50,
     Callback = function(val)
@@ -830,7 +877,7 @@ Tabs.Player:Slider({
 Tabs.Player:Button({
     Title = "Fly (Beta)",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Idkflyv4.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Dupe-Anime-Rails/refs/heads/main/Dly"))()
     end
 })
 
