@@ -23,11 +23,41 @@ local Window = Fluent:CreateWindow({
 
 --Fluent provides Lucide Icons https://lucide.dev/icons/ for the tabs, icons are optional
 local Tabs = {
-    Main = Window:AddTab({ Title = "Main", Icon = "rocket" }),
-    Movement = Window:AddTab({ Title = "Movement", Icon = "user" }),
-    Dupe = Window:AddTab({ Title = "Dupe", Icon = "target" }),
-    Settings = Window:AddTab({ Title = "Config", Icon = "file-cog" })
+    Main = Window:AddTab({ Title = "Main", Icon = "rocket" }),
+    Movement = Window:AddTab({ Title = "Movement", Icon = "user" }),
+    DupeTab = Window:AddTab({ Title = "Dupe", Icon = "target" }),
+    Settings = Window:AddTab({ Title = "Config", Icon = "file-cog" })
 }
+
+local DupeSection = Tabs.DupeTab:AddSection("Dupe")
+
+Tabs.DupeTab:AddButton({
+    Title = "Emote All",
+    Description = "Add emote all",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local PlayerGui = player:FindFirstChild("PlayerGui")
+        if not PlayerGui then return end
+
+        local MainGUI = PlayerGui:FindFirstChild("MainGUI")
+        local Emotes = MainGUI and MainGUI:FindFirstChild("Game") and MainGUI.Game:FindFirstChild("Emotes")
+        if Emotes then
+            local Modules = ReplicatedStorage:FindFirstChild("Modules")
+            if Modules then
+                local success, EmoteModule = pcall(require, Modules:FindFirstChild("EmoteModule"))
+                if success and EmoteModule and EmoteModule.GeneratePage then
+                    EmoteModule.GeneratePage(
+                        {"headless", "zombie", "zen", "ninja", "floss", "dab", "sit"},
+                        Emotes,
+                        "Free Emotes"
+                    )
+                end
+            end
+        end
+    end
+})
+
 
 local ESPSection = Tabs.Main:AddSection("ESP")
 
@@ -1010,46 +1040,6 @@ game:GetService("UserInputService").WindowFocused:Connect(function()
         playerRemovedConnection:Disconnect()
     end
 end)
-
-local New = Tabs.Dupe:AddSection("Emote")
-
-Tabs.Dupe:AddButton({
-    Title = "Dupe Emote All",
-    Description = "Add all Emotes instantly",
-    Callback = function()
-        local PlayerGui = player:FindFirstChild("PlayerGui")
-        if not PlayerGui then return end
-
-        local Emotes = PlayerGui:FindFirstChild("MainGUI")
-        if Emotes then
-            Emotes = Emotes:FindFirstChild("Game")
-            if Emotes then
-                Emotes = Emotes:FindFirstChild("Emotes")
-            end
-        end
-
-        if Emotes then
-            local EmoteModule = require(ReplicatedStorage:WaitForChild("Modules"):WaitForChild("EmoteModule"))
-            EmoteModule.GeneratePage(
-                {"headless", "zombie", "zen", "ninja", "floss", "dab", "sit"},
-                Emotes,
-                "Free Emotes"
-            )
-
-            game:GetService("StarterGui"):SetCore("SendNotification", {
-                Title = "✅ Emotes Added",
-                Text = "All emotes have been successfully added.",
-                Duration = 5
-            })
-        else
-            game:GetService("StarterGui"):SetCore("SendNotification", {
-                Title = "❌ Emotes Not Found",
-                Text = "Please make sure the GUI is fully loaded.",
-                Duration = 5
-            })
-        end
-    end
-})
 
 -- Addons:
 -- SaveManager (Allows you to have a configuration system)
