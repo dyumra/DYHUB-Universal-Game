@@ -479,63 +479,68 @@ local espTypes = {
 
 local espMasterEnable = false
 local selectedCategory = nil
-local itemToggles = {}
-local itemToggleObjects = {} -- เก็บอ้างอิง Toggle UI ของไอเทมเพื่อจะลบ
+local itemTogglesState = {}
+local itemTogglesUI = {}
 
--- Toggle เปิด/ปิด ESP ทั้งหมด
+-- เปิด/ปิด ESP หลัก
 Tabs.Esp:Toggle({
-    Title = "Enable ESP",
+    Title = "Enable ESP (Category)",
     Default = espMasterEnable,
     Callback = function(state)
         espMasterEnable = state
     end
 })
 
--- ฟังก์ชันลบ Toggle ไอเทมเก่า (ถ้า GUI ไม่มี ให้ปรับเอง)
-local function ClearItemToggles()
-    for _, toggle in pairs(itemToggleObjects) do
-        if toggle and toggle.Remove then
-            toggle:Remove()
-        elseif toggle and toggle.Destroy then
-            toggle:Destroy()
-        end
-    end
-    itemToggleObjects = {}
-    itemToggles = {}
-end
-
--- Dropdown เลือก Category All
+-- Dropdown เลือกกลุ่มใหญ่
 Tabs.Esp:Dropdown({
-    Title = "Category All",
+    Title = "Category All (Beta)",
     Default = nil,
     Options = {"Weapon", "Food", "Item", "General"},
     Callback = function(category)
         selectedCategory = category
-        ClearItemToggles()
 
-        -- สร้าง Toggle สำหรับไอเทมในกลุ่มที่เลือก
+        -- ซ่อน toggle ไอเทมทุกตัวก่อน
+        for _, toggleUI in pairs(itemTogglesUI) do
+            if toggleUI.SetVisible then
+                toggleUI:SetVisible(false)
+            end
+        end
+
+        -- แสดง toggle เฉพาะไอเทมในกลุ่มที่เลือก
         for _, itemName in ipairs(espTypes[category].items) do
-            itemToggles[itemName] = false
-
-            local toggleObj = Tabs.Esp:Toggle({
-                Title = itemName,
-                Default = false,
-                Callback = function(state)
-                    itemToggles[itemName] = state
-                end
-            })
-            table.insert(itemToggleObjects, toggleObj)
+            local toggleUI = itemTogglesUI[itemName]
+            if toggleUI and toggleUI.SetVisible then
+                toggleUI:SetVisible(true)
+            end
         end
     end
 })
 
--- Loop แสดง ESP ตาม Toggle ที่เปิด
+-- preload toggle ทุกไอเทม (ซ่อนทั้งหมดตอนเริ่ม)
+for categoryName, categoryData in pairs(espTypes) do
+    for _, itemName in ipairs(categoryData.items) do
+        itemTogglesState[itemName] = false
+        local toggleUI = Tabs.Esp:Toggle({
+            Title = itemName,
+            Default = false,
+            Callback = function(state)
+                itemTogglesState[itemName] = state
+            end
+        })
+        if toggleUI.SetVisible then
+            toggleUI:SetVisible(false)
+        end
+        itemTogglesUI[itemName] = toggleUI
+    end
+end
+
+-- loop update ESP
 task.spawn(function()
     while true do
         if espMasterEnable then
             for categoryName, categoryData in pairs(espTypes) do
                 for _, itemName in ipairs(categoryData.items) do
-                    if itemToggles[itemName] then
+                    if itemTogglesState[itemName] then
                         for _, obj in pairs(game.Workspace.Items:GetChildren()) do
                             if obj:IsA("Model") and obj.PrimaryPart and not obj:FindFirstChildOfClass("Highlight") and not obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
                                 if string.lower(obj.Name) == string.lower(itemName) then
@@ -547,16 +552,58 @@ task.spawn(function()
                 end
             end
         else
-            -- ปิด ESP ทั้งหมด ถ้ามีฟังก์ชันเคลียร์ให้เรียกตรงนี้
+            -- เคลียร์ ESP ถ้าต้องการ
         end
         task.wait(0.25)
     end
 end)
 
-
 -----------------------------------------------------------------
 -- TELEPORT TAB
 -----------------------------------------------------------------
+Tabs.Teleport:Toggle({
+    Title = "Scan Map",
+    Default = false,
+    Callback = function(state)
+        getgenv().scan_map = state
+
+        task.spawn(function()
+            local Players = game:GetService("Players")
+            local player = Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local hrp = character:WaitForChild("HumanoidRootPart", 3)
+            if not hrp then return end
+
+            local map = workspace:FindFirstChild("Map")
+            if not map then return end
+
+            local foliage = map:FindFirstChild("Foliage") or map:FindFirstChild("Landmarks")
+            if not foliage then return end
+
+            local trees = {}
+            for _, obj in ipairs(foliage:GetChildren()) do
+                if obj.Name == "Small Tree" and obj:IsA("Model") then
+                    local trunk = obj:FindFirstChild("Trunk") or obj.PrimaryPart
+                    if trunk then
+                        table.insert(trees, trunk)
+                    end
+                end
+            end
+
+            while getgenv().scan_map and #trees > 0 do
+                for _, trunk in ipairs(trees) do
+                    if not getgenv().scan_map then break end
+                    local treeCFrame = trunk.CFrame
+                    local rightVector = treeCFrame.RightVector
+                    local targetPosition = treeCFrame.Position + rightVector * 20
+                    hrp.CFrame = CFrame.new(targetPosition)
+                    task.wait(0.2) -- หน่วงเวลาแต่ละวาร์ป (ปรับได้ตามต้องการ)
+                end
+            end
+        end)
+    end
+})
+
 Tabs.Teleport:Button({
     Title="Teleport to Camp",
     Callback=function()
@@ -790,6 +837,24 @@ Tabs.Bring:Button({Title="Bring Chest", Callback=function()
         end
     end
 end})
+Tabs.Bring:Button({Title="Bring Lost Children All", Callback=function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    for _, item in pairs(workspace.Items:GetChildren()) do
+        local name = item.Name:lower()
+        if (
+            name:find("lost child") or
+            name:find("lost child2") or
+            name:find("lost child3") or
+            name:find("lost child4")
+        ) and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
+end})
+
 Tabs.Bring:Button({Title="Bring Flashlight", Callback=function() bringItemsByName("Flashlight") end})
 Tabs.Bring:Button({Title="Bring Nails", Callback=function() bringItemsByName("Nails") end})
 Tabs.Bring:Button({Title="Bring Fan", Callback=function() bringItemsByName("Fan") end})
