@@ -399,110 +399,6 @@ Tabs.Esp:Toggle({
     end
 })
 
-local espTypes = {
-    ["Fuel All"] = {
-        color = Color3.fromRGB(255, 140, 0),
-        items = { "Log", "Fuel Canister", "Coal", "Oil Barrel" }
-    },
-    ["Scraps All"] = {
-        color = Color3.fromRGB(169, 169, 169),
-        items = { "Sheet Metal", "Broken Fan", "UFO Junk", "Bolt", "Old Radio", "UFO Scrap", "Broken Microwave" }
-    },
-    ["Ammo All"] = {
-        color = Color3.fromRGB(0, 255, 0),
-        items = { "Rifle Ammo", "Revolver Ammo" }
-    },
-    ["Guns All"] = {
-        color = Color3.fromRGB(255, 0, 0),
-        items = { "Rifle", "Revolver" }
-    },
-    ["Food All"] = {
-        color = Color3.fromRGB(255, 255, 0),
-        items = { "Meat? Sandwich", "Cake", "Carrot", "Morsel" }
-    },
-    ["body All"] = {
-        color = Color3.fromRGB(255, 255, 255),
-        items = { "Leather Body", "Iron Body" }
-    },
-    ["Bandage"] = {
-        color = Color3.fromRGB(255, 192, 203),
-        items = { "Bandage" }
-    },
-    ["Medkit"] = {
-        color = Color3.fromRGB(255, 0, 255),
-        items = { "MedKit" }
-    },
-    ["Coin"] = {
-        color = Color3.fromRGB(255, 215, 0),
-        items = { "Coin Stack" }
-    },
-    ["Radio"] = {
-        color = Color3.fromRGB(135, 206, 235),
-        items = { "Old Radio" }
-    },
-    ["tyre"] = {
-        color = Color3.fromRGB(105, 105, 105),
-        items = { "Tyre" }
-    },
-    ["broken fan"] = {
-        color = Color3.fromRGB(112, 128, 144),
-        items = { "Broken Fan" }
-    },
-    ["broken microwave"] = {
-        color = Color3.fromRGB(47, 79, 79),
-        items = { "Broken Microwave" }
-    },
-    ["bolt"] = {
-        color = Color3.fromRGB(0, 191, 255),
-        items = { "Bolt" }
-    },
-    ["Sheet Metal"] = {
-        color = Color3.fromRGB(192, 192, 192),
-        items = { "Sheet Metal" }
-    },
-    ["SeedBox"] = {
-        color = Color3.fromRGB(124, 252, 0),
-        items = { "Seed Box" }
-    },
-    ["Chair"] = {
-        color = Color3.fromRGB(210, 180, 140),
-        items = { "Chair" }
-    },
-}
-
-for category, data in pairs(espTypes) do
-    Tabs.Esp:Toggle({
-        Title = "ESP (" .. category .. ")",
-        Default = false,
-        Callback = function(state)
-            local active = state
-            task.spawn(function()
-                while active do
-                    for _, obj in pairs(game.Workspace.Items:GetChildren()) do
-                        if obj:IsA("Model") and obj.PrimaryPart and not obj:FindFirstChildOfClass("Highlight") and not obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
-                            for _, itemName in pairs(data.items) do
-                                if string.lower(obj.Name) == string.lower(itemName) then
-                                    CreateEsp(obj, data.color, obj.Name, obj.PrimaryPart, 2)
-                                    break
-                                end
-                            end
-                        end
-                    end
-                    task.wait(0.25)
-                end
-                for _, obj in pairs(game.Workspace.Items:GetChildren()) do
-                    for _, itemName in pairs(data.items) do
-                        if string.lower(obj.Name) == string.lower(itemName) then
-                            KeepEsp(obj, obj.PrimaryPart)
-                            break
-                        end
-                    end
-                end
-            end)
-        end
-    })
-end
-
 Tabs.Esp:Toggle({
     Title = "Esp (Children)",
     Default = false,
@@ -544,6 +440,119 @@ Tabs.Esp:Toggle({
         end)
     end
 })
+
+local espTypes = {
+    Weapon = {
+        color = Color3.fromRGB(255, 0, 0),
+        items = {
+            "Morningstar", "Laser Sword", "Katana", "Spear", "Tactical Shotgun",
+            "Kunai", "Knife", "Revolver", "Rifle", "Ray Gun", "Laser Cannon",
+            "Strong Axe", "Good Axe", "Old Axe", "Rifle Ammo", "Revolver Ammo",
+            "Shotgun Ammo", "Leather Body", "Iron Body", "Thorn Body",
+            "Alien Armor", "Riot Shield"
+        }
+    },
+    Food = {
+        color = Color3.fromRGB(255, 255, 0),
+        items = {
+            "Steak", "Apple", "Berry", "Hearty Stew", "Stew", "Chili", "Pumpkin",
+            "Corn", "Carrot", "Cake", "Morsel", "Meat? Sandwich"
+        }
+    },
+    Item = {
+        color = Color3.fromRGB(169, 169, 169),
+        items = {
+            "Rope", "Scrap", "Wood", "Rock", "Bolt", "Sheet Metal", "Cloth", "Tyre",
+            "Nails", "Stone Pickaxe", "Fan", "Broken Fan", "Broken Microwave",
+            "UFO Junk", "UFO Scrap", "Seed Box", "Coin Stack", "Old Radio", "Chair"
+        }
+    },
+    General = {
+        color = Color3.fromRGB(135, 206, 235),
+        items = {
+            "Chili Seeds", "Firefly Seeds", "Berry Seeds", "Flower Seeds", "Old Sack",
+            "Good Sack", "Giant Sack", "Flashlight", "Strong Flashlight",
+            "Bandage", "MedKit", "Saplings", "Stakes", "Wolf Pelts", "Bear Pelts"
+        }
+    }
+}
+
+local espMasterEnable = false
+local selectedCategory = nil
+local itemToggles = {}
+local itemToggleObjects = {} -- เก็บอ้างอิง Toggle UI ของไอเทมเพื่อจะลบ
+
+-- Toggle เปิด/ปิด ESP ทั้งหมด
+Tabs.Esp:Toggle({
+    Title = "Enable ESP",
+    Default = espMasterEnable,
+    Callback = function(state)
+        espMasterEnable = state
+    end
+})
+
+-- ฟังก์ชันลบ Toggle ไอเทมเก่า (ถ้า GUI ไม่มี ให้ปรับเอง)
+local function ClearItemToggles()
+    for _, toggle in pairs(itemToggleObjects) do
+        if toggle and toggle.Remove then
+            toggle:Remove()
+        elseif toggle and toggle.Destroy then
+            toggle:Destroy()
+        end
+    end
+    itemToggleObjects = {}
+    itemToggles = {}
+end
+
+-- Dropdown เลือก Category All
+Tabs.Esp:Dropdown({
+    Title = "Category All",
+    Default = nil,
+    Options = {"Weapon", "Food", "Item", "General"},
+    Callback = function(category)
+        selectedCategory = category
+        ClearItemToggles()
+
+        -- สร้าง Toggle สำหรับไอเทมในกลุ่มที่เลือก
+        for _, itemName in ipairs(espTypes[category].items) do
+            itemToggles[itemName] = false
+
+            local toggleObj = Tabs.Esp:Toggle({
+                Title = itemName,
+                Default = false,
+                Callback = function(state)
+                    itemToggles[itemName] = state
+                end
+            })
+            table.insert(itemToggleObjects, toggleObj)
+        end
+    end
+})
+
+-- Loop แสดง ESP ตาม Toggle ที่เปิด
+task.spawn(function()
+    while true do
+        if espMasterEnable then
+            for categoryName, categoryData in pairs(espTypes) do
+                for _, itemName in ipairs(categoryData.items) do
+                    if itemToggles[itemName] then
+                        for _, obj in pairs(game.Workspace.Items:GetChildren()) do
+                            if obj:IsA("Model") and obj.PrimaryPart and not obj:FindFirstChildOfClass("Highlight") and not obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
+                                if string.lower(obj.Name) == string.lower(itemName) then
+                                    CreateEsp(obj, categoryData.color, obj.Name, obj.PrimaryPart, 2)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        else
+            -- ปิด ESP ทั้งหมด ถ้ามีฟังก์ชันเคลียร์ให้เรียกตรงนี้
+        end
+        task.wait(0.25)
+    end
+end)
+
 
 -----------------------------------------------------------------
 -- TELEPORT TAB
