@@ -13,7 +13,6 @@ local TweenService = game:GetService("TweenService")
 local VirtualInput = game:GetService("VirtualInputManager")
 local CoreGui = game:GetService("CoreGui")
 
--- ย้ายฟังก์ชันนี้ขึ้นก่อน
 local function KeepEsp(Char, Parent)
     if Char then
         local highlight = Char:FindFirstChildOfClass("Highlight")
@@ -29,13 +28,12 @@ local function KeepEsp(Char, Parent)
     end
 end
 
--- แล้วต่อด้วย CreateEsp
 local function CreateEsp(Char, Color, Text, Parent, numberOffset)
     if not Char or not Char:IsA("Model") then return end
     if not Char:FindFirstChild("HumanoidRootPart") then return end
     if not Parent or not Parent:IsA("BasePart") then return end
 
-    KeepEsp(Char, Parent) -- ตอนนี้จะไม่ error แล้ว
+    KeepEsp(Char, Parent)
 
     local highlight = Instance.new("Highlight")
     highlight.Name = "ESP_Highlight"
@@ -134,7 +132,11 @@ local Tabs = {
     Teleport = Window:Tab({ Title = "Teleport", Icon = "map-pin" }),
     Player = Window:Tab({ Title = "Player", Icon = "user" }),
     Esp = Window:Tab({ Title = "Esp", Icon = "eye" }),
-    Bring = Window:Tab({ Title = "Bring Items", Icon = "package" }),
+    Bring = Window:Tab({ Title = "Bring All", Icon = "atom" }),
+    BringGeneral = Window:Tab({ Title = "Bring General", Icon = "badge-plus" }),
+    BringWeapon = Window:Tab({ Title = "Bring Weapon", Icon = "swords" }),
+    BringItem = Window:Tab({ Title = "Bring Items", Icon = "package" }),
+    BringFood = Window:Tab({ Title = "Bring Food", Icon = "apple" }),
     Hitbox = Window:Tab({ Title = "Hitbox", Icon = "target" }),
     Misc = Window:Tab({ Title = "Misc", Icon = "file-cog" }),
 }
@@ -398,111 +400,6 @@ Tabs.Esp:Toggle({
         end)
     end
 })
-
-local espTypes = {
-    ["Fuel All"] = {
-        color = Color3.fromRGB(255, 140, 0),
-        items = { "Log", "Fuel Canister", "Coal", "Oil Barrel" }
-    },
-    ["Scraps All"] = {
-        color = Color3.fromRGB(169, 169, 169),
-        items = { "Sheet Metal", "Broken Fan", "UFO Junk", "Bolt", "Old Radio", "UFO Scrap", "Broken Microwave" }
-    },
-    ["Ammo All"] = {
-        color = Color3.fromRGB(0, 255, 0),
-        items = { "Rifle Ammo", "Revolver Ammo" }
-    },
-    ["Guns All"] = {
-        color = Color3.fromRGB(255, 0, 0),
-        items = { "Rifle", "Revolver" }
-    },
-    ["Food All"] = {
-        color = Color3.fromRGB(255, 255, 0),
-        items = { "Meat? Sandwich", "Cake", "Carrot", "Morsel" }
-    },
-    ["body All"] = {
-        color = Color3.fromRGB(255, 255, 255),
-        items = { "Leather Body", "Iron Body" }
-    },
-    ["Bandage"] = {
-        color = Color3.fromRGB(255, 192, 203),
-        items = { "Bandage" }
-    },
-    ["Medkit"] = {
-        color = Color3.fromRGB(255, 0, 255),
-        items = { "MedKit" }
-    },
-    ["Coin"] = {
-        color = Color3.fromRGB(255, 215, 0),
-        items = { "Coin Stack" }
-    },
-    ["Radio"] = {
-        color = Color3.fromRGB(135, 206, 235),
-        items = { "Old Radio" }
-    },
-    ["tyre"] = {
-        color = Color3.fromRGB(105, 105, 105),
-        items = { "Tyre" }
-    },
-    ["broken fan"] = {
-        color = Color3.fromRGB(112, 128, 144),
-        items = { "Broken Fan" }
-    },
-    ["broken microwave"] = {
-        color = Color3.fromRGB(47, 79, 79),
-        items = { "Broken Microwave" }
-    },
-    ["bolt"] = {
-        color = Color3.fromRGB(0, 191, 255),
-        items = { "Bolt" }
-    },
-    ["Sheet Metal"] = {
-        color = Color3.fromRGB(192, 192, 192),
-        items = { "Sheet Metal" }
-    },
-    ["SeedBox"] = {
-        color = Color3.fromRGB(124, 252, 0),
-        items = { "Seed Box" }
-    },
-    ["Chair"] = {
-        color = Color3.fromRGB(210, 180, 140),
-        items = { "Chair" }
-    },
-}
-
-for category, data in pairs(espTypes) do
-    Tabs.Esp:Toggle({
-        Title = "ESP (" .. category .. ")",
-        Default = false,
-        Callback = function(state)
-            local active = state
-            task.spawn(function()
-                while active do
-                    for _, obj in pairs(game.Workspace.Items:GetChildren()) do
-                        if obj:IsA("Model") and obj.PrimaryPart and not obj:FindFirstChildOfClass("Highlight") and not obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
-                            for _, itemName in pairs(data.items) do
-                                if string.lower(obj.Name) == string.lower(itemName) then
-                                    CreateEsp(obj, data.color, obj.Name, obj.PrimaryPart, 2)
-                                    break
-                                end
-                            end
-                        end
-                    end
-                    task.wait(0.25)
-                end
-                for _, obj in pairs(game.Workspace.Items:GetChildren()) do
-                    for _, itemName in pairs(data.items) do
-                        if string.lower(obj.Name) == string.lower(itemName) then
-                            KeepEsp(obj, obj.PrimaryPart)
-                            break
-                        end
-                    end
-                end
-            end)
-        end
-    })
-end
-
 Tabs.Esp:Toggle({
     Title = "Esp (Children)",
     Default = false,
@@ -545,9 +442,165 @@ Tabs.Esp:Toggle({
     end
 })
 
+local espTypes = {
+    Weapon = {
+        color = Color3.fromRGB(255, 190, 0),
+        items = {
+            "Morningstar", "Laser Sword", "Katana", "Spear", "Tactical Shotgun",
+            "Kunai", "Knife", "Revolver", "Rifle", "Ray Gun", "Laser Cannon",
+            "Strong Axe", "Good Axe", "Old Axe", "Rifle Ammo", "Revolver Ammo",
+            "Shotgun Ammo", "Leather Body", "Iron Body", "Thorn Body",
+            "Alien Armor", "Riot Shield"
+        }
+    },
+    Food = {
+        color = Color3.fromRGB(255, 255, 0),
+        items = {
+            "Steak", "Apple", "Berry", "Hearty Stew", "Stew", "Chili", "Pumpkin",
+            "Corn", "Carrot", "Cake", "Morsel", "Meat? Sandwich"
+        }
+    },
+    Item = {
+        color = Color3.fromRGB(169, 169, 169),
+        items = {
+            "Rope", "Scrap", "Wood", "Rock", "Bolt", "Sheet Metal", "Cloth", "Tyre",
+            "Nails", "Stone Pickaxe", "Fan", "Broken Fan", "Broken Microwave",
+            "UFO Junk", "UFO Scrap", "Seed Box", "Coin Stack", "Old Radio", "Chair"
+        }
+    },
+    General = {
+        color = Color3.fromRGB(135, 206, 235),
+        items = {
+            "Chili Seeds", "Firefly Seeds", "Berry Seeds", "Flower Seeds", "Old Sack",
+            "Good Sack", "Giant Sack", "Flashlight", "Strong Flashlight",
+            "Bandage", "MedKit", "Saplings", "Stakes", "Wolf Pelts", "Bear Pelts"
+        }
+    }
+}
+
+local espMasterEnable = false
+local selectedCategory = nil
+local itemToggles = {}
+local itemToggleObjects = {} -- เก็บอ้างอิง Toggle UI ของไอเทมเพื่อจะลบ
+
+-- Toggle เปิด/ปิด ESP ทั้งหมด
+Tabs.Esp:Toggle({
+    Title = "Enable ESP (Category)",
+    Default = espMasterEnable,
+    Callback = function(state)
+        espMasterEnable = state
+    end
+})
+
+-- ฟังก์ชันลบ Toggle ไอเทมเก่า (ถ้า GUI ไม่มี ให้ปรับเอง)
+local function ClearItemToggles()
+    for _, toggle in pairs(itemToggleObjects) do
+        if toggle and toggle.Remove then
+            toggle:Remove()
+        elseif toggle and toggle.Destroy then
+            toggle:Destroy()
+        end
+    end
+    itemToggleObjects = {}
+    itemToggles = {}
+end
+
+-- Dropdown เลือก Category All
+Tabs.Esp:Dropdown({
+    Title = "Category All",
+    Default = nil,
+    Options = {"Weapon", "Food", "Item", "General"},
+    Callback = function(category)
+        selectedCategory = category
+        ClearItemToggles()
+
+        -- สร้าง Toggle สำหรับไอเทมในกลุ่มที่เลือก
+        for _, itemName in ipairs(espTypes[category].items) do
+            itemToggles[itemName] = false
+
+            local toggleObj = Tabs.Esp:Toggle({
+                Title = itemName,
+                Default = false,
+                Callback = function(state)
+                    itemToggles[itemName] = state
+                end
+            })
+            table.insert(itemToggleObjects, toggleObj)
+        end
+    end
+})
+
+-- Loop แสดง ESP ตาม Toggle ที่เปิด
+task.spawn(function()
+    while true do
+        if espMasterEnable then
+            for categoryName, categoryData in pairs(espTypes) do
+                for _, itemName in ipairs(categoryData.items) do
+                    if itemToggles[itemName] then
+                        for _, obj in pairs(game.Workspace.Items:GetChildren()) do
+                            if obj:IsA("Model") and obj.PrimaryPart and not obj:FindFirstChildOfClass("Highlight") and not obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
+                                if string.lower(obj.Name) == string.lower(itemName) then
+                                    CreateEsp(obj, categoryData.color, obj.Name, obj.PrimaryPart, 2)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        else
+            -- ปิด ESP ทั้งหมด ถ้ามีฟังก์ชันเคลียร์ให้เรียกตรงนี้
+        end
+        task.wait(0.25)
+    end
+end)
+
 -----------------------------------------------------------------
 -- TELEPORT TAB
 -----------------------------------------------------------------
+Tabs.Teleport:Toggle({
+    Title = "Scan Map (Essential)",
+    Default = false,
+    Callback = function(state)
+        getgenv().scan_map = state
+
+        task.spawn(function()
+            local Players = game:GetService("Players")
+            local player = Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local hrp = character:WaitForChild("HumanoidRootPart", 3)
+            if not hrp then return end
+
+            local map = workspace:FindFirstChild("Map")
+            if not map then return end
+
+            local foliage = map:FindFirstChild("Foliage") or map:FindFirstChild("Landmarks")
+            if not foliage then return end
+
+            local trees = {}
+            for _, obj in ipairs(foliage:GetChildren()) do
+                if obj.Name == "Small Tree" and obj:IsA("Model") then
+                    local trunk = obj:FindFirstChild("Trunk") or obj.PrimaryPart
+                    if trunk then
+                        table.insert(trees, trunk)
+                    end
+                end
+            end
+
+            while getgenv().scan_map and #trees > 0 do
+                for _, trunk in ipairs(trees) do
+                    if not getgenv().scan_map then break end
+                    local treeCFrame = trunk.CFrame
+                    local rightVector = treeCFrame.RightVector
+                    local targetPosition = treeCFrame.Position + rightVector * 25
+                    hrp.CFrame = CFrame.new(targetPosition)
+                    task.wait(0.15)
+                end
+            end
+        end)
+    end
+})
+
+
 Tabs.Teleport:Button({
     Title="Teleport to Camp",
     Callback=function()
@@ -684,15 +737,15 @@ end
 -----------------------------------------------------------------
 -- BRING TAB
 -----------------------------------------------------------------
-Tabs.Bring:Button({Title="Bring Everything (Fixed Lag)",Callback=function()
+Tabs.Bring:Button({Title="Bring Everything (Up Size)",Callback=function()
     for _, item in ipairs(workspace.Items:GetChildren()) do
         local part = item:FindFirstChildWhichIsA("BasePart") or item:IsA("BasePart") and item
         if part then
-            part.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame + Vector3.new(math.random(-7,7), 0, math.random(-7,7))
+            part.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame + Vector3.new(math.random(-25,25), 0, math.random(-25,25))
         end
     end
 end})
-Tabs.Bring:Button({Title="Bring Logs", Callback=function()
+Tabs.Bring:Button({Title="Bring Logs All", Callback=function()
     local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     for _, item in pairs(workspace.Items:GetChildren()) do
         if item.Name:lower():find("log") and item:IsA("Model") then
@@ -703,21 +756,10 @@ Tabs.Bring:Button({Title="Bring Logs", Callback=function()
         end
     end
 end})
-Tabs.Bring:Button({Title="Bring Fuel Canister", Callback=function()
+Tabs.Bring:Button({Title="Bring Fuel All", Callback=function()
     local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     for _, item in pairs(workspace.Items:GetChildren()) do
-        if item.Name:lower():find("fuel canister") and item:IsA("Model") then
-            local main = item:FindFirstChildWhichIsA("BasePart")
-            if main then
-                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
-            end
-        end
-    end
-end})
-Tabs.Bring:Button({Title="Bring Oil Barrel", Callback=function()
-    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    for _, item in pairs(workspace.Items:GetChildren()) do
-        if item.Name:lower():find("oil barrel") and item:IsA("Model") then
+        if item.Name:lower():find("fuel canister") or name:find("oil barrel") or name:find("coal") or name:find("Biofuel")) and item:IsA("Model") then
             local main = item:FindFirstChildWhichIsA("BasePart")
             if main then
                 main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
@@ -729,7 +771,7 @@ Tabs.Bring:Button({ Title = "Bring Scrap All", Callback = function()
     local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if not root then return end
     local scrapNames = {
-        ["tyre"] = true, ["sheet metal"] = true, ["broken fan"] = true, ["bolt"] = true, ["old radio"] = true, ["ufo junk"] = true, ["ufo scrap"] = true, ["broken microwave"] = true,
+        ["tyre"] = true, ["Old Car Engine"] = true, ["Washing Machine"] = true, ["Old Car Engine"] = true, ["UFO Component"] = true, ["Cultist Prototype"] = true, ["sheet metal"] = true, ["broken fan"] = true, ["bolt"] = true, ["old radio"] = true, ["ufo junk"] = true, ["ufo scrap"] = true, ["broken microwave"] = true,
     }
     for _, item in pairs(workspace.Items:GetChildren()) do
         if item:IsA("Model") then
@@ -738,7 +780,7 @@ Tabs.Bring:Button({ Title = "Bring Scrap All", Callback = function()
                 if itemName:find(scrapName) then
                     local main = item:FindFirstChildWhichIsA("BasePart")
                     if main then
-                        main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                        main.CFrame = root.CFrame * CFrame.new(math.random(-15,15), 0, math.random(-15,15))
                     end
                     break
                 end
@@ -746,10 +788,10 @@ Tabs.Bring:Button({ Title = "Bring Scrap All", Callback = function()
         end
     end
 end })
-Tabs.Bring:Button({Title="Bring Coal", Callback=function()
+Tabs.Bring:Button({Title="Bring Food All", Callback=function()
     local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     for _, item in pairs(workspace.Items:GetChildren()) do
-        if item.Name:lower():find("coal") and item:IsA("Model") then
+        if item.Name:lower():find("Meat? Sandwich") or name:find("Morsel") or name:find("Cake") or name:find("Carrot") or name:find("Pumpkin") or name:find("Corn") or name:find("Meat") or name:find("Cooked") or name:find("Berry") or name:find("Apple") or name:find("Steak") or name:find("Stew") or name:find("Steak") or name:find("Hearty Stew") or name:find("Meat? Sandwich")) and item:IsA("Model") then
             local main = item:FindFirstChildWhichIsA("BasePart")
             if main then
                 main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
@@ -757,19 +799,69 @@ Tabs.Bring:Button({Title="Bring Coal", Callback=function()
         end
     end
 end})
-Tabs.Bring:Button({Title="Bring Meat (Raw & Cooked)", Callback=function()
-    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    for _, item in pairs(workspace.Items:GetChildren()) do
-        local name = item.Name:lower()
-        if (name:find("meat") or name:find("cooked")) and item:IsA("Model") then
-            local main = item:FindFirstChildWhichIsA("BasePart")
-            if main then
-                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
-            end
-        end
-    end
+Tabs.Bring:Button({Title="Bring Pelts/Foot All", Callback=function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    for _, item in pairs(workspace.Items:GetChildren()) do
+        local name = item.Name:lower()
+        if (name:find("bunny foot") or name:find("wolf pelt") or name:find("alpha wolf pelt") or name:find("bear pelt")) and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
 end})
-Tabs.Bring:Button({Title="Bring Chest", Callback=function()
+Tabs.Bring:Button({Title="Bring Materials All", Callback=function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    for _, item in pairs(workspace.Items:GetChildren()) do
+        local name = item.Name:lower()
+        if (
+            name:find("scrap") or
+            name:find("cultist gem") or
+            name:find("forest gem") or
+            name:find("mossy coin")
+        ) and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
+end})
+Tabs.Bring:Button({Title="Bring Healing All", Callback=function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    for _, item in pairs(workspace.Items:GetChildren()) do
+        local name = item.Name:lower()
+        if (
+            name:find("Medkit") or
+            name:find("Bandage")
+        ) and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
+end})
+Tabs.Bring:Button({Title="Bring Lost Children All", Callback=function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    for _, item in pairs(workspace.Characters:GetChildren()) do
+        local name = item.Name:lower()
+        if (
+            name:find("lost child") or
+            name:find("lost child2") or
+            name:find("lost child3") or
+            name:find("lost child4")
+        ) and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
+end})
+
+Tabs.Bring:Button({Title="Bring Chest All", Callback=function()
     local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     for _, item in pairs(workspace.Items:GetChildren()) do
         local name = item.Name:lower()
@@ -781,44 +873,83 @@ Tabs.Bring:Button({Title="Bring Chest", Callback=function()
         end
     end
 end})
-Tabs.Bring:Button({Title="Bring Flashlight", Callback=function() bringItemsByName("Flashlight") end})
-Tabs.Bring:Button({Title="Bring Nails", Callback=function() bringItemsByName("Nails") end})
-Tabs.Bring:Button({Title="Bring Fan", Callback=function() bringItemsByName("Fan") end})
+-- Weapon
+Tabs.BringWeapon:Button({Title="Bring Morningstar", Callback=function() bringItemsByName("Morningstar") end})
+Tabs.BringWeapon:Button({Title="Bring Laser Sword", Callback=function() bringItemsByName("Laser Sword") end})
+Tabs.BringWeapon:Button({Title="Bring Katana", Callback=function() bringItemsByName("Katana") end})
+Tabs.BringWeapon:Button({Title="Bring Spear", Callback=function() bringItemsByName("Spear") end})
+Tabs.BringWeapon:Button({Title="Bring Tactical Shotgun", Callback=function() bringItemsByName("Tactical Shotgun") end})
+Tabs.BringWeapon:Button({Title="Bring Kunai", Callback=function() bringItemsByName("Kunai") end})
+Tabs.BringWeapon:Button({Title="Bring Knife", Callback=function() bringItemsByName("Knife") end})
+Tabs.BringWeapon:Button({Title="Bring Revolver", Callback=function() bringItemsByName("Revolver") end})
+Tabs.BringWeapon:Button({Title="Bring Rifle", Callback=function() bringItemsByName("Rifle") end})
+Tabs.BringWeapon:Button({Title="Bring Alien Raygun", Callback=function() bringItemsByName("Ray Gun") end})ฃ
+Tabs.BringWeapon:Button({Title="Bring Alien Raycannon", Callback=function() bringItemsByName("Laser Cannon") end})
+Tabs.BringWeapon:Button({Title="Bring Strong Axe", Callback=function() bringItemsByName("Strong Axe") end})
+Tabs.BringWeapon:Button({Title="Bring Good Axe", Callback=function() bringItemsByName("Good Axe") end})
+Tabs.BringWeapon:Button({Title="Bring Old Axe", Callback=function() bringItemsByName("Old Axe") end})
+Tabs.BringWeapon:Button({Title="Bring Rifle Ammo", Callback=function() bringItemsByName("Rifle Ammo") end})
+Tabs.BringWeapon:Button({Title="Bring Revolver Ammo", Callback=function() bringItemsByName("Revolver Ammo") end})
+Tabs.BringWeapon:Button({Title="Bring Shotgun Ammo", Callback=function() bringItemsByName("Revolver Ammo") end})
+Tabs.BringWeapon:Button({Title="Bring Leather Body", Callback=function() bringItemsByName("Leather Body") end})
+Tabs.BringWeapon:Button({Title="Bring Iron Body", Callback=function() bringItemsByName("Iron Body") end})
+Tabs.BringWeapon:Button({Title="Bring Thorn Body", Callback=function() bringItemsByName("Thorn Body") end})
+Tabs.BringWeapon:Button({Title="Bring Alien Armor", Callback=function() bringItemsByName("Alien Armor") end})
+Tabs.BringWeapon:Button({Title="Bring Riot Shield", Callback=function() bringItemsByName("Riot Shield") 
 
-Tabs.Bring:Button({Title="Bring Rope", Callback=function() bringItemsByName("Rope") end})
-Tabs.Bring:Button({Title="Bring Scrap", Callback=function() bringItemsByName("Scrap") end})
-Tabs.Bring:Button({Title="Bring Wood", Callback=function() bringItemsByName("Wood") end})
-Tabs.Bring:Button({Title="Bring Cloth", Callback=function() bringItemsByName("Cloth") end})
-Tabs.Bring:Button({Title="Bring Rock", Callback=function() bringItemsByName("Rock") end})
-Tabs.Bring:Button({Title="Bring Stone Pickaxe", Callback=function() bringItemsByName("Stone Pickaxe") end})
-Tabs.Bring:Button({Title="Bring Knife", Callback=function() bringItemsByName("Knife") end})
-Tabs.Bring:Button({Title="Bring Spear", Callback=function() bringItemsByName("Spear") end})
-Tabs.Bring:Button({Title="Bring Leather Body", Callback=function() bringItemsByName("Leather Body") end})
-Tabs.Bring:Button({Title="Bring Iron Body", Callback=function() bringItemsByName("Iron Body") end})
-Tabs.Bring:Button({Title="Bring Revolver", Callback=function() bringItemsByName("Revolver") end})
-Tabs.Bring:Button({Title="Bring Rifle", Callback=function() bringItemsByName("Rifle") end})
-Tabs.Bring:Button({Title="Bring Bandage", Callback=function() bringItemsByName("Bandage") end})
-Tabs.Bring:Button({Title="Bring MedKit", Callback=function() bringItemsByName("MedKit") end})
-Tabs.Bring:Button({Title="Bring Old Radio", Callback=function() bringItemsByName("Old Radio") end})
-Tabs.Bring:Button({Title="Bring Coin Stack", Callback=function() bringItemsByName("Coin Stack") end})
-Tabs.Bring:Button({Title="Bring UFO Junk", Callback=function() bringItemsByName("UFO Junk") end})
-Tabs.Bring:Button({Title="Bring UFO Scrap", Callback=function() bringItemsByName("UFO Scrap") end})
-Tabs.Bring:Button({Title="Bring Broken Microwave", Callback=function() bringItemsByName("Broken Microwave") end})
-Tabs.Bring:Button({Title="Bring Bolt", Callback=function() bringItemsByName("Bolt") end})
-Tabs.Bring:Button({Title="Bring Chair", Callback=function() bringItemsByName("Chair") end})
-Tabs.Bring:Button({Title="Bring Seed Box", Callback=function() bringItemsByName("Seed Box") end})
-Tabs.Bring:Button({Title="Bring Meat? Sandwich", Callback=function() bringItemsByName("Meat? Sandwich") end})
-Tabs.Bring:Button({Title="Bring Cake", Callback=function() bringItemsByName("Cake") end})
-Tabs.Bring:Button({Title="Bring Carrot", Callback=function() bringItemsByName("Carrot") end})
-Tabs.Bring:Button({Title="Bring Morsel", Callback=function() bringItemsByName("Morsel") end})
-Tabs.Bring:Button({Title="Bring Tyre", Callback=function() bringItemsByName("Tyre") end})
-Tabs.Bring:Button({Title="Bring Broken Fan", Callback=function() bringItemsByName("Broken Fan") end})
-Tabs.Bring:Button({Title="Bring Sheet Metal", Callback=function() bringItemsByName("Sheet Metal") end})
-Tabs.Bring:Button({Title="Bring Strong Axe", Callback=function() bringItemsByName("Strong Axe") end})
-Tabs.Bring:Button({Title="Bring Good Axe", Callback=function() bringItemsByName("Good Axe") end})
-Tabs.Bring:Button({Title="Bring Old Axe", Callback=function() bringItemsByName("Old Axe") end})
-Tabs.Bring:Button({Title="Bring Rifle Ammo", Callback=function() bringItemsByName("Rifle Ammo") end})
-Tabs.Bring:Button({Title="Bring Revolver Ammo", Callback=function() bringItemsByName("Revolver Ammo") end})
+-- Food
+Tabs.BringFood:Button({Title="Bring Steak", Callback=function() bringItemsByName("Steak") end})
+Tabs.BringFood:Button({Title="Bring Apple", Callback=function() bringItemsByName("Apple") end})
+Tabs.BringFood:Button({Title="Bring Berry", Callback=function() bringItemsByName("Berry") end})
+Tabs.BringFood:Button({Title="Bring Hearty Stew", Callback=function() bringItemsByName("Hearty Stew") end})
+Tabs.BringFood:Button({Title="Bring Stew", Callback=function() bringItemsByName("Stew") end})
+Tabs.BringFood:Button({Title="Bring Chili", Callback=function() bringItemsByName("Chili") end})
+
+Tabs.BringFood:Button({Title="Bring Pumpkin", Callback=function() bringItemsByName("Pumpkin") end})
+Tabs.BringFood:Button({Title="Bring Corn", Callback=function() bringItemsByName("Corn") end})
+Tabs.BringFood:Button({Title="Bring Carrot", Callback=function() bringItemsByName("Carrot") end})
+Tabs.BringFood:Button({Title="Bring Cake", Callback=function() bringItemsByName("Cake") end})
+Tabs.BringFood:Button({Title="Bring Morsel", Callback=function() bringItemsByName("Morsel") end})
+Tabs.BringFood:Button({Title="Bring Meat? Sandwich", Callback=function() bringItemsByName("Meat? Sandwich") end})
+
+-- Item
+Tabs.BringItem:Button({Title="Bring Rope", Callback=function() bringItemsByName("Rope") end})
+Tabs.BringItem:Button({Title="Bring Scrap", Callback=function() bringItemsByName("Scrap") end})
+Tabs.BringItem:Button({Title="Bring Wood", Callback=function() bringItemsByName("Wood") end})
+Tabs.BringItem:Button({Title="Bring Rock", Callback=function() bringItemsByName("Rock") end})
+Tabs.BringItem:Button({Title="Bring Bolt", Callback=function() bringItemsByName("Bolt") end})
+Tabs.BringItem:Button({Title="Bring Sheet Metal", Callback=function() bringItemsByName("Sheet Metal") end})
+Tabs.BringItem:Button({Title="Bring Cloth", Callback=function() bringItemsByName("Cloth") end})
+Tabs.BringItem:Button({Title="Bring Tyre", Callback=function() bringItemsByName("Tyre") end})
+Tabs.BringItem:Button({Title="Bring Nails", Callback=function() bringItemsByName("Nails") end})
+Tabs.BringItem:Button({Title="Bring Stone Pickaxe", Callback=function() bringItemsByName("Stone Pickaxe") end})
+Tabs.BringItem:Button({Title="Bring Fan", Callback=function() bringItemsByName("Fan") end})
+Tabs.BringItem:Button({Title="Bring Broken Fan", Callback=function() bringItemsByName("Broken Fan") end})
+Tabs.BringItem:Button({Title="Bring Broken Microwave", Callback=function() bringItemsByName("Broken Microwave") end})
+Tabs.BringItem:Button({Title="Bring UFO Junk", Callback=function() bringItemsByName("UFO Junk") end})
+Tabs.BringItem:Button({Title="Bring UFO Scrap", Callback=function() bringItemsByName("UFO Scrap") end})
+Tabs.BringItem:Button({Title="Bring Seed Box", Callback=function() bringItemsByName("Seed Box") end})
+Tabs.BringItem:Button({Title="Bring Coin Stack", Callback=function() bringItemsByName("Coin Stack") end})
+Tabs.BringItem:Button({Title="Bring Old Radio", Callback=function() bringItemsByName("Old Radio") end})
+Tabs.BringItem:Button({Title="Bring Chair", Callback=function() bringItemsByName("Chair") end})
+
+-- General
+Tabs.BringGeneral:Button({Title="Bring Chili Seeds", Callback=function() bringItemsByName("Chili Seeds") end})
+Tabs.BringGeneral:Button({Title="Bring Firefly Seeds", Callback=function() bringItemsByName("Firefly Seeds") end})
+Tabs.BringGeneral:Button({Title="Bring Berry Seeds", Callback=function() bringItemsByName("Berry Seeds") end})
+Tabs.BringGeneral:Button({Title="Bring Flower Seeds", Callback=function() bringItemsByName("Flower Seeds") end})
+Tabs.BringGeneral:Button({Title="Bring Old Sack", Callback=function() bringItemsByName("Old Sack") end})
+Tabs.BringGeneral:Button({Title="Bring Good Sack", Callback=function() bringItemsByName("Good Sack") end})
+Tabs.BringGeneral:Button({Title="Bring Giant Sack", Callback=function() bringItemsByName("Giant Sack") end})
+Tabs.BringGeneral:Button({Title="Bring Flashlight", Callback=function() bringItemsByName("Flashlight") end})
+Tabs.BringGeneral:Button({Title="Bring Strong Flashlight", Callback=function() bringItemsByName("Strong Flashlight") end})
+Tabs.BringGeneral:Button({Title="Bring Bandage", Callback=function() bringItemsByName("Bandage") end})
+Tabs.BringGeneral:Button({Title="Bring MedKit", Callback=function() bringItemsByName("MedKit") end})
+end})
+Tabs.BringGeneral:Button({Title="Bring Saplings", Callback=function() bringItemsByName("Saplings") end})
+Tabs.BringGeneral:Button({Title="Bring Stakes", Callback=function() bringItemsByName("Stakes") end})
+Tabs.BringGeneral:Button({Title="Bring Wolf Pelts", Callback=function() bringItemsByName("Wolf Pelts") end})
+Tabs.BringGeneral:Button({Title="Bring Bear Pelts", Callback=function() bringItemsByName("Bear Pelts") end})
 
 local hitboxSettings = {All=false, Alien=false, Wolf=false, Bunny=false, Cultist=false, Bear=false, Show=false, Size=10}
 
@@ -827,7 +958,7 @@ local function updateHitboxForModel(model)
     if not root then return end
     local name = model.Name:lower()
     local shouldResize =
-        (hitboxSettings.All and (name:find("alien") or name:find("alien elite") or name:find("bear") or name:find("polar bear") or name:find("wolf") or name:find("alpha") or name:find("bunny") or name:find("polar bear") or name:find("cultist") or name:find("cross") or name:find("crossbow cultist"))) or
+        (hitboxSettings.All and (name:find("alien") or name:find("alien elite") or name:find("bear") or name:find("polar bear") or name:find("wolf") or name:find("alpha") or name:find("bunny") or name:find("dragon") or name:find("cultist") or name:find("cross") or name:find("crossbow cultist"))) or
         (hitboxSettings.Alien and (name:find("alien") or name:find("alien elite"))) or
         (hitboxSettings.Wolf and (name:find("wolf") or name:find("alpha"))) or
         (hitboxSettings.Bunny and name:find("bunny")) or
@@ -859,39 +990,61 @@ Tabs.Hitbox:Toggle({Title="Expand Bear Hitbox", Default=false, Callback=function
 Tabs.Hitbox:Toggle({Title="Expand Wolf Hitbox", Default=false, Callback=function(val) hitboxSettings.Wolf=val end})
 Tabs.Hitbox:Toggle({Title="Expand Bunny Hitbox", Default=false, Callback=function(val) hitboxSettings.Bunny=val end})
 Tabs.Hitbox:Toggle({Title="Expand Cultist Hitbox", Default=false, Callback=function(val) hitboxSettings.Cultist=val end})
-Tabs.Hitbox:Slider({Title="Hitbox Size", Value={Min=2, Max=300, Default=10}, Step=1, Callback=function(val) hitboxSettings.Size=val end})
+Tabs.Hitbox:Slider({Title="Hitbox Size", Value={Min=2, Max=200, Default=10}, Step=1, Callback=function(val) hitboxSettings.Size=val end})
 Tabs.Hitbox:Toggle({Title="Show Hitbox (Transparency)", Default=false, Callback=function(val) hitboxSettings.Show=val end})
 
-Tabs.Player:Slider({
-    Title = "Set WalkSpeed",
-    Min = 10,
-    Max = 500,
-    Default = 16,
+getgenv().speedEnabled = false
+getgenv().speedValue = 20
+Tabs.Misc:Toggle({
+    Title = "Enable Speed",
+    Default = false,
+    Callback = function(v)
+        getgenv().speedEnabled = v
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hum = char:FindFirstChild("Humanoid")
+        if hum then hum.WalkSpeed = v and getgenv().speedValue or 16 end
+    end
+})
+Tabs.Misc:Slider({
+    Title = "Set Speed Value",
+    Value = {Min = 16, Max = 600, Default = 20},
+    Step = 1,
     Callback = function(val)
-        local player = game.Players.LocalPlayer
-        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.WalkSpeed = val
+        getgenv().speedValue = val
+        if getgenv().speedEnabled then
+            local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
+            if hum then hum.WalkSpeed = val end
         end
     end
 })
 
-Tabs.Player:Slider({
-    Title = "Set JumpPower",
-    Min = 10,
-    Max = 500,
-    Default = 50,
+getgenv().jumpEnabled = false
+getgenv().jumpValue = 50
+Tabs.Misc:Toggle({
+    Title = "Enable JumpPower",
+    Default = false,
+    Callback = function(v)
+        getgenv().jumpEnabled = v
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hum = char:FindFirstChild("Humanoid")
+        if hum then hum.JumpPower = v and getgenv().jumpValue or 16 end
+    end
+})
+Tabs.Misc:Slider({
+    Title = "Set Jump Value",
+    Value = {Min = 10, Max = 600, Default = 50},
+    Step = 1,
     Callback = function(val)
-        local player = game.Players.LocalPlayer
-        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.JumpPower = val
+        getgenv().jumpValue = val
+        if getgenv().jumpEnabled then
+            local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
+            if hum then hum.JumpPower = val end
         end
     end
 })
 
 Tabs.Player:Button({
-    Title = "Proximity Prompt (No Delay)",
+    Title = "No Cooldown (Open Chest)",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/nodelay.lua"))()
     end
