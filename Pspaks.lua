@@ -837,23 +837,6 @@ Tabs.Bring:Button({Title="Bring Chest", Callback=function()
         end
     end
 end})
-Tabs.Bring:Button({Title="Bring Lost Children All", Callback=function()
-    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    for _, item in pairs(workspace.Items:GetChildren()) do
-        local name = item.Name:lower()
-        if (
-            name:find("lost child") or
-            name:find("lost child2") or
-            name:find("lost child3") or
-            name:find("lost child4")
-        ) and item:IsA("Model") then
-            local main = item:FindFirstChildWhichIsA("BasePart")
-            if main then
-                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
-            end
-        end
-    end
-end})
 
 Tabs.Bring:Button({Title="Bring Flashlight", Callback=function() bringItemsByName("Flashlight") end})
 Tabs.Bring:Button({Title="Bring Nails", Callback=function() bringItemsByName("Nails") end})
@@ -936,36 +919,58 @@ Tabs.Hitbox:Toggle({Title="Expand Cultist Hitbox", Default=false, Callback=funct
 Tabs.Hitbox:Slider({Title="Hitbox Size", Value={Min=2, Max=300, Default=10}, Step=1, Callback=function(val) hitboxSettings.Size=val end})
 Tabs.Hitbox:Toggle({Title="Show Hitbox (Transparency)", Default=false, Callback=function(val) hitboxSettings.Show=val end})
 
+getgenv().speedEnabled = false
+getgenv().speedValue = 20
+Tabs.Player:Toggle({
+    Title = "Enable Speed",
+    Default = false,
+    Callback = function(v)
+        getgenv().speedEnabled = v
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hum = char:FindFirstChild("Humanoid")
+        if hum then hum.WalkSpeed = v and getgenv().speedValue or 16 end
+    end
+})
 Tabs.Player:Slider({
-    Title = "Set WalkSpeed",
-    Min = 10,
-    Max = 500,
-    Default = 16,
+    Title = "Set Speed Value",
+    Value = {Min = 16, Max = 600, Default = 20},
+    Step = 1,
     Callback = function(val)
-        local player = game.Players.LocalPlayer
-        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.WalkSpeed = val
+        getgenv().speedValue = val
+        if getgenv().speedEnabled then
+            local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
+            if hum then hum.WalkSpeed = val end
         end
     end
 })
 
+getgenv().jumpEnabled = false
+getgenv().jumpValue = 50
+Tabs.Player:Toggle({
+    Title = "Enable JumpPower",
+    Default = false,
+    Callback = function(v)
+        getgenv().jumpEnabled = v
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hum = char:FindFirstChild("Humanoid")
+        if hum then hum.JumpPower = v and getgenv().jumpValue or 16 end
+    end
+})
 Tabs.Player:Slider({
-    Title = "Set JumpPower",
-    Min = 10,
-    Max = 500,
-    Default = 50,
+    Title = "Set Jump Value",
+    Value = {Min = 10, Max = 600, Default = 50},
+    Step = 1,
     Callback = function(val)
-        local player = game.Players.LocalPlayer
-        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.JumpPower = val
+        getgenv().jumpValue = val
+        if getgenv().jumpEnabled then
+            local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
+            if hum then hum.JumpPower = val end
         end
     end
 })
 
 Tabs.Player:Button({
-    Title = "Proximity Prompt (No Delay)",
+    Title = "No Cooldown (Open Chest)",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/nodelay.lua"))()
     end
