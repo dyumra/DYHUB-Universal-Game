@@ -736,7 +736,7 @@ local function AutoAbility()
     return false
 end
 
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/KingScript663/gg/refs/heads/main/yyy"))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Library-DYHUB/refs/heads/main/DYHUB1-UI.lua"))()
 local UI = Library.new()
 UI:load()
 
