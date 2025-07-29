@@ -28,7 +28,7 @@ local Window = WindUI:CreateWindow({
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
-    Size = UDim2.fromOffset(720, 500),
+    Size = UDim2.fromOffset(600, 400),
     Transparent = true,
     Theme = "Dark",
 })
