@@ -8,8 +8,8 @@ local minimizeUI = Enum.KeyCode.RightAlt
 
 -- 🟢 Create Main UI
 local Window = Fluent:CreateWindow({
-    Title = "Ringta Scripts",
-    SubTitle = "With BIGBACK",
+    Title = "DYHUB | Dead Rails ",
+    SubTitle = "- dsc.gg/dyhub",
     TabWidth = 160,
     Size = UDim2.fromOffset(480, 360),
     Acrylic = false,
