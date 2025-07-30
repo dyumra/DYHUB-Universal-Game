@@ -1,0 +1,223 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local StarterGui = game:GetService("StarterGui")
+local TweenService = game:GetService("TweenService")
+local Lighting = game:GetService("Lighting")
+
+local blur = Instance.new("BlurEffect")
+blur.Size = 15
+blur.Parent = Lighting
+
+local VALID_KEY = "DYHUBKEYS"
+
+local function notify(text)
+    pcall(function()
+        StarterGui:SetCore("SendNotification", {
+            Title = "DYHUB",
+            Text = text,
+            Duration = 4
+        })
+    end)
+    print("[Notify]", text)
+end
+
+local function clickTween(button)
+    local original = button.BackgroundColor3
+    local goal = {BackgroundColor3 = original:lerp(Color3.fromRGB(40, 40, 40), 0.5)}
+    local tweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+    local tween = TweenService:Create(button, tweenInfo, goal)
+    tween:Play()
+    tween.Completed:Wait()
+    TweenService:Create(button, tweenInfo, {BackgroundColor3 = original}):Play()
+end
+
+-- ฟังก์ชันสร้าง GUI ขอใส่กุญแจ (Key GUI)
+local function createKeyGui(onCorrectKey)
+    local keyGui = Instance.new("ScreenGui")
+    keyGui.Name = "DYHUB_KeyGui"
+    keyGui.ResetOnSpawn = false
+    keyGui.Parent = player:WaitForChild("PlayerGui")
+
+    keyGui.Destroying:Connect(function()
+        blur:Destroy()
+    end)
+
+    local bg = Instance.new("Frame", keyGui)
+    bg.Size = UDim2.new(1, 0, 1, 0)
+    bg.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    bg.BackgroundTransparency = 0.7
+    bg.ZIndex = 1000
+
+    local frame = Instance.new("Frame", keyGui)
+    frame.Size = UDim2.new(0, 350, 0, 210)
+    frame.Position = UDim2.new(0.5, -175, 0.5, -105)
+    frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    frame.ZIndex = 1001
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 20)
+
+    local shadow = Instance.new("ImageLabel", frame)
+    shadow.Image = "rbxassetid://1316045217"
+    shadow.BackgroundTransparency = 1
+    shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+    shadow.ImageTransparency = 0.6
+    shadow.ScaleType = Enum.ScaleType.Slice
+    shadow.SliceCenter = Rect.new(10, 10, 118, 118)
+    shadow.Size = UDim2.new(1, 10, 1, 10)
+    shadow.Position = UDim2.new(0, -5, 0, -5)
+    shadow.ZIndex = 1000
+
+    local title = Instance.new("TextLabel", frame)
+    title.Size = UDim2.new(1, 0, 0, 25)
+    title.Position = UDim2.new(0, 0, 0, 25)
+    title.BackgroundTransparency = 1
+    title.Text = "Access Key Required"
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.Font = Enum.Font.GothamBold
+    title.TextScaled = true
+    title.ZIndex = 1002
+
+    local subtitle = Instance.new("TextLabel", frame)
+    subtitle.Size = UDim2.new(1, -40, 0, 30)
+    subtitle.Position = UDim2.new(0, 20, 0, 50)
+    subtitle.BackgroundTransparency = 1
+    subtitle.Text = "Enter your access key below to continue"
+    subtitle.TextColor3 = Color3.fromRGB(180, 180, 180)
+    subtitle.Font = Enum.Font.Gotham
+    subtitle.TextSize = 16
+    subtitle.ZIndex = 1002
+
+    local keyBox = Instance.new("TextBox", frame)
+    keyBox.Size = UDim2.new(1, -40, 0, 40)
+    keyBox.Position = UDim2.new(0, 20, 0, 80)
+    keyBox.PlaceholderText = "Enter key here..."
+    keyBox.Text = ""
+    keyBox.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    keyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    keyBox.Font = Enum.Font.GothamSemibold
+    keyBox.TextSize = 20
+    keyBox.ClearTextOnFocus = false
+    keyBox.ZIndex = 1002
+    Instance.new("UICorner", keyBox).CornerRadius = UDim.new(0, 15)
+
+    local submitBtn = Instance.new("TextButton", frame)
+    submitBtn.Size = UDim2.new(1, -40, 0, 40)
+    submitBtn.Position = UDim2.new(0, 20, 0, 122)
+    submitBtn.Text = "Submit"
+    submitBtn.BackgroundColor3 = Color3.fromRGB(255, 85, 85)
+    submitBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    submitBtn.Font = Enum.Font.GothamBold
+    submitBtn.TextSize = 22
+    submitBtn.ZIndex = 1002
+    Instance.new("UICorner", submitBtn).CornerRadius = UDim.new(0, 15)
+
+    local getKeyBtn = Instance.new("TextButton", frame)
+    getKeyBtn.Size = UDim2.new(1, -40, 0, 40)
+    getKeyBtn.Position = UDim2.new(0, 20, 0, 165)
+    getKeyBtn.Text = "Get Key in Discord"
+    getKeyBtn.BackgroundColor3 = Color3.fromRGB(70, 130, 255)
+    getKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    getKeyBtn.Font = Enum.Font.GothamBold
+    getKeyBtn.TextSize = 18
+    getKeyBtn.ZIndex = 1002
+    Instance.new("UICorner", getKeyBtn).CornerRadius = UDim.new(0, 15)
+
+    submitBtn.MouseButton1Click:Connect(function()
+        clickTween(submitBtn)
+
+        local enteredKey = keyBox.Text:lower():gsub("%s+", "")
+
+        if enteredKey == VALID_KEY:lower() then
+            notify("✅ Correct Key! Loading...")
+            wait(1)
+            notify("🔑 Access Key! Free Version | DYHUB")
+            keyGui:Destroy()
+            blur:Destroy()
+            if onCorrectKey then
+                onCorrectKey()
+            end
+        else
+            notify("❌ Incorrect Key! Please try again.")
+            local flashGoal = {BackgroundColor3 = Color3.fromRGB(255, 70, 70)}
+            local normalGoal = {BackgroundColor3 = Color3.fromRGB(70, 70, 70)}
+            local flashTween = TweenService:Create(keyBox, TweenInfo.new(0.15), flashGoal)
+            local normalTween = TweenService:Create(keyBox, TweenInfo.new(0.15), normalGoal)
+            flashTween:Play()
+            flashTween.Completed:Wait()
+            normalTween:Play()
+        end
+    end)
+
+    getKeyBtn.MouseButton1Click:Connect(function()
+        clickTween(getKeyBtn)
+        pcall(function()
+            setclipboard("https://www.dsc.gg/dyhub")
+        end)
+        notify("🔗 Link copied to clipboard!")
+    end)
+
+    return keyGui
+end
+
+-- ตารางเกมที่รองรับ (ตัวอย่าง)
+local allowedGamesByPlaceId = {
+    ["6677985923"] = {name = "Millionaire Empire Tycoon", url = "https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/MET.lua"},
+    ["137925884276740"] = {name = "Build A Plane", url = "https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/BAP.lua"},
+}
+
+local allowedGamesByCreatorId = {
+    [12836673] = {name = "Blade Ball", url = "https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Bladeballdyhub.lua"},
+}
+
+local AllowGameforPremiumByPlaceId = {
+    ["10449761463"] = {name = "The Strongest Battleground", url = "https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/TSB.lua"},
+}
+
+local premiumUsers = {
+    ["Yolmar_43"] = {Tag = "dyumraisgoodguy", Time = "Days: 99999999"},
+    -- เพิ่มรายชื่อผู้ใช้พรีเมี่ยมได้ตามต้องการ
+}
+
+local placeId = tostring(game.PlaceId)
+local creatorId = tostring(game.CreatorId)
+
+local isPremiumGame = AllowGameforPremiumByPlaceId[placeId] ~= nil
+local gameData = allowedGamesByPlaceId[placeId] or allowedGamesByCreatorId[tonumber(creatorId)] or AllowGameforPremiumByPlaceId[placeId]
+
+if not gameData then
+    notify("❌ This script is not supported in this game!")
+    wait(2)
+    player:Kick("⚠️ Script not supported here.\n📊 Please run the script in supported games.\n🔗 Join our (dsc.gg/dyhub)")
+    return
+end
+
+if isPremiumGame and not premiumUsers[player.Name] then
+    notify("⛔ You must be Premium to use this script in this game!")
+    wait(3)
+    player:Kick("⛔ Premium only game!\n📊 Get premium to run this script here.\n🔗 Join our (dsc.gg/dyhub)")
+    return
+end
+
+local function loadScript()
+    if gameData.url then
+        local success, err = pcall(function()
+            loadstring(game:HttpGet(gameData.url))()
+        end)
+        if success then
+            notify("🎮 Game: " .. gameData.name .. " | Script loaded.")
+        else
+            notify("❌ Failed to load script: " .. tostring(err))
+        end
+    else
+        notify("‼️ No script available for this game!")
+    end
+end
+
+-- ถ้าผู้เล่นพรีเมี่ยมหรือเกมไม่ต้องใช้ key ให้โหลดเลย
+if premiumUsers[player.Name] then
+    notify("💳 Premium! No key required | @" .. premiumUsers[player.Name].Tag .. " | " .. premiumUsers[player.Name].Time)
+    blur:Destroy()
+    loadScript()
+else
+    -- ถ้าไม่พรีเมี่ยม ให้แสดง GUI ขอใส่กุญแจ และโหลดสคริปต์เมื่อใส่ถูก
+    createKeyGui(loadScript)
+end
