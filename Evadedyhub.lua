@@ -46,7 +46,7 @@ WindUI:Popup({
 repeat task.wait() until Confirmed
 
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB - Evade @ Normal Server (Version: 2.85)",
+    Title = "DYHUB - Evade @ Premium (Version: 3.06)",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
@@ -71,7 +71,7 @@ local EspTab = Window:Tab({ Title = "Esp", Icon = "eye" })
 local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
 local ReviveTab = Window:Tab({ Title = "Revive", Icon = "shield-plus" })
 local FakeTab = Window:Tab({ Title = "Fake", Icon = "sparkles" })
-local SkullTab = Window:Tab({ Title = "Best", Icon = "skull" })
+--local SkullTab = Window:Tab({ Title = "Best", Icon = "skull" })
 local MiscTab = Window:Tab({ Title = "Misc", Icon = "settings-2" })
 local Niggatab = Window:Tab({ Title = "dsc.gg/dyhub", Icon = "link" })
 
@@ -98,10 +98,10 @@ local cframeSpeedConnection = nil
 
 PlayerTab:Input({
     Title = "Set Base Speed",
-    placeholder = "Enter Speed Value (1-1000)",
+    Placeholder = "Enter Speed Value (1-1000)",
     onChanged = function(value)
         local num = tonumber(value)
-        if num and num >= 1 and num <= 5000 then
+        if num and num >= 1 and num <= 100000 then
             ValueSpeed = num
             print("[DYHUB] Speed value set to: " .. ValueSpeed)
             if ActiveWalkSpeedBoost and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
@@ -115,7 +115,7 @@ PlayerTab:Input({
 })
 
 PlayerTab:Toggle({
-    Title = "Speed Boost (Cframe)",
+    Title = "Speed Boost (CFrame)",
     Callback = function(state)
         ActiveCFrameSpeedBoost = state
         if ActiveCFrameSpeedBoost then
@@ -148,6 +148,71 @@ PlayerTab:Toggle({
     end
 })
 
+local ValueJump = 50
+local ActiveCFrameJumpBoost = false
+local UserInputService = game:GetService("UserInputService")
+
+local jumpBoostConnection = nil
+local jumpKeyConnection = nil
+local isJumping = false
+
+PlayerTab:Input({
+    Title = "Set Base JumpPower",
+    Placeholder = "Enter JumpPower Value (50-1000)",
+    onChanged = function(value)
+        local num = tonumber(value)
+        if num and num >= 1 and num <= 100000 then
+            ValueJump = num
+            print("[DYHUB] JumpPower value set to: " .. ValueJump)
+        else
+            ValueJump = 50
+            print("[DYHUB] Invalid jump value. Reverted to 50.")
+        end
+    end
+})
+
+PlayerTab:Toggle({
+    Title = "Jump Boost (CFrame)",
+    Callback = function(state)
+        ActiveCFrameJumpBoost = state
+
+        if state then
+            print("[DYHUB] CFrame Jump Boost Enabled!")
+
+            jumpKeyConnection = UserInputService.InputBegan:Connect(function(input, processed)
+                if not processed and input.KeyCode == Enum.KeyCode.Space then
+                    isJumping = true
+                end
+            end)
+
+            jumpBoostConnection = RunService.RenderStepped:Connect(function()
+                local character = LocalPlayer.Character
+                local hrp = character and character:FindFirstChild("HumanoidRootPart")
+                local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
+                if character and hrp and humanoid and isJumping then
+                    -- ดันขึ้นด้านบนด้วย CFrame
+                    hrp.CFrame = hrp.CFrame + Vector3.new(0, math.max(ValueJump, 1) * 0.016, 0)
+                    isJumping = false
+                end
+            end)
+
+        else
+            print("[DYHUB] CFrame Jump Boost Disabled!")
+
+            if jumpKeyConnection then
+                jumpKeyConnection:Disconnect()
+                jumpKeyConnection = nil
+            end
+
+            if jumpBoostConnection then
+                jumpBoostConnection:Disconnect()
+                jumpBoostConnection = nil
+            end
+        end
+    end
+})
+
 local originalBrightness = game.Lighting.Brightness
 local originalOutdoorAmbient = game.Lighting.OutdoorAmbient
 local originalAmbient = game.Lighting.Ambient
@@ -174,7 +239,7 @@ local function removeFullBrightness()
 end
 
 local function applySuperFullBrightness()
-    game.Lighting.Brightness = 5
+    game.Lighting.Brightness = 22
     game.Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
     game.Lighting.Ambient = Color3.fromRGB(255, 255, 255)
     game.Lighting.GlobalShadows = false
@@ -192,8 +257,8 @@ end
 
 local function applyVibrant()
     game.Lighting.ColorCorrection.Enabled = true
-    game.Lighting.ColorCorrection.Saturation = 0.5
-    game.Lighting.ColorCorrection.Contrast = 0.2
+    game.Lighting.ColorCorrection.Saturation = 1
+    game.Lighting.ColorCorrection.Contrast = 0.4
 end
 
 local function removeVibrant()
@@ -360,7 +425,7 @@ GameTab:Toggle({
                             securityPart.Position = Vector3.new(0, 500, 0)
                             securityPart.Anchored = true
                             securityPart.Transparency = 1
-                            securityPart.CanCollide = false
+                            securityPart.CanCollide = true
                             securityPart.Parent = Workspace
 
                             rootPart.CFrame = securityPart.CFrame + Vector3.new(0, 3, 0)
@@ -420,7 +485,7 @@ GameTab:Toggle({
                         securityPart.Position = Vector3.new(0, 500, 0)
                         securityPart.Anchored = true
                         securityPart.Transparency = 1
-                        securityPart.CanCollide = false
+                        securityPart.CanCollide = true
                         securityPart.Parent = Workspace
                         rootPart.CFrame = securityPart.CFrame + Vector3.new(0, 3, 0)
 
@@ -470,7 +535,7 @@ GameTab:Toggle({
                             securityPart.Position = Vector3.new(0, 500, 0)
                             securityPart.Anchored = true
                             securityPart.Transparency = 1
-                            securityPart.CanCollide = false
+                            securityPart.CanCollide = true
                             securityPart.Parent = Workspace
                             rootPart.CFrame = securityPart.CFrame + Vector3.new(0, 3, 0)
                         end
@@ -700,7 +765,7 @@ SkullTab:Button({
 }) 
 
 Niggatab:Button({
-    Title = "DYHUB - Thank you for choosing our script",
+    Title = "DYHUB - Thank you for choosing our script [F9]",
     Callback = function()
        print("[DYHUB] Join our Discord To view script update news")
     end
