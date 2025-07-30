@@ -193,6 +193,9 @@ local ShopList = {
     "propeller_1", 
     "propeller_2", 
     "missile_1", 
+    "shield",
+    "boost_1",
+    "balloon",
     "All"
 }
 
