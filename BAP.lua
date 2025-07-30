@@ -127,8 +127,9 @@ MainTab:Toggle({
             task.spawn(function()
                 while autoFarmRunning do
                     local launchRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Launch")
+                    local returnRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Return")
                     launchRemote:FireServer()
-                    task.wait(3)
+                    task.wait(2.5)
 
                     local char = LocalPlayer.Character
                     if not char or not char:FindFirstChildOfClass("Humanoid") then break end
@@ -142,6 +143,44 @@ MainTab:Toggle({
                         seat.CFrame = targetPos
                         if char.PrimaryPart then
                             char:SetPrimaryPartCFrame(targetPos)
+                            task.wait(1)
+                            returnRemote:FireServer()
+                        end
+                    end
+                end
+            end)
+        end
+    end
+})
+
+MainTab:Toggle({
+    Title = "Auto Farm (1sec - 500K)",
+    Icon = "badge-dollar-sign",
+    Default = false,
+    Callback = function(state)
+        autoFarmRunning = state
+        if state then
+            task.spawn(function()
+                while autoFarmRunning do
+                    local launchRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Launch")
+                    local returnRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Return")
+                    launchRemote:FireServer()
+                    task.wait(2.5)
+
+                    local char = LocalPlayer.Character
+                    if not char or not char:FindFirstChildOfClass("Humanoid") then break end
+
+                    local humanoid = char:FindFirstChildOfClass("Humanoid")
+                    if humanoid.SeatPart and humanoid.SeatPart:IsA("VehicleSeat") then
+                        local seat = humanoid.SeatPart
+                        local dir = seat.CFrame.LookVector
+                        local targetPos = seat.CFrame + dir * 42222222
+
+                        seat.CFrame = targetPos
+                        if char.PrimaryPart then
+                            char:SetPrimaryPartCFrame(targetPos)
+                            task.wait(1)
+                            returnRemote:FireServer()
                         end
                     end
                 end
@@ -157,7 +196,7 @@ MainTab:Button({
         task.spawn(function()
             local launchRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Launch")
             launchRemote:FireServer()
-            task.wait(3)
+            task.wait(2.5)
 
             local char = LocalPlayer.Character
             if not char or not char:FindFirstChildOfClass("Humanoid") then return end
@@ -166,7 +205,7 @@ MainTab:Button({
             if humanoid.SeatPart and humanoid.SeatPart:IsA("VehicleSeat") then
                 local seat = humanoid.SeatPart
                 local dir = seat.CFrame.LookVector
-                local targetPos = seat.CFrame + dir * 33333333
+                local targetPos = seat.CFrame + dir * 48333333
 
                 seat.CFrame = targetPos
                 if char.PrimaryPart then
@@ -237,10 +276,10 @@ MiscTab:Toggle({
                     local char = LocalPlayer.Character
                     local humanoid = char and char:FindFirstChildOfClass("Humanoid")
                     if humanoid and humanoid.Health <= 0 then
-                        task.wait(2)
+                        task.wait(0.2)
                         LocalPlayer:LoadCharacter()
                     end
-                    task.wait(1)
+                    task.wait(0.2)
                 end
             end)
         end
