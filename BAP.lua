@@ -118,151 +118,177 @@ MainTab:Toggle({
 })
 
 MainTab:Toggle({
-    Title = "Auto Farm (1sec - 100K)",
-    Icon = "badge-dollar-sign",
-    Default = false,
-    Callback = function(state)
-        autoFarmRunning = state
-        if state then
-            task.spawn(function()
-                while autoFarmRunning do
-                    local launchRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Launch")
-                    local returnRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Return")
-                    launchRemote:FireServer()
-                    task.wait(2.5)
+    Title = "Auto Farm (1sec - 100K)",
+    Icon = "badge-dollar-sign",
+    Default = false,
+    Callback = function(state)
+        autoFarmRunning = state
+        if state then
+            task.spawn(function()
+                local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                local Players = game:GetService("Players")
 
-                    local char = LocalPlayer.Character
-                    if not char or not char:FindFirstChildOfClass("Humanoid") then break end
+                local LaunchRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Launch")
+                local ReturnRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Return")
 
-                    local humanoid = char:FindFirstChildOfClass("Humanoid")
-                    if humanoid.SeatPart and humanoid.SeatPart:IsA("VehicleSeat") then
-                        local seat = humanoid.SeatPart
-                        local dir = seat.CFrame.LookVector
-                        local targetPos = seat.CFrame + dir * 22222222
+                local player = Players.LocalPlayer
 
-                        seat.CFrame = targetPos
-                        if char.PrimaryPart then
-                            char:SetPrimaryPartCFrame(targetPos)
-                            task.wait(1)
-                            returnRemote:FireServer()
-                        end
-                    end
-                end
-            end)
-        end
-    end
+                while autoFarmRunning do
+                    local character = player.Character or player.CharacterAdded:Wait()
+
+                    LaunchRemote:FireServer()
+                    task.wait(1)
+
+                    if character and character:FindFirstChild("HumanoidRootPart") then
+                        character.HumanoidRootPart.CFrame = CFrame.new(1000000e9, 1000000e9, 1000000e9)
+                    end
+
+                    task.wait(1)
+
+                    ReturnRemote:FireServer()
+                    task.wait(3)
+                end
+            end)
+        end
+    end
 })
 
 MainTab:Toggle({
-    Title = "Auto Farm (1sec - 500K)",
-    Icon = "badge-dollar-sign",
-    Default = false,
-    Callback = function(state)
-        autoFarmRunning = state
-        if state then
-            task.spawn(function()
-                while autoFarmRunning do
-                    local launchRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Launch")
-                    local returnRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Return")
-                    launchRemote:FireServer()
-                    task.wait(2.5)
+    Title = "Auto Farm (1sec - 500K)",
+    Icon = "badge-dollar-sign",
+    Default = false,
+    Callback = function(state)
+        autoFarmRunning = state
+        if state then
+            task.spawn(function()
+                local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                local Players = game:GetService("Players")
 
-                    local char = LocalPlayer.Character
-                    if not char or not char:FindFirstChildOfClass("Humanoid") then break end
+                local LaunchRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Launch")
+                local ReturnRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Return")
 
-                    local humanoid = char:FindFirstChildOfClass("Humanoid")
-                    if humanoid.SeatPart and humanoid.SeatPart:IsA("VehicleSeat") then
-                        local seat = humanoid.SeatPart
-                        local dir = seat.CFrame.LookVector
-                        local targetPos = seat.CFrame + dir * 42222222
+                local player = Players.LocalPlayer
 
-                        seat.CFrame = targetPos
-                        if char.PrimaryPart then
-                            char:SetPrimaryPartCFrame(targetPos)
-                            task.wait(1)
-                            returnRemote:FireServer()
-                        end
-                    end
-                end
-            end)
-        end
-    end
+                while autoFarmRunning do
+                    local character = player.Character or player.CharacterAdded:Wait()
+
+                    LaunchRemote:FireServer()
+                    task.wait(1)
+
+                    if character and character:FindFirstChild("HumanoidRootPart") then
+                        character.HumanoidRootPart.CFrame = CFrame.new(5000000e9, 5000000e9, 5000000e9)
+                    end
+
+                    task.wait(1)
+
+                    ReturnRemote:FireServer()
+                    task.wait(3)
+                end
+            end)
+        end
+    end
 })
 
-MainTab:Button({
-    Title = "Infinite Money",
-    Icon = "badge-dollar-sign",
-    Callback = function()
-        task.spawn(function()
-            local launchRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Launch")
-            launchRemote:FireServer()
-            task.wait(2.5)
+MainTab:Toggle({
+    Title = "Infinite Money (AFK)",
+    Icon = "badge-dollar-sign",
+    Default = false,
+    Callback = function(state)
+        autoFarmRunning = state
+        if state then
+            task.spawn(function()
+                local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                local Players = game:GetService("Players")
 
-            local char = LocalPlayer.Character
-            if not char or not char:FindFirstChildOfClass("Humanoid") then return end
+                local LaunchRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Launch")
+                local ReturnRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Return")
 
-            local humanoid = char:FindFirstChildOfClass("Humanoid")
-            if humanoid.SeatPart and humanoid.SeatPart:IsA("VehicleSeat") then
-                local seat = humanoid.SeatPart
-                local dir = seat.CFrame.LookVector
-                local targetPos = seat.CFrame + dir * 48333333
+                local player = Players.LocalPlayer
 
-                seat.CFrame = targetPos
-                if char.PrimaryPart then
-                    char:SetPrimaryPartCFrame(targetPos)
-                end
+                while autoFarmRunning do
+                    local character = player.Character or player.CharacterAdded:Wait()
 
-                task.delay(8, function()
-                    TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
-                end)
-            end
-        end)
-    end
+                    LaunchRemote:FireServer()
+                    task.wait(1)
+
+                    if character and character:FindFirstChild("HumanoidRootPart") then
+                        character.HumanoidRootPart.CFrame = CFrame.new(9000000000e9, 90000000000e9, 9000000000e9)
+                    end
+
+                    task.wait(1)
+
+                    ReturnRemote:FireServer()
+                    task.wait(3)
+                end
+            end)
+        end
+    end
 })
-
 
 local ShopList = {
-    "block_1", 
-    "seat_1", 
-    "fuel_1", 
-    "fuel_2", 
-    "fuel_3", 
-    "wing_1", 
-    "wing_2", 
-    "propeller_1", 
-    "propeller_2", 
-    "missile_1", 
-    "shield",
-    "boost_1",
-    "balloon",
-    "All"
+    "All",
+    "block_1", 
+    "seat_1", 
+    "fuel_1", 
+    "fuel_2", 
+    "fuel_3", 
+    "wing_1", 
+    "wing_2", 
+    "propeller_1", 
+    "propeller_2", 
+    "missile_1", 
+    "shield",
+    "boost_1",
+    "balloon"
 }
 
--- Dropdown สำหรับดู index ทั้งหมด
+local selectedItems = {} -- ไอเทมที่เลือกจาก dropdown
+local autoBuyRunning = false
+
+-- Dropdown เลือกหลายอัน
 ShopTab:Dropdown({
-    Title = "Select Shop",
-    Multi = true,
-    Values = ShopList,
-    Callback = function(value)
-        print("[DYHUB] Selected Shop:", value)
-    end,
+    Title = "Select Shop",
+    Multi = true,
+    Values = ShopList,
+    Callback = function(values)
+        selectedItems = values
+        print("[DYHUB] Selected Shop Items:", table.concat(values, ", "))
+    end,
 })
 
+-- Toggle เริ่ม Auto Buy
 ShopTab:Toggle({
-    Title = "Buy (Select)",
-    Icon = "badge-dollar-sign",
-    Callback = function(state)
-        if state then
-            local shopRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ShopEvents"):WaitForChild("BuyBlock")
-            -- ซื้อของทีละชิ้นเพื่อป้องกันบัค
-            task.spawn(function()
-                for _, itemName in ipairs(ShopList) do
-                    shopRemote:FireServer(itemName)
-                    task.wait(0.1)
-                end
-            end)
-        end
-    end
+    Title = "Auto Buy (Select)",
+    Icon = "badge-dollar-sign",
+    Callback = function(state)
+        autoBuyRunning = state
+        if state then
+            local shopRemote = game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("ShopEvents"):WaitForChild("BuyBlock")
+            task.spawn(function()
+                while autoBuyRunning do
+                    local itemsToBuy = {}
+
+                    -- ถ้าเลือก All → ซื้อทุกอย่าง (ยกเว้น All เอง)
+                    if table.find(selectedItems, "All") then
+                        for _, item in ipairs(ShopList) do
+                            if item ~= "All" then
+                                table.insert(itemsToBuy, item)
+                            end
+                        end
+                    else
+                        itemsToBuy = selectedItems
+                    end
+
+                    for _, itemName in ipairs(itemsToBuy) do
+                        if not autoBuyRunning then break end
+                        shopRemote:FireServer(itemName)
+                        task.wait(0.1)
+                    end
+                    task.wait(1)
+                end
+            end)
+        end
+    end
 })
 
 MiscTab:Toggle({
