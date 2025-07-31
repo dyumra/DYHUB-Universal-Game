@@ -1,7 +1,3 @@
---[[ ============================================ --
-by dyhub v1
--- =========================================== --]]
-
 repeat task.wait() until game:IsLoaded()
 
 local Players = game:GetService("Players")
@@ -11,7 +7,7 @@ local RunService = game:GetService("RunService")
 local TeleportService = game:GetService("TeleportService")
 local VirtualUser = game:GetService("VirtualUser")
 local Workspace = game:GetService("Workspace")
-local InsertService = game:GetService("InsertService")
+local InsertService = game:GetService("InsertService") -- Make sure InsertService is defined
 local StarterGui = game:GetService("StarterGui")
 
 local WindUI = nil
@@ -50,11 +46,11 @@ WindUI:Popup({
 repeat task.wait() until Confirmed
 
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB - Evade @ Normal Server (Version: 3.09)",
+    Title = "DYHUB - Evade @ Premium (Version: 3.12)",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
-    Size = UDim2.fromOffset(600, 400),
+    Size = UDim2.fromOffset(720, 500),
     Transparent = true,
     Theme = "Dark",
 })
@@ -77,7 +73,7 @@ local ReviveTab = Window:Tab({ Title = "Revive", Icon = "shield-plus" })
 local FakeTab = Window:Tab({ Title = "Fake", Icon = "sparkles" })
 local SkullTab = Window:Tab({ Title = "Best", Icon = "skull" })
 local MiscTab = Window:Tab({ Title = "Misc", Icon = "file-cog" })
-local Niggatab = Window:Tab({ Title = "Info", Icon = "link-2" })
+local Niggatab = Window:Tab({ Title = "Info", Icon = "settings-2" })
 
 local headlessEnabled = false
 local korbloxEnabled = false
@@ -101,11 +97,11 @@ local OriginalWalkSpeed = 16
 local cframeSpeedConnection = nil
 
 PlayerTab:Input({
-    Title = "Set Base Speed-Hack",
-    Placeholder = "Enter Speed Value (1-500)",
+    Title = "Set Base Speed",
+    Placeholder = "Enter Speed Value (1-1000)",
     onChanged = function(value)
         local num = tonumber(value)
-        if num and num >= 1 and num <= 1000 then
+        if num and num >= 1 and num <= 5000 then
             ValueSpeed = num
             print("[DYHUB] Speed value set to: " .. ValueSpeed)
             if ActiveWalkSpeedBoost and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
@@ -120,7 +116,6 @@ PlayerTab:Input({
 
 PlayerTab:Toggle({
     Title = "Speed Boost (Cframe)",
-    Icon = "arrow-big-up-dash",
     Callback = function(state)
         ActiveCFrameSpeedBoost = state
         if ActiveCFrameSpeedBoost then
@@ -210,7 +205,6 @@ end
 MiscTab:Toggle({
     Title = "Full Brightness",
     Default = false,
-    Icon = "vlightbulb",
     Callback = function(state)
         FullbrightEnabled = state
         if state then
@@ -224,7 +218,6 @@ MiscTab:Toggle({
 MiscTab:Toggle({
     Title = "Super Full Brightness",
     Default = false,
-    Icon = "sun",
     Callback = function(state)
         SuperFullBrightnessEnabled = state
         if state then
@@ -238,7 +231,6 @@ MiscTab:Toggle({
 MiscTab:Toggle({
     Title = "No Fog",
     Default = false,
-    Icon = "cloud-fog",
     Callback = function(state)
         NoFogEnabled = state
         if state then
@@ -249,11 +241,9 @@ MiscTab:Toggle({
     end
 })
 
-
 MiscTab:Toggle({
     Title = "Vibrant +200%",
     Default = false,
-    Icon = "eclipse",
     Callback = function(state)
         VibrantEnabled = state
         if state then
@@ -264,9 +254,31 @@ MiscTab:Toggle({
     end
 })
 
+local afk = true
+
+MiscTab:Toggle({
+    Title = "Anti-AFK",
+    Icon = "shield",
+    Default = true,
+    Callback = function(state)
+        afk = state -- อัปเดตตัวแปรหลัก
+        if state then
+            task.spawn(function()
+                while afk do
+                    if not LocalPlayer then return end
+                    VirtualUser:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+                    VirtualUser:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+                    task.wait(60)
+                end
+            end)
+        else
+            print("[DYHUB] Anti-AFK disabled.")
+        end
+    end
+})
+
 MiscTab:Toggle({
     Title = "FPS Boost",
-    Icon = "cpu",
     Default = false,
     Callback = function(state)
         if state then
@@ -320,7 +332,6 @@ VoteTab:Dropdown({
 
 VoteTab:Button({
     Title = "Vote!",
-    Icon = "vote",
     Callback = function()
         fireVoteServer(selectedMapNumber)
     end
@@ -328,7 +339,6 @@ VoteTab:Button({
 
 VoteTab:Toggle({
     Title = "Auto Vote",
-    Icon = "vote",
     Callback = function(state)
         autoVoteEnabled = state
         if autoVoteEnabled then
@@ -370,7 +380,6 @@ end
 
 GameTab:Toggle({
     Title = "Auto Farm Win",
-    Icon = "trophy",
     Callback = function(state)
         ActiveAutoWin = state
         if ActiveAutoWin then
@@ -413,7 +422,6 @@ GameTab:Toggle({
 
 GameTab:Toggle({
     Title = "Auto Farm Money",
-    Icon = "circle-dollar-sign",
     Callback = function(state)
         ActiveAutoFarmMoney = state
         if ActiveAutoFarmMoney then
@@ -473,7 +481,6 @@ GameTab:Toggle({
 
 GameTab:Toggle({
     Title = "Auto Farm Summer Event",
-    Icon = "volleyball",
     Callback = function(state)
         AutoFarmSummerEvent = state
         if AutoFarmSummerEvent then
@@ -525,39 +532,24 @@ GameTab:Toggle({
 local loopFakeBundleConnection = nil
 local loopFakeBundleEnabled = false
 local Niggastats = true
-local admin = true
-local afk = true
+local Admin = true
 
 SkullTab:Toggle({
-    Title = "Anti-AFK",
-    Icon = "shield",
-    Default = true,
+    Title = "Anti-Lagging",
     Callback = function(state)
-        afk = state -- อัปเดตตัวแปรหลัก
-        if state then
-            task.spawn(function()
-                while afk do
-                    if not LocalPlayer then return end
-                    VirtualUser:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
-                    VirtualUser:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
-                    task.wait(60)
-                end
-            end)
-        else
-            print("[DYHUB] Anti-AFK disabled.")
-        end
+        Niggastats = state
+        print("[DYHUB] Anti-Lagging")
     end
 })
 
 SkullTab:Toggle({
     Title = "Anti-Admin",
-    Icon = "shield",
     Default = true,
     Callback = function(state)
-        admin = state -- อัปเดตตัวแปรหลัก
+        Admin = state -- อัปเดตตัวแปรหลัก
         if state then
             task.spawn(function()
-                while admin do
+                while Admin do
                     if not LocalPlayer then return end
                     VirtualUser:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
                     VirtualUser:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
@@ -567,24 +559,6 @@ SkullTab:Toggle({
         else
             print("[DYHUB] Anti-Admin disabled.")
         end
-    end
-})
-
-SkullTab:Toggle({
-    Title = "Anti-Lagging",
-    Icon = "cpu",
-    Callback = function(state)
-        Niggastats = state
-        print("[DYHUB] Clear Part Trash!")
-    end
-})
-
-SkullTab:Toggle({
-    Title = "Bypass Anti-Cheat!",
-    Icon = "bug",
-    Callback = function(state)
-        Niggastats = state
-        print("[DYHUB] Bypass Anti Cheat!")
     end
 })
 
@@ -647,94 +621,60 @@ local loadedKorbloxAccessory = nil
 
 local function applyKorbloxRightLeg()
     local character = getLocalPlayerCharacter()
-    if not character then return end
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if not humanoid then return end
+    if character and character:FindFirstChildOfClass("Humanoid") then
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
 
-    if humanoid.RigType == Enum.HumanoidRigType.R15 then
-        -- R15
-        local rightLowerLeg = character:FindFirstChild("RightLowerLeg")
-        local rightUpperLeg = character:FindFirstChild("RightUpperLeg")
-        local rightFoot = character:FindFirstChild("RightFoot")
+        if loadedKorbloxAccessory and loadedKorbloxAccessory.Parent == character then
+            return -- Already applied
+        end
 
-        if rightLowerLeg and rightLowerLeg:FindFirstChildOfClass("Mesh") then
-            rightLowerLeg.MeshId = "902942093"
-            rightLowerLeg.Transparency = 1
-        end
-        if rightUpperLeg and rightUpperLeg:FindFirstChildOfClass("Mesh") then
-            rightUpperLeg.MeshId = "http://www.roblox.com/asset/?id=902942096"
-            rightUpperLeg.TextureID = "http://roblox.com/asset/?id=902843398"
-        end
-        if rightFoot and rightFoot:FindFirstChildOfClass("Mesh") then
-            rightFoot.MeshId = "902942089"
-            rightFoot.Transparency = 1
-        end
-    elseif humanoid.RigType == Enum.HumanoidRigType.R6 then
-        -- R6
-        local rightLeg = character:FindFirstChild("Right Leg")
-        if rightLeg and rightLeg:FindFirstChildOfClass("Mesh") then
-            local mesh = rightLeg:FindFirstChildOfClass("Mesh")
-            mesh.MeshId = "902942093"
-            mesh.TextureId = "http://roblox.com/asset/?id=902843398"
-            rightLeg.Transparency = 1
+        local success, asset = pcall(function()
+            return InsertService:LoadAsset(KORBLOX_RIGHT_LEG_ID)
+        end)
+
+        if success and asset then
+            local accessory = asset:FindFirstChildOfClass("Accessory")
+            if accessory then
+                -- Remove existing right leg accessories to prevent duplicates or conflicts
+                for _, child in ipairs(character:GetChildren()) do
+                    if child:IsA("Accessory") and child.Name == "Right Leg" then
+                        child:Destroy()
+                    end
+                end
+                humanoid:AddAccessory(accessory)
+                loadedKorbloxAccessory = accessory
+            end
+        else
+            warn("Failed to load Korblox Right Leg asset: " .. (asset or "Unknown error"))
         end
     end
 end
 
 local function removeKorbloxRightLeg()
     local character = getLocalPlayerCharacter()
-    if not character then return end
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if not humanoid then return end
-
-    if humanoid.RigType == Enum.HumanoidRigType.R15 then
-        -- R15
-        local rightLowerLeg = character:FindFirstChild("RightLowerLeg")
-        local rightUpperLeg = character:FindFirstChild("RightUpperLeg")
-        local rightFoot = character:FindFirstChild("RightFoot")
-
-        if rightLowerLeg and rightLowerLeg:FindFirstChildOfClass("Mesh") then
-            rightLowerLeg.MeshId = ""
-            rightLowerLeg.Transparency = 0
-        end
-        if rightUpperLeg and rightUpperLeg:FindFirstChildOfClass("Mesh") then
-            rightUpperLeg.MeshId = ""
-            rightUpperLeg.TextureID = ""
-        end
-        if rightFoot and rightFoot:FindFirstChildOfClass("Mesh") then
-            rightFoot.MeshId = ""
-            rightFoot.Transparency = 0
-        end
-    elseif humanoid.RigType == Enum.HumanoidRigType.R6 then
-        -- R6
-        local rightLeg = character:FindFirstChild("Right Leg")
-        if rightLeg and rightLeg:FindFirstChildOfClass("Mesh") then
-            local mesh = rightLeg:FindFirstChildOfClass("Mesh")
-            mesh.MeshId = ""
-            mesh.TextureId = ""
-            rightLeg.Transparency = 0
-        end
-    end
-
-    -- รีเซ็ต accessory ถ้ามี
-    if loadedKorbloxAccessory and loadedKorbloxAccessory.Parent == character then
-        loadedKorbloxAccessory:Destroy()
-        loadedKorbloxAccessory = nil
-    else
-        -- Fallback: ลบ accessory ที่เป็น Korblox ถ้ามี
-        for _, child in ipairs(character:GetChildren()) do
-            if child:IsA("Accessory") and child.Handle and child.Handle:FindFirstChildOfClass("SpecialMesh") then
-                if child.Handle:FindFirstChildOfClass("SpecialMesh").MeshId == "rbxassetid://" .. tostring(KORBLOX_RIGHT_LEG_ID) then
-                    child:Destroy()
+    if character then
+        if loadedKorbloxAccessory and loadedKorbloxAccessory.Parent == character then
+            loadedKorbloxAccessory:Destroy()
+            loadedKorbloxAccessory = nil
+        else
+            -- Fallback: if loadedKorbloxAccessory wasn't tracked, try to find and destroy by MeshId
+            for _, child in ipairs(character:GetChildren()) do
+                if child:IsA("Accessory") and child.Handle and child.Handle:FindFirstChildOfClass("SpecialMesh") then
+                    if child.Handle:FindFirstChildOfClass("SpecialMesh").MeshId == "rbxassetid://" .. KORBLOX_RIGHT_LEG_ID then
+                        child:Destroy()
+                    end
                 end
             end
         end
-    end
 
-    -- รีเซ็ตตัวละครกลับสู่สภาพเดิม
-    local originalDescription = Players:GetHumanoidDescriptionFromUserId(Players.LocalPlayer.UserId)
-    if originalDescription then
-        humanoid:ApplyDescription(originalDescription)
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            -- Re-apply the original character description to restore the default leg
+            local originalDescription = Players:GetHumanoidDescriptionFromUserId(Players.LocalPlayer.UserId)
+            if originalDescription then
+                humanoid:ApplyDescription(originalDescription)
+            end
+        end
     end
 end
 
@@ -751,7 +691,7 @@ end
 
 FakeTab:Dropdown({
     Title = "Fake Bundle (Visual)",
-    Values = {"Headless", "Korblox"},
+    Values = {"Headless", "Korblox (Fixing)"},
     Multi = true,
     Callback = function(values)
         if table.find(values, "Headless") and not headlessEnabled then
@@ -762,10 +702,10 @@ FakeTab:Dropdown({
             removeHeadless()
         end
 
-        if table.find(values, "Korblox") and not korbloxEnabled then
+        if table.find(values, "Korblox (Fixing)") and not korbloxEnabled then
             korbloxEnabled = true
             applyKorbloxRightLeg()
-        elseif not table.find(values, "Korblox") and korbloxEnabled then
+        elseif not table.find(values, "Korblox (Fixing)") and korbloxEnabled then
             korbloxEnabled = false
             removeKorbloxRightLeg()
         end
@@ -774,7 +714,6 @@ FakeTab:Dropdown({
 
 FakeTab:Toggle({
     Title = "Loop Fake Bundle",
-    Icon = "infinity",
     Callback = function(state)
         loopFakeBundleEnabled = state
         if loopFakeBundleEnabled then
@@ -797,7 +736,6 @@ local removeAllHatw = false
 
 FakeTab:Toggle({
     Title = "Remove All Hats",
-    Icon = "hat-glasses",
     Callback = function(state)
         removeAllHatw = state
         if state then
@@ -817,7 +755,8 @@ Players.LocalPlayer.CharacterAdded:Connect(function(character)
     end
 end)
 
--- ==== nigga
+-- ==== nigg
+
 Niggatab:Button({
     Title = "DYHUB - Thank you for choosing our script [F9]",
     Callback = function()
@@ -945,7 +884,6 @@ local summerEventLoopConnection = nil
 
 EspTab:Toggle({
     Title = "Players ESP",
-    Icon = "user",
     Callback = function(state)
         ActiveEspPlayers = state
         if ActiveEspPlayers then
@@ -992,7 +930,6 @@ EspTab:Toggle({
 
 EspTab:Toggle({
     Title = "NextBots ESP",
-    Icon = "skull",
     Callback = function(state)
         ActiveEspBots = state
         if ActiveEspBots then
@@ -1029,7 +966,6 @@ EspTab:Toggle({
 
 EspTab:Toggle({
     Title = "Summer Event ESP",
-    Icon = "volleyball",
     Callback = function(state)
         ActiveEspSummerEvent = state
         if ActiveEspSummerEvent then
@@ -1064,7 +1000,6 @@ EspTab:Toggle({
 
 EspTab:Toggle({
     Title = "Distance ESP",
-    Icon = "minus",
     Callback = function(state)
         ActiveDistanceEsp = state
         if ActiveDistanceEsp then
@@ -1095,7 +1030,6 @@ ReviveTab:Button({
 
 ReviveTab:Toggle({
     Title = "Auto Revive Yourself",
-    Icon = "bandage",
     Callback = function(state)
         autoReviveEnabled = state
         if autoReviveEnabled then
