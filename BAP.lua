@@ -158,7 +158,7 @@ MainTab:Toggle({
 
                     -- วาร์ป
                     if hrp then
-                        hrp.CFrame = CFrame.new(5e4, 5e4, 5e4)
+                        hrp.CFrame = CFrame.new(9e6, 9e6, 9e6)
                     end
 
                     task.wait(1.5)
@@ -176,7 +176,7 @@ MainTab:Toggle({
 })
 
 MainTab:Toggle({
-    Title = "Auto Farm (1sec - 500K)",
+    Title = "Auto Farm (1sec - 10MILLION)",
     Icon = "badge-dollar-sign",
     Default = false,
     Callback = function(state)
