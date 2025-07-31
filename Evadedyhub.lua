@@ -50,7 +50,7 @@ local Window = WindUI:CreateWindow({
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
-    Size = UDim2.fromOffset(720, 500),
+    Size = UDim2.fromOffset(600, 400),
     Transparent = true,
     Theme = "Dark",
 })
@@ -134,7 +134,7 @@ PlayerTab:Toggle({
                 if character and humanoid and hrp then
                     local moveDir = humanoid.MoveDirection
                     if moveDir.Magnitude > 0 then
-                        hrp.CFrame = hrp.CFrame + moveDir * math.max(ValueSpeed, 1) * 1
+                        hrp.CFrame = hrp.CFrame + moveDir * math.max(ValueSpeed, 1) * 0.080
                     end
                 end
             end)
@@ -202,6 +202,28 @@ local function removeVibrant()
     game.Lighting.ColorCorrection.Contrast = originalContrast
 end
 
+local afk = true
+
+MiscTab:Toggle({
+    Title = "Anti-AFK",
+    Default = true,
+    Callback = function(state)
+        afk = state -- อัปเดตตัวแปรหลัก
+        if state then
+            task.spawn(function()
+                while afk do
+                    if not LocalPlayer then return end
+                    VirtualUser:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+                    VirtualUser:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+                    task.wait(60)
+                end
+            end)
+        else
+            print("[DYHUB] Anti-AFK disabled.")
+        end
+    end
+})
+
 MiscTab:Toggle({
     Title = "Full Brightness",
     Default = false,
@@ -250,29 +272,6 @@ MiscTab:Toggle({
             applyVibrant()
         else
             removeVibrant()
-        end
-    end
-})
-
-local afk = true
-
-MiscTab:Toggle({
-    Title = "Anti-AFK",
-    Icon = "shield",
-    Default = true,
-    Callback = function(state)
-        afk = state -- อัปเดตตัวแปรหลัก
-        if state then
-            task.spawn(function()
-                while afk do
-                    if not LocalPlayer then return end
-                    VirtualUser:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
-                    VirtualUser:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
-                    task.wait(60)
-                end
-            end)
-        else
-            print("[DYHUB] Anti-AFK disabled.")
         end
     end
 })
