@@ -1,3 +1,7 @@
+--[[ ============================================ --
+by dyhub v1
+-- =========================================== --]]
+
 repeat task.wait() until game:IsLoaded()
 
 local Players = game:GetService("Players")
@@ -7,7 +11,7 @@ local RunService = game:GetService("RunService")
 local TeleportService = game:GetService("TeleportService")
 local VirtualUser = game:GetService("VirtualUser")
 local Workspace = game:GetService("Workspace")
-local InsertService = game:GetService("InsertService") -- Make sure InsertService is defined
+local InsertService = game:GetService("InsertService")
 local StarterGui = game:GetService("StarterGui")
 
 local WindUI = nil
@@ -521,9 +525,53 @@ GameTab:Toggle({
 local loopFakeBundleConnection = nil
 local loopFakeBundleEnabled = false
 local Niggastats = true
+local admin = true
+local afk = true
 
 SkullTab:Toggle({
-    Title = "Anti Lagging",
+    Title = "Anti-AFK",
+    Icon = "shield",
+    Default = true,
+    Callback = function(state)
+        afk = state -- อัปเดตตัวแปรหลัก
+        if state then
+            task.spawn(function()
+                while afk do
+                    if not LocalPlayer then return end
+                    VirtualUser:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+                    VirtualUser:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+                    task.wait(60)
+                end
+            end)
+        else
+            print("[DYHUB] Anti-AFK disabled.")
+        end
+    end
+})
+
+SkullTab:Toggle({
+    Title = "Anti-Admin",
+    Icon = "shield",
+    Default = true,
+    Callback = function(state)
+        admin = state -- อัปเดตตัวแปรหลัก
+        if state then
+            task.spawn(function()
+                while admin do
+                    if not LocalPlayer then return end
+                    VirtualUser:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+                    VirtualUser:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+                    task.wait(60)
+                end
+            end)
+        else
+            print("[DYHUB] Anti-Admin disabled.")
+        end
+    end
+})
+
+SkullTab:Toggle({
+    Title = "Anti-Lagging",
     Icon = "cpu",
     Callback = function(state)
         Niggastats = state
@@ -532,7 +580,7 @@ SkullTab:Toggle({
 })
 
 SkullTab:Toggle({
-    Title = "Bypass Anti Cheat!",
+    Title = "Bypass Anti-Cheat!",
     Icon = "bug",
     Callback = function(state)
         Niggastats = state
@@ -770,13 +818,6 @@ Players.LocalPlayer.CharacterAdded:Connect(function(character)
 end)
 
 -- ==== nigga
-SkullTab:Button({
-    Title = "Testing",
-    Callback = function()
-       print("[DYHUB] SKIBIDI TESTING")
-    end
-}) 
-
 Niggatab:Button({
     Title = "DYHUB - Thank you for choosing our script [F9]",
     Callback = function()
