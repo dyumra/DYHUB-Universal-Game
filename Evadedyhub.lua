@@ -46,7 +46,7 @@ WindUI:Popup({
 repeat task.wait() until Confirmed
 
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB - Evade @ Premium (Version: 3.17.2)",
+    Title = "DYHUB - Evade @ Normal Server (Version: 3.09)",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
@@ -71,9 +71,9 @@ local EspTab = Window:Tab({ Title = "Esp", Icon = "eye" })
 local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
 local ReviveTab = Window:Tab({ Title = "Revive", Icon = "shield-plus" })
 local FakeTab = Window:Tab({ Title = "Fake", Icon = "sparkles" })
---local SkullTab = Window:Tab({ Title = "Best", Icon = "skull" })
-local MiscTab = Window:Tab({ Title = "Misc", Icon = "settings-2" })
-local Niggatab = Window:Tab({ Title = "dsc.gg/dyhub", Icon = "link" })
+local SkullTab = Window:Tab({ Title = "Best", Icon = "skull" })
+local MiscTab = Window:Tab({ Title = "Misc", Icon = "file-cog" })
+local Niggatab = Window:Tab({ Title = "Info", Icon = "link-2" })
 
 local headlessEnabled = false
 local korbloxEnabled = false
@@ -98,10 +98,10 @@ local cframeSpeedConnection = nil
 
 PlayerTab:Input({
     Title = "Set Base Speed-Hack",
-    placeholder = "Enter Speed Value (1-1000)",
+    Placeholder = "Enter Speed Value (1-500)",
     onChanged = function(value)
         local num = tonumber(value)
-        if num and num >= 1 and num <= 10000 then
+        if num and num >= 1 and num <= 1000 then
             ValueSpeed = num
             print("[DYHUB] Speed value set to: " .. ValueSpeed)
             if ActiveWalkSpeedBoost and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
@@ -116,6 +116,7 @@ PlayerTab:Input({
 
 PlayerTab:Toggle({
     Title = "Speed Boost (Cframe)",
+    Icon = "arrow-big-up-dash",
     Callback = function(state)
         ActiveCFrameSpeedBoost = state
         if ActiveCFrameSpeedBoost then
@@ -134,7 +135,7 @@ PlayerTab:Toggle({
                 if character and humanoid and hrp then
                     local moveDir = humanoid.MoveDirection
                     if moveDir.Magnitude > 0 then
-                        hrp.CFrame = hrp.CFrame + moveDir * math.max(ValueSpeed, 1) * 0.016
+                        hrp.CFrame = hrp.CFrame + moveDir * math.max(ValueSpeed, 1) * 1
                     end
                 end
             end)
@@ -143,55 +144,6 @@ PlayerTab:Toggle({
             if cframeSpeedConnection then
                 cframeSpeedConnection:Disconnect()
                 cframeSpeedConnection = nil
-            end
-        end
-    end
-})
-
-local ValueJumpPower = 50
-local ActiveCFrameJumpBoost = false
-local cframeJumpConnection = nil
-
-PlayerTab:Input({
-    Title = "Set Basse Jump-Power",
-    placeholder = "Enter Jump Power (1-1000)",
-    onChanged = function(value)
-        local num = tonumber(value)
-        if num and num >= 1 and num <= 10000 then
-            ValueJumpPower = num
-            print("[DYHUB] JumpPower value set to: " .. ValueJumpPower)
-        else
-            ValueJumpPower = 50
-            print("[DYHUB] Invalid jump power. Please enter a number between 1 and 500. Reverted to 50.")
-        end
-    end
-})
-
-PlayerTab:Toggle({
-    Title = "Jump Boost (Cframe)",
-    Callback = function(state)
-        ActiveCFrameJumpBoost = state
-        if ActiveCFrameJumpBoost then
-            print("[DYHUB] CFrame Jump Boost Enabled!")
-            if cframeJumpConnection then
-                cframeJumpConnection:Disconnect()
-                cframeJumpConnection = nil
-            end
-            cframeJumpConnection = RunService.RenderStepped:Connect(function()
-                local character = LocalPlayer.Character
-                local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-                local hrp = character and character:FindFirstChild("HumanoidRootPart")
-                if character and humanoid and hrp then
-                    if humanoid:GetState() == Enum.HumanoidStateType.Jumping then
-                        hrp.CFrame = hrp.CFrame + Vector3.new(0, ValueJumpPower * 0.016, 0)
-                    end
-                end
-            end)
-        else
-            print("[DYHUB] CFrame Jump Boost Disabled!")
-            if cframeJumpConnection then
-                cframeJumpConnection:Disconnect()
-                cframeJumpConnection = nil
             end
         end
     end
@@ -241,7 +193,7 @@ end
 
 local function applyVibrant()
     game.Lighting.ColorCorrection.Enabled = true
-    game.Lighting.ColorCorrection.Saturation = 0.85
+    game.Lighting.ColorCorrection.Saturation = 0.8
     game.Lighting.ColorCorrection.Contrast = 0.4
 end
 
@@ -254,6 +206,7 @@ end
 MiscTab:Toggle({
     Title = "Full Brightness",
     Default = false,
+    Icon = "vlightbulb",
     Callback = function(state)
         FullbrightEnabled = state
         if state then
@@ -267,6 +220,7 @@ MiscTab:Toggle({
 MiscTab:Toggle({
     Title = "Super Full Brightness",
     Default = false,
+    Icon = "sun",
     Callback = function(state)
         SuperFullBrightnessEnabled = state
         if state then
@@ -278,27 +232,30 @@ MiscTab:Toggle({
 })
 
 MiscTab:Toggle({
-    Title = "Vibrant +200%",
-    Default = false,
-    Callback = function(state)
-        VibrantEnabled = state
-        if state then
-            applyVibrant()
-        else
-            removeVibrant()
-        end
-    end
-})
-
-MiscTab:Toggle({
     Title = "No Fog",
     Default = false,
+    Icon = "cloud-fog",
     Callback = function(state)
         NoFogEnabled = state
         if state then
             applyNoFog()
         else
             removeNoFog()
+        end
+    end
+})
+
+
+MiscTab:Toggle({
+    Title = "Vibrant +200%",
+    Default = false,
+    Icon = "eclipse",
+    Callback = function(state)
+        VibrantEnabled = state
+        if state then
+            applyVibrant()
+        else
+            removeVibrant()
         end
     end
 })
@@ -359,6 +316,7 @@ VoteTab:Dropdown({
 
 VoteTab:Button({
     Title = "Vote!",
+    Icon = "vote",
     Callback = function()
         fireVoteServer(selectedMapNumber)
     end
@@ -366,6 +324,7 @@ VoteTab:Button({
 
 VoteTab:Toggle({
     Title = "Auto Vote",
+    Icon = "vote",
     Callback = function(state)
         autoVoteEnabled = state
         if autoVoteEnabled then
@@ -407,6 +366,7 @@ end
 
 GameTab:Toggle({
     Title = "Auto Farm Win",
+    Icon = "trophy",
     Callback = function(state)
         ActiveAutoWin = state
         if ActiveAutoWin then
@@ -449,6 +409,7 @@ GameTab:Toggle({
 
 GameTab:Toggle({
     Title = "Auto Farm Money",
+    Icon = "circle-dollar-sign",
     Callback = function(state)
         ActiveAutoFarmMoney = state
         if ActiveAutoFarmMoney then
@@ -508,6 +469,7 @@ GameTab:Toggle({
 
 GameTab:Toggle({
     Title = "Auto Farm Summer Event",
+    Icon = "volleyball",
     Callback = function(state)
         AutoFarmSummerEvent = state
         if AutoFarmSummerEvent then
@@ -561,10 +523,20 @@ local loopFakeBundleEnabled = false
 local Niggastats = true
 
 SkullTab:Toggle({
-    Title = "Anti Nigga",
+    Title = "Anti Lagging",
+    Icon = "cpu",
     Callback = function(state)
         Niggastats = state
-        print("Nigga")
+        print("[DYHUB] Clear Part Trash!")
+    end
+})
+
+SkullTab:Toggle({
+    Title = "Bypass Anti Cheat!",
+    Icon = "bug",
+    Callback = function(state)
+        Niggastats = state
+        print("[DYHUB] Bypass Anti Cheat!")
     end
 })
 
@@ -754,6 +726,7 @@ FakeTab:Dropdown({
 
 FakeTab:Toggle({
     Title = "Loop Fake Bundle",
+    Icon = "infinity",
     Callback = function(state)
         loopFakeBundleEnabled = state
         if loopFakeBundleEnabled then
@@ -776,6 +749,7 @@ local removeAllHatw = false
 
 FakeTab:Toggle({
     Title = "Remove All Hats",
+    Icon = "hat-glasses",
     Callback = function(state)
         removeAllHatw = state
         if state then
@@ -804,7 +778,7 @@ SkullTab:Button({
 }) 
 
 Niggatab:Button({
-    Title = "DYHUB - Thank you for choosing our script",
+    Title = "DYHUB - Thank you for choosing our script [F9]",
     Callback = function()
        print("[DYHUB] Join our Discord To view script update news")
     end
@@ -930,6 +904,7 @@ local summerEventLoopConnection = nil
 
 EspTab:Toggle({
     Title = "Players ESP",
+    Icon = "user",
     Callback = function(state)
         ActiveEspPlayers = state
         if ActiveEspPlayers then
@@ -976,6 +951,7 @@ EspTab:Toggle({
 
 EspTab:Toggle({
     Title = "NextBots ESP",
+    Icon = "skull",
     Callback = function(state)
         ActiveEspBots = state
         if ActiveEspBots then
@@ -1012,6 +988,7 @@ EspTab:Toggle({
 
 EspTab:Toggle({
     Title = "Summer Event ESP",
+    Icon = "volleyball",
     Callback = function(state)
         ActiveEspSummerEvent = state
         if ActiveEspSummerEvent then
@@ -1046,6 +1023,7 @@ EspTab:Toggle({
 
 EspTab:Toggle({
     Title = "Distance ESP",
+    Icon = "minus",
     Callback = function(state)
         ActiveDistanceEsp = state
         if ActiveDistanceEsp then
@@ -1076,6 +1054,7 @@ ReviveTab:Button({
 
 ReviveTab:Toggle({
     Title = "Auto Revive Yourself",
+    Icon = "bandage",
     Callback = function(state)
         autoReviveEnabled = state
         if autoReviveEnabled then
