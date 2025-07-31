@@ -265,19 +265,6 @@ MiscTab:Toggle({
 })
 
 MiscTab:Toggle({
-    Title = "No Fog",
-    Default = false,
-    Callback = function(state)
-        NoFogEnabled = state
-        if state then
-            applyNoFog()
-        else
-            removeNoFog()
-        end
-    end
-})
-
-MiscTab:Toggle({
     Title = "Super Full Brightness",
     Default = false,
     Callback = function(state)
@@ -299,6 +286,40 @@ MiscTab:Toggle({
             applyVibrant()
         else
             removeVibrant()
+        end
+    end
+})
+
+MiscTab:Toggle({
+    Title = "No Fog",
+    Default = false,
+    Callback = function(state)
+        NoFogEnabled = state
+        if state then
+            applyNoFog()
+        else
+            removeNoFog()
+        end
+    end
+})
+
+MiscTab:Toggle({
+    Title = "FPS Boost",
+    Icon = "cpu",
+    Default = false,
+    Callback = function(state)
+        if state then
+            for _, v in pairs(game:GetDescendants()) do
+                if v:IsA("BasePart") then
+                    v.Material = Enum.Material.SmoothPlastic
+                    v.Reflectance = 0
+                elseif v:IsA("Decal") then
+                    v.Transparency = 1
+                end
+            end
+            settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+        else
+            print("[DYHUB] FPS Boost disabled. (by rhy)")
         end
     end
 })
