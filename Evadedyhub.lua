@@ -46,11 +46,11 @@ WindUI:Popup({
 repeat task.wait() until Confirmed
 
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB - Evade @ Premium (Version: 3.06)",
+    Title = "DYHUB - Evade @ Premium (Version: 3.17.2)",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
-    Size = UDim2.fromOffset(720, 500),
+    Size = UDim2.fromOffset(600, 400),
     Transparent = true,
     Theme = "Dark",
 })
@@ -97,11 +97,11 @@ local OriginalWalkSpeed = 16
 local cframeSpeedConnection = nil
 
 PlayerTab:Input({
-    Title = "Set Base Speed",
-    Placeholder = "Enter Speed Value (1-1000)",
+    Title = "Set Base Speed-Hack",
+    placeholder = "Enter Speed Value (1-1000)",
     onChanged = function(value)
         local num = tonumber(value)
-        if num and num >= 1 and num <= 100000 then
+        if num and num >= 1 and num <= 10000 then
             ValueSpeed = num
             print("[DYHUB] Speed value set to: " .. ValueSpeed)
             if ActiveWalkSpeedBoost and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
@@ -115,7 +115,7 @@ PlayerTab:Input({
 })
 
 PlayerTab:Toggle({
-    Title = "Speed Boost (CFrame)",
+    Title = "Speed Boost (Cframe)",
     Callback = function(state)
         ActiveCFrameSpeedBoost = state
         if ActiveCFrameSpeedBoost then
@@ -148,6 +148,54 @@ PlayerTab:Toggle({
     end
 })
 
+local ValueJumpPower = 50
+local ActiveCFrameJumpBoost = false
+local cframeJumpConnection = nil
+
+PlayerTab:Input({
+    Title = "Set Basse Jump-Power",
+    placeholder = "Enter Jump Power (1-1000)",
+    onChanged = function(value)
+        local num = tonumber(value)
+        if num and num >= 1 and num <= 10000 then
+            ValueJumpPower = num
+            print("[DYHUB] JumpPower value set to: " .. ValueJumpPower)
+        else
+            ValueJumpPower = 50
+            print("[DYHUB] Invalid jump power. Please enter a number between 1 and 500. Reverted to 50.")
+        end
+    end
+})
+
+PlayerTab:Toggle({
+    Title = "Jump Boost (Cframe)",
+    Callback = function(state)
+        ActiveCFrameJumpBoost = state
+        if ActiveCFrameJumpBoost then
+            print("[DYHUB] CFrame Jump Boost Enabled!")
+            if cframeJumpConnection then
+                cframeJumpConnection:Disconnect()
+                cframeJumpConnection = nil
+            end
+            cframeJumpConnection = RunService.RenderStepped:Connect(function()
+                local character = LocalPlayer.Character
+                local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+                local hrp = character and character:FindFirstChild("HumanoidRootPart")
+                if character and humanoid and hrp then
+                    if humanoid:GetState() == Enum.HumanoidStateType.Jumping then
+                        hrp.CFrame = hrp.CFrame + Vector3.new(0, ValueJumpPower * 0.016, 0)
+                    end
+                end
+            end)
+        else
+            print("[DYHUB] CFrame Jump Boost Disabled!")
+            if cframeJumpConnection then
+                cframeJumpConnection:Disconnect()
+                cframeJumpConnection = nil
+            end
+        end
+    end
+})
 
 local originalBrightness = game.Lighting.Brightness
 local originalOutdoorAmbient = game.Lighting.OutdoorAmbient
@@ -175,7 +223,7 @@ local function removeFullBrightness()
 end
 
 local function applySuperFullBrightness()
-    game.Lighting.Brightness = 22
+    game.Lighting.Brightness = 15
     game.Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
     game.Lighting.Ambient = Color3.fromRGB(255, 255, 255)
     game.Lighting.GlobalShadows = false
@@ -193,7 +241,7 @@ end
 
 local function applyVibrant()
     game.Lighting.ColorCorrection.Enabled = true
-    game.Lighting.ColorCorrection.Saturation = 1
+    game.Lighting.ColorCorrection.Saturation = 0.85
     game.Lighting.ColorCorrection.Contrast = 0.4
 end
 
@@ -558,60 +606,94 @@ local loadedKorbloxAccessory = nil
 
 local function applyKorbloxRightLeg()
     local character = getLocalPlayerCharacter()
-    if character and character:FindFirstChildOfClass("Humanoid") then
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not character then return end
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
 
-        if loadedKorbloxAccessory and loadedKorbloxAccessory.Parent == character then
-            return -- Already applied
+    if humanoid.RigType == Enum.HumanoidRigType.R15 then
+        -- R15
+        local rightLowerLeg = character:FindFirstChild("RightLowerLeg")
+        local rightUpperLeg = character:FindFirstChild("RightUpperLeg")
+        local rightFoot = character:FindFirstChild("RightFoot")
+
+        if rightLowerLeg and rightLowerLeg:FindFirstChildOfClass("Mesh") then
+            rightLowerLeg.MeshId = "902942093"
+            rightLowerLeg.Transparency = 1
         end
-
-        local success, asset = pcall(function()
-            return InsertService:LoadAsset(KORBLOX_RIGHT_LEG_ID)
-        end)
-
-        if success and asset then
-            local accessory = asset:FindFirstChildOfClass("Accessory")
-            if accessory then
-                -- Remove existing right leg accessories to prevent duplicates or conflicts
-                for _, child in ipairs(character:GetChildren()) do
-                    if child:IsA("Accessory") and child.Name == "Right Leg" then
-                        child:Destroy()
-                    end
-                end
-                humanoid:AddAccessory(accessory)
-                loadedKorbloxAccessory = accessory
-            end
-        else
-            warn("Failed to load Korblox Right Leg asset: " .. (asset or "Unknown error"))
+        if rightUpperLeg and rightUpperLeg:FindFirstChildOfClass("Mesh") then
+            rightUpperLeg.MeshId = "http://www.roblox.com/asset/?id=902942096"
+            rightUpperLeg.TextureID = "http://roblox.com/asset/?id=902843398"
+        end
+        if rightFoot and rightFoot:FindFirstChildOfClass("Mesh") then
+            rightFoot.MeshId = "902942089"
+            rightFoot.Transparency = 1
+        end
+    elseif humanoid.RigType == Enum.HumanoidRigType.R6 then
+        -- R6
+        local rightLeg = character:FindFirstChild("Right Leg")
+        if rightLeg and rightLeg:FindFirstChildOfClass("Mesh") then
+            local mesh = rightLeg:FindFirstChildOfClass("Mesh")
+            mesh.MeshId = "902942093"
+            mesh.TextureId = "http://roblox.com/asset/?id=902843398"
+            rightLeg.Transparency = 1
         end
     end
 end
 
 local function removeKorbloxRightLeg()
     local character = getLocalPlayerCharacter()
-    if character then
-        if loadedKorbloxAccessory and loadedKorbloxAccessory.Parent == character then
-            loadedKorbloxAccessory:Destroy()
-            loadedKorbloxAccessory = nil
-        else
-            -- Fallback: if loadedKorbloxAccessory wasn't tracked, try to find and destroy by MeshId
-            for _, child in ipairs(character:GetChildren()) do
-                if child:IsA("Accessory") and child.Handle and child.Handle:FindFirstChildOfClass("SpecialMesh") then
-                    if child.Handle:FindFirstChildOfClass("SpecialMesh").MeshId == "rbxassetid://" .. KORBLOX_RIGHT_LEG_ID then
-                        child:Destroy()
-                    end
+    if not character then return end
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
+
+    if humanoid.RigType == Enum.HumanoidRigType.R15 then
+        -- R15
+        local rightLowerLeg = character:FindFirstChild("RightLowerLeg")
+        local rightUpperLeg = character:FindFirstChild("RightUpperLeg")
+        local rightFoot = character:FindFirstChild("RightFoot")
+
+        if rightLowerLeg and rightLowerLeg:FindFirstChildOfClass("Mesh") then
+            rightLowerLeg.MeshId = ""
+            rightLowerLeg.Transparency = 0
+        end
+        if rightUpperLeg and rightUpperLeg:FindFirstChildOfClass("Mesh") then
+            rightUpperLeg.MeshId = ""
+            rightUpperLeg.TextureID = ""
+        end
+        if rightFoot and rightFoot:FindFirstChildOfClass("Mesh") then
+            rightFoot.MeshId = ""
+            rightFoot.Transparency = 0
+        end
+    elseif humanoid.RigType == Enum.HumanoidRigType.R6 then
+        -- R6
+        local rightLeg = character:FindFirstChild("Right Leg")
+        if rightLeg and rightLeg:FindFirstChildOfClass("Mesh") then
+            local mesh = rightLeg:FindFirstChildOfClass("Mesh")
+            mesh.MeshId = ""
+            mesh.TextureId = ""
+            rightLeg.Transparency = 0
+        end
+    end
+
+    -- รีเซ็ต accessory ถ้ามี
+    if loadedKorbloxAccessory and loadedKorbloxAccessory.Parent == character then
+        loadedKorbloxAccessory:Destroy()
+        loadedKorbloxAccessory = nil
+    else
+        -- Fallback: ลบ accessory ที่เป็น Korblox ถ้ามี
+        for _, child in ipairs(character:GetChildren()) do
+            if child:IsA("Accessory") and child.Handle and child.Handle:FindFirstChildOfClass("SpecialMesh") then
+                if child.Handle:FindFirstChildOfClass("SpecialMesh").MeshId == "rbxassetid://" .. tostring(KORBLOX_RIGHT_LEG_ID) then
+                    child:Destroy()
                 end
             end
         end
+    end
 
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            -- Re-apply the original character description to restore the default leg
-            local originalDescription = Players:GetHumanoidDescriptionFromUserId(Players.LocalPlayer.UserId)
-            if originalDescription then
-                humanoid:ApplyDescription(originalDescription)
-            end
-        end
+    -- รีเซ็ตตัวละครกลับสู่สภาพเดิม
+    local originalDescription = Players:GetHumanoidDescriptionFromUserId(Players.LocalPlayer.UserId)
+    if originalDescription then
+        humanoid:ApplyDescription(originalDescription)
     end
 end
 
@@ -701,7 +783,7 @@ SkullTab:Button({
 }) 
 
 Niggatab:Button({
-    Title = "DYHUB - Thank you for choosing our script [F9]",
+    Title = "DYHUB - Thank you for choosing our script",
     Callback = function()
        print("[DYHUB] Join our Discord To view script update news")
     end
