@@ -260,7 +260,7 @@ MainTab:Toggle({
 
                     -- วาร์ป
                     if hrp then
-                        hrp.CFrame = CFrame.new(9e19, 9e19, 9e19)
+                        hrp.CFrame = CFrame.new(9e12, 9e12, 9e12)
                     end
 
                     task.wait(1.5)
