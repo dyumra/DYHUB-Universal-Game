@@ -70,7 +70,7 @@ local Tabs = {
     FarmTab = Window:Tab({ Title = "Auto Farm", Icon = "crown" }),
     PlayerTab = Window:Tab({ Title = "Player", Icon = "user" }),
     ESPTab = Window:Tab({ Title = "ESP", Icon = "eye" }),
-    TeleportTab = Window:Tab({ Title = "Teleport", Icon = "location" }),
+    TeleportTab = Window:Tab({ Title = "Teleport", Icon = "map-pin" }),
 }
 
 -- ======= GameTab (Steal) =======
