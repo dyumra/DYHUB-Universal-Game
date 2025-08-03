@@ -1,0 +1,307 @@
+repeat task.wait() until game:IsLoaded()
+
+-- Services
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+
+local LocalPlayer = Players.LocalPlayer
+
+-- Load UI
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+-- Popup
+local Confirmed = false
+WindUI:Popup({
+    Title = "DYHUB Loaded! - Ants",
+    Icon = "star",
+    IconThemed = true,
+    Content = "DYHUB TEAM - Join us at dsc.gg/dyhub",
+    Buttons = {
+        { Title = "Cancel", Variant = "Secondary", Callback = function() end },
+        { Title = "Continue", Icon = "arrow-right", Callback = function() Confirmed = true end, Variant = "Primary" }
+    }
+})
+repeat task.wait() until Confirmed
+
+-- Create Window
+local Window = WindUI:CreateWindow({
+    Title = "DYHUB - Ants (Beta)",
+    IconThemed = true,
+    Icon = "star",
+    Author = "DYHUB (dsc.gg/dyhub)",
+    Size = UDim2.fromOffset(720, 500),
+    Transparent = true,
+    Theme = "Dark",
+})
+
+Window:EditOpenButton({
+    Title = "DYHUB - Open",
+    Icon = "monitor",
+    CornerRadius = UDim.new(0, 6),
+    StrokeThickness = 2,
+    Color = ColorSequence.new(Color3.fromRGB(30, 30, 30), Color3.fromRGB(255, 255, 255)),
+    Draggable = true,
+})
+
+-- Tabs
+local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
+local ShopTab = Window:Tab({ Title = "Buy", Icon = "shopping-cart" })
+local MiscTab = Window:Tab({ Title = "Misc", Icon = "file-cog" })
+
+
+-- Helper functions
+
+local function modifyProximityPrompts()
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("ProximityPrompt") then
+            obj.HoldDuration = 0
+        end
+    end
+end
+
+local function parsePrice(text)
+    local numberText = text:match("([%d,]+)%sSeeds")
+    if numberText then
+        numberText = numberText:gsub(",", "")
+        return tonumber(numberText) or 0
+    end
+    return 0
+end
+
+local function getPlayerMoney()
+    local leaderstats = LocalPlayer:FindFirstChild("leaderstats")
+    if leaderstats then
+        local seeds = leaderstats:FindFirstChild("Seeds")
+        if seeds and seeds.Value then
+            return seeds.Value
+        end
+    end
+    return 0
+end
+
+-- Price ranges table
+local priceRanges = {
+    ["10-100"] = {10, 100},
+    ["100-1000"] = {100, 1000},
+    ["1000-10000"] = {1000, 10000},
+    ["10000-100000"] = {10000, 100000},
+    ["100000-1000000"] = {100000, 1000000},
+    ["1000000-10000000"] = {1000000, 10000000},
+    ["10000000-DYHUB"] = {10000000, math.huge},
+    ["10-DYHUB"] = {10, 100000000}
+}
+
+-- Variables for dropdown selections
+local selectedNames = {}
+local selectedPriceRanges = {}
+local autoBuy = false
+
+-- ตัวแปรควบคุมปิด/เปิด teleport buy
+local disableTeleportBuy = false
+
+-- Dropdown 1: Name selection
+ShopTab:Dropdown({
+    Title = "Select Ant Type",
+    Multi = true,
+    Values = {"Basic Ant", "Fire Ant", "Bullet Ant", "Conqueror Ant", "Cosmo Ant", "Crystal Ant", "Dark Ant", "Golden Ant", "Guardian Ant", "Lightning Ant", "Royal Ant", "Titan Ant", "Yellow Crazy Ant", "Void Ant", "All"},
+    Default = {"Basic Ant"},
+    Callback = function(values)
+        selectedNames = values
+    end,
+})
+
+-- Dropdown 2: Price range selection
+ShopTab:Dropdown({
+    Title = "Select Price Range",
+    Multi = true,
+    Values = {"10-100", "100-1000", "1000-10000", "10000-100000", "100000-1000000", "1000000-10000000", "10000000-DYHUB", "10-DYHUB"},
+    Default = {"10-100"},
+    Callback = function(values)
+        selectedPriceRanges = values
+    end,
+})
+
+-- Toggle: Disable Teleport Buy
+ShopTab:Toggle({
+    Title = "Disable Teleport Buy",
+    Value = false,
+    Callback = function(state)
+        disableTeleportBuy = state
+        if disableTeleportBuy then
+            print("[DYHUB] Teleport Buy Disabled")
+        else
+            print("[DYHUB] Teleport Buy Enabled")
+        end
+    end,
+})
+
+-- Check if item name matches selected names
+local function nameMatches(actionText)
+    local lowerAction = string.lower(actionText or "")
+    for _, name in pairs(selectedNames) do
+        if name == "All" then
+            return true
+        end
+        if string.lower(name) == lowerAction then
+            return true
+        end
+    end
+    return false
+end
+
+-- Check if price is within selected ranges
+local function priceInSelectedRange(price)
+    for _, rangeName in pairs(selectedPriceRanges) do
+        local range = priceRanges[rangeName]
+        if range and price >= range[1] and price <= range[2] then
+            return true
+        end
+    end
+    return false
+end
+
+-- Auto Buy toggle and logic
+ShopTab:Toggle({
+    Title = "Auto Buy",
+    Value = false,
+    Callback = function(state)
+        autoBuy = state
+        if autoBuy then
+            task.spawn(function()
+                modifyProximityPrompts()
+                while autoBuy do
+                    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    if root and not disableTeleportBuy then -- เช็ค disableTeleportBuy
+                        root.CFrame = CFrame.new(
+                            20.8310871, 10.499999, -1.94587421,
+                            -0.0123281796, 9.68468306e-10, -0.999924004,
+                            -7.62654118e-09, 1, 1.06257037e-09,
+                            0.999924004, 7.63906094e-09, -0.0123281796
+                        )
+                    end
+
+                    task.wait(0.1)
+                    modifyProximityPrompts()
+
+                    for _, obj in pairs(Workspace:GetDescendants()) do
+                        if obj:IsA("ProximityPrompt") then
+                            if nameMatches(obj.ActionText) then
+                                local price = parsePrice(obj.ObjectText or "")
+                                local money = getPlayerMoney()
+                                if price > 0 and priceInSelectedRange(price) and money >= price then
+                                    fireproximityprompt(obj, 0)
+                                    task.wait(0.1)
+                                end
+                            end
+                        end
+                    end
+
+                    task.wait(0.1)
+                end
+            end)
+        end
+    end,
+})
+
+-- ================================
+-- Auto Farm: Seed
+-- ================================
+local autoFarmSeed = false
+local collectedTokens = {}
+
+MainTab:Toggle({
+    Title = "Auto Farm: Seed",
+    Value = false,
+    Callback = function(state)
+        autoFarmSeed = state
+        if autoFarmSeed then
+            task.spawn(function()
+                while autoFarmSeed do
+                    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    if root then
+                        for _, token in pairs(Workspace:WaitForChild("Tokens"):GetChildren()) do
+                            if token:IsA("BasePart") and not collectedTokens[token] then
+                                -- เช็คว่าไม่ล่องหน
+                                local isVisible = true
+                                if token.Transparency >= 1 then
+                                    isVisible = false
+                                end
+                                if token:FindFirstChild("Visible") and token.Visible == false then
+                                    isVisible = false
+                                end
+                                if isVisible then
+                                    collectedTokens[token] = true
+
+                                    -- วาร์ปไปที่ Token
+                                    root.CFrame = token.CFrame + Vector3.new(0, 3, 0)
+                                    task.wait(0.1)
+
+                                    -- รอให้ Token หายไป
+                                    local timeout = 3
+                                    while token.Parent and timeout > 0 do
+                                        if not autoFarmSeed then break end
+                                        task.wait(0.1)
+                                        timeout -= 0.1
+                                    end
+                                end
+                            end
+                        end
+                    else
+                        task.wait(0.1)
+                    end
+                
+                task.wait(0.1)
+                end
+            end)
+        end
+    end,
+})
+
+MainTab:Button({
+    Title = "Reset Collected Tokens",
+    Icon = "refresh-ccw",
+    Callback = function()
+        collectedTokens = {}
+    end,
+})
+
+MiscTab:Button({
+    Title = "Fly (Beta)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Dupe-Anime-Rails/refs/heads/main/Dly"))()
+    end
+})
+
+MiscTab:Button({
+    Title = "No Cooldown (Buy Ant)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Dupe-Anime-Rails/refs/heads/main/Dly"))()
+    end
+})
+
+local antiAfkEnabled = false
+local VirtualUser = game:GetService("VirtualUser")
+local antiAfkThread
+
+MiscTab:Toggle({
+    Title = "Anti AFK",
+    Value = false,
+    Callback = function(state)
+        antiAfkEnabled = state
+        if antiAfkEnabled then
+            antiAfkThread = task.spawn(function()
+                while antiAfkEnabled do
+                    task.wait(60)
+                    if LocalPlayer and LocalPlayer.Character then
+                        VirtualUser:CaptureController()
+                        VirtualUser:ClickButton1(Vector2.new(0,0))
+                        print("[DYHUB] Anti AFK - simulated click")
+                    end
+                end
+            end)
+            print("[DYHUB] Anti AFK Enabled")
+        else
+            print("[DYHUB] Anti AFK Disabled")
+        end
+    end,
+})
