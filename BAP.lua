@@ -125,70 +125,87 @@ MainTab:Toggle({
 })
 
 MainTab:Toggle({
-    Title = "Auto Farm (1sec - 100K)",
-    Icon = "badge-dollar-sign",
-    Default = false,
-    Callback = function(state)
-        autoFarmRunning = state
-        if state then
-            print("[DYHUB] Auto Farm started.")
-            task.spawn(function()
-                local LaunchRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Launch")
-                local ReturnRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Return")
-                local player = Players.LocalPlayer
+    Title = "Auto Farm (Test)",
+    Icon = "badge-dollar-sign",
+    Default = false,
+    Callback = function(state)
+        autoFarmRunning = state
+        if state then
+            task.spawn(function()
+                while autoFarmRunning do
+                    local launchRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Launch")
+                    launchRemote:FireServer()
+                    task.wait(3)
 
-                while autoFarmRunning do
-                    local character = player.Character
-                    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-                    local hrp = character and character:FindFirstChild("HumanoidRootPart")
+                    local char = LocalPlayer.Character
+                    if not char or not char:FindFirstChildOfClass("Humanoid") then break end
 
-                    while autoFarmRunning and (not character or not humanoid or humanoid.Health <= 0 or not hrp) do
-                        task.wait(0.5)
-                        character = player.Character
-                        humanoid = character and character:FindFirstChildOfClass("Humanoid")
-                        hrp = character and character:FindFirstChild("HumanoidRootPart")
-                    end
+                    local humanoid = char:FindFirstChildOfClass("Humanoid")
+                    if humanoid.SeatPart and humanoid.SeatPart:IsA("VehicleSeat") then
+                        local seat = humanoid.SeatPart
+                        local dir = seat.CFrame.LookVector
+                        local targetPos = seat.CFrame + dir * 22222222
 
-                    if not autoFarmRunning then break end
+                        seat.CFrame = targetPos
+                        if char.PrimaryPart then
+                            char:SetPrimaryPartCFrame(targetPos)
+                        end
+                    end
+                end
+            end)
+        end
+    end
+})
 
-                    -- ยิง Launch
-                    LaunchRemote:FireServer()
-                    task.wait(1.5)
+MainTab:Toggle({
+    Title = "Auto Farm (1sec - 100K)",
+    Icon = "badge-dollar-sign",
+    Default = false,
+    Callback = function(state)
+        autoFarmRunning = state
+        if state then
+            print("[DYHUB] Auto Farm started.")
+            task.spawn(function()
+                local LaunchRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Launch")
+                local ReturnRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Return")
+                local player = Players.LocalPlayer
 
-                    -- สร้าง Part ขนาดใหญ่ให้ชน
-                    local part = Instance.new("Part")
-                    part.Name = "AutoFarmTarget"
-                    part.Size = Vector3.new(1000, 1000, 1000) -- ใหญ่มาก
-                    part.Anchored = true
-                    part.CanCollide = true
-                    part.Material = Enum.Material.Neon
-                    part.BrickColor = BrickColor.new("Bright red")
-                    part.Transparency = 0.2
-                    part.CFrame = CFrame.new(9e6, 9e6, 9e6)
-                    part.Parent = workspace
+                while autoFarmRunning do
+                    local character = player.Character
+                    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+                    local hrp = character and character:FindFirstChild("HumanoidRootPart")
 
-                    -- วาร์ปไปด้านบนของ part
-                    if hrp then
-                        hrp.CFrame = CFrame.new(9e6, 9e6 + 100, 9e6)
-                    end
+                    -- รอจนกว่า character จะเกิดและพร้อม (ถ้าเล่นไปตาย จะรอจนเกิดใหม่)
+                    while autoFarmRunning and (not character or not humanoid or humanoid.Health <= 0 or not hrp) do
+                        task.wait(0.5)
+                        character = player.Character
+                        humanoid = character and character:FindFirstChildOfClass("Humanoid")
+                        hrp = character and character:FindFirstChild("HumanoidRootPart")
+                    end
 
-                    task.wait(1.5)
+                    if not autoFarmRunning then break end
 
-                    -- ยิง Return
-                    ReturnRemote:FireServer()
+                    -- ยิง Launch
+                    LaunchRemote:FireServer()
+                    task.wait(1.5)
 
-                    task.wait(4)
+                    -- วาร์ป
+                    if hrp then
+                        hrp.CFrame = CFrame.new(9e6, 9e6, 9e6)
+                    end
 
-                    -- ลบ Part ถ้าไม่ต้องการให้ค้าง
-                    if workspace:FindFirstChild("AutoFarmTarget") then
-                        workspace.AutoFarmTarget:Destroy()
-                    end
-                end
-            end)
-        else
-            print("[DYHUB] Auto Farm stopped.")
-        end
-    end
+                    task.wait(1.5)
+
+                    -- ยิง Return
+                    ReturnRemote:FireServer()
+
+                    task.wait(4)
+                end
+            end)
+        else
+            print("[DYHUB] Auto Farm stopped.")
+        end
+    end
 })
 
 MainTab:Toggle({
