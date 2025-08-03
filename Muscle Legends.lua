@@ -4,40 +4,19 @@ if _G.MainScriptLoaded then
 end
 _G.MainScriptLoaded = true
 
-local whitelist = { 2932844883, 3211853358 } 
-
-local player = game.Players.LocalPlayer
-local playerId = player.UserId
-
-print("👤 Player ID detected:", playerId)
-
-local isWhitelisted = false
-for _, id in ipairs(whitelist) do
-    if id == playerId then
-        isWhitelisted = true
-        break
-    end
-end
-
-if not isWhitelisted then
-    warn("❌ Access denied for ID:", playerId)
-    player:Kick("🚫 You are not allowed to use this script kasi kupal ka ngani")
-    return
-end
-
 local Library = loadstring(game:HttpGetAsync("https://github.com/ActualMasterOogway/Fluent-Renewed/releases/latest/download/Fluent.luau"))()
 local SaveManager = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/ActualMasterOogway/Fluent-Renewed/master/Addons/SaveManager.luau"))()
 local InterfaceManager = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/ActualMasterOogway/Fluent-Renewed/master/Addons/InterfaceManager.luau"))()
 -- 🏠 Creation
 local Window = Library:CreateWindow{
-    Title = "Private Script of SLH",
-    SubTitle = "By SLH_YAMO",
+    Title = "DYHUB - Muscle Legends (dsc.gg/dyhub)",
+    SubTitle = "Powered by DYHUB TEAM",
     TabWidth = 125,
     Size = UDim2.fromOffset(830, 525),
     Resize = true,
     MinSize = Vector2.new(470, 380),
     Acrylic = true,
-    Theme = "DuoTone Dark Sea",
+    Theme = "Darker",
     MinimizeKey = Enum.KeyCode.RightControl
 }local Tabs = {
 	Main = Window:CreateTab{
@@ -2311,4 +2290,5 @@ local treadmillToggle = Tabs.AutoStuff:CreateToggle("Tread Toggle", {
 			end
 		end)
 	end
+
 })
