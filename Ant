@@ -275,7 +275,7 @@ MiscTab:Button({
 MiscTab:Button({
     Title = "No Cooldown (Buy Ant)",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Dupe-Anime-Rails/refs/heads/main/Dly"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/nodelay.lua"))()
     end
 })
 
