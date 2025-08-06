@@ -2,6 +2,73 @@ if not game:IsLoaded() then
     game.Loaded:Wait()
 end
 
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local function applyEffects(character)
+	local torso = character:WaitForChild("Torso", 5)
+	if not torso then return end
+
+	local nametag = torso:WaitForChild("Player_Nametag", 5)
+	if not nametag then return end
+
+	local levelText = nametag:WaitForChild("LevelText", 5)
+	local displayName = nametag:WaitForChild("DisplayName", 5)
+	if not levelText or not displayName then return end
+
+	local player = Players.LocalPlayer
+	local isOwner = (player.Name == "Yolmar_43")
+
+	levelText.Text = isOwner and "[ DYHUB - OWNER ]" or "[ DYHUB - MEMBER ]"
+
+	local wave = 0
+	local rainbowHue = 0
+
+	local messages = {
+		"DYHUB THE BEST (dsc.gg/dyhub)",
+		"PROTECT BY DYHUB (Anti-Cheat: Beta)",
+		"@" .. player.Name .. " (dsc.gg/dyhub)"
+	}
+	local msgIndex = 1
+	displayName.Text = messages[msgIndex]
+
+	task.spawn(function()
+		while character.Parent do
+			msgIndex = (msgIndex % #messages) + 1
+			displayName.Text = messages[msgIndex]
+			task.wait(2)
+		end
+	end)
+
+	RunService.RenderStepped:Connect(function(deltaTime)
+		wave = (wave + deltaTime * 2) % (2 * math.pi)
+		rainbowHue = (rainbowHue + deltaTime * 0.2) % 1
+
+		if isOwner then
+			local brightness = (math.sin(wave) + 1) / 2
+			levelText.TextColor3 = Color3.new(1, brightness, brightness)
+		else
+			local brightness = (math.sin(wave) + 1) / 2
+			levelText.TextColor3 = Color3.new(brightness, 1, brightness)
+		end
+
+		displayName.TextColor3 = Color3.fromHSV(rainbowHue, 1, 1)
+	end)
+
+	levelText:GetPropertyChangedSignal("Text"):Connect(function()
+		local correctText = isOwner and "[ DYHUB - OWNER ]" or "[ DYHUB - MEMBER ]"
+		if levelText.Text ~= correctText then
+			levelText.Text = correctText
+		end
+	end)
+end
+
+local player = Players.LocalPlayer
+if player.Character then
+	applyEffects(player.Character)
+end
+player.CharacterAdded:Connect(applyEffects)
+
 getgenv().TranslationCounter = nil
 Translations = loadstring(game:HttpGet("https://raw.githubusercontent.com/Articles-Hub/ROBLOXScript/refs/heads/main/Translation/Translation.lua"))()
 loadstring(game:HttpGet("https://pastefy.app/yavAjgX3/raw"))()
@@ -103,8 +170,8 @@ local Window = Library:CreateWindow({
     Center = true,
     AutoShow = true,
     Resizable = true,
-    Footer = "Omega X Article Hub Version: 1.0.5",
-	Icon = 125448486325517,
+    Footer = "TEAM DYHUB @ FREE VERSION",
+	Icon = 78855714172148,
 	AutoLock = true,
     ShowCustomCursor = true,
     NotifySide = "Right",
@@ -1307,7 +1374,7 @@ MenuGroup:AddToggle("KeybindMenuOpen", {Default = false, Text = "Open Keybind Me
 MenuGroup:AddToggle("ShowCustomCursor", {Text = "Custom Cursor", Default = true, Callback = function(Value) Library.ShowCustomCursor = Value end})
 MenuGroup:AddDivider()
 MenuGroup:AddLabel("Menu bind"):AddKeyPicker("MenuKeybind", {Default = "RightShift", NoUI = true, Text = "Menu keybind"})
-_G.LinkJoin = loadstring(game:HttpGet("https://pastefy.app/2LKQlhQM/raw"))()
+_G.LinkJoin = loadstring(game:HttpGet("https://pastefy.app/os4eg1U8/raw?part="))()
 MenuGroup:AddButton("Copy Link Discord", function()
     if setclipboard then
         setclipboard(_G.LinkJoin["Discord"])
@@ -1315,19 +1382,21 @@ MenuGroup:AddButton("Copy Link Discord", function()
     else
         Library:Notify("Discord link: ".._G.LinkJoin["Discord"], 10)
     end
-end):AddButton("Copy Link Zalo", function()
+end):AddButton("Copy Link DYHUB", function()
     if setclipboard then
-        setclipboard(_G.LinkJoin["Zalo"])
+        setclipboard(_G.LinkJoin["DYHUB"])
         Library:Notify("Copied Zalo link to clipboard!")
     else
-        Library:Notify("Zalo link: ".._G.LinkJoin["Zalo"], 10)
+        Library:Notify("DYHUB link: ".._G.LinkJoin["DYHUB"], 10)
     end
 end)
 MenuGroup:AddButton("Unload", function() Library:Unload() end)
-CreditsGroup:AddLabel("AmongUs - Python / Dex / Script", true)
-CreditsGroup:AddLabel("Giang Hub - Script / Dex", true)
-CreditsGroup:AddLabel("Cao Mod - Script / Dex", true)
-CreditsGroup:AddLabel("Vokareal Hub (Vu Hub) - Script / Dex", true)
+CreditsGroup:AddLabel("DYHUB'S TEAM - Python / Dex", true)
+CreditsGroup:AddLabel("DYHUB SCRIPTER - Feature All", true)
+CreditsGroup:AddLabel("DYHUB UI - Linoria Library", true)
+CreditsGroup:AddLabel("DYHUB BYPASS - Disable Anti-Cheat All", true)
+CreditsGroup:AddLabel("DYHUB LOOPHOLES - Infinite Yield / Dex / Remote Spy", true)
+CreditsGroup:AddLabel("Please notify me if you want to buy \n Premium (@dyumraisgoodguy#6969 on discord)", true)
 
 Info:AddLabel("Counter [ "..game:GetService("LocalizationService"):GetCountryRegionForPlayerAsync(game.Players.LocalPlayer).." ]", true)
 Info:AddLabel("Executor [ "..identifyexecutor().." ]", true)
