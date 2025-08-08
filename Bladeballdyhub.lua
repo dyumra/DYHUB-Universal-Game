@@ -2782,7 +2782,7 @@ local StatModule = MicTab:create_module({
 				local status = speed < 3 and "Idle" or "Flying"
 
 				label.Text = string.format(
-					"⚽ Ball Stats | Zeryx\nSpeed: %s\nDistance: %s\nTarget: %s",
+					"⚽ Ball Stats | DYHUB\nSpeed: %s\nDistance: %s\nTarget: %s",
 					speed, distance, target
 				)
 			end)
@@ -2860,3 +2860,4 @@ local VisualizeModule = MicTab:create_module({
 		end
 	end
 })
+
