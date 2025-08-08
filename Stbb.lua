@@ -661,24 +661,21 @@ PlayerTab:Toggle({
     Title = "Infinity Jump",
     Default = false,
     Callback = function(state)
-        local Humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-        if Humanoid then
-            if state then
-                Humanoid.JumpPower = math.huge
-                Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-                local jumpConnection = Humanoid.StateChanged:Connect(function(oldState, newState)
-                    if newState == Enum.HumanoidStateType.Landed and Humanoid.JumpPower == math.huge then
-                        Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-                    end
-                end)
-                Humanoid:SetAttribute("InfinityJumpConnection", jumpConnection)
-            else
-                Humanoid.JumpPower = 50
-                local jumpConnection = Humanoid:GetAttribute("InfinityJumpConnection")
-                if jumpConnection then
-                    jumpConnection:Disconnect()
-                    Humanoid:SetAttribute("InfinityJumpConnection", nil)
+        local uis = game:GetService("UserInputService")
+        local player = game.Players.LocalPlayer
+        local infJumpConnection
+
+        if state then
+            infJumpConnection = uis.JumpRequest:Connect(function()
+                if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+                    player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
                 end
+            end)
+            getgenv().infJumpConnection = infJumpConnection
+        else
+            if getgenv().infJumpConnection then
+                getgenv().infJumpConnection:Disconnect()
+                getgenv().infJumpConnection = nil
             end
         end
     end
@@ -701,7 +698,7 @@ MiscTab:Toggle({
     Callback = function(state)
         if state then
             Lighting.Ambient = Color3.new(1, 1, 1)
-            Lighting.Brightness = 10
+            Lighting.Brightness = 5
             Lighting.ClockTime = 14
 
             fullBrightConnection = RunService.RenderStepped:Connect(function()
@@ -775,48 +772,6 @@ MiscTab:Toggle({
     end
 })
 
-MiscTab:Button({
-    Title = "FPS Boost",
-    Callback = function()
-        pcall(function()
-            settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
-            local lighting = game:GetService("Lighting")
-            lighting.Brightness = 0
-            lighting.FogEnd = 100
-            lighting.GlobalShadows = false
-            lighting.EnvironmentDiffuseScale = 0
-            lighting.EnvironmentSpecularScale = 0
-            lighting.ClockTime = 14
-            lighting.OutdoorAmbient = Color3.new(0, 0, 0)
-            local terrain = workspace:FindFirstChildOfClass("Terrain")
-            if terrain then
-                terrain.WaterWaveSize = 0
-                terrain.WaterWaveSpeed = 0
-                terrain.WaterReflectance = 0
-                terrain.WaterTransparency = 1
-            end
-            for _, obj in ipairs(lighting:GetDescendants()) do
-                if obj:IsA("PostEffect") or obj:IsA("BloomEffect") or obj:IsA("ColorCorrectionEffect") or obj:IsA("SunRaysEffect") or obj:IsA("BlurEffect") then
-                    obj.Enabled = false
-                end
-            end
-            for _, obj in ipairs(game:GetDescendants()) do
-                if obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
-                    obj.Enabled = false
-                elseif obj:IsA("Texture") or obj:IsA("Decal") then
-                    obj.Transparency = 1
-                end
-            end
-            for _, part in ipairs(workspace:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CastShadow = false
-                end
-            end
-        end)
-        print("✅ FPS Boost Applied")
-    end
-})
-
 local showFPS, showPing = true, true
 local fpsText, msText = Drawing.new("Text"), Drawing.new("Text")
 fpsText.Size, fpsText.Position, fpsText.Color, fpsText.Center, fpsText.Outline, fpsText.Visible =
@@ -870,6 +825,48 @@ MiscTab:Toggle({
     Callback = function(val)
         showPing = val
         msText.Visible = val
+    end
+})
+
+MiscTab:Button({
+    Title = "FPS Boost",
+    Callback = function()
+        pcall(function()
+            settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+            local lighting = game:GetService("Lighting")
+            lighting.Brightness = 0
+            lighting.FogEnd = 100
+            lighting.GlobalShadows = false
+            lighting.EnvironmentDiffuseScale = 0
+            lighting.EnvironmentSpecularScale = 0
+            lighting.ClockTime = 14
+            lighting.OutdoorAmbient = Color3.new(0, 0, 0)
+            local terrain = workspace:FindFirstChildOfClass("Terrain")
+            if terrain then
+                terrain.WaterWaveSize = 0
+                terrain.WaterWaveSpeed = 0
+                terrain.WaterReflectance = 0
+                terrain.WaterTransparency = 1
+            end
+            for _, obj in ipairs(lighting:GetDescendants()) do
+                if obj:IsA("PostEffect") or obj:IsA("BloomEffect") or obj:IsA("ColorCorrectionEffect") or obj:IsA("SunRaysEffect") or obj:IsA("BlurEffect") then
+                    obj.Enabled = false
+                end
+            end
+            for _, obj in ipairs(game:GetDescendants()) do
+                if obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
+                    obj.Enabled = false
+                elseif obj:IsA("Texture") or obj:IsA("Decal") then
+                    obj.Transparency = 1
+                end
+            end
+            for _, part in ipairs(workspace:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CastShadow = false
+                end
+            end
+        end)
+        print("✅ FPS Boost Applied")
     end
 })
 
