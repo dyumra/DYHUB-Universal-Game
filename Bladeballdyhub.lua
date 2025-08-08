@@ -2486,6 +2486,44 @@ SkinChangerModule:create_textbox({
 	end
 })
 
+SkinChangerModule:create_dropdown({
+    title = "↓ Skin Type [Case Sensitive] ↓",
+    flag = "skin_dropdown",
+    options = {
+        "Titan's Gleam", "Awakened Titan's Gleam", "Void Hammer", "Awakened Void Hammer",
+        "Righteous Blade", "Awakened Righteous Blade", "Emperor's Axe", "Awakened Emperor's Axe",
+        "Lunar Hammer", "Awakened Lunar Hammer", "Sunburst Axe", "Awakened Sunburst Axe",
+        "Emerald Katana", "Awakened Emerald Katana", "Sky Axe", "Awakened Sky Axe",
+        "Blazing Darkblade", "Awakened Blazing Darkblade", "Anchored Crusher", "Awakened Anchored Crusher",
+        "Crystal Staff", "Awakened Crystal Staff", "Lunar Protector", "Awakened Lunar Protector",
+        "Eggquinox Blade", "Awakened Eggquinox Blade", "Empyreal Blade", "Awakened Empyreal Blade",
+        "Celestial Aegis", "Awakened Celestial Aegis", "Architect", "Awakened Architect",
+        "Subversion", "Awakened Subversion", "Staff of Despair", "Awakened Staff of Despair",
+        "Moral Duality", "Awakened Moral Duality", "Medusa's Wraith", "Awakened Medusa's Wraith",
+        "Winter's Touch", "Awakened Winter's Touch", "Venomweaver", "Awakened Venomweaver",
+        "Hydra's Bane", "Awakened Hydra's Bane", "Periastron's Glory", "Awakened Periastron's Glory",
+        "Bane of Ferocity", "Awakened Bane of Ferocity", "Forgotten Scythe", "Awakened Forgotten Scythe",
+        "Trinity Axe", "Awakened Trinity Axe", "Fabled Sword", "Awakened Fabled Sword",
+        "Ashblade", "Awakened Ashblade", "Nightfall", "Awakened Nightfall",
+        "Ancient Defender", "Awakened Ancient Defender", "Kraken's Wraith", "Awakened Kraken's Wraith",
+        "Cursed Abyss", "Awakened Cursed Abyss", "Megatooth Relic", "Awakened Megatooth Relic",
+        "Phoenix Rebirth", "Awakened Phoenix Rebirth", "Frozen Eternity", "Awakened Frozen Eternity",
+        "Dragon's Wraith", "Awakened Dragon's Wraith", "Kraken's Fury", "Awakened Kraken's Fury",
+        "Ethereal Scythe", "Awakened Ethereal Scythe", "Cybotic Scythe", "Awakened Cybotic Scythe",
+        "Netherfang", "Awakened Netherfang", "Frost Reaper", "Awakened Frost Reaper",
+        "Aurora's Wrath", "Awakened Aurora's Wrath", "Chrono Fang", "Awakened Chrono Fang",
+        "Void Engine Blade", "Awakened Void Engine Blade", "Eclipse Desire", "Awakened Eclipse Desire",
+        "Exo-Godslayer", "Awakened Exo-Godslayer", "Everbloom Fang", "Awakened Everbloom Fang",
+        "Oblivion Scythe", "Awakened Oblivion Scythe", "Mythic Eggclipse", "Awakened Mythic Eggclipse",
+        "Oni's Pact", "Awakened Oni's Pact", "Voltage Edge", "Awakened Voltage Edge"
+    },
+    maximum_options = 999,
+    multi_dropdown = false,
+    callback = function(value)
+        swordName = value
+    end
+})
+
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -2860,4 +2898,5 @@ local VisualizeModule = MicTab:create_module({
 		end
 	end
 })
+
 
