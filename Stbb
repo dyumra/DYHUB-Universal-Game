@@ -335,7 +335,7 @@ local function flushAura()
                 for _, prompt in pairs(workspace:GetDescendants()) do
                     if prompt:IsA("ProximityPrompt") and prompt.ActionText == "Flush" then
                         local dist = (prompt.Parent.Position - hrp.Position).Magnitude
-                        if dist <= 100 then
+                        if dist <= 1000 then
                             pcall(function()
                                 prompt:InputHoldBegin()
                                 task.wait(0.05)
@@ -433,23 +433,23 @@ MainTab:Dropdown({
 })
 
 MainTab:Toggle({
-    Title = "Flush Aura",
-    Default = false,
-    Callback = function(value)
-        flushAuraActive = value
-        if flushAuraActive then
-            flushAura()
-        end
-    end,
-})
-
-MainTab:Toggle({
-    Title = "Auto Farm Flush",
+    Title = "Auto Farm (Op)",
     Default = false,
     Callback = function(value)
         autoFarmActive = value
         if autoFarmActive then
             startAutoFarm()
+        end
+    end,
+})
+
+MainTab:Toggle({
+    Title = "Flush Aura (Beta)",
+    Default = false,
+    Callback = function(value)
+        flushAuraActive = value
+        if flushAuraActive then
+            flushAura()
         end
     end,
 })
