@@ -178,7 +178,7 @@ local function keepModifyProximityPrompts()
                     end
                 end
             end)
-            task.wait(5)
+            task.wait(0.5)
         end
     end)
 end
@@ -376,7 +376,7 @@ local function startAutoSkipHelicopter()
             pcall(function()
                 SkipHelicopterRemote:FireServer()
             end)
-            task.wait(5)
+            task.wait(1)
         end
     end)
 end
@@ -402,7 +402,7 @@ WindUI:Popup({
 repeat task.wait() until Confirmed
 
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB - ST : Blockade Battlefront",
+    Title = "DYHUB - ST : Blockade Battlefront (Beta)",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
@@ -749,9 +749,9 @@ MiscTab:Toggle({
 
 local vibrantEffect = Lighting:FindFirstChild("VibrantEffect") or Instance.new("ColorCorrectionEffect")
 vibrantEffect.Name = "VibrantEffect"
-vibrantEffect.Saturation = 1.5
+vibrantEffect.Saturation = 1
 vibrantEffect.Contrast = 0.4
-vibrantEffect.Brightness = 0.1
+vibrantEffect.Brightness = 0.05
 vibrantEffect.Enabled = false
 vibrantEffect.Parent = Lighting
 
