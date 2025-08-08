@@ -2487,10 +2487,10 @@ SkinChangerModule:create_textbox({
 })
 
 SkinChangerModule:create_dropdown({
-    title = "↓ Skin Type [Case Sensitive] ↓",
+    title = "↓ Skin Type [Dev] ↓",
     flag = "skin_dropdown",
     options = {
-        "Titan's Gleam", "Awakened Titan's Gleam", "Void Hammer", "Awakened Void Hammer",
+        "Base Sword", "Titan's Gleam", "Awakened Titan's Gleam", "Void Hammer", "Awakened Void Hammer",
         "Righteous Blade", "Awakened Righteous Blade", "Emperor's Axe", "Awakened Emperor's Axe",
         "Lunar Hammer", "Awakened Lunar Hammer", "Sunburst Axe", "Awakened Sunburst Axe",
         "Emerald Katana", "Awakened Emerald Katana", "Sky Axe", "Awakened Sky Axe",
@@ -2898,5 +2898,6 @@ local VisualizeModule = MicTab:create_module({
 		end
 	end
 })
+
 
 
