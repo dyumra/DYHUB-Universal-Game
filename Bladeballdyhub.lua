@@ -2898,6 +2898,7 @@ SkinChangerModule:create_dropdown({
         "Base Sword",
         "Serpent",
         "Polar Bear",
+		"Chroma Cards",
         "Penguin"
     },
     maximum_options = 999,
@@ -3281,5 +3282,6 @@ local VisualizeModule = MicTab:create_module({
 		end
 	end
 })
+
 
 
