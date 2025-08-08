@@ -137,6 +137,15 @@ local function equipHeaviestTool()
 end
 
 
+local function EquipAllTools()
+    for _, tool in ipairs(backpack:GetChildren()) do
+        if tool:IsA("Tool") then
+            humanoid:EquipTool(tool)
+            task.wait(0.3)  -- หน่วงเล็กน้อยระหว่างเปลี่ยนเครื่องมือ
+        end
+    end
+    Message("Equip", "Equipped all tools", 3)
+end
 
 -- ฟังก์ชัน Unequip All Tools
 
@@ -240,7 +249,12 @@ ToolsTab:Button({
 
 })
 
+ToolsTab:Button({
 
+    Title = "Equip All",
+
+    Callback = EquipAllTools,
+})
 
 ToolsTab:Button({
 
