@@ -2524,6 +2524,384 @@ SkinChangerModule:create_dropdown({
     end
 })
 
+SkinChangerModule:create_dropdown({
+    title = "↓ Skin Type [Dev] ↓", 
+    flag = "skin_dropdown",
+    options = {
+        "Base Sword",
+        "Ban Hammer",
+        "Chroma Ban Hammer",
+        "Failsafe",
+        "Borealis",
+        "Noob",
+        "Dot",
+        "Celestial Lance",
+        "Midas Thorn",
+        "Dragon Scythe",
+        "Blackhole Gauntlets",
+        "Flowing Fists",
+        "Halberd",
+        "princ2",
+        "Nothing",
+        "BAH",
+        "InceptionTime's Hammer",
+        "Pillar",
+        "Small Sapling",
+        "Skib",
+        "HardRockStick",
+        "Stratocaster Electric Guitar",
+        "Bobber",
+        "Ultimate Ruby",
+        "Pretty Princess Wand",
+        "Princess Fan",
+        "Godsaber",
+        "COAL",
+        "Ancient Cutlass",
+        "Great Axe",
+        "Ancient Spear",
+        "SentinelStaff",
+        "Hallow's Wrath",
+        "Dual Dragonfire Katana",
+        "Witchfire Blade",
+        "Mighty Ninja's Racket",
+        "Pink Warrior's Racket",
+        "Angry Canaries Racket",
+        "Giant Feet Racket",
+        "Mirror Blade",
+        "Flamingo SlayerOLD",
+        "Ice Breaker",
+        "Peppermint Slasher",
+        "Winter's Slicer",
+        "Holly Edge",
+        "New Year's Edge",
+        "Eggscalibur",
+        "Guardian Blade",
+        "Void Slicer",
+        "Quantum Edge",
+        "Zombie Sword",
+        "Vampire Sword",
+        "Yeti Blade",
+        "Crimson Claus",
+        "Elven Spark",
+        "Chrono Slicer",
+        "Phoenix Fang",
+        "Falling Petals Katana",
+        "Blossom Kiss Blade",
+        "Lover's Axe",
+        "Iridescent Stormblade",
+        "Spectral Fang",
+        "Papa Smurf Shield",
+        "Smurf's Hammer",
+        "Link Blade",
+        "Eclipse Fang",
+        "Awakened Onyx Katana",
+        "Barnacle Edge",
+        "Claymore of the Damned",
+        "Regal Radianceblade",
+        "Blight's Bane",
+        "Tide Caller",
+        "Arcane's Blade",
+        "Veil's Descent",
+        "Quantum Blade",
+        "Sundered Skies",
+        "Sunbeam Saber",
+        "Phoenix's Edge",
+        "Griffon's Clasp",
+        "Pulse Blade",
+        "Bronze Shear",
+        "Laser Longsword",
+        "Magic Wand",
+        "giveable apex",
+        "giveable champ",
+        "SpyderSammy",
+        "Color Changing Sword Test",
+        "Titan Blade",
+        "RAPIER_PLACEHOLDER",
+        "blade nil"
+    },
+    maximum_options = 999,
+    multi_dropdown = false,
+    callback = function(value)
+        swordName = value
+    end
+})
+
+SkinChangerModule:create_dropdown({
+    title = "↓ Skin Type [Secret] ↓",
+    flag = "skin_dropdown",
+    options = {
+        "Base Sword", "Titan's Gleam", "Awakened Titan's Gleam", "Void Hammer", "Awakened Void Hammer",
+        "Righteous Blade", "Awakened Righteous Blade", "Emperor's Axe", "Awakened Emperor's Axe",
+        "Lunar Hammer", "Awakened Lunar Hammer", "Sunburst Axe", "Awakened Sunburst Axe",
+        "Emerald Katana", "Awakened Emerald Katana", "Sky Axe", "Awakened Sky Axe",
+        "Blazing Darkblade", "Awakened Blazing Darkblade", "Anchored Crusher", "Awakened Anchored Crusher",
+        "Crystal Staff", "Awakened Crystal Staff", "Lunar Protector", "Awakened Lunar Protector",
+        "Eggquinox Blade", "Awakened Eggquinox Blade", "Empyreal Blade", "Awakened Empyreal Blade",
+        "Celestial Aegis", "Awakened Celestial Aegis", "Architect", "Awakened Architect",
+        "Subversion", "Awakened Subversion", "Staff of Despair", "Awakened Staff of Despair",
+        "Moral Duality", "Awakened Moral Duality", "Medusa's Wraith", "Awakened Medusa's Wraith",
+        "Winter's Touch", "Awakened Winter's Touch", "Venomweaver", "Awakened Venomweaver",
+        "Hydra's Bane", "Awakened Hydra's Bane", "Periastron's Glory", "Awakened Periastron's Glory",
+        "Bane of Ferocity", "Awakened Bane of Ferocity", "Forgotten Scythe", "Awakened Forgotten Scythe",
+        "Trinity Axe", "Awakened Trinity Axe", "Fabled Sword", "Awakened Fabled Sword",
+        "Ashblade", "Awakened Ashblade", "Nightfall", "Awakened Nightfall",
+        "Ancient Defender", "Awakened Ancient Defender", "Kraken's Wraith", "Awakened Kraken's Wraith",
+        "Cursed Abyss", "Awakened Cursed Abyss", "Megatooth Relic", "Awakened Megatooth Relic",
+        "Phoenix Rebirth", "Awakened Phoenix Rebirth", "Frozen Eternity", "Awakened Frozen Eternity",
+        "Dragon's Wraith", "Awakened Dragon's Wraith", "Kraken's Fury", "Awakened Kraken's Fury",
+        "Ethereal Scythe", "Awakened Ethereal Scythe", "Cybotic Scythe", "Awakened Cybotic Scythe",
+        "Netherfang", "Awakened Netherfang", "Frost Reaper", "Awakened Frost Reaper",
+        "Aurora's Wrath", "Awakened Aurora's Wrath", "Chrono Fang", "Awakened Chrono Fang",
+        "Void Engine Blade", "Awakened Void Engine Blade", "Eclipse Desire", "Awakened Eclipse Desire",
+        "Exo-Godslayer", "Awakened Exo-Godslayer", "Everbloom Fang", "Awakened Everbloom Fang",
+        "Oblivion Scythe", "Awakened Oblivion Scythe", "Mythic Eggclipse", "Awakened Mythic Eggclipse",
+        "Oni's Pact", "Awakened Oni's Pact", "Voltage Edge", "Awakened Voltage Edge"
+    },
+    maximum_options = 999,
+    multi_dropdown = false,
+    callback = function(value)
+        swordName = value
+    end
+})
+
+SkinChangerModule:create_dropdown({
+    title = "↓ Skin Type [Code] ↓", 
+    flag = "skin_dropdown_code",
+    options = {
+        "The Nooblade",
+        "Naturic Cutlass",
+        "Hotdog Sword",
+        "Remnant Sword",
+        "Pumpkin PieBlade",
+        "1B Sword",
+        "Ball on a Stick",
+        "Comically Large Flashlight",
+        "Equinox Ball Kebab",
+        "Bubble Wand",
+        "Midas Thorn",
+        "SPARKLERR"
+    },
+    maximum_options = 999,
+    multi_dropdown = false,
+    callback = function(value)
+        swordName = value
+    end
+})
+
+SkinChangerModule:create_dropdown({
+    title = "↓ Skin Type [Exclusive Merch] ↓", 
+    flag = "skin_dropdown_exclusive_merch",
+    options = {
+        "Void Guardian",
+        "Retribution Guitar",
+        "Dragon's Omen",
+        "Starscope Sniper",
+        "Inksoul Brush",
+        "Dual Star Staffs",
+        "Blackhole Sword",
+        "Blackhole Set"
+    },
+    maximum_options = 999,
+    multi_dropdown = false,
+    callback = function(value)
+        swordName = value
+    end
+})
+
+SkinChangerModule:create_dropdown({
+    title = "↓ Skin Type [LTM (Unique)] ↓", 
+    flag = "skin_dropdown_ltm_unique",
+    options = {
+        "Cosmic Starblade",
+        "Frostshard Blade",
+        "Dawnblade",
+        "Revenant's Vow",
+        "Starfall",
+        "Leafsong",
+        "Poseidon's Trident",
+        "Storm Slicer",
+        "Serpent's Katana",
+        "Katana of the Red Flames",
+        "Inferno Scythe",
+        "Flamingo Slayer",
+        "Cybotic Champion",
+        "Futuristic Edge",
+        "Cyber Slasher",
+        "Wraith's Whisper",
+        "Crypt Keeper",
+        "Soulbinder's Edge",
+        "Nightmare Reaver",
+        "Infernal Fang",
+        "Phantom Warrior",
+        "Glacial Fang",
+        "Frostbite Edge",
+        "Winter Sovereign Blade",
+        "Electric Ice Blade",
+        "Aurora Warrior",
+        "Resolution Rumble Champion",
+        "Resolution Rumble Warrior",
+        "Ruby Cutter",
+        "Thorned Coilblade",
+        "Eclipse Backsword",
+        "Runebreaker Staff",
+        "Rose Greatsword",
+        "Ethereal Sovereign",
+        "Chroma Fortune Cleaver",
+        "Mystical Crossbow",
+        "Keyblade",
+        "Spring Championblade",
+        "Electric Sunblade",
+        "Enchanted Backblade",
+        "Pastel Spear",
+        "Tidewither",
+        "Water Bow",
+        "Sundue Slash"
+    },
+    maximum_options = 999,
+    multi_dropdown = false,
+    callback = function(value)
+        swordName = value
+    end
+})
+
+SkinChangerModule:create_dropdown({
+    title = "↓ Skin Type [Ranked Sword (Unique)] ↓", 
+    flag = "skin_dropdown_ranked_sword_unique",
+    options = {
+        "Ranked Season 1 Top 1",
+        "Ranked Season 1 Top 50",
+        "Ranked Season 1 Top 200",
+        "Cyber Cleaveblade",
+        "Ranked Season 2 Top 1",
+        "Ranked Season 2 Top 50",
+        "Ranked Season 2 Top 200",
+        "Azure Thunderbolt",
+        "Ranked Season 3 Top 1",
+        "Ranked Season 3 Top 50",
+        "Ranked Season 3 Top 200",
+        "Champion's Excalibur",
+        "Ranked Season 4 Top 1",
+        "Ranked Season 4 Top 25",
+        "Ranked Season 4 Top 100",
+        "Valor's Rage",
+        "Ranked Season 5 Top 1",
+        "Ranked Season 5 Top 50",
+        "Ranked Season 5 Top 200",
+        "Ranked Season 5 Champion",
+        "Ranked Season 6 Top 1",
+        "Ranked Season 6 Top 50",
+        "Ranked Season 6 Top 200",
+        "Ranked Season 6 Champion",
+        "Ranked Season 7 Top 1",
+        "Ranked Season 7 Top 50",
+        "Ranked Season 7 Top 200",
+        "Ranked Season 7 Champion",
+        "Ranked Season 8 Top 1",
+        "Ranked Season 8 Top 50",
+        "Ranked Season 8 Top 200",
+        "Ranked Season 8 Champion",
+        "Ranked Season 9 Top 1",
+        "Ranked Season 9 Top 50",
+        "Ranked Season 9 Top 200",
+        "Ranked Season 9 Champion",
+        "Ranked Season 10 Top 1",
+        "Ranked Season 10 Top 50",
+        "Ranked Season 10 Top 200",
+        "Ranked Season 10 Champion",
+        "Ranked Season 11 Top 1",
+        "Ranked Season 11 Top 50",
+        "Ranked Season 11 Top 200",
+        "Ranked Season 11 Champion",
+        "Ranked Season 12 Top 1",
+        "Ranked Season 12 Top 50",
+        "Ranked Season 12 Top 200",
+        "Ranked Season 12 Champion",
+        "Ranked Season 13 Champion"
+    },
+    maximum_options = 999,
+    multi_dropdown = false,
+    callback = function(value)
+        swordName = value
+    end
+})
+
+SkinChangerModule:create_dropdown({
+    title = "↓ Skin Type [Top Sword (Unique)] ↓", 
+    flag = "skin_dropdown_top_spender_sword_unique",
+    options = {
+        "Avis Scythe",
+        "The Nooblade",
+        "Flowing Katana",
+        "Santa's Wrecker",
+        "Venom Blade",
+        "Resolution Blade",
+        "Horizon Reaper",
+        "Plasma Beam Blade",
+        "Allseeing Seer",
+        "Blade of the Damned",
+        "Icarus' Scythe",
+        "Mortal's Demise",
+        "Ocean's Fury",
+        "Sandstorm Slasher",
+        "Cybotic Greatsword",
+        "Cyber King's",
+        "Soulreaper's Scythe",
+        "Voidstrike Blade",
+        "Winter's Wrath",
+        "Glacial Blade",
+        "Turkey Slayer",
+        "Gilded Harvest",
+        "Crystal Reaver",
+        "Arctic King's Blade",
+        "New Years Greatsword",
+        "New Years Slicer",
+        "Rose Railgun",
+        "Rose Backsword",
+        "Voidhunter Scythe",
+        "Aethertech Blade",
+        "Amethyst Greatsword",
+        "Poison Ivy",
+        "Voided Greatscythe",
+        "Celestial Spear",
+        "Duet of Destruction",
+        "Melody of Ruin",
+        "Sci Fi Axe",
+        "Sci Fi Blade",
+        "Eternal Autumn",
+        "Harvest Reaper",
+        "Clans King",
+        "Clans Warrior",
+        "Rose Piercer",
+        "Amethyst Slicer",
+        "Chroma Shortaxe",
+        "Opal Staff",
+        "Amethyst Dagger",
+        "Amethyst Blade",
+        "Teal Longsword",
+        "Ice Mage Staff"
+    },
+    maximum_options = 999,
+    multi_dropdown = false,
+    callback = function(value)
+        swordName = value
+    end
+})
+
+SkinChangerModule:create_dropdown({
+    title = "↓ Skin Type [Limited-U] ↓", 
+    flag = "skin_dropdown_limitedu",
+    options = {
+        "Serpent",
+        "Polar Bear",
+        "Penguin"
+    },
+    maximum_options = 999,
+    multi_dropdown = false,
+    callback = function(value)
+        swordName = value
+    end
+})
+
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -2898,6 +3276,3 @@ local VisualizeModule = MicTab:create_module({
 		end
 	end
 })
-
-
-
