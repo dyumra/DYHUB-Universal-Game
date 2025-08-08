@@ -1,0 +1,397 @@
+repeat task.wait() until game:IsLoaded()
+
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local workspace = game.Workspace
+
+local Confirmed = false
+WindUI:Popup({
+    Title = "DYHUB Loaded! - Poop",
+    Icon = "star",
+    IconThemed = true,
+    Content = "DYHUB TEAM - Join us at dsc.gg/dyhub",
+    Buttons = {
+        { Title = "Cancel", Variant = "Secondary", Callback = function() end },
+        { Title = "Continue", Icon = "arrow-right", Callback = function() Confirmed = true end, Variant = "Primary" }
+    }
+})
+repeat task.wait() until Confirmed
+
+local Window = WindUI:CreateWindow({
+    Title = "DYHUB - Poop (Beta)",
+    IconThemed = true,
+    Icon = "star",
+    Author = "DYHUB (dsc.gg/dyhub)",
+    Size = UDim2.fromOffset(600, 400),
+    Transparent = true,
+    Theme = "Dark",
+})
+
+Window:EditOpenButton({
+    Title = "DYHUB - Open",
+    Icon = "monitor",
+    CornerRadius = UDim.new(0, 6),
+    StrokeThickness = 2,
+    Color = ColorSequence.new(Color3.fromRGB(30, 30, 30), Color3.fromRGB(255, 255, 255)),
+    Draggable = true,
+}) 
+
+
+
+local Players = game:GetService("Players")
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local StarterGui = game:GetService("StarterGui")
+
+local workspace = game.Workspace
+
+
+
+local player = Players.LocalPlayer
+
+local character = player.Character or player.CharacterAdded:Wait()
+
+local humanoid = character:WaitForChild("Humanoid")
+
+local backpack = player:WaitForChild("Backpack")
+
+
+
+local poopEvent = ReplicatedStorage:WaitForChild("PoopEvent")
+
+local poopChargeStartEvent = ReplicatedStorage:WaitForChild("PoopChargeStart")
+
+local poopResponseChosenEvent = ReplicatedStorage:WaitForChild("PoopResponseChosen")
+
+
+
+
+
+
+
+
+
+local PoopTab = Window:Tab({ Title = "Main", Icon = "rocket" }) 
+local SellTab = Window:Tab({ Title = "Sell", Icon = "shopping-cart" })
+
+local ToolsTab = Window:Tab({ Title = "Tools", Icon = "package" }) 
+local Tools1Tab = Window:Tab({ Title = "Fling", Icon = "sword" }) 
+local TeleportTab = Window:Tab({ Title = "Teleport", Icon = "map-pin" })
+
+
+
+
+
+local function Message(title, text, duration)
+
+    StarterGui:SetCore("SendNotification", {Title = title, Text = text, Duration = duration})
+
+end
+
+
+
+-- ฟังก์ชัน Equip Heaviest Tool
+
+local function equipHeaviestTool()
+
+    local heaviestTool = nil
+
+    local maxWeight = -1
+
+    for _, tool in ipairs(backpack:GetChildren()) do
+
+        if tool:IsA("Tool") then
+
+            local weightStr = tool.Name:match("%((%d+%.?%d*) lbs%)")
+
+            local weight = tonumber(weightStr)
+
+            if weight and weight > maxWeight then
+
+                maxWeight = weight
+
+                heaviestTool = tool
+
+            end
+
+        end
+
+    end
+
+    if heaviestTool then
+
+        humanoid:EquipTool(heaviestTool)
+
+        Message("Equip", "Equipped "..heaviestTool.Name, 3)
+
+    else
+
+        Message("Equip", "No tool found to equip", 3)
+
+    end
+
+end
+
+
+
+-- ฟังก์ชัน Unequip All Tools
+
+local function unequipAllTools()
+
+    humanoid:UnequipTools()
+
+    Message("Unequip", "All tools unequipped", 3)
+
+end
+
+
+
+-- ฟังก์ชันหา Player ตามชื่อ (ชื่อหรือนิค)
+
+local function GetPlayerByName(name)
+
+    name = name:lower()
+
+    for _, plr in pairs(Players:GetPlayers()) do
+
+        if plr.Name:lower():find(name) or plr.DisplayName:lower():find(name) then
+
+            return plr
+
+        end
+
+    end
+
+    return nil
+
+end
+
+
+
+-- ฟังก์ชัน Fling Target Player (ลดความซับซ้อนแบบง่าย)
+
+local function flingTarget(targetPlayer)
+
+    if not targetPlayer then
+
+        Message("Fling", "Target player not found", 3)
+
+        return
+
+    end
+
+
+
+    local targetChar = targetPlayer.Character
+
+    local targetRoot = targetChar and targetChar:FindFirstChild("HumanoidRootPart")
+
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+
+    if not (targetRoot and rootPart) then
+
+        Message("Fling", "Required parts missing", 3)
+
+        return
+
+    end
+
+
+
+    Message("Fling", "Flinging "..targetPlayer.Name, 3)
+
+
+
+    -- ตัวอย่าง fling แบบง่าย: เคลื่อนตัวเราเข้าใกล้เป้าหมายและดีดออก
+
+    local flingDuration = 2
+
+    local startTime = tick()
+
+    while tick() - startTime < flingDuration do
+
+        rootPart.CFrame = targetRoot.CFrame * CFrame.new(0, 5, 0)
+
+        rootPart.Velocity = Vector3.new(1000, 1000, 1000)
+
+        task.wait()
+
+    end
+
+
+
+    Message("Fling", "Fling finished", 3)
+
+end
+
+
+
+-- สร้าง UI ใน Tab Tools
+
+ToolsTab:Button({
+
+    Title = "Equip Heaviest",
+
+    Callback = equipHeaviestTool,
+
+})
+
+
+
+ToolsTab:Button({
+
+    Title = "Unequip All",
+
+    Callback = unequipAllTools,
+
+})
+
+
+
+local flingTargetName = ""
+
+Tools1Tab:Input({
+
+    Title = "Fling Target Player",
+
+    Placeholder = "Enter player name",
+
+    Callback = function(text)
+
+        flingTargetName = text
+
+    end,
+
+})
+
+
+
+Tools1Tab:Button({
+
+    Title = "Fling Target",
+
+    Callback = function()
+
+        local target = GetPlayerByName(flingTargetName)
+
+        flingTarget(target)
+
+    end,
+
+})
+
+
+
+-- *** ตัวอย่าง Toggle อื่น ๆ ที่เหลือคุณสามารถเติมตามที่เคยได้ ***
+
+
+
+-- ตัวอย่าง Auto-Poop Toggle (ใน PoopTab)
+
+local autoPoopActive = false
+
+PoopTab:Toggle({
+
+    Title = "Auto Poop (Beta)",
+
+    Default = false,
+
+    Callback = function(state)
+
+        autoPoopActive = state
+
+        if autoPoopActive then
+
+            task.spawn(function()
+
+                while autoPoopActive do
+
+                    poopChargeStartEvent:FireServer()
+
+                    poopEvent:FireServer(1)
+
+                    task.wait(0.25) 
+                end
+
+            end)
+
+        end
+
+    end,
+
+})
+
+
+
+-- ตัวอย่าง Auto-Sell Toggle (ใน SellTab)
+
+local autoSellActive = false
+
+local sellDelay = 5
+
+SellTab:Input({
+
+    Title = "Sell Delay (seconds)",
+
+    Placeholder = "5",
+
+    Callback = function(text)
+
+        sellDelay = tonumber(text) or 5
+
+    end,
+
+})
+
+SellTab:Toggle({
+
+    Title = "Auto Sell",
+
+    Default = false,
+
+    Callback = function(state)
+
+        autoSellActive = state
+
+        if autoSellActive then
+
+            task.spawn(function()
+
+                while autoSellActive do
+
+                    poopResponseChosenEvent:FireServer("2. [I want to sell my inventory.]")
+
+                    task.wait(sellDelay)
+
+                end
+
+            end)
+
+        end
+
+    end,
+
+})
+
+TeleportTab:Button({
+
+    Title = "Teleport to Spawn",
+
+    Callback = function()
+
+        local plr = game.Players.LocalPlayer
+
+        if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+
+            plr.Character.HumanoidRootPart.CFrame = CFrame.new(0, 10, 0)
+
+        end
+
+    end
+
+})
+
