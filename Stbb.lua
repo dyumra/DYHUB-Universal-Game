@@ -479,10 +479,10 @@ MainTab:Toggle({
 local CodesTab = Window:Tab({ Title = "Codes", Icon = "bird" })
 
 local redeemCodes = {
-    "Verified",
-    "Scientist",
-    "Sandbox",
-    "Return",
+    "AstroInvasionBegin",
+    "WaveStuckIssue",
+    "50KGroup",
+    "DarkDriveIssue",
     "Digi",
 }
 
