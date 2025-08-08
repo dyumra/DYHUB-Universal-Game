@@ -2668,6 +2668,7 @@ SkinChangerModule:create_dropdown({
     title = "↓ Skin Type [Code] ↓", 
     flag = "skin_dropdown_code",
     options = {
+        "Base Sword",
         "The Nooblade",
         "Naturic Cutlass",
         "Hotdog Sword",
@@ -2692,6 +2693,7 @@ SkinChangerModule:create_dropdown({
     title = "↓ Skin Type [Exclusive Merch] ↓", 
     flag = "skin_dropdown_exclusive_merch",
     options = {
+        "Base Sword",
         "Void Guardian",
         "Retribution Guitar",
         "Dragon's Omen",
@@ -2712,6 +2714,7 @@ SkinChangerModule:create_dropdown({
     title = "↓ Skin Type [LTM (Unique)] ↓", 
     flag = "skin_dropdown_ltm_unique",
     options = {
+        "Base Sword",
         "Cosmic Starblade",
         "Frostshard Blade",
         "Dawnblade",
@@ -2768,6 +2771,7 @@ SkinChangerModule:create_dropdown({
     title = "↓ Skin Type [Ranked Sword (Unique)] ↓", 
     flag = "skin_dropdown_ranked_sword_unique",
     options = {
+        "Base Sword",
         "Ranked Season 1 Top 1",
         "Ranked Season 1 Top 50",
         "Ranked Season 1 Top 200",
@@ -2829,6 +2833,7 @@ SkinChangerModule:create_dropdown({
     title = "↓ Skin Type [Top Sword (Unique)] ↓", 
     flag = "skin_dropdown_top_spender_sword_unique",
     options = {
+        "Base Sword",
         "Avis Scythe",
         "The Nooblade",
         "Flowing Katana",
@@ -2891,6 +2896,7 @@ SkinChangerModule:create_dropdown({
     title = "↓ Skin Type [Limited-U] ↓", 
     flag = "skin_dropdown_limitedu",
     options = {
+        "Base Sword",
         "Serpent",
         "Polar Bear",
         "Penguin"
@@ -3276,3 +3282,4 @@ local VisualizeModule = MicTab:create_module({
 		end
 	end
 })
+
