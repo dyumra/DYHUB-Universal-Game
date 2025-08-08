@@ -2487,7 +2487,7 @@ SkinChangerModule:create_textbox({
 })
 
 SkinChangerModule:create_dropdown({
-    title = "↓ Skin Type [Dev] ↓",
+    title = "↓ Skin Type [Secret] ↓",
     flag = "skin_dropdown",
     options = {
         "Base Sword", "Titan's Gleam", "Awakened Titan's Gleam", "Void Hammer", "Awakened Void Hammer",
@@ -2534,7 +2534,6 @@ SkinChangerModule:create_dropdown({
         "Failsafe",
         "Borealis",
         "Noob",
-        "Dot",
         "Celestial Lance",
         "Midas Thorn",
         "Dragon Scythe",
@@ -3282,4 +3281,5 @@ local VisualizeModule = MicTab:create_module({
 		end
 	end
 })
+
 
