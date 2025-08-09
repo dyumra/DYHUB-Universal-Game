@@ -402,7 +402,7 @@ WindUI:Popup({
 repeat task.wait() until Confirmed
 
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB - ST : Blockade Battlefront (Beta)",
+    Title = "DYHUB - ST : Blockade Battlefront (Version: 2.2)",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
@@ -566,10 +566,9 @@ QuestTab:Button({
     end
 })
 
+local GameTab = Window:Tab({ Title = "Gamepass", Icon = "cookie" })
 local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
 local MiscTab = Window:Tab({ Title = "Misc", Icon = "file-cog" })
-
-local GameTab = Window:Tab({ Title = "Gamepass", Icon = "cookie" })
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
@@ -595,8 +594,11 @@ GameTab:Dropdown({
 GameTab:Button({
     Title = "Unlock Selected Gamepass",
     Callback = function()
-        if not player:FindFirstChild("GachaData") or typeof(player.GachaData) ~= "table" then
-            player.GachaData = {}
+        local gachaData = player:FindFirstChild("GachaData")
+        if not gachaData then
+            gachaData = Instance.new("Folder")
+            gachaData.Name = "GachaData"
+            gachaData.Parent = player
         end
 
         local toUnlock = {}
@@ -610,9 +612,15 @@ GameTab:Button({
             end
         end
 
-        for _, Gamep in ipairs(toUnlock) do
+        for _, gamepassName in ipairs(toUnlock) do
             pcall(function()
-                player.GachaData[Gamep] = true
+                local boolValue = gachaData:FindFirstChild(gamepassName)
+                if not boolValue then
+                    boolValue = Instance.new("BoolValue")
+                    boolValue.Name = gamepassName
+                    boolValue.Parent = gachaData
+                end
+                boolValue.Value = true
                 task.wait(0.2)
             end)
         end
