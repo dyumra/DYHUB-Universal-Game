@@ -1,6 +1,3 @@
--- All Star Tower Defense Advanced GUI Script
--- Professional UI for Script Executors
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
@@ -77,12 +74,12 @@ local function sendWebhook(title, description, color)
     local data = {
         embeds = {
             {
-                title = title or "ASTD Script",
-                description = description or "No description",
+                title = title or "DYHUB | ASTD X",
+                description = description or "DYHUB (dsc.gg/dyhub)",
                 color = color or 3447003,
                 timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
                 footer = {
-                    text = "ASTD Auto Script by " .. player.Name
+                    text = "DYHUB - ASTD X | Execute @" .. player.Name
                 }
             }
         }
@@ -329,7 +326,7 @@ local function createMainGUI()
     end
     
     mainGui = Instance.new("ScreenGui")
-    mainGui.Name = "ASTDAdvancedGUI"
+    mainGui.Name = "DYHUB-ASTDX"
     mainGui.ResetOnSpawn = false
     mainGui.Parent = playerGui
     
@@ -368,7 +365,7 @@ local function createMainGUI()
     titleLabel.Size = UDim2.new(1, -100, 1, 0)
     titleLabel.Position = UDim2.new(0, 15, 0, 0)
     titleLabel.BackgroundTransparency = 1
-    titleLabel.Text = "🌟 All Star Tower Defense - Advanced Script"
+    titleLabel.Text = "DYHUB - ASTD X"
     titleLabel.TextColor3 = Color3.new(1, 1, 1)
     titleLabel.TextScaled = true
     titleLabel.Font = Enum.Font.GothamBold
@@ -955,11 +952,10 @@ function startMainLoop()
 end
 
 -- Initialize GUI
-print("🌟 ASTD Advanced Script Loaded!")
-print("📝 Features: Professional UI, Auto Play, Summoning, Webhook, Stats")
-print("👨‍💻 Created for Script Executors")
+print("🌟 ASTD X Script Loaded!")
 
 createMainGUI()
 
 -- Auto-load notification
+
 sendWebhook("Script Loaded", "ASTD Advanced Script has been loaded successfully! 🚀", 3447003)
