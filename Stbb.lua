@@ -560,10 +560,33 @@ local Lighting = game:GetService("Lighting")
 local QuestTab = Window:Tab({ Title = "Auto Quest", Icon = "sword" })
 
 QuestTab:Button({
-    Title = "Auto Quest (Coming Soon)",
+    Title = "Open Menu (Quest Clock-Man)",
     Callback = function()
-        print("Coming Soon")
-    end
+        local gui = game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("QuestClockManUI")
+        if gui then
+            gui.Enabled = not gui.Enabled
+        end
+    end,
+})
+
+QuestTab:Button({
+    Title = "Open Menu (Quest)",
+    Callback = function()
+        local gui = game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("QuestUI")
+        if gui then
+            gui.Enabled = not gui.Enabled
+        end
+    end,
+})
+
+QuestTab:Button({
+    Title = "Auto Quest (Beta)",
+    Callback = function()
+        autoFarmActive = value
+        if autoFarmActive then
+            startAutoFarm()
+        end
+    end,
 })
 
 local GameTab = Window:Tab({ Title = "Gamepass", Icon = "cookie" })
@@ -623,6 +646,16 @@ GameTab:Button({
                 boolValue.Value = true
                 task.wait(0.2)
             end)
+        end
+    end,
+})
+
+PlayerTab:Button({
+    Title = "Open Menu (Helicopter)",
+    Callback = function()
+        local gui = game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("003-A")
+        if gui then
+            gui.Enabled = not gui.Enabled
         end
     end,
 })
