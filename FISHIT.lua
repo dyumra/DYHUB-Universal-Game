@@ -435,7 +435,6 @@ Library:CreateSlider({
     flag = "SpeedBoostSlider",
     callback = function(value)
         speedValue = value
-        notifyWarn("Player", "Base Speed set to " .. tostring(value))
     end
 })
 
@@ -471,7 +470,6 @@ Library:CreateSlider({
     flag = "JumpPowerSlider",
     callback = function(value)
         jumpPowerValue = value
-        notifyWarn("Player", "Base JumpPower set to " .. tostring(value))
     end
 })
 
@@ -549,6 +547,7 @@ Library:CreateToggle({
     default = false,
     callback = function(state)
         NoclipEnabled = state
+        notifyWarn("Player", "Noclip Enabled")
     end
 })
 
@@ -559,6 +558,7 @@ Library:CreateToggle({
     default = false,
     callback = function(state)
         InfJumpEnabled = state
+        notifyWarn("Player", "Infinite-Jump Enabled")
     end
 })
 
