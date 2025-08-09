@@ -557,24 +557,71 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Lighting = game:GetService("Lighting")
 
--- สร้าง Tab Player และ Misc
+local QuestTab = Window:Tab({ Title = "Auto Quest", Icon = "sword" })
+
+QuestTab:Button({
+    Title = "Auto Quest (Coming Soon)",
+    Callback = function()
+        print("Coming Soon")
+    end
+})
+
 local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
 local MiscTab = Window:Tab({ Title = "Misc", Icon = "file-cog" })
+
+local GameTab = Window:Tab({ Title = "Gamepass", Icon = "cookie" })
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local Gamepasst = {
+    "LuckyBoost",
+    "RareLuckyBoost",
+    "LegendaryLuckyBoost",
+    "All"
+}
+
+local Gamepassts = {}
+
+GameTab:Dropdown({
+    Title = "Select Gamepass",
+    Multi = true,
+    Values = Gamepasst,
+    Callback = function(value)
+        Gamepassts = value or {}
+    end,
+})
+
+GameTab:Button({
+    Title = "Unlock Selected Gamepass",
+    Callback = function()
+        if not player:FindFirstChild("GachaData") or typeof(player.GachaData) ~= "table" then
+            player.GachaData = {}
+        end
+
+        local toUnlock = {}
+
+        for _, v in ipairs(Gamepassts) do
+            if v == "All" then
+                toUnlock = {"LuckyBoost", "RareLuckyBoost", "LegendaryLuckyBoost"}
+                break
+            else
+                table.insert(toUnlock, v)
+            end
+        end
+
+        for _, Gamep in ipairs(toUnlock) do
+            pcall(function()
+                player.GachaData[Gamep] = true
+                task.wait(0.2)
+            end)
+        end
+    end,
+})
 
 -- Player Tab Vars
 getgenv().speedEnabled = false
 getgenv().speedValue = 20
-
-PlayerTab:Toggle({
-    Title = "Enable Speed",
-    Default = false,
-    Callback = function(v)
-        getgenv().speedEnabled = v
-        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-        local hum = char:FindFirstChild("Humanoid")
-        if hum then hum.WalkSpeed = v and getgenv().speedValue or 16 end
-    end
-})
 
 PlayerTab:Slider({
     Title = "Set Speed Value",
@@ -589,19 +636,19 @@ PlayerTab:Slider({
     end
 })
 
-getgenv().jumpEnabled = false
-getgenv().jumpValue = 50
-
 PlayerTab:Toggle({
-    Title = "Enable JumpPower",
+    Title = "Enable Speed",
     Default = false,
     Callback = function(v)
-        getgenv().jumpEnabled = v
+        getgenv().speedEnabled = v
         local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
         local hum = char:FindFirstChild("Humanoid")
-        if hum then hum.JumpPower = v and getgenv().jumpValue or 50 end
+        if hum then hum.WalkSpeed = v and getgenv().speedValue or 16 end
     end
 })
+
+getgenv().jumpEnabled = false
+getgenv().jumpValue = 50
 
 PlayerTab:Slider({
     Title = "Set Jump Value",
@@ -616,10 +663,14 @@ PlayerTab:Slider({
     end
 })
 
-PlayerTab:Button({
-    Title = "Fly (Beta)",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/dyumrascript-/refs/heads/main/Flua"))()
+PlayerTab:Toggle({
+    Title = "Enable JumpPower",
+    Default = false,
+    Callback = function(v)
+        getgenv().jumpEnabled = v
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hum = char:FindFirstChild("Humanoid")
+        if hum then hum.JumpPower = v and getgenv().jumpValue or 50 end
     end
 })
 
@@ -678,6 +729,13 @@ PlayerTab:Toggle({
                 getgenv().infJumpConnection = nil
             end
         end
+    end
+})
+
+PlayerTab:Button({
+    Title = "Fly (Beta)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/dyumrascript-/refs/heads/main/Flua"))()
     end
 })
 
