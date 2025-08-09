@@ -1,0 +1,275 @@
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+_G.AutoFarmEnabled = false
+
+local function createAntiFallPart()
+    local part = Instance.new("Part")
+    part.Name = "AntiFallPart"
+    part.Size = Vector3.new(6, 1, 6)
+    part.Transparency = 1
+    part.Anchored = true
+    part.CanCollide = true
+    part.Parent = workspace
+    return part
+end
+
+local antiFallPart = nil
+local antiFallUpdater = nil
+
+local function startAntiFallUpdater(HRP)
+    if antiFallUpdater then antiFallUpdater:Disconnect() end
+    if not antiFallPart then
+        antiFallPart = createAntiFallPart()
+    end
+    antiFallUpdater = RunService.Heartbeat:Connect(function()
+        if HRP and HRP.Parent then
+            local pos = HRP.Position - Vector3.new(0, 3.5, 0)
+            antiFallPart.CFrame = CFrame.new(pos)
+        else
+            antiFallPart.CFrame = CFrame.new(0, -5000, 0)
+        end
+    end)
+end
+
+local function stopAntiFallUpdater()
+    if antiFallUpdater then
+        antiFallUpdater:Disconnect()
+        antiFallUpdater = nil
+    end
+    if antiFallPart then
+        antiFallPart:Destroy()
+        antiFallPart = nil
+    end
+end
+
+local function smoothMoveTo(HRP, pos, speed)
+    local distance = (HRP.Position - pos).Magnitude
+    local tween = TweenService:Create(HRP, TweenInfo.new(distance / speed, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {CFrame = CFrame.new(pos)})
+    tween:Play()
+    tween.Completed:Wait()
+end
+
+local function safeTeleport(HRP, pos)
+    for i = 1, 10 do
+        if not HRP or not HRP.Parent then break end
+        HRP.CFrame = CFrame.new(HRP.Position:Lerp(pos, i / 10))
+        task.wait(0.1)
+    end
+end
+
+_G.StartAutoFarm = function()
+    while _G.AutoFarmEnabled do
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local HRP = char:WaitForChild("HumanoidRootPart")
+
+        startAntiFallUpdater(HRP)
+
+        local success, err = pcall(function()
+            smoothMoveTo(HRP, Vector3.new(-49.458, 65.89, 408.081), 8000)
+            smoothMoveTo(HRP, Vector3.new(-59.102, 65.665, 8656.818), 500)
+            
+            task.wait(1)
+
+            smoothMoveTo(HRP, Vector3.new(-54.430, -357.643, 9500.155), 400)
+
+            for _ = 1, 5 do
+                safeTeleport(HRP, Vector3.new(-53, -363, 9502))
+                task.wait(9)
+            end
+            task.wait(3)
+
+            workspace.ClaimRiverResultsGold:FireServer()
+            task.wait(1)
+        end)
+
+        if not success or not _G.AutoFarmEnabled then
+            stopAntiFallUpdater()
+            break
+        end
+
+        task.wait(9)
+    end
+end
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "DYHUB"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+local mainFrame = Instance.new("Frame", screenGui)
+mainFrame.Position = UDim2.new(0.4, 0, 0.4, 0)
+mainFrame.Size = UDim2.new(0, 220, 0, 120)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BorderSizePixel = 0
+mainFrame.ClipsDescendants = true
+
+local uiCorner = Instance.new("UICorner", mainFrame)
+uiCorner.CornerRadius = UDim.new(0, 12)
+
+local uiStroke = Instance.new("UIStroke", mainFrame)
+uiStroke.Color = Color3.fromRGB(255, 255, 255)
+uiStroke.Thickness = 1.5
+
+local title = Instance.new("TextLabel", mainFrame)
+title.Size = UDim2.new(1, -40, 0, 40)
+title.Position = UDim2.new(0, 40, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "DYHUB | BABFT"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 16
+title.TextXAlignment = Enum.TextXAlignment.Left
+
+local titleGradient = Instance.new("UIGradient", title)
+titleGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+}
+titleGradient.Rotation = 0
+
+task.spawn(function()
+    while task.wait(0.03) do
+        titleGradient.Rotation = (titleGradient.Rotation + 1) % 360
+    end
+end)
+
+local icon = Instance.new("TextButton", mainFrame)
+icon.Size = UDim2.new(0, 40, 0, 40)
+icon.Position = UDim2.new(0, 0, 0, 0)
+icon.BackgroundTransparency = 1
+icon.Text = "🅳"
+icon.TextColor3 = Color3.fromRGB(255, 255, 255)
+icon.Font = Enum.Font.GothamBold
+icon.TextSize = 20
+icon.TextStrokeTransparency = 0.7
+
+local iconGradient = Instance.new("UIGradient", icon)
+iconGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+}
+iconGradient.Rotation = 0
+
+task.spawn(function()
+    while task.wait(0.03) do
+        iconGradient.Rotation = (iconGradient.Rotation + 1) % 360
+    end
+end)
+
+local autoFarmButton = Instance.new("TextButton", mainFrame)
+autoFarmButton.Position = UDim2.new(0, 10, 0, 50)
+autoFarmButton.Size = UDim2.new(0, 200, 0, 30)
+autoFarmButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+autoFarmButton.Text = "Auto Farm [OFF]"
+autoFarmButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+autoFarmButton.Font = Enum.Font.Gotham
+autoFarmButton.TextSize = 14
+Instance.new("UICorner", autoFarmButton).CornerRadius = UDim.new(0, 8)
+
+autoFarmButton.MouseButton1Click:Connect(function()
+    _G.AutoFarmEnabled = not _G.AutoFarmEnabled
+    autoFarmButton.Text = _G.AutoFarmEnabled and "Auto Farm [ON]" or "Auto Farm [OFF]"
+    if _G.AutoFarmEnabled then
+        task.spawn(_G.StartAutoFarm)
+    else
+        stopAntiFallUpdater()
+    end
+end)
+
+local goldStart = LocalPlayer:WaitForChild("Data"):WaitForChild("Gold").Value
+local goldDisplay = Instance.new("TextLabel", mainFrame)
+goldDisplay.Position = UDim2.new(0, 10, 0, 85)
+goldDisplay.Size = UDim2.new(0, 200, 0, 25)
+goldDisplay.BackgroundTransparency = 1
+goldDisplay.TextColor3 = Color3.fromRGB(255, 255, 255)
+goldDisplay.Font = Enum.Font.Gotham
+goldDisplay.TextSize = 14
+goldDisplay.TextXAlignment = Enum.TextXAlignment.Center
+
+task.spawn(function()
+    while true do
+        local now = LocalPlayer.Data.Gold.Value
+        goldDisplay.Text = "💰 " .. now .. " | +" .. (now - goldStart)
+        task.wait(0.5)
+    end
+end)
+
+local menuVisible = true
+local function toggleMenu()
+    if menuVisible then
+        for _, child in ipairs(mainFrame:GetChildren()) do
+            if child ~= icon and child:IsA("GuiObject") then
+                child.Visible = false
+                child.Active = false
+            end
+        end
+        local tween = TweenService:Create(mainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quad), {
+            Size = UDim2.new(0, 40, 0, 40)
+        })
+        tween:Play()
+        menuVisible = false
+    else
+        local tween = TweenService:Create(mainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quad), {
+            Size = UDim2.new(0, 220, 0, 120)
+        })
+        tween:Play()
+        tween.Completed:Wait()
+        for _, child in ipairs(mainFrame:GetChildren()) do
+            if child ~= icon and child:IsA("GuiObject") then
+                child.Visible = true
+                child.Active = true
+            end
+        end
+        menuVisible = true
+    end
+end
+
+icon.MouseButton1Click:Connect(toggleMenu)
+
+local dragging, dragInput, dragStart, startPos
+local function startDrag(input)
+    dragging = true
+    dragStart = input.Position
+    startPos = mainFrame.Position
+    input.Changed:Connect(function()
+        if input.UserInputState == Enum.UserInputState.End then
+            dragging = false
+        end
+    end)
+end
+
+local function updateDrag(input)
+    if dragging then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end
+
+mainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        startDrag(input)
+    end
+end)
+
+mainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput then
+        updateDrag(input)
+    end
+end)
+
+LocalPlayer.CharacterAdded:Connect(function()
+    if _G.AutoFarmEnabled then
+        task.wait(3.5)
+        task.spawn(_G.StartAutoFarm)
+    end
+end)
