@@ -9,7 +9,7 @@ if getgenv().RunScript == true then return end
 getgenv().RunScript = true
 
 local queueScript = [[
-loadstring(game:HttpGet('https://raw.githubusercontent.com/MQPS7/test/refs/heads/main/t2'))()
+loadstring(game:HttpGet('https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/99nightAutoFarmdyhub.lua'))()
 ]]
 
 queue_on_teleport(queueScript)
