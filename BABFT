@@ -1,105 +1,15 @@
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
 
-_G.AutoFarmEnabled = false
-
-local function createAntiFallPart()
-    local part = Instance.new("Part")
-    part.Name = "AntiFallPart"
-    part.Size = Vector3.new(6, 1, 6)
-    part.Transparency = 1
-    part.Anchored = true
-    part.CanCollide = true
-    part.Parent = workspace
-    return part
-end
-
-local antiFallPart = nil
-local antiFallUpdater = nil
-
-local function startAntiFallUpdater(HRP)
-    if antiFallUpdater then antiFallUpdater:Disconnect() end
-    if not antiFallPart then
-        antiFallPart = createAntiFallPart()
-    end
-    antiFallUpdater = RunService.Heartbeat:Connect(function()
-        if HRP and HRP.Parent then
-            local pos = HRP.Position - Vector3.new(0, 3.5, 0)
-            antiFallPart.CFrame = CFrame.new(pos)
-        else
-            antiFallPart.CFrame = CFrame.new(0, -5000, 0)
-        end
-    end)
-end
-
-local function stopAntiFallUpdater()
-    if antiFallUpdater then
-        antiFallUpdater:Disconnect()
-        antiFallUpdater = nil
-    end
-    if antiFallPart then
-        antiFallPart:Destroy()
-        antiFallPart = nil
-    end
-end
-
-local function smoothMoveTo(HRP, pos, speed)
-    local distance = (HRP.Position - pos).Magnitude
-    local tween = TweenService:Create(HRP, TweenInfo.new(distance / speed, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {CFrame = CFrame.new(pos)})
-    tween:Play()
-    tween.Completed:Wait()
-end
-
-local function safeTeleport(HRP, pos)
-    for i = 1, 10 do
-        if not HRP or not HRP.Parent then break end
-        HRP.CFrame = CFrame.new(HRP.Position:Lerp(pos, i / 10))
-        task.wait(0.1)
-    end
-end
-
-_G.StartAutoFarm = function()
-    while _G.AutoFarmEnabled do
-        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-        local HRP = char:WaitForChild("HumanoidRootPart")
-
-        startAntiFallUpdater(HRP)
-
-        local success, err = pcall(function()
-            smoothMoveTo(HRP, Vector3.new(-49.458, 65.89, 408.081), 8000)
-            smoothMoveTo(HRP, Vector3.new(-59.102, 65.665, 8656.818), 500)
-            
-            task.wait(1)
-
-            smoothMoveTo(HRP, Vector3.new(-54.430, -357.643, 9500.155), 400)
-
-            for _ = 1, 5 do
-                safeTeleport(HRP, Vector3.new(-53, -363, 9502))
-                task.wait(9)
-            end
-            task.wait(3)
-
-            workspace.ClaimRiverResultsGold:FireServer()
-            task.wait(1)
-        end)
-
-        if not success or not _G.AutoFarmEnabled then
-            stopAntiFallUpdater()
-            break
-        end
-
-        task.wait(9)
-    end
-end
-
+-- สร้าง ScreenGui
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "DYHUB"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
+-- สร้าง Frame หลัก
 local mainFrame = Instance.new("Frame", screenGui)
 mainFrame.Position = UDim2.new(0.4, 0, 0.4, 0)
 mainFrame.Size = UDim2.new(0, 220, 0, 120)
@@ -114,6 +24,7 @@ local uiStroke = Instance.new("UIStroke", mainFrame)
 uiStroke.Color = Color3.fromRGB(255, 255, 255)
 uiStroke.Thickness = 1.5
 
+-- Title
 local title = Instance.new("TextLabel", mainFrame)
 title.Size = UDim2.new(1, -40, 0, 40)
 title.Position = UDim2.new(0, 40, 0, 0)
@@ -130,13 +41,13 @@ titleGradient.Color = ColorSequence.new{
     ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
 }
 titleGradient.Rotation = 0
-
 task.spawn(function()
     while task.wait(0.03) do
         titleGradient.Rotation = (titleGradient.Rotation + 1) % 360
     end
 end)
 
+-- Icon
 local icon = Instance.new("TextButton", mainFrame)
 icon.Size = UDim2.new(0, 40, 0, 40)
 icon.Position = UDim2.new(0, 0, 0, 0)
@@ -153,33 +64,13 @@ iconGradient.Color = ColorSequence.new{
     ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
 }
 iconGradient.Rotation = 0
-
 task.spawn(function()
     while task.wait(0.03) do
         iconGradient.Rotation = (iconGradient.Rotation + 1) % 360
     end
 end)
 
-local autoFarmButton = Instance.new("TextButton", mainFrame)
-autoFarmButton.Position = UDim2.new(0, 10, 0, 50)
-autoFarmButton.Size = UDim2.new(0, 200, 0, 30)
-autoFarmButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-autoFarmButton.Text = "Auto Farm [OFF]"
-autoFarmButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-autoFarmButton.Font = Enum.Font.Gotham
-autoFarmButton.TextSize = 14
-Instance.new("UICorner", autoFarmButton).CornerRadius = UDim.new(0, 8)
-
-autoFarmButton.MouseButton1Click:Connect(function()
-    _G.AutoFarmEnabled = not _G.AutoFarmEnabled
-    autoFarmButton.Text = _G.AutoFarmEnabled and "Auto Farm [ON]" or "Auto Farm [OFF]"
-    if _G.AutoFarmEnabled then
-        task.spawn(_G.StartAutoFarm)
-    else
-        stopAntiFallUpdater()
-    end
-end)
-
+-- TextLabel แสดงจำนวนทอง
 local goldStart = LocalPlayer:WaitForChild("Data"):WaitForChild("Gold").Value
 local goldDisplay = Instance.new("TextLabel", mainFrame)
 goldDisplay.Position = UDim2.new(0, 10, 0, 85)
@@ -198,11 +89,108 @@ task.spawn(function()
     end
 end)
 
+-- ฟังก์ชันวางแพลตฟอร์มและตำแหน่งเดิน
+local positions = {
+    Vector3.new(-62, 67, 1363),
+    Vector3.new(-65, 58, 2135),
+    Vector3.new(-52, 73, 2903),
+    Vector3.new(-58, 76, 3672),
+    Vector3.new(-60, 80, 4445),
+    Vector3.new(-55, 73, 5217),
+    Vector3.new(-53, 64, 5984),
+    Vector3.new(-63, 63, 6751),
+    Vector3.new(-50, 28, 7527),
+    Vector3.new(-104, 37, 8298),
+    Vector3.new(-57, -358, 9491)
+}
+
+local function platformExistsAt(pos)
+    for _, part in ipairs(workspace:GetChildren()) do
+        if part:IsA("Part") and part.Name == "TeleportPlatform" then
+            if (part.Position - Vector3.new(pos.X, pos.Y - 3, pos.Z)).Magnitude < 0.1 then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+local function placePlatform(pos)
+    if platformExistsAt(pos) then return end
+
+    local platform = Instance.new("Part")
+    platform.Size = Vector3.new(10, 1, 10)
+    platform.Position = Vector3.new(pos.X, pos.Y - 3, pos.Z)
+    platform.Anchored = true
+    platform.CanCollide = true
+    platform.Material = Enum.Material.SmoothPlastic
+    platform.BrickColor = BrickColor.new("Bright red")
+    platform.Name = "TeleportPlatform"
+    platform.Parent = workspace
+
+    local surfaceGui = Instance.new("SurfaceGui")
+    surfaceGui.Face = Enum.NormalId.Top
+    surfaceGui.Adornee = platform
+    surfaceGui.Parent = platform
+
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = "DYHUB"  -- เปลี่ยนข้อความตรงนี้
+    textLabel.TextColor3 = Color3.fromRGB(0, 0, 0) -- สีแดงสด
+    textLabel.TextScaled = true
+    textLabel.Font = Enum.Font.SourceSansBold
+    textLabel.Parent = surfaceGui
+end
+
+-- ตัวแปรสถานะการทำงาน
+local isRunning = false
+
+-- ฟังก์ชันทำ AutoFarm loop
+local function runLoop()
+    while isRunning do
+        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hrp = character:WaitForChild("HumanoidRootPart")
+
+        for _, pos in ipairs(positions) do
+            if not isRunning then break end
+            placePlatform(pos)
+            hrp.CFrame = CFrame.new(pos)
+            task.wait(1)
+        end
+
+        task.wait(16) -- cooldown
+    end
+end
+
+-- ปุ่ม START/STOP
+local startButton = Instance.new("TextButton", mainFrame)
+startButton.Position = UDim2.new(0, 10, 0, 50)
+startButton.Size = UDim2.new(0, 200, 0, 30)
+startButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40) -- สีเขียวเริ่มต้น
+startButton.Text = "Auto Farm [OFF]"
+startButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+startButton.TextScaled = true
+Instance.new("UICorner", startButton).CornerRadius = UDim.new(0, 8)
+
+startButton.MouseButton1Click:Connect(function()
+    isRunning = not isRunning
+    if isRunning then
+        startButton.Text = "Auto Farm [ON]"
+        startButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        task.spawn(runLoop)
+    else
+        startButton.Text = "Auto Farm [OFF]"
+        startButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    end
+end)
+
+-- toggle menu ซ่อน/แสดง
 local menuVisible = true
 local function toggleMenu()
     if menuVisible then
         for _, child in ipairs(mainFrame:GetChildren()) do
-            if child ~= icon and child:IsA("GuiObject") then
+            if child ~= icon and child ~= startButton and child:IsA("GuiObject") then
                 child.Visible = false
                 child.Active = false
             end
@@ -219,7 +207,7 @@ local function toggleMenu()
         tween:Play()
         tween.Completed:Wait()
         for _, child in ipairs(mainFrame:GetChildren()) do
-            if child ~= icon and child:IsA("GuiObject") then
+            if child ~= icon and child ~= startButton and child:IsA("GuiObject") then
                 child.Visible = true
                 child.Active = true
             end
@@ -230,6 +218,7 @@ end
 
 icon.MouseButton1Click:Connect(toggleMenu)
 
+-- ระบบลาก GUI
 local dragging, dragInput, dragStart, startPos
 local function startDrag(input)
     dragging = true
@@ -264,12 +253,5 @@ end)
 UserInputService.InputChanged:Connect(function(input)
     if input == dragInput then
         updateDrag(input)
-    end
-end)
-
-LocalPlayer.CharacterAdded:Connect(function()
-    if _G.AutoFarmEnabled then
-        task.wait(3.5)
-        task.spawn(_G.StartAutoFarm)
     end
 end)
