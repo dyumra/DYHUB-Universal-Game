@@ -1,4 +1,4 @@
--- Credit check
+-- ตรวจเครดิตก่อนทำงาน
 if getgenv().DYHUBTHEBEST ~= "Join our (dsc.gg/dyhub)" then
     game.Players.LocalPlayer:Kick("Delete Credit?")
     return
@@ -8,7 +8,7 @@ local plr = game:GetService("Players").LocalPlayer
 
 -- Apply Technique
 game:GetService("ReplicatedStorage"):WaitForChild("SetTechnique"):FireServer(
-    "None",
+    getgenv().DYHUBTECHNIQUEOLD or "None",
     getgenv().DYHUBTECHNIQUE,
     1,
     0.001
@@ -16,7 +16,7 @@ game:GetService("ReplicatedStorage"):WaitForChild("SetTechnique"):FireServer(
 
 -- Apply Clan
 game:GetService("ReplicatedStorage"):WaitForChild("SetClan"):FireServer(
-    "None",
+    getgenv().DYHUBCLANOLD or "None",
     getgenv().DYHUBCLAN,
     1,
     0.001
@@ -24,8 +24,8 @@ game:GetService("ReplicatedStorage"):WaitForChild("SetClan"):FireServer(
 
 -- Apply Race
 game:GetService("ReplicatedStorage"):WaitForChild("SetRace"):FireServer(
+    getgenv().DYHUBRACEOLD or "None",
     getgenv().DYHUBRACE,
-    "Curse Manipulation",
     1,
     0.001
 )
@@ -39,7 +39,7 @@ if not traitVal then
 end
 traitVal.Value = getgenv().DYHUBTRAIT
 
--- Create Gamepass Folder
+-- Create Gamepass Folder & BoolValues
 if getgenv().DYHUBGAMEPASS == true then
     local gpFolder = plr:FindFirstChild("OwnedGamepassFolder")
     if not gpFolder then
