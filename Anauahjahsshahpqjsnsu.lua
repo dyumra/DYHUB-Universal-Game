@@ -4,7 +4,7 @@ local DYHUB_1_ReplicatedStorage = game:GetService("ReplicatedStorage")
 local DYHUB_1_LocalPlayer = DYHUB_1_Players.LocalPlayer
 local PlayerGui = DYHUB_1_LocalPlayer:WaitForChild("PlayerGui")
 
-task.delay(8, function()
+task.delay(10, function()
     local screenGui = Instance.new("ScreenGui")
     screenGui.Name = "AntiCheatWarning"
     screenGui.Parent = PlayerGui
@@ -25,7 +25,7 @@ task.delay(8, function()
     message.Position = UDim2.new(0.5, 0, 0.5, 0)
 end)
 
-task.delay(10, function()
+task.delay(17, function()
     DYHUB_1_LocalPlayer:Kick("You have been detected by the Anti-Cheat system. Please refrain from such actions in the future. Failure to comply will result in a permanent ban.")
 end)
 
