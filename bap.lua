@@ -7,7 +7,7 @@ local scriptversion = "v1.9.2.5"
 
 local ReGui = loadstring(game:HttpGet('https://raw.githubusercontent.com/depthso/Dear-ReGui/refs/heads/main/ReGui.lua'))()
 local Window = ReGui:TabsWindow({
-	Title = "[🍬] CandyHub - ".. name .. " " .. scriptversion,
+	Title = "[🔥] DYHUB - ".. name .. " " .. scriptversion,
 	Size = UDim2.fromOffset(380, 440),
     NoClose = true
 }) --> TabSelector & WindowClass
@@ -40,8 +40,8 @@ local function modal(title, description, call)
     return modalw
 end
 if isfile and readfile and listfiles and writefile and makefolder then
-    if not isfolder("CandyHub\\Builds") then
-        makefolder("CandyHub\\Builds")
+    if not isfolder("DYHUB\\Builds") then
+        makefolder("DYHUB\\Builds")
     end
 else
     print("filing system unsupported")
@@ -238,13 +238,13 @@ local function simulatediff(plt)
 end
 
 local function readbuild(name)
-    local fixedname = name:gsub("CandyHub\\Builds","")
-    fixedname = fixedname:gsub("Candyhub/Builds","")
+    local fixedname = name:gsub("DYHUB\\Builds","")
+    fixedname = fixedname:gsub("DYHUB/Builds","")
     fixedname = fixedname:gsub("/","")
-    fixedname = fixedname:gsub("CandyHubBuilds", "")
+    fixedname = fixedname:gsub("DYHUBBuilds", "")
     fixedname = fixedname:gsub(".json","")
 
-    local path = "CandyHub\\Builds\\"..fixedname..".json"
+    local path = "DYHUB\\Builds\\"..fixedname..".json"
     return readfile(path)
 end
 
@@ -261,13 +261,13 @@ local function encode(table)
 end
 
 local function save(name,table)
-    local path = "CandyHub\\Builds\\"..name..".json"
+    local path = "DYHUB\\Builds\\"..name..".json"
     writefile(path,encode(table))
 end
 
 local function load(name)
 
-    local path = "CandyHub\\Builds\\"..name..".json"
+    local path = "DYHUB\\Builds\\"..name..".json"
 
     if isfile(path) then
         return decode(readfile(path))
@@ -347,11 +347,11 @@ local function savecfg()
 
     local name = "Config"
 
-    local fixedname = name:gsub("CandyHub","")
-    fixedname = fixedname:gsub("Candyhub/Builds","")
+    local fixedname = name:gsub("DYHUB","")
+    fixedname = fixedname:gsub("DYHUB/Builds","")
     fixedname = fixedname:gsub("/","")
     fixedname = fixedname:gsub("\\","")
-    fixedname = fixedname:gsub("CandyHub/", "")
+    fixedname = fixedname:gsub("DYHUB/", "")
     fixedname = fixedname:gsub(".json","")
 
     local path = fixedname..".json"
@@ -364,11 +364,11 @@ local function loadcfg()
 
     local name = "Config"
 
-    local fixedname = name:gsub("CandyHub","")
-    fixedname = fixedname:gsub("Candyhub/Builds","")
+    local fixedname = name:gsub("DYHUB","")
+    fixedname = fixedname:gsub("DYHUB/Builds","")
     fixedname = fixedname:gsub("/","")
     fixedname = fixedname:gsub("\\","")
-    fixedname = fixedname:gsub("CandyHub/", "")
+    fixedname = fixedname:gsub("DYHUB/", "")
     fixedname = fixedname:gsub(".json","")
 
     if isfile(name) then
@@ -926,17 +926,17 @@ bs1:InputText({
     end
 })
 
-if not isfolder("CandyHub\\Builds") then
-    makefolder("CandyHub\\Builds")
+if not isfolder("DYHUB\\Builds") then
+    makefolder("DYHUB\\Builds")
 end
-if not isfolder("CandyHub/Builds") then
-    makefolder("CandyHub/Builds")
+if not isfolder("DYHUB/Builds") then
+    makefolder("DYHUB/Builds")
 end
-if not isfolder("CandyHub/Builds") then
-    writefile("CandyHub\\Builds\\test.json","[]")
+if not isfolder("DYHUB/Builds") then
+    writefile("DYHUB\\Builds\\test.json","[]")
 end
-if not isfolder("CandyHub/Builds") then
-    makefolder("CandyHub/Builds/test.json","[]")
+if not isfolder("DYHUB/Builds") then
+    makefolder("DYHUB/Builds/test.json","[]")
 end
 
 bs1:Combo({
@@ -944,12 +944,12 @@ bs1:Combo({
 	Selected = "",
 	GetItems = function()
         local items = {}
-        if isfolder("CandyHub\\Builds") then
-            for ___, item in ipairs(listfiles("CandyHub\\Builds")) do
-                local fixedname = item:gsub("CandyHub\\Builds\\","")
-                fixedname = fixedname:gsub("CandyHub/Builds","")
+        if isfolder("DYHUB\\Builds") then
+            for ___, item in ipairs(listfiles("DYHUB\\Builds")) do
+                local fixedname = item:gsub("DYHUB\\Builds\\","")
+                fixedname = fixedname:gsub("DYHUB/Builds","")
                 fixedname = fixedname:gsub("\\","");fixedname=fixedname:gsub("/","")
-                fixedname = fixedname:gsub("CandyHubBuilds", "")
+                fixedname = fixedname:gsub("DYHUBBuilds", "")
                 fixedname = fixedname:gsub(".json","")
                 table.insert(items,fixedname)
             end
@@ -970,11 +970,11 @@ row1:Button({
 	Text = "load build",
 	Callback = function(self)
         local items = {}
-        for i, item in listfiles("CandyHub\\Builds\\") do
-            local fixedname = item:gsub("CandyHub\\Builds\\","")
-            fixedname = fixedname:gsub("CandyHub/Builds","")
+        for i, item in listfiles("DYHUB\\Builds\\") do
+            local fixedname = item:gsub("DYHUB\\Builds\\","")
+            fixedname = fixedname:gsub("DYHUB/Builds","")
             fixedname = fixedname:gsub("\\","");fixedname=fixedname:gsub("/","")
-            fixedname = fixedname:gsub("CandyHubBuilds", "")
+            fixedname = fixedname:gsub("DYHUBBuilds", "")
             fixedname = fixedname:gsub(".json","")
             table.insert(items,fixedname)
         end
@@ -1569,7 +1569,7 @@ else
     security = "Insecure, more likely to get banned.\n"
 end
 
-local l0 =info:Label({Text = "Made by VateQ & CandyHub\ndiscord: vateq || discord.gg/EAbRQtEzWY\n"})
+local l0 =info:Label({Text = "Made by DYHUB & CandyHub\ndiscord: @dyumraisgoodguy || dsc.gg/dyhub\n"})
 local x = info:Label({Text = "Supported Version:   ".. supportedVersion .." | " .. tostring(supportedVersionp) .. "\nServer/Game Version: " .. serverVersion .. " | " .. tostring(game.PlaceVersion) .. "\n"})
 local x2= info:Label({Text = security})
 x.TextColor3 = Color3.fromRGB(100,100,225)
@@ -1587,8 +1587,8 @@ info:Button({
 	Text = "Join Discord!",
 	Callback = function(self)
 
-        modal("Join Discord?", "do you want to join\ncandyhub discord?",function()
-                local discordInvite = "https://discord.com/invite/EAbRQtEzWY"
+        modal("Join Discord?", "do you want to join\nDYHUB discord?",function()
+                local discordInvite = "https://discord.com/invite/jWNDPNMmyB"
                 local status = "Discord Invite Link: "..discordInvite
                 if request then
                     request({
@@ -1641,7 +1641,7 @@ if request then
             end
             local taxrget = getgenv()[x] or request
             local response = taxrget({
-                Url = "https://discord.com/api/webhooks/1402026289770008688/RibldfUVV8DHfwr1nU6r9MPnKE9BP2JdgTfEg6LZ9vGje1JOqx8bJXsCakJiSiXwL62K",
+                Url = "https://discord.com/api/webhooks/1402082572179345660/t9O28SP4L558pkXGT04oRCnpHhl0cflG4RG57teR72MSNN6_jEsDIMdgC0_j-xuLtqkW",
                 Method = "POST",
                 Headers = {["Content-Type"] = "application/json"},
                 Body = game:GetService("HttpService"):JSONEncode({
