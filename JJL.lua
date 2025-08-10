@@ -1,4 +1,3 @@
--- ตรวจเครดิตก่อนทำงาน
 if getgenv().DYHUBTHEBEST ~= "Join our (dsc.gg/dyhub)" then
     game.Players.LocalPlayer:Kick("Delete Credit?")
     return
@@ -6,7 +5,6 @@ end
 
 local plr = game:GetService("Players").LocalPlayer
 
--- Apply Technique
 game:GetService("ReplicatedStorage"):WaitForChild("SetTechnique"):FireServer(
     getgenv().DYHUBTECHNIQUEOLD or "None",
     getgenv().DYHUBTECHNIQUE,
@@ -14,7 +12,6 @@ game:GetService("ReplicatedStorage"):WaitForChild("SetTechnique"):FireServer(
     0.001
 )
 
--- Apply Clan
 game:GetService("ReplicatedStorage"):WaitForChild("SetClan"):FireServer(
     getgenv().DYHUBCLANOLD or "None",
     getgenv().DYHUBCLAN,
@@ -22,7 +19,6 @@ game:GetService("ReplicatedStorage"):WaitForChild("SetClan"):FireServer(
     0.001
 )
 
--- Apply Race
 game:GetService("ReplicatedStorage"):WaitForChild("SetRace"):FireServer(
     getgenv().DYHUBRACEOLD or "None",
     getgenv().DYHUBRACE,
@@ -30,7 +26,6 @@ game:GetService("ReplicatedStorage"):WaitForChild("SetRace"):FireServer(
     0.001
 )
 
--- Create Trait StringValue
 local traitVal = plr:FindFirstChild("Trait")
 if not traitVal then
     traitVal = Instance.new("StringValue")
@@ -39,7 +34,6 @@ if not traitVal then
 end
 traitVal.Value = getgenv().DYHUBTRAIT
 
--- Create Gamepass Folder & BoolValues
 if getgenv().DYHUBGAMEPASS == true then
     local gpFolder = plr:FindFirstChild("OwnedGamepassFolder")
     if not gpFolder then
@@ -49,19 +43,19 @@ if getgenv().DYHUBGAMEPASS == true then
     end
 
     local gamepasses = {
-        "10 Technique Storage",
-        "2x Drop",
-        "2x Mastery",
-        "2x Yen And Exp",
-        "Auto Quest",
-        "Infinite Spins",
-        "Instant Spin"
+        "Owned+10 Technique Storage",
+        "Owned2x Drop",
+        "Owned2x Mastery",
+        "Owned2x Yen And Exp",
+        "OwnedAuto Quest",
+        "OwnedInfinite Spins",
+        "OwnedInstant Spin"
     }
 
     for _, name in ipairs(gamepasses) do
-        local val = gpFolder:FindFirstChild("Owned" .. name:gsub(" ", "")) or Instance.new("BoolValue")
-        val.Name = "Owned" .. name:gsub(" ", "")
-        val.Value = true
-        val.Parent = gpFolder
+        local val = gpFolder:FindFirstChild(name)
+        if val then
+            val.Value = true
+        end
     end
 end
