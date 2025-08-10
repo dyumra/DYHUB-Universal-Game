@@ -2,11 +2,32 @@ local DYHUB_1_Players = game:GetService("Players")
 local DYHUB_1_ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local DYHUB_1_LocalPlayer = DYHUB_1_Players.LocalPlayer
+local PlayerGui = DYHUB_1_LocalPlayer:WaitForChild("PlayerGui")
 
-if DYHUB_1_LocalPlayer.Name ~= "Yolmar_43" then
-    DYHUB_1_LocalPlayer:Kick("This script is purchased from (dsc.gg/dyhub)")
-    return
-end
+task.delay(8, function()
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "AntiCheatWarning"
+    screenGui.Parent = PlayerGui
+    screenGui.ResetOnSpawn = false
+
+    local message = Instance.new("TextLabel")
+    message.Size = UDim2.new(1, 0, 1, 0)
+    message.BackgroundTransparency = 1
+    message.Text = "Detected Cheater"
+    message.TextColor3 = Color3.new(1, 0, 0)
+    message.TextScaled = true
+    message.Font = Enum.Font.SourceSansBold
+    message.TextStrokeColor3 = Color3.new(0, 0, 0)
+    message.TextStrokeTransparency = 0.5
+    message.TextWrapped = true
+    message.Parent = screenGui
+    message.AnchorPoint = Vector2.new(0.5, 0.5)
+    message.Position = UDim2.new(0.5, 0, 0.5, 0)
+end)
+
+task.delay(10, function()
+    DYHUB_1_LocalPlayer:Kick("You have been detected by the Anti-Cheat system. Please refrain from such actions in the future. Failure to comply will result in a permanent ban.")
+end)
 
 local DYHUB_1_UnlockData = DYHUB_1_LocalPlayer:WaitForChild("UnlockData")
 local DYHUB_1_PlayableCharacter = DYHUB_1_ReplicatedStorage:WaitForChild("PlayableCharacter")
@@ -38,3 +59,4 @@ end)
 DYHUB_1_PlayableCharacter.ChildRemoved:Connect(function(DYHUB_1_Child)
     DYHUB_1_Remove(DYHUB_1_Child.Name)
 end)
+
