@@ -46,12 +46,12 @@ if _G.NotificationSound then
 Library:SetDPIScale(85)
 
 local Window = Library:CreateWindow({
-    Title = "Forsake",
+    Title = "DYHUB",
     Center = true,
     AutoShow = true,
     Resizable = true,
-    Footer = "Omega X Article Hub Version: 1.0.5",
-	Icon = 125448486325517,
+    Footer = "DYHUB @ Free Version - Forsaken (dsc.gg/dyhub)",
+	Icon = 86730141841188,
 	AutoLock = true,
     ShowCustomCursor = true,
     NotifySide = "Right",
