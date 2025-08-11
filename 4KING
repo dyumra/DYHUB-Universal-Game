@@ -1,0 +1,75 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local DYHUB_1 = ReplicatedStorage.GiveItemAll
+
+local itemName = ""
+local itemAmount = 0
+
+local function GiveItem(name, amount)
+    DYHUB_1:FireServer(name, amount)
+end
+
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+local Confirmed = false
+WindUI:Popup({
+    Title = "Nigga Script Loader",
+    Icon = "user",
+    IconThemed = true,
+    Content = "By กูเอง",
+    Buttons = {
+        { Title = "Cancel", Variant = "Secondary", Callback = function() end },
+        { Title = "Continue", Icon = "arrow-right", Callback = function() Confirmed = true end, Variant = "Primary" }
+    }
+})
+repeat task.wait() until Confirmed
+
+local Window = WindUI:CreateWindow({
+    Title = "สคริปพ่องตาย",
+    IconThemed = true,
+    Icon = "user",
+    Author = "By กูเอง",
+    Size = UDim2.fromOffset(600, 400),
+    Transparent = true,
+    Theme = "Dark",
+})
+
+Window:EditOpenButton({
+    Title = "เปิด UI ไอควาย",
+    Icon = "monitor",
+    CornerRadius = UDim.new(0, 6),
+    StrokeThickness = 2,
+    Color = ColorSequence.new(Color3.fromRGB(30, 30, 30), Color3.fromRGB(255, 255, 255)),
+    Draggable = true,
+})
+
+-- Tabs
+local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
+
+mainTab:Input({
+    Title = "ชื่อของ",
+    Placeholder = "เขียนชื่อไอเทมนะจุ",
+    Callback = function(text)
+        itemName = text
+    end,
+})
+
+mainTab:Input({
+    Title = "จำนวน",
+    Placeholder = "จำนวนที่ต้องการฮือ",
+    Callback = function(text)
+        itemAmount = tonumber(text) or 0
+    end,
+})
+
+mainTab:Button({
+    Title = "เสก",
+    Icon = "gift",
+    Callback = function()
+        if itemName ~= "" and itemAmount > 0 then
+            GiveItem(itemName, itemAmount)
+            print("[NIGGA] Given", itemAmount, itemName)
+        else
+            print("[NIGGA] Please enter a valid item name and amount")
+        end
+    end,
+})
