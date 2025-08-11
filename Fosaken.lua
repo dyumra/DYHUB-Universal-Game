@@ -50,7 +50,7 @@ local Window = Library:CreateWindow({
     Center = true,
     AutoShow = true,
     Resizable = true,
-    Footer = "DYHUB @ Free Version - Forsaken (dsc.gg/dyhub)",
+    Footer = "DYHUB @ Premium - Forsaken (dsc.gg/dyhub)",
 	Icon = 86730141841188,
 	AutoLock = true,
     ShowCustomCursor = true,
@@ -97,15 +97,15 @@ end
 end)
 
 Main1Group:AddToggle("Inf Stamina", {
-    Text = "Inf Stamina",
+    Text = "Infinite Stamina",
     Default = false, 
     Callback = function(Value) 
 _G.InfStamina = Value
 while _G.InfStamina do
 local staminaModule = require(game.ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Character"):WaitForChild("Game"):WaitForChild("Sprinting"))
 if staminaModule then
-    staminaModule.MaxStamina = 999999
-    staminaModule.Stamina = 999999
+    staminaModule.MaxStamina = 69696969
+    staminaModule.Stamina = 69696969
     staminaModule.__staminaChangedEvent:Fire(staminaModule.Stamina)
 end
 task.wait()
@@ -815,7 +815,7 @@ MenuGroup:AddToggle("KeybindMenuOpen", {Default = false, Text = "Open Keybind Me
 MenuGroup:AddToggle("ShowCustomCursor", {Text = "Custom Cursor", Default = true, Callback = function(Value) Library.ShowCustomCursor = Value end})
 MenuGroup:AddDivider()
 MenuGroup:AddLabel("Menu bind"):AddKeyPicker("MenuKeybind", {Default = "RightShift", NoUI = true, Text = "Menu keybind"})
-_G.LinkJoin = loadstring(game:HttpGet("https://pastefy.app/2LKQlhQM/raw"))()
+_G.LinkJoin = loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Detail/refs/heads/main/Info"))()
 MenuGroup:AddButton("Copy Link Discord", function()
     if setclipboard then
         setclipboard(_G.LinkJoin["Discord"])
@@ -823,18 +823,18 @@ MenuGroup:AddButton("Copy Link Discord", function()
     else
         Library:Notify("Discord link: ".._G.LinkJoin["Discord"], 10)
     end
-end):AddButton("Copy Link Zalo", function()
+end):AddButton("Copy Link DYHUB", function()
     if setclipboard then
-        setclipboard(_G.LinkJoin["Zalo"])
-        Library:Notify("Copied Zalo link to clipboard!")
+        setclipboard(_G.LinkJoin["DYHUB"])
+        Library:Notify("Copied DYHUB link to clipboard!")
     else
-        Library:Notify("Zalo link: ".._G.LinkJoin["Zalo"], 10)
+        Library:Notify("DYHUB link: ".._G.LinkJoin["DYHUB"], 10)
     end
 end)
 MenuGroup:AddButton("Unload", function() Library:Unload() end)
-CreditsGroup:AddLabel("AmongUs - Python / Dex / Script", true)
-CreditsGroup:AddLabel("Giang Hub - Script / Dex", true)
-CreditsGroup:AddLabel("Vu - Script / Dex", true)
+CreditsGroup:AddLabel("DYHUB - Python / Dex / Script / Visual Code", true)
+CreditsGroup:AddLabel("HUIOPN - Scripter / Dex / Fixed", true)
+CreditsGroup:AddLabel("XAVIER - Scripter / Dex / Tester", true)
 
 Info:AddLabel("Counter [ "..game:GetService("LocalizationService"):GetCountryRegionForPlayerAsync(game.Players.LocalPlayer).." ]", true)
 Info:AddLabel("Executor [ "..identifyexecutor().." ]", true)
@@ -850,7 +850,7 @@ Info:AddButton("Copy JobId", function()
 end)
 
 Info:AddInput("Join Job", {
-    Default = "Nah",
+    Default = "Put JobID in here",
     Numeric = false,
     Text = "Join Job",
     Placeholder = "UserJobId",
