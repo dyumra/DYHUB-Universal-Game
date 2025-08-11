@@ -1,5 +1,11 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local DYHUB_1 = ReplicatedStorage.GiveItemAll
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = Players.LocalPlayer
+local reviveEvent = ReplicatedStorage:WaitForChild("ReviveSystem"):WaitForChild("Event")
+
+local autoRespawn = false
 
 local itemName = ""
 local itemAmount = 0
@@ -44,6 +50,7 @@ Window:EditOpenButton({
 
 -- Tabs
 local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
+local FTab = Window:Tab({ Title = "Feature", Icon = "sword" })
 
 MainTab:Input({
     Title = "ชื่อของ",
@@ -72,4 +79,37 @@ MainTab:Button({
             print("[NIGGA] Please enter a valid item name and amount")
         end
     end,
+})
+
+FTab:Toggle({
+    Title = "เกิดเอง อัตโนมัติ",
+    Default = false,
+    Callback = function(state)
+        autoRespawn = state
+        if autoRespawn then
+            spawn(function()
+                while autoRespawn do
+                    local args = {
+                        "Respawn",
+                        player
+                    }
+                    reviveEvent:FireServer(unpack(args))
+                    wait(3)
+                end
+            end)
+        end
+    end
+})
+
+FTab:Button({
+    Title = "เกิดเอง",
+    Icon = "gift",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local args = {
+            "Respawn",
+            player
+        }
+        game.ReplicatedStorage:WaitForChild("ReviveSystem"):WaitForChild("Event"):FireServer(unpack(args))
+    end
 })
