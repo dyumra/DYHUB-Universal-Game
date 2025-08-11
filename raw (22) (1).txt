@@ -1,0 +1,3683 @@
+-- Wait for game to fully load
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
+-- Load libraries with error handling
+local Fluent, SaveManager, InterfaceManager
+
+local success1, result1 = pcall(function()
+    return loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+end)
+if success1 then
+    Fluent = result1
+end
+
+local success2, result2 = pcall(function()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+end)
+if success2 then
+    SaveManager = result2
+end
+
+local success3, result3 = pcall(function()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+end)
+if success3 then
+    InterfaceManager = result3
+end
+
+-- Services
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Notification System
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "GlassmorphismNotifications"
+screenGui.Parent = playerGui
+screenGui.ResetOnSpawn = false
+screenGui.DisplayOrder = 999
+
+local notifContainer = Instance.new("Frame")
+notifContainer.Name = "NotificationContainer"
+notifContainer.Size = UDim2.new(0, 400, 1, 0)
+notifContainer.Position = UDim2.new(1, -420, 0, 20)
+notifContainer.BackgroundTransparency = 1
+notifContainer.Parent = screenGui
+
+local notifLayout = Instance.new("UIListLayout")
+notifLayout.Parent = notifContainer
+notifLayout.SortOrder = Enum.SortOrder.LayoutOrder
+notifLayout.Padding = UDim.new(0, 12)
+notifLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+
+local notificationCount = 0
+local activeNotifications = {}
+
+-- Function to create glassmorphism effect
+local function createGlassmorphismFrame()
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, 0, 0, 80)
+    frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    frame.BackgroundTransparency = 0.2
+    frame.BorderSizePixel = 0
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 16)
+    corner.Parent = frame
+    
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.fromRGB(255, 68, 68)
+    stroke.Thickness = 2
+    stroke.Transparency = 0.3
+    stroke.Parent = frame
+    
+    local gradient = Instance.new("UIGradient")
+    gradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 40, 40)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(25, 25, 25)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(15, 15, 15))
+    }
+    gradient.Rotation = 45
+    gradient.Parent = frame
+    
+    return frame
+end
+
+-- Function to create notification content
+local function createNotificationContent(frame, title, content)
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Name = "Title"
+    titleLabel.Size = UDim2.new(1, -60, 0, 25)
+    titleLabel.Position = UDim2.new(0, 20, 0, 12)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Text = title
+    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    titleLabel.TextSize = 16
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.TextYAlignment = Enum.TextYAlignment.Center
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.Parent = frame
+    
+    local contentLabel = Instance.new("TextLabel")
+    contentLabel.Name = "Content"
+    contentLabel.Size = UDim2.new(1, -60, 0, 35)
+    contentLabel.Position = UDim2.new(0, 20, 0, 35)
+    contentLabel.BackgroundTransparency = 1
+    contentLabel.Text = content
+    contentLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    contentLabel.TextSize = 13
+    contentLabel.TextXAlignment = Enum.TextXAlignment.Left
+    contentLabel.TextYAlignment = Enum.TextYAlignment.Top
+    contentLabel.TextWrapped = true
+    contentLabel.Font = Enum.Font.Gotham
+    contentLabel.Parent = frame
+    
+    local closeButton = Instance.new("TextButton")
+    closeButton.Name = "CloseButton"
+    closeButton.Size = UDim2.new(0, 30, 0, 30)
+    closeButton.Position = UDim2.new(1, -40, 0, 10)
+    closeButton.BackgroundTransparency = 1
+    closeButton.Text = "X"
+    closeButton.TextColor3 = Color3.fromRGB(255, 68, 68)
+    closeButton.TextSize = 16
+    closeButton.Font = Enum.Font.GothamBold
+    closeButton.Parent = frame
+    
+    return closeButton
+end
+
+-- Function to animate notification appearance
+local function animateNotificationIn(frame)
+    local titleLabel = frame:FindFirstChild("Title")
+    local contentLabel = frame:FindFirstChild("Content")
+    local closeButton = frame:FindFirstChild("CloseButton")
+    
+    frame.Position = UDim2.new(1, 100, 0, 0)
+    frame.Size = UDim2.new(1, 0, 0, 0)
+    frame.BackgroundTransparency = 1
+    
+    local stroke = frame:FindFirstChild("UIStroke")
+    if stroke then stroke.Transparency = 1 end
+    if titleLabel then titleLabel.TextTransparency = 1 end
+    if contentLabel then contentLabel.TextTransparency = 1 end
+    if closeButton then closeButton.TextTransparency = 1 end
+    
+    local expandTween = TweenService:Create(frame,
+        TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        {Size = UDim2.new(1, 0, 0, 80)}
+    )
+    
+    local slideInTween = TweenService:Create(frame,
+        TweenInfo.new(0.8, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+        {Position = UDim2.new(0, 0, 0, 0)}
+    )
+    
+    local fadeTween = TweenService:Create(frame,
+        TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
+        {BackgroundTransparency = 0.2}
+    )
+    
+    expandTween:Play()
+    task.spawn(function()
+        task.wait(0.1)
+        slideInTween:Play()
+        fadeTween:Play()
+    end)
+    
+    if stroke then
+        task.spawn(function()
+            task.wait(0.2)
+            local strokeTween = TweenService:Create(stroke,
+                TweenInfo.new(0.5, Enum.EasingStyle.Sine),
+                {Transparency = 0.3}
+            )
+            strokeTween:Play()
+        end)
+    end
+    
+    task.spawn(function()
+        task.wait(0.4)
+        if titleLabel then
+            TweenService:Create(titleLabel, TweenInfo.new(0.5, Enum.EasingStyle.Sine), {TextTransparency = 0}):Play()
+        end
+        task.wait(0.1)
+        if contentLabel then
+            TweenService:Create(contentLabel, TweenInfo.new(0.5, Enum.EasingStyle.Sine), {TextTransparency = 0}):Play()
+        end
+        task.wait(0.1)
+        if closeButton then
+            TweenService:Create(closeButton, TweenInfo.new(0.5, Enum.EasingStyle.Sine), {TextTransparency = 0}):Play()
+        end
+    end)
+end
+
+-- Function to animate notification disappearance
+local function animateNotificationOut(frame, callback)
+    local stroke = frame:FindFirstChild("UIStroke")
+    local titleLabel = frame:FindFirstChild("Title")
+    local contentLabel = frame:FindFirstChild("Content")
+    local closeButton = frame:FindFirstChild("CloseButton")
+    
+    if titleLabel then
+        TweenService:Create(titleLabel, TweenInfo.new(0.3, Enum.EasingStyle.Sine), {TextTransparency = 1}):Play()
+    end
+    if contentLabel then
+        TweenService:Create(contentLabel, TweenInfo.new(0.3, Enum.EasingStyle.Sine), {TextTransparency = 1}):Play()
+    end
+    if closeButton then
+        TweenService:Create(closeButton, TweenInfo.new(0.3, Enum.EasingStyle.Sine), {TextTransparency = 1}):Play()
+    end
+    
+    if stroke then
+        task.spawn(function()
+            task.wait(0.2)
+            TweenService:Create(stroke, TweenInfo.new(0.4, Enum.EasingStyle.Sine), {Transparency = 1}):Play()
+        end)
+    end
+    
+    local slideOutTween = TweenService:Create(frame,
+        TweenInfo.new(0.7, Enum.EasingStyle.Quart, Enum.EasingDirection.In),
+        {
+            Position = UDim2.new(1, 100, frame.Position.Y.Scale, frame.Position.Y.Offset),
+            BackgroundTransparency = 1
+        }
+    )
+    
+    local shrinkTween = TweenService:Create(frame,
+        TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.In),
+        {Size = UDim2.new(1, 0, 0, 0)}
+    )
+    
+    task.spawn(function()
+        task.wait(0.3)
+        slideOutTween:Play()
+        
+        slideOutTween.Completed:Connect(function()
+            shrinkTween:Play()
+            shrinkTween.Completed:Connect(function()
+                if callback then callback() end
+                frame:Destroy()
+            end)
+        end)
+    end)
+end
+
+-- Main notification function
+local function createNotif(title, content, duration)
+    duration = duration or 5
+    notificationCount = notificationCount + 1
+    
+    local notifFrame = createGlassmorphismFrame()
+    notifFrame.Name = "Notification_" .. notificationCount
+    notifFrame.LayoutOrder = notificationCount
+    notifFrame.Parent = notifContainer
+    
+    local closeButton = createNotificationContent(notifFrame, title, content)
+    
+    table.insert(activeNotifications, notifFrame)
+    animateNotificationIn(notifFrame)
+    
+    local function removeNotification()
+        for i, notif in ipairs(activeNotifications) do
+            if notif == notifFrame then
+                table.remove(activeNotifications, i)
+                break
+            end
+        end
+        animateNotificationOut(notifFrame)
+    end
+    
+    closeButton.MouseButton1Click:Connect(removeNotification)
+    
+    task.spawn(function()
+        task.wait(duration)
+        if notifFrame and notifFrame.Parent then
+            removeNotification()
+        end
+    end)
+    
+    return notifFrame
+end
+
+-- Welcome notification
+createNotif("Viper", "Welcome to 99 Nights in the Forest Enjoy the Freemium Scripts!", 10)
+
+-- Check if essential components loaded
+if not Fluent then
+    warn("Failed to load Fluent library")
+    return
+end
+
+-- Create Fluent window
+local Window = Fluent:CreateWindow({
+    Title = "99 Nights in the forest | by Viper",
+    SubTitle = "",
+    TabWidth = 100,
+    Size = UDim2.fromOffset(540, 460),
+    Acrylic = true,
+    Theme = "Darker",
+    MinimizeKey = Enum.KeyCode.LeftControl
+})
+
+-- Tabs (assuming Window is defined elsewhere)
+local Tabs = {
+    Main = Window:AddTab({ Title = "Main", Icon = "diamond" }), 
+    PlayerMisc = Window:AddTab({ Title = "PlayerMisc", Icon = "user" }),
+    Esp = Window:AddTab({ Title = "Esp", Icon = "eye" }),
+    Vision = Window:AddTab({ Title = "Vision", Icon = "focus" }),
+    Info = Window:AddTab({ Title = "Info", Icon = "info" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
+}
+
+-- Services (add these if not already defined in main)
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local workspace = game:GetService("Workspace")
+
+-- Player reference
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+-- Variables
+local teleportedItems = {}
+
+-- Character references
+local char = player.Character or player.CharacterAdded:Wait()
+local hrp = char:WaitForChild("HumanoidRootPart")
+
+-- Update character reference when it respawns
+player.CharacterAdded:Connect(function(newChar)
+    char = newChar
+    hrp = char:WaitForChild("HumanoidRootPart")
+    teleportedItems = {} -- Reset when character respawns
+end)
+
+-- ESP Variables
+local BunnyESPEnabled = false
+local WolfESPEnabled = false
+local DeerESPEnabled = false
+local TeammatesESPEnabled = false
+local BearESPEnabled = false
+local ChildrenESPEnabled = false
+local CultistESPEnabled = false
+local AlphaWolfESPEnabled = false
+local PolarBearESPEnabled = false
+
+-- ESP Storage
+local bunnyESPObjects = {}
+local wolfESPObjects = {}
+local deerESPObjects = {}
+local teammateESPObjects = {}
+local bearESPObjects = {}
+local childrenESPObjects = {}
+local cultistESPObjects = {}
+local alphaWolfESPObjects = {}
+local polarBearESPObjects = {}
+
+local isGetChildrenActive = false
+
+-- PLAYER MISC VARIABLES (add these with your other variables at the top)
+local speedValue = 16 -- Default Roblox speed
+local isSpeedApplied = false
+local isNoclipEnabled = false
+local isInfiniteJumpEnabled = false
+local noclipConnection = nil
+local jumpConnection = nil
+local humanoid = nil
+local rootPart = nil
+
+-- Disable CampFire Effect Variables
+local disableCampFireEffect = false
+local originalBloom = nil
+local originalColorCorrection = nil
+
+-- FullBrights Variables  
+local fullBrightsEnabled = false
+local originalBrightness = nil
+local originalAmbient = nil
+
+-- Disable Sky Effect Variables
+local disableSkyEffect = false
+local originalSky = nil
+
+-- Disable Fog Variables
+local disableFogEffect = false
+local originalFog = nil
+local originalSmoke = nil
+
+-- Simple AutoLogs Script (No Toggle)
+local Players = game:GetService("Players")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+
+local player = Players.LocalPlayer
+
+print("Window and Tabs loaded successfully")
+
+-- UTILITY FUNCTIONS
+local function safeDestroy(object)
+    if object and typeof(object) == "Instance" and object.Parent then
+        pcall(function()
+            object:Destroy()
+        end)
+    end
+end
+
+local function safeDisconnect(connection)
+    if connection and typeof(connection) == "RBXScriptConnection" then
+        pcall(function()
+            connection:Disconnect()
+        end)
+    end
+end
+
+-- ESP CLEANUP FUNCTIONS
+local function cleanupBunnyESP(bunnyModel)
+    if bunnyESPObjects[bunnyModel] then
+        local espData = bunnyESPObjects[bunnyModel]
+        
+        safeDestroy(espData.billboard)
+        safeDestroy(espData.highlight)
+        
+        if espData.line and Drawing then
+            pcall(function()
+                espData.line:Remove()
+            end)
+        end
+        
+        safeDisconnect(espData.connection)
+        bunnyESPObjects[bunnyModel] = nil
+    end
+end
+
+local function cleanupWolfESP(wolfModel)
+    if wolfESPObjects[wolfModel] then
+        local espData = wolfESPObjects[wolfModel]
+        
+        safeDestroy(espData.billboard)
+        safeDestroy(espData.highlight)
+        
+        if espData.line and Drawing then
+            pcall(function()
+                espData.line:Remove()
+            end)
+        end
+        
+        safeDisconnect(espData.connection)
+        wolfESPObjects[wolfModel] = nil
+    end
+end
+
+local function cleanupDeerESP(deerHead)
+    if deerESPObjects[deerHead] then
+        local espData = deerESPObjects[deerHead]
+        
+        safeDestroy(espData.billboard)
+        safeDestroy(espData.highlight)
+        
+        if espData.line and Drawing then
+            pcall(function()
+                espData.line:Remove()
+            end)
+        end
+        
+        safeDisconnect(espData.connection)
+        deerESPObjects[deerHead] = nil
+    end
+end
+
+local function cleanupTeammateESP(targetPlayer)
+    if teammateESPObjects[targetPlayer] then
+        local espData = teammateESPObjects[targetPlayer]
+        
+        safeDestroy(espData.billboard)
+        safeDestroy(espData.highlight)
+        
+        if espData.line and Drawing then
+            pcall(function()
+                espData.line:Remove()
+            end)
+        end
+        
+        safeDisconnect(espData.connection)
+        safeDisconnect(espData.charConnection)
+        teammateESPObjects[targetPlayer] = nil
+    end
+end
+
+local function cleanupBearESP(bearModel)
+    if bearESPObjects[bearModel] then
+        local espData = bearESPObjects[bearModel]
+        
+        safeDestroy(espData.billboard)
+        safeDestroy(espData.highlight)
+        
+        if espData.line and Drawing then
+            pcall(function()
+                espData.line:Remove()
+            end)
+        end
+        
+        safeDisconnect(espData.connection)
+        bearESPObjects[bearModel] = nil
+    end
+end
+
+-- CHILDREN ESP CLEANUP FUNCTION
+local function cleanupChildrenESP(childModel)
+    if childrenESPObjects[childModel] then
+        local espData = childrenESPObjects[childModel]
+        
+        safeDestroy(espData.billboard)
+        safeDestroy(espData.highlight)
+        
+        if espData.line and Drawing then
+            pcall(function()
+                espData.line:Remove()
+            end)
+        end
+        
+        safeDisconnect(espData.connection)
+        childrenESPObjects[childModel] = nil
+    end
+end
+
+-- CULTIST ESP CLEANUP FUNCTION
+local function cleanupCultistESP(cultistModel)
+    if cultistESPObjects[cultistModel] then
+        local espData = cultistESPObjects[cultistModel]
+        
+        safeDestroy(espData.billboard)
+        safeDestroy(espData.highlight)
+        
+        if espData.line and Drawing then
+            pcall(function()
+                espData.line:Remove()
+            end)
+        end
+        
+        safeDisconnect(espData.connection)
+        cultistESPObjects[cultistModel] = nil
+    end
+end
+
+-- ALPHA WOLF ESP CLEANUP FUNCTION
+local function cleanupAlphaWolfESP(alphaWolfModel)
+    if alphaWolfESPObjects[alphaWolfModel] then
+        local espData = alphaWolfESPObjects[alphaWolfModel]
+        
+        safeDestroy(espData.billboard)
+        safeDestroy(espData.highlight)
+        
+        if espData.line and Drawing then
+            pcall(function()
+                espData.line:Remove()
+            end)
+        end
+        
+        safeDisconnect(espData.connection)
+        alphaWolfESPObjects[alphaWolfModel] = nil
+    end
+end
+
+-- POLAR BEAR ESP CLEANUP FUNCTION
+local function cleanupPolarBearESP(polarBearModel)
+    if polarBearESPObjects[polarBearModel] then
+        local espData = polarBearESPObjects[polarBearModel]
+        
+        safeDestroy(espData.billboard)
+        safeDestroy(espData.highlight)
+        
+        if espData.line and Drawing then
+            pcall(function()
+                espData.line:Remove()
+            end)
+        end
+        
+        safeDisconnect(espData.connection)
+        polarBearESPObjects[polarBearModel] = nil
+    end
+end
+
+local function executeSmallTreeAndLogs()
+    -- Teleport Small Trees
+    local treesCount = teleportSmallTreesToPlayer()
+    
+    -- Start log teleportation if not already active
+    if not isLogTeleportActive then
+        isLogTeleportActive = true
+        
+        -- Stop any existing connection
+        if logTeleportHeartbeat then
+            logTeleportHeartbeat:Disconnect()
+        end
+        
+        -- Start new heartbeat connection
+        logTeleportHeartbeat = RunService.Heartbeat:Connect(teleportLogsToPlayer)
+    end
+    
+    -- Provide feedback
+    if treesCount > 0 then
+        createNotif("Viper", "Teleported " .. treesCount .. " Small Trees + Auto Logs activated!", 3)
+    else
+        createNotif("Viper", "No Small Trees found, but Auto Logs activated!", 3)
+    end
+end
+
+-- GetAllLoots Button
+local GetAllLootsButton = Tabs.Main:AddButton({
+    Title = "GetLoots",
+    Callback = function()
+        createNotif("Viper", "Collecting all items...", 3)
+        
+        -- Ensure we have valid character and HRP
+        if not char or not char.Parent or not hrp or not hrp.Parent then
+            char = player.Character
+            if char then
+                hrp = char:FindFirstChild("HumanoidRootPart")
+            end
+            if not hrp then
+                createNotif("Error", "Character not found!", 3)
+                return
+            end
+        end
+        
+        local itemsCollected = 0
+        
+        -- Check workspace.Items folder
+        local itemsFolder = workspace:FindFirstChild("Items")
+        if itemsFolder then
+            for _, obj in pairs(itemsFolder:GetChildren()) do
+                if obj and obj.Parent then
+                    local success = false
+                    local randomOffset = CFrame.new(
+                        math.random(-5, 5), 
+                        -2, 
+                        math.random(-6, -2)
+                    )
+                    
+                    if obj:IsA("BasePart") then
+                        success = pcall(function()
+                            obj.CFrame = hrp.CFrame * randomOffset
+                        end)
+                    elseif obj:IsA("Model") then
+                        local mainPart = obj.PrimaryPart or obj:FindFirstChildOfClass("BasePart")
+                        if mainPart then
+                            success = pcall(function()
+                                if obj.PrimaryPart then
+                                    obj:SetPrimaryPartCFrame(hrp.CFrame * randomOffset)
+                                else
+                                    mainPart.CFrame = hrp.CFrame * randomOffset
+                                end
+                            end)
+                        end
+                    end
+                    
+                    if success then
+                        itemsCollected = itemsCollected + 1
+                    end
+                end
+            end
+        end
+        
+        createNotif("Viper", "Collected " .. itemsCollected .. " items!", 3)
+    end
+})
+
+-- AutoFarmLogs Toggle for Main Tab
+local autoFarmLogsToggle = Tabs.Main:AddToggle("AutoFarmLogsToggle", {
+    Title = "AutoFarmLogs",
+    Description = "Equip your Axe First",
+    Default = false
+})
+
+-- Services
+local Players = game:GetService("Players")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local autoFarmEnabled = false
+local originalPosition
+local clickConnection
+
+-- Variables for click timing
+local lastClickTime = 0
+local clickDelay = 0.3
+
+-- Function to simulate click on SPRINT button
+local function simulateClick()
+    if not autoFarmEnabled then return end
+    
+    local currentTime = tick()
+    if currentTime - lastClickTime < clickDelay then return end
+    
+    local camera = workspace.CurrentCamera
+    local viewportSize = camera.ViewportSize
+    
+    -- Click on the very edge of the screen (far right side)
+    local clickX = viewportSize.X - 10 -- 10 pixels from right edge
+    local clickY = viewportSize.Y * 0.75  -- 75% from top (bottom area)
+    
+    -- Simulate left mouse click on Sprint button
+    VirtualInputManager:SendMouseButtonEvent(clickX, clickY, 0, true, game, 0)
+    VirtualInputManager:SendMouseButtonEvent(clickX, clickY, 0, false, game, 0)
+    
+    lastClickTime = currentTime
+end
+
+-- Function to teleport player to air and anchor
+local function teleportToAirAndAnchor()
+    local character = player.Character
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        -- Save original position
+        originalPosition = character.HumanoidRootPart.CFrame
+        
+        -- Teleport to air (HIGHER)
+        local airPosition = character.HumanoidRootPart.Position + Vector3.new(0, 350, 0)
+        character.HumanoidRootPart.CFrame = CFrame.new(airPosition)
+        wait(0.5)
+        
+        -- Anchor player
+        character.HumanoidRootPart.Anchored = true
+        createNotif("AutoFarmLogs", "Please dont do Anything or touch", 2)
+        return true
+    end
+    return false
+end
+
+-- SIMPLE: Just unanchor and restore - NO DELAYS
+local function unanchorPlayer()
+    local character = player.Character
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        character.HumanoidRootPart.Anchored = false
+        if originalPosition then
+            character.HumanoidRootPart.CFrame = originalPosition
+        end
+        createNotif("AutoFarmLogs", "AutoFarm Done", 2)
+    end
+end
+
+-- IMPROVED tree teleportation - check both Landmarks AND Foliage
+local function teleportAllTreesToPlayer()
+    
+    local character = player.Character
+    if not (character and character:FindFirstChild("HumanoidRootPart")) then
+        createNotif("AutoFarmLogs", "Player character not found!", 3)
+        return false
+    end
+    
+    local playerPos = character.HumanoidRootPart.Position
+    local treesFound = 0
+    
+    -- Check workspace structure
+    if not workspace:FindFirstChild("Map") then
+        createNotif("AutoFarmLogs", "Your not in the game!", 3)
+        return false
+    end
+    
+    -- Function to teleport trees from a folder
+    local function teleportTreesFromFolder(folder, folderName)
+        if not folder then return 0 end
+        local count = 0
+        
+        for i, item in pairs(folder:GetChildren()) do
+            -- Check if it's a SMALL tree only (filter out big trees with trunks)
+            local isSmallTree = false
+            
+            if item.Name == "Small Tree" and item:IsA("Model") then
+                isSmallTree = true
+            elseif item:IsA("Model") then
+                -- Check if it has leaves but NO trunk (small trees only)
+                local hasLeaves = item:FindFirstChild("Leaves") ~= nil
+                local hasTrunk = item:FindFirstChild("Trunk") ~= nil or item:FindFirstChild("trunk") ~= nil
+                local hasWood = item:FindFirstChild("Wood") ~= nil
+                
+                -- Only include if it has leaves/wood but NO trunk (small trees)
+                if (hasLeaves or hasWood) and not hasTrunk then
+                    isSmallTree = true
+                end
+            end
+            
+            if isSmallTree then
+                count = count + 1
+                
+                -- Teleport tree to player position with random offset
+                local targetPosition = Vector3.new(
+                    playerPos.X + math.random(-3, 3),
+                    playerPos.Y - 5, -- Slightly below player
+                    playerPos.Z + math.random(-3, 3)
+                )
+                
+                -- SIMPLE teleport - just move the whole tree
+                pcall(function()
+                    if item.PrimaryPart then
+                        item:SetPrimaryPartCFrame(CFrame.new(targetPosition))
+                    else
+                        -- Move all parts to the target position
+                        local mainPart = item:FindFirstChildOfClass("BasePart")
+                        if mainPart then
+                            local offset = targetPosition - mainPart.Position
+                            for _, part in pairs(item:GetDescendants()) do
+                                if part:IsA("BasePart") then
+                                    part.CFrame = part.CFrame + offset
+                                end
+                            end
+                        end
+                    end
+                end)
+                
+                wait(0.05) -- Fast teleporting
+            end
+        end
+        
+        if count > 0 then
+    createNotif("AutoFarmLogs", "Wait! " .. count .. " " .. folderName, 1)
+        end
+        return count
+    end
+    
+    -- Check both Landmarks and Foliage folders
+    if workspace.Map:FindFirstChild("Landmarks") then
+        treesFound = treesFound + teleportTreesFromFolder(workspace.Map.Landmarks, "Landmarks")
+    end
+    
+    if workspace.Map:FindFirstChild("Foliage") then
+        treesFound = treesFound + teleportTreesFromFolder(workspace.Map.Foliage, "Foliage")
+    end
+    
+    createNotif("AutoFarmLogs", "AutoFarm Start" .. treesFound .. " Equip your Axe", 3)
+    return treesFound > 0
+end
+
+-- Teleport ALL LOGS to PLAYER
+local function teleportAllLogsToPlayer()
+    createNotif("AutoFarmLogs", "Wait.", 2)
+    
+    local character = player.Character
+    if not (character and character:FindFirstChild("HumanoidRootPart")) then
+        createNotif("AutoFarmLogs", "Player not found!", 3)
+        return false
+    end
+    
+    local playerPos = character.HumanoidRootPart.Position
+    local logsFound = 0
+    
+    if not workspace:FindFirstChild("Items") then
+        createNotif("AutoFarmLogs", "Your not in the game?", 3)
+        return false
+    end
+    
+    for i, item in pairs(workspace.Items:GetChildren()) do
+        if item:FindFirstChild("Meshes/log_Cylinder") then
+            logsFound = logsFound + 1
+            
+            -- Teleport logs directly to player with small offset
+            local logPosition = Vector3.new(
+                playerPos.X + math.random(-4, 4),
+                playerPos.Y + 1, -- Slightly above player
+                playerPos.Z + math.random(-4, 4)
+            )
+            
+            -- Move the log properly
+            pcall(function()
+                if item.PrimaryPart then
+                    item:SetPrimaryPartCFrame(CFrame.new(logPosition))
+                else
+                    local mainPart = item:FindFirstChildOfClass("BasePart")
+                    if mainPart then
+                        local offset = logPosition - mainPart.Position
+                        for _, part in pairs(item:GetChildren()) do
+                            if part:IsA("BasePart") then
+                                part.CFrame = part.CFrame + offset
+                            end
+                        end
+                    end
+                end
+            end)
+            
+            wait(0.03)
+        end
+    end
+    
+    createNotif("AutoFarmLogs", "Collected " .. logsFound .. " Logs from AutoLogFarm", 3)
+    return logsFound > 0
+end
+
+-- FIXED: Simple toggle with instant unanchoring
+autoFarmLogsToggle:OnChanged(function(Value)
+    autoFarmEnabled = Value
+    
+    if autoFarmEnabled then
+        -- STARTING THE FARM
+        createNotif("AutoFarmLogs", "AutoFarm Started", 2)
+        
+        -- Step 1: Teleport to air and anchor
+        if teleportToAirAndAnchor() then
+            wait(1)
+            
+            -- Step 2: Teleport trees
+            if teleportAllTreesToPlayer() then
+                wait(2)
+                
+                -- Step 3: Start clicking - FIXED VERSION
+                clickConnection = RunService.Heartbeat:Connect(function()
+                    if autoFarmEnabled then
+                        simulateClick() -- No wait() here!
+                    end
+                end)
+            end
+        end
+        
+    else
+        -- STOPPING THE FARM - SIMPLE AND FAST
+        createNotif("AutoFarmLogs", "AutoFarm Stopped!", 2)
+        
+        -- Step 1: Stop clicking
+        if clickConnection then
+            clickConnection:Disconnect()
+            clickConnection = nil
+        end
+        
+        -- Step 2: Unanchor player IMMEDIATELY
+        unanchorPlayer()
+        
+        -- Step 3: THEN collect logs after a tiny delay
+        spawn(function()
+            wait(0.5) -- Just half second
+            teleportAllLogsToPlayer()
+        end)
+    end
+end)
+
+-- AutoBunnyFoot Toggle for Main Tab
+local autoBunnyFootToggle = Tabs.Main:AddToggle("AutoBunnyFootToggle", {
+    Title = "AutoBunnyFoot",
+    Default = false
+})
+
+-- Services
+local Players = game:GetService("Players")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local autoBunnyFootEnabled = false
+local originalPositionBunny
+local clickConnectionBunny
+
+-- Variables for click timing
+local lastClickTimeBunny = 0
+local clickDelayBunny = 0.3
+
+-- Function to simulate click (same as AutoLogs)
+local function simulateClickBunny()
+    if not autoBunnyFootEnabled then return end
+    
+    local currentTime = tick()
+    if currentTime - lastClickTimeBunny < clickDelayBunny then return end
+    
+    local camera = workspace.CurrentCamera
+    local viewportSize = camera.ViewportSize
+    
+    -- Click on the very edge of the screen (far right side)
+    local clickX = viewportSize.X - 10 -- 10 pixels from right edge
+    local clickY = viewportSize.Y * 0.75  -- 75% from top (bottom area)
+    
+    -- Simulate left mouse click
+    VirtualInputManager:SendMouseButtonEvent(clickX, clickY, 0, true, game, 0)
+    VirtualInputManager:SendMouseButtonEvent(clickX, clickY, 0, false, game, 0)
+    
+    lastClickTimeBunny = currentTime
+end
+
+-- Function to teleport player to air and anchor
+local function teleportToAirAndAnchorBunny()
+    local character = player.Character
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        -- Save original position
+        originalPositionBunny = character.HumanoidRootPart.CFrame
+        
+        -- Teleport to air (200 units high)
+        local airPosition = character.HumanoidRootPart.Position + Vector3.new(0, 200, 0)
+        character.HumanoidRootPart.CFrame = CFrame.new(airPosition)
+        wait(0.5)
+        
+        -- Anchor player
+        character.HumanoidRootPart.Anchored = true
+        createNotif("AutoBunnyFoot", "Bunny farming started - stay still", 2)
+        return true
+    end
+    return false
+end
+
+-- Function to unanchor and restore position
+local function unanchorPlayerBunny()
+    local character = player.Character
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        character.HumanoidRootPart.Anchored = false
+        if originalPositionBunny then
+            character.HumanoidRootPart.CFrame = originalPositionBunny
+        end
+        createNotif("AutoBunnyFoot", "Bunny farming completed", 2)
+    end
+end
+
+-- Function to teleport all bunnies to player
+local function teleportAllBunniesToPlayer()
+    local character = player.Character
+    if not (character and character:FindFirstChild("HumanoidRootPart")) then
+        createNotif("AutoBunnyFoot", "Player character not found!", 3)
+        return false
+    end
+    
+    local playerPos = character.HumanoidRootPart.Position
+    local bunniesFound = 0
+    
+    -- Check if Characters folder exists
+    if not workspace:FindFirstChild("Characters") then
+        createNotif("AutoBunnyFoot", "Characters folder not found!", 3)
+        return false
+    end
+    
+    -- Get all characters and find bunnies
+    for i, characterModel in pairs(workspace.Characters:GetChildren()) do
+        -- Check if this character has a Body part (bunny detection)
+        if characterModel:FindFirstChild("Body") then
+            -- Additional check to make sure it's a bunny (you can modify this detection)
+            local humanoid = characterModel:FindFirstChildOfClass("Humanoid")
+            local rootPart = characterModel:FindFirstChild("HumanoidRootPart") or characterModel:FindFirstChild("Torso") or characterModel:FindFirstChild("Body")
+            
+            if rootPart then
+                bunniesFound = bunniesFound + 1
+                
+                -- Teleport bunny to player position with random offset
+                local targetPosition = Vector3.new(
+                    playerPos.X + math.random(-2, 2),
+                    playerPos.Y - 2, -- Much closer to player for easier axe hits
+                    playerPos.Z + math.random(-2, 2)
+                )
+                
+                -- Move the bunny
+                pcall(function()
+                    rootPart.CFrame = CFrame.new(targetPosition)
+                end)
+                
+                wait(0.05) -- Small delay between teleports
+            end
+        end
+    end
+    
+    -- No notification for teleportation to reduce spam
+    return bunniesFound > 0
+end
+
+-- Function to detect and collect Bunny Foot drops
+local function detectAndCollectBunnyFoot()
+    local character = player.Character
+    if not (character and character:FindFirstChild("HumanoidRootPart")) then
+        return false
+    end
+    
+    local playerPos = character.HumanoidRootPart.Position
+    local bunnyFootFound = 0
+    
+    -- Check workspace.Items for drops
+    if workspace:FindFirstChild("Items") then
+        for i, item in pairs(workspace.Items:GetChildren()) do
+            -- Detect various bunny foot naming patterns
+            local itemName = item.Name:lower()
+            if itemName:find("bunny") and itemName:find("foot") or 
+               itemName:find("bunnyfoot") or 
+               itemName:find("rabbit") and itemName:find("foot") then
+                
+                bunnyFootFound = bunnyFootFound + 1
+                
+                -- Teleport bunny foot to player with small offset
+                local footPosition = Vector3.new(
+                    playerPos.X + math.random(-2, 2),
+                    playerPos.Y + 2, -- Above player
+                    playerPos.Z + math.random(-2, 2)
+                )
+                
+                pcall(function()
+                    if item.PrimaryPart then
+                        item:SetPrimaryPartCFrame(CFrame.new(footPosition))
+                    else
+                        local mainPart = item:FindFirstChildOfClass("BasePart")
+                        if mainPart then
+                            mainPart.CFrame = CFrame.new(footPosition)
+                        end
+                    end
+                end)
+                
+                wait(0.03)
+            end
+        end
+    end
+    
+    -- Also check workspace root for dropped items
+    for i, item in pairs(workspace:GetChildren()) do
+        local itemName = item.Name:lower()
+        if itemName:find("bunny") and itemName:find("foot") or 
+           itemName:find("bunnyfoot") or 
+           itemName:find("rabbit") and itemName:find("foot") then
+            
+            bunnyFootFound = bunnyFootFound + 1
+            
+            -- Teleport to player
+            local footPosition = Vector3.new(
+                playerPos.X + math.random(-2, 2),
+                playerPos.Y + 2,
+                playerPos.Z + math.random(-2, 2)
+            )
+            
+            pcall(function()
+                if item:IsA("Model") and item.PrimaryPart then
+                    item:SetPrimaryPartCFrame(CFrame.new(footPosition))
+                elseif item:IsA("BasePart") then
+                    item.CFrame = CFrame.new(footPosition)
+                end
+            end)
+            
+            wait(0.03)
+        end
+    end
+    
+    -- Only notify if bunny feet were actually found and moved
+    if bunnyFootFound > 0 then
+        createNotif("AutoBunnyFoot", bunnyFootFound .. " Bunny Foot collected", 1)
+    end
+    
+    return bunnyFootFound > 0
+end
+
+-- Main toggle function
+autoBunnyFootToggle:OnChanged(function(Value)
+    autoBunnyFootEnabled = Value
+    
+    if autoBunnyFootEnabled then
+        -- STARTING THE BUNNY FARM
+        createNotif("AutoBunnyFoot", "AutoBunnyFoot Started", 2)
+        
+        -- Step 1: Teleport to air and anchor
+        if teleportToAirAndAnchorBunny() then
+            wait(1)
+            
+            -- Step 2: Teleport all bunnies to player
+            if teleportAllBunniesToPlayer() then
+                wait(2)
+                
+                -- Step 3: Start auto-clicking to kill bunnies
+                clickConnectionBunny = RunService.Heartbeat:Connect(function()
+                    if autoBunnyFootEnabled then
+                        simulateClickBunny()
+                    end
+                end)
+                
+                -- Step 4: Auto-loop bunny teleportation every 1 second
+                spawn(function()
+                    while autoBunnyFootEnabled do
+                        wait(1) -- Teleport bunnies every 1 second
+                        if autoBunnyFootEnabled then
+                            teleportAllBunniesToPlayer()
+                        end
+                    end
+                end)
+                
+                -- Step 5: Periodically check for bunny foot drops
+                spawn(function()
+                    while autoBunnyFootEnabled do
+                        wait(2) -- Check every 2 seconds
+                        if autoBunnyFootEnabled then
+                            detectAndCollectBunnyFoot()
+                        end
+                    end
+                end)
+            end
+        end
+        
+    else
+        -- STOPPING THE BUNNY FARM
+        createNotif("AutoBunnyFoot", "AutoBunnyFoot Stopped!", 2)
+        
+        -- Step 1: Stop clicking
+        if clickConnectionBunny then
+            clickConnectionBunny:Disconnect()
+            clickConnectionBunny = nil
+        end
+        
+        -- Step 2: Unanchor player immediately
+        unanchorPlayerBunny()
+        
+        -- Step 3: Final collection of bunny foot drops
+        spawn(function()
+            wait(0.5)
+            detectAndCollectBunnyFoot()
+        end)
+    end
+end)
+
+-- AutoWolfPelt Toggle for Main Tab
+local autoWolfPeltToggle = Tabs.Main:AddToggle("AutoWolfPeltToggle", {
+    Title = "AutoWolfPelt",
+    Default = false
+})
+
+-- Services
+local Players = game:GetService("Players")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local autoWolfPeltEnabled = false
+local originalPositionWolf
+local clickConnectionWolf
+
+-- Variables for click timing
+local lastClickTimeWolf = 0
+local clickDelayWolf = 0.3
+
+-- Function to simulate click (same as AutoLogs)
+local function simulateClickWolf()
+    if not autoWolfPeltEnabled then return end
+    
+    local currentTime = tick()
+    if currentTime - lastClickTimeWolf < clickDelayWolf then return end
+    
+    local camera = workspace.CurrentCamera
+    local viewportSize = camera.ViewportSize
+    
+    -- Click on the very edge of the screen (far right side)
+    local clickX = viewportSize.X - 10 -- 10 pixels from right edge
+    local clickY = viewportSize.Y * 0.75  -- 75% from top (bottom area)
+    
+    -- Simulate left mouse click
+    VirtualInputManager:SendMouseButtonEvent(clickX, clickY, 0, true, game, 0)
+    VirtualInputManager:SendMouseButtonEvent(clickX, clickY, 0, false, game, 0)
+    
+    lastClickTimeWolf = currentTime
+end
+
+-- Function to teleport player to air and anchor
+local function teleportToAirAndAnchorWolf()
+    local character = player.Character
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        -- Save original position
+        originalPositionWolf = character.HumanoidRootPart.CFrame
+        
+        -- Teleport to air (200 units high)
+        local airPosition = character.HumanoidRootPart.Position + Vector3.new(0, 200, 0)
+        character.HumanoidRootPart.CFrame = CFrame.new(airPosition)
+        wait(0.5)
+        
+        -- Anchor player
+        character.HumanoidRootPart.Anchored = true
+        createNotif("AutoWolfPelt", "Wolf farming started - stay still", 2)
+        return true
+    end
+    return false
+end
+
+-- Function to unanchor and restore position
+local function unanchorPlayerWolf()
+    local character = player.Character
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        character.HumanoidRootPart.Anchored = false
+        if originalPositionWolf then
+            character.HumanoidRootPart.CFrame = originalPositionWolf
+        end
+        createNotif("AutoWolfPelt", "Wolf farming completed", 2)
+    end
+end
+
+-- Function to teleport all wolves to player
+local function teleportAllWolvesToPlayer()
+    local character = player.Character
+    if not (character and character:FindFirstChild("HumanoidRootPart")) then
+        createNotif("AutoWolfPelt", "Player character not found!", 3)
+        return false
+    end
+    
+    local playerPos = character.HumanoidRootPart.Position
+    local wolvesFound = 0
+    
+    -- Check if Characters folder exists
+    if not workspace:FindFirstChild("Characters") then
+        createNotif("AutoWolfPelt", "Characters folder not found!", 3)
+        return false
+    end
+    
+    -- Get all characters and find wolves
+    for i, characterModel in pairs(workspace.Characters:GetChildren()) do
+        -- Check if this character is a wolf by name or characteristics
+        local characterName = characterModel.Name:lower()
+        local isWolf = false
+        
+        -- Check for wolf-related names
+        if characterName:find("wolf") or characterName:find("canine") or characterName:find("dire") then
+            isWolf = true
+        end
+        
+        -- Alternative: Check for specific wolf body parts or characteristics
+        -- You can uncomment and modify these checks based on your game's wolf structure
+        -- if characterModel:FindFirstChild("Tail") and characterModel:FindFirstChild("Snout") then
+        --     isWolf = true
+        -- end
+        
+        -- If we found a wolf, teleport it
+        if isWolf then
+            local rootPart = characterModel:FindFirstChild("HumanoidRootPart") or characterModel:FindFirstChild("Torso") or characterModel:FindFirstChild("Body")
+            
+            if rootPart then
+                wolvesFound = wolvesFound + 1
+                
+                -- Teleport wolf to player position with random offset
+                local targetPosition = Vector3.new(
+                    playerPos.X + math.random(-2, 2),
+                    playerPos.Y - 2, -- Much closer to player for easier axe hits
+                    playerPos.Z + math.random(-2, 2)
+                )
+                
+                -- Move the wolf
+                pcall(function()
+                    rootPart.CFrame = CFrame.new(targetPosition)
+                end)
+                
+                wait(0.05) -- Small delay between teleports
+            end
+        end
+    end
+    
+    -- No notification for teleportation to reduce spam
+    return wolvesFound > 0
+end
+
+-- Function to detect and collect Wolf Pelt drops
+local function detectAndCollectWolfPelt()
+    local character = player.Character
+    if not (character and character:FindFirstChild("HumanoidRootPart")) then
+        return false
+    end
+    
+    local playerPos = character.HumanoidRootPart.Position
+    local wolfPeltFound = 0
+    
+    -- Check workspace.Items for drops
+    if workspace:FindFirstChild("Items") then
+        for i, item in pairs(workspace.Items:GetChildren()) do
+            -- Detect various wolf pelt naming patterns
+            local itemName = item.Name:lower()
+            if itemName:find("wolf") and itemName:find("pelt") or 
+               itemName:find("wolfpelt") or 
+               itemName:find("wolf") and itemName:find("fur") or
+               itemName:find("wolffur") then
+                
+                wolfPeltFound = wolfPeltFound + 1
+                
+                -- Teleport wolf pelt to player with small offset
+                local peltPosition = Vector3.new(
+                    playerPos.X + math.random(-2, 2),
+                    playerPos.Y + 2, -- Above player
+                    playerPos.Z + math.random(-2, 2)
+                )
+                
+                pcall(function()
+                    if item.PrimaryPart then
+                        item:SetPrimaryPartCFrame(CFrame.new(peltPosition))
+                    else
+                        local mainPart = item:FindFirstChildOfClass("BasePart")
+                        if mainPart then
+                            mainPart.CFrame = CFrame.new(peltPosition)
+                        end
+                    end
+                end)
+                
+                wait(0.03)
+            end
+        end
+    end
+    
+    -- Also check workspace root for dropped items
+    for i, item in pairs(workspace:GetChildren()) do
+        local itemName = item.Name:lower()
+        if itemName:find("wolf") and itemName:find("pelt") or 
+           itemName:find("wolfpelt") or 
+           itemName:find("wolf") and itemName:find("fur") or
+           itemName:find("wolffur") then
+            
+            wolfPeltFound = wolfPeltFound + 1
+            
+            -- Teleport to player
+            local peltPosition = Vector3.new(
+                playerPos.X + math.random(-2, 2),
+                playerPos.Y + 2,
+                playerPos.Z + math.random(-2, 2)
+            )
+            
+            pcall(function()
+                if item:IsA("Model") and item.PrimaryPart then
+                    item:SetPrimaryPartCFrame(CFrame.new(peltPosition))
+                elseif item:IsA("BasePart") then
+                    item.CFrame = CFrame.new(peltPosition)
+                end
+            end)
+            
+            wait(0.03)
+        end
+    end
+    
+    -- Only notify if wolf pelts were actually found and moved (reduce spam)
+    if wolfPeltFound > 0 then
+        createNotif("AutoWolfPelt", wolfPeltFound .. " Wolf Pelt collected", 1)
+    end
+    
+    return wolfPeltFound > 0
+end
+
+-- Main toggle function
+autoWolfPeltToggle:OnChanged(function(Value)
+    autoWolfPeltEnabled = Value
+    
+    if autoWolfPeltEnabled then
+        -- STARTING THE WOLF FARM
+        createNotif("AutoWolfPelt", "AutoWolfPelt Started", 2)
+        
+        -- Step 1: Teleport to air and anchor
+        if teleportToAirAndAnchorWolf() then
+            wait(1)
+            
+            -- Step 2: Teleport all wolves to player
+            if teleportAllWolvesToPlayer() then
+                wait(2)
+                
+                -- Step 3: Start auto-clicking to kill wolves
+                clickConnectionWolf = RunService.Heartbeat:Connect(function()
+                    if autoWolfPeltEnabled then
+                        simulateClickWolf()
+                    end
+                end)
+                
+                -- Step 4: Auto-loop wolf teleportation every 1 second
+                spawn(function()
+                    while autoWolfPeltEnabled do
+                        wait(1) -- Teleport wolves every 1 second
+                        if autoWolfPeltEnabled then
+                            teleportAllWolvesToPlayer()
+                        end
+                    end
+                end)
+                
+                -- Step 5: Periodically check for wolf pelt drops
+                spawn(function()
+                    while autoWolfPeltEnabled do
+                        wait(2) -- Check every 2 seconds
+                        if autoWolfPeltEnabled then
+                            detectAndCollectWolfPelt()
+                        end
+                    end
+                end)
+            end
+        end
+        
+    else
+        -- STOPPING THE WOLF FARM
+        createNotif("AutoWolfPelt", "AutoWolfPelt Stopped!", 2)
+        
+        -- Step 1: Stop clicking
+        if clickConnectionWolf then
+            clickConnectionWolf:Disconnect()
+            clickConnectionWolf = nil
+        end
+        
+        -- Step 2: Unanchor player immediately
+        unanchorPlayerWolf()
+        
+        -- Step 3: Final collection of wolf pelt drops
+        spawn(function()
+            wait(0.5)
+            detectAndCollectWolfPelt()
+        end)
+    end
+end)
+
+-- BUNNY ESP FUNCTIONS
+local function createBunnyESP(bunnyModel)
+    if bunnyESPObjects[bunnyModel] or not bunnyModel or not bunnyModel.Parent then 
+        return 
+    end
+    
+    local mainPart = bunnyModel.PrimaryPart or bunnyModel:FindFirstChildOfClass("BasePart")
+    if not mainPart then return end
+    
+    -- Create BillboardGui
+    local billboardGui = Instance.new("BillboardGui")
+    billboardGui.Name = "BunnyESP"
+    billboardGui.Adornee = mainPart
+    billboardGui.Size = UDim2.new(0, 150, 0, 20)
+    billboardGui.StudsOffset = Vector3.new(0, 2, 0)
+    billboardGui.AlwaysOnTop = true
+    billboardGui.Parent = mainPart
+    
+    -- Create Text Label
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Name = "ESPLabel"
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = "Bunny"
+    textLabel.TextColor3 = Color3.fromRGB(255, 255, 0) -- Yellow
+    textLabel.TextScaled = true
+    textLabel.TextStrokeTransparency = 0
+    textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    textLabel.Font = Enum.Font.GothamBold
+    textLabel.Parent = billboardGui
+    
+    -- Create yellow highlight
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "BunnyHighlight"
+    highlight.FillColor = Color3.fromRGB(255, 255, 0) -- Yellow
+    highlight.FillTransparency = 0.5
+    highlight.OutlineColor = Color3.fromRGB(255, 255, 0)
+    highlight.OutlineTransparency = 0
+    highlight.Parent = bunnyModel
+    
+    -- Create line (only if Drawing is available)
+    local line = nil
+    local lineConnection = nil
+    
+    if Drawing then
+        line = Drawing.new("Line")
+        line.Visible = false
+        line.Color = Color3.fromRGB(255, 255, 0) -- Yellow line
+        line.Thickness = 2
+        line.Transparency = 1
+        
+        lineConnection = RunService.Heartbeat:Connect(function()
+            if BunnyESPEnabled and bunnyModel and bunnyModel.Parent and mainPart and mainPart.Parent and camera then
+                local success, modelPosition, onScreen = pcall(function()
+                    return camera:WorldToViewportPoint(mainPart.Position)
+                end)
+                
+                if success and onScreen then
+                    line.From = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y)
+                    line.To = Vector2.new(modelPosition.X, modelPosition.Y)
+                    line.Visible = true
+                else
+                    line.Visible = false
+                end
+            else
+                line.Visible = false
+            end
+        end)
+    end
+    
+    -- Store ESP objects
+    bunnyESPObjects[bunnyModel] = {
+        billboard = billboardGui,
+        highlight = highlight,
+        line = line,
+        connection = lineConnection
+    }
+end
+
+local function scanForBunnies()
+    if not BunnyESPEnabled then return end
+    
+    local charactersFolder = workspace:FindFirstChild("Characters")
+    if charactersFolder then
+        for _, child in pairs(charactersFolder:GetChildren()) do
+            if child.Name == "Bunny" and not bunnyESPObjects[child] then
+                createBunnyESP(child)
+            end
+        end
+    end
+end
+
+-- WOLF ESP FUNCTIONS
+local function createWolfESP(wolfModel)
+    if wolfESPObjects[wolfModel] or not wolfModel or not wolfModel.Parent then 
+        return 
+    end
+    
+    local mainPart = wolfModel.PrimaryPart or wolfModel:FindFirstChildOfClass("BasePart")
+    if not mainPart then return end
+    
+    -- Create BillboardGui
+    local billboardGui = Instance.new("BillboardGui")
+    billboardGui.Name = "WolfESP"
+    billboardGui.Adornee = mainPart
+    billboardGui.Size = UDim2.new(0, 150, 0, 25)
+    billboardGui.StudsOffset = Vector3.new(0, 5, 0)
+    billboardGui.AlwaysOnTop = true
+    billboardGui.Parent = mainPart
+    
+    -- Create Text Label
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Name = "ESPLabel"
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = "Wolf"
+    textLabel.TextColor3 = Color3.fromRGB(128, 0, 128) -- Purple
+    textLabel.TextScaled = true
+    textLabel.TextStrokeTransparency = 0
+    textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    textLabel.Font = Enum.Font.GothamBold
+    textLabel.Parent = billboardGui
+    
+    -- Create purple highlight
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "WolfHighlight"
+    highlight.FillColor = Color3.fromRGB(128, 0, 128) -- Purple
+    highlight.FillTransparency = 0.5
+    highlight.OutlineColor = Color3.fromRGB(128, 0, 128)
+    highlight.OutlineTransparency = 0
+    highlight.Parent = wolfModel
+    
+    -- Create line (only if Drawing is available)
+    local line = nil
+    local lineConnection = nil
+    
+    if Drawing then
+        line = Drawing.new("Line")
+        line.Visible = false
+        line.Color = Color3.fromRGB(128, 0, 128) -- Purple line
+        line.Thickness = 2
+        line.Transparency = 1
+        
+        lineConnection = RunService.Heartbeat:Connect(function()
+            if WolfESPEnabled and wolfModel and wolfModel.Parent and mainPart and mainPart.Parent and camera then
+                local success, modelPosition, onScreen = pcall(function()
+                    return camera:WorldToViewportPoint(mainPart.Position)
+                end)
+                
+                if success and onScreen then
+                    line.From = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y)
+                    line.To = Vector2.new(modelPosition.X, modelPosition.Y)
+                    line.Visible = true
+                else
+                    line.Visible = false
+                end
+            else
+                line.Visible = false
+            end
+        end)
+    end
+    
+    -- Store ESP objects
+    wolfESPObjects[wolfModel] = {
+        billboard = billboardGui,
+        highlight = highlight,
+        line = line,
+        connection = lineConnection
+    }
+end
+
+local function scanForWolves()
+    if not WolfESPEnabled then return end
+    
+    local charactersFolder = workspace:FindFirstChild("Characters")
+    if charactersFolder then
+        for _, child in pairs(charactersFolder:GetChildren()) do
+            if child.Name == "Wolf" and not wolfESPObjects[child] then
+                createWolfESP(child)
+            end
+        end
+    end
+end
+
+-- DEER ESP FUNCTIONS
+local function createDeerESP(deerHead)
+    if deerESPObjects[deerHead] or not deerHead or not deerHead.Parent then 
+        return 
+    end
+    
+    -- Create BillboardGui
+    local billboardGui = Instance.new("BillboardGui")
+    billboardGui.Name = "DeerESP"
+    billboardGui.Adornee = deerHead
+    billboardGui.Size = UDim2.new(0, 150, 0, 25)
+    billboardGui.StudsOffset = Vector3.new(0, 5, 0)
+    billboardGui.AlwaysOnTop = true
+    billboardGui.Parent = deerHead
+    
+    -- Create Text Label
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Name = "ESPLabel"
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = "FINAL BOSS"
+    textLabel.TextColor3 = Color3.fromRGB(255, 0, 0) -- Red
+    textLabel.TextScaled = true
+    textLabel.TextStrokeTransparency = 0
+    textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    textLabel.Font = Enum.Font.GothamBold
+    textLabel.Parent = billboardGui
+    
+    -- Create red highlight for the head
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "DeerHighlight"
+    highlight.FillColor = Color3.fromRGB(255, 0, 0) -- Red
+    highlight.FillTransparency = 0.5
+    highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+    highlight.OutlineTransparency = 0
+    highlight.Parent = deerHead
+    
+    -- Create line to deer head (only if Drawing is available)
+    local line = nil
+    local lineConnection = nil
+    
+    if Drawing then
+        line = Drawing.new("Line")
+        line.Visible = false
+        line.Color = Color3.fromRGB(255, 0, 0) -- Red line
+        line.Thickness = 2
+        line.Transparency = 1
+        
+        lineConnection = RunService.Heartbeat:Connect(function()
+            if DeerESPEnabled and deerHead and deerHead.Parent and camera then
+                local success, headPosition, onScreen = pcall(function()
+                    return camera:WorldToViewportPoint(deerHead.Position)
+                end)
+                
+                if success and onScreen then
+                    line.From = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y)
+                    line.To = Vector2.new(headPosition.X, headPosition.Y)
+                    line.Visible = true
+                else
+                    line.Visible = false
+                end
+            else
+                line.Visible = false
+            end
+        end)
+    end
+    
+    -- Store ESP objects
+    deerESPObjects[deerHead] = {
+        billboard = billboardGui,
+        highlight = highlight,
+        line = line,
+        connection = lineConnection
+    }
+end
+
+local function scanForDeerHead()
+    if not DeerESPEnabled then return end
+    
+    local charactersFolder = workspace:FindFirstChild("Characters")
+    if charactersFolder and charactersFolder:FindFirstChild("Deer") then
+        local deer = charactersFolder.Deer
+        local deerHead = deer:FindFirstChild("Head")
+        
+        if deerHead and not deerESPObjects[deerHead] then
+            createDeerESP(deerHead)
+        end
+    end
+end
+
+-- TEAMMATES ESP FUNCTIONS
+local function createTeammateESP(targetPlayer)
+    if teammateESPObjects[targetPlayer] or targetPlayer == player or not targetPlayer.Character then 
+        return 
+    end
+    
+    local character = targetPlayer.Character
+    local head = character:FindFirstChild("Head")
+    if not head then return end
+    
+    -- Create BillboardGui for name
+    local billboardGui = Instance.new("BillboardGui")
+    billboardGui.Name = "TeammateESP"
+    billboardGui.Adornee = head
+    billboardGui.Size = UDim2.new(0, 150, 0, 25)
+    billboardGui.StudsOffset = Vector3.new(0, 3, 0)
+    billboardGui.AlwaysOnTop = true
+    billboardGui.Parent = head
+    
+    -- Create Text Label for player name
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Name = "ESPLabel"
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = targetPlayer.Name
+    textLabel.TextColor3 = Color3.fromRGB(0, 255, 0) -- Green
+    textLabel.TextScaled = true
+    textLabel.TextStrokeTransparency = 0
+    textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    textLabel.Font = Enum.Font.GothamBold
+    textLabel.Parent = billboardGui
+    
+    -- Create green highlight for the entire character
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "TeammateHighlight"
+    highlight.FillColor = Color3.fromRGB(0, 255, 0) -- Green
+    highlight.FillTransparency = 0.7
+    highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
+    highlight.OutlineTransparency = 0.3
+    highlight.Parent = character
+    
+    -- Create line to teammate (only if Drawing is available)
+    local line = nil
+    local lineConnection = nil
+    
+    if Drawing then
+        line = Drawing.new("Line")
+        line.Visible = false
+        line.Color = Color3.fromRGB(0, 255, 0) -- Green line
+        line.Thickness = 2
+        line.Transparency = 1
+        
+        lineConnection = RunService.Heartbeat:Connect(function()
+            if TeammatesESPEnabled and targetPlayer.Character and targetPlayer.Character:FindFirstChild("Head") and camera then
+                local success, headPosition, onScreen = pcall(function()
+                    return camera:WorldToViewportPoint(targetPlayer.Character.Head.Position)
+                end)
+                
+                if success and onScreen then
+                    line.From = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y)
+                    line.To = Vector2.new(headPosition.X, headPosition.Y)
+                    line.Visible = true
+                else
+                    line.Visible = false
+                end
+            else
+                line.Visible = false
+            end
+        end)
+    end
+    
+    -- Handle character respawning
+    local charConnection = targetPlayer.CharacterAdded:Connect(function(newChar)
+        task.wait(1) -- Wait for character to fully load
+        cleanupTeammateESP(targetPlayer)
+        if TeammatesESPEnabled then
+            createTeammateESP(targetPlayer)
+        end
+    end)
+    
+    -- Store ESP objects
+    teammateESPObjects[targetPlayer] = {
+        billboard = billboardGui,
+        highlight = highlight,
+        line = line,
+        connection = lineConnection,
+        charConnection = charConnection,
+        character = character
+    }
+end
+
+local function scanForTeammates()
+    if not TeammatesESPEnabled then return end
+    
+    for _, targetPlayer in pairs(Players:GetPlayers()) do
+        if targetPlayer ~= player and targetPlayer.Character and 
+           not teammateESPObjects[targetPlayer] then
+            createTeammateESP(targetPlayer)
+        end
+    end
+end
+
+-- BEAR ESP FUNCTIONS
+local function createBearESP(bearModel)
+    if bearESPObjects[bearModel] or not bearModel or not bearModel.Parent then 
+        return 
+    end
+    
+    local mainPart = bearModel:FindFirstChild("HumanoidRootPart") or bearModel.PrimaryPart or bearModel:FindFirstChildOfClass("BasePart")
+    if not mainPart then return end
+    
+    -- Create BillboardGui
+    local billboardGui = Instance.new("BillboardGui")
+    billboardGui.Name = "BearESP"
+    billboardGui.Adornee = mainPart
+    billboardGui.Size = UDim2.new(0, 150, 0, 20)
+    billboardGui.StudsOffset = Vector3.new(0, 2, 0)
+    billboardGui.AlwaysOnTop = true
+    billboardGui.Parent = mainPart
+    
+    -- Create Text Label
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Name = "ESPLabel"
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = "Bear"
+    textLabel.TextColor3 = Color3.fromRGB(139, 69, 19) -- Brown
+    textLabel.TextScaled = true
+    textLabel.TextStrokeTransparency = 0
+    textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    textLabel.Font = Enum.Font.GothamBold
+    textLabel.Parent = billboardGui
+    
+    -- Create brown highlight
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "BearHighlight"
+    highlight.FillColor = Color3.fromRGB(139, 69, 19) -- Brown
+    highlight.FillTransparency = 0.5
+    highlight.OutlineColor = Color3.fromRGB(139, 69, 19)
+    highlight.OutlineTransparency = 0
+    highlight.Parent = bearModel
+    
+    -- Create line (only if Drawing is available)
+    local line = nil
+    local lineConnection = nil
+    
+    if Drawing then
+        line = Drawing.new("Line")
+        line.Visible = false
+        line.Color = Color3.fromRGB(139, 69, 19) -- Brown line
+        line.Thickness = 2
+        line.Transparency = 1
+        
+        lineConnection = RunService.Heartbeat:Connect(function()
+            if BearESPEnabled and bearModel and bearModel.Parent and mainPart and mainPart.Parent and camera then
+                local success, modelPosition, onScreen = pcall(function()
+                    return camera:WorldToViewportPoint(mainPart.Position)
+                end)
+                
+                if success and onScreen then
+                    line.From = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y)
+                    line.To = Vector2.new(modelPosition.X, modelPosition.Y)
+                    line.Visible = true
+                else
+                    line.Visible = false
+                end
+            else
+                line.Visible = false
+            end
+        end)
+    end
+    
+    -- Store ESP objects
+    bearESPObjects[bearModel] = {
+        billboard = billboardGui,
+        highlight = highlight,
+        line = line,
+        connection = lineConnection
+    }
+end
+
+local function scanForBears()
+    if not BearESPEnabled then return end
+    
+    local charactersFolder = workspace:FindFirstChild("Characters")
+    if charactersFolder then
+        for _, child in pairs(charactersFolder:GetChildren()) do
+            if child.Name == "Bear" and not bearESPObjects[child] then
+                createBearESP(child)
+            end
+        end
+    end
+end
+
+-- CHILDREN ESP FUNCTIONS
+local function createChildrenESP(childModel)
+    if childrenESPObjects[childModel] or not childModel or not childModel.Parent then 
+        return 
+    end
+    
+    local head = childModel:FindFirstChild("Head")
+    if not head then return end
+    
+    -- Create BillboardGui
+    local billboardGui = Instance.new("BillboardGui")
+    billboardGui.Name = "ChildrenESP"
+    billboardGui.Adornee = head
+    billboardGui.Size = UDim2.new(0, 150, 0, 25)
+    billboardGui.StudsOffset = Vector3.new(0, 2, 0)
+    billboardGui.AlwaysOnTop = true
+    billboardGui.Parent = head
+    
+    -- Create Text Label
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Name = "ESPLabel"
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = "Children"
+    textLabel.TextColor3 = Color3.fromRGB(0, 255, 0) -- Green
+    textLabel.TextScaled = true
+    textLabel.TextStrokeTransparency = 0
+    textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    textLabel.Font = Enum.Font.GothamBold
+    textLabel.Parent = billboardGui
+    
+    -- Create green highlight
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "ChildrenHighlight"
+    highlight.FillColor = Color3.fromRGB(0, 255, 0) -- Green
+    highlight.FillTransparency = 0.5
+    highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
+    highlight.OutlineTransparency = 0
+    highlight.Parent = childModel
+    
+    -- Create line (only if Drawing is available)
+    local line = nil
+    local lineConnection = nil
+    
+    if Drawing then
+        line = Drawing.new("Line")
+        line.Visible = false
+        line.Color = Color3.fromRGB(0, 255, 0) -- Green line
+        line.Thickness = 2
+        line.Transparency = 1
+        
+        lineConnection = RunService.Heartbeat:Connect(function()
+            if ChildrenESPEnabled and childModel and childModel.Parent and head and head.Parent and camera then
+                local success, headPosition, onScreen = pcall(function()
+                    return camera:WorldToViewportPoint(head.Position)
+                end)
+                
+                if success and onScreen then
+                    line.From = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y)
+                    line.To = Vector2.new(headPosition.X, headPosition.Y)
+                    line.Visible = true
+                else
+                    line.Visible = false
+                end
+            else
+                line.Visible = false
+            end
+        end)
+    end
+    
+    -- Store ESP objects
+    childrenESPObjects[childModel] = {
+        billboard = billboardGui,
+        highlight = highlight,
+        line = line,
+        connection = lineConnection
+    }
+end
+
+local function scanForChildren()
+    if not ChildrenESPEnabled then return end
+    
+    local charactersFolder = workspace:FindFirstChild("Characters")
+    if charactersFolder then
+        -- Check for all Lost Child variants
+        local childNames = {"Lost Child", "Lost Child2", "Lost Child3", "Lost Child4"}
+        
+        for _, childName in pairs(childNames) do
+            local child = charactersFolder:FindFirstChild(childName)
+            if child and not childrenESPObjects[child] then
+                createChildrenESP(child)
+            end
+        end
+    end
+end
+
+-- CULTIST ESP FUNCTIONS
+local function createCultistESP(cultistModel)
+    if cultistESPObjects[cultistModel] or not cultistModel or not cultistModel.Parent then 
+        return 
+    end
+    
+    local mainPart = cultistModel.PrimaryPart or cultistModel:FindFirstChildOfClass("BasePart")
+    if not mainPart then return end
+    
+    -- Determine cultist type for display
+    local cultistType = cultistModel.Name == "Crossbow Cultist" and "Crossbow Cultist" or "Cultist"
+    
+    -- Create BillboardGui
+    local billboardGui = Instance.new("BillboardGui")
+    billboardGui.Name = "CultistESP"
+    billboardGui.Adornee = mainPart
+    billboardGui.Size = UDim2.new(0, 150, 0, 20)
+    billboardGui.StudsOffset = Vector3.new(0, 2, 0)
+    billboardGui.AlwaysOnTop = true
+    billboardGui.Parent = mainPart
+    
+    -- Create Text Label
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Name = "ESPLabel"
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = cultistType
+    textLabel.TextColor3 = Color3.fromRGB(255, 0, 0) -- Red
+    textLabel.TextScaled = true
+    textLabel.TextStrokeTransparency = 0
+    textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    textLabel.Font = Enum.Font.GothamBold
+    textLabel.Parent = billboardGui
+    
+    -- Create red highlight
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "CultistHighlight"
+    highlight.FillColor = Color3.fromRGB(255, 0, 0) -- Red
+    highlight.FillTransparency = 0.5
+    highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+    highlight.OutlineTransparency = 0
+    highlight.Parent = cultistModel
+    
+    -- Create line (only if Drawing is available)
+    local line = nil
+    local lineConnection = nil
+    
+    if Drawing then
+        line = Drawing.new("Line")
+        line.Visible = false
+        line.Color = Color3.fromRGB(255, 0, 0) -- Red line
+        line.Thickness = 2
+        line.Transparency = 1
+        
+        lineConnection = RunService.Heartbeat:Connect(function()
+            if CultistESPEnabled and cultistModel and cultistModel.Parent and mainPart and mainPart.Parent and camera then
+                local success, modelPosition, onScreen = pcall(function()
+                    return camera:WorldToViewportPoint(mainPart.Position)
+                end)
+                
+                if success and onScreen then
+                    line.From = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y)
+                    line.To = Vector2.new(modelPosition.X, modelPosition.Y)
+                    line.Visible = true
+                else
+                    line.Visible = false
+                end
+            else
+                line.Visible = false
+            end
+        end)
+    end
+    
+    -- Store ESP objects
+    cultistESPObjects[cultistModel] = {
+        billboard = billboardGui,
+        highlight = highlight,
+        line = line,
+        connection = lineConnection
+    }
+end
+
+local function scanForCultists()
+    if not CultistESPEnabled then return end
+    
+    local charactersFolder = workspace:FindFirstChild("Characters")
+    if charactersFolder then
+        for _, child in pairs(charactersFolder:GetChildren()) do
+            if (child.Name == "Crossbow Cultist" or child.Name == "Cultist") and not cultistESPObjects[child] then
+                createCultistESP(child)
+            end
+        end
+    end
+end
+
+-- Function to remove all cultist ESP
+local function removeAllCultistESP()
+    for cultistModel, _ in pairs(cultistESPObjects) do
+        cleanupCultistESP(cultistModel)
+    end
+end
+
+-- POLAR BEAR ESP CLEANUP FUNCTION
+local function cleanupPolarBearESP(polarBearModel)
+    if polarBearESPObjects[polarBearModel] then
+        local espData = polarBearESPObjects[polarBearModel]
+        
+        safeDestroy(espData.billboard)
+        safeDestroy(espData.highlight)
+        
+        if espData.line and Drawing then
+            pcall(function()
+                espData.line:Remove()
+            end)
+        end
+        
+        safeDisconnect(espData.connection)
+        polarBearESPObjects[polarBearModel] = nil
+    end
+end
+
+-- ALPHA WOLF ESP FUNCTIONS
+local function createAlphaWolfESP(alphaWolfModel)
+    if alphaWolfESPObjects[alphaWolfModel] or not alphaWolfModel or not alphaWolfModel.Parent then 
+        return 
+    end
+    
+    local mainPart = alphaWolfModel:FindFirstChild("Head") or alphaWolfModel:FindFirstChild("Tail2") or alphaWolfModel.PrimaryPart or alphaWolfModel:FindFirstChildOfClass("BasePart")
+    if not mainPart then return end
+    
+    -- Create BillboardGui
+    local billboardGui = Instance.new("BillboardGui")
+    billboardGui.Name = "AlphaWolfESP"
+    billboardGui.Adornee = mainPart
+    billboardGui.Size = UDim2.new(0, 150, 0, 20)
+    billboardGui.StudsOffset = Vector3.new(0, 2, 0)
+    billboardGui.AlwaysOnTop = true
+    billboardGui.Parent = mainPart
+    
+    -- Create Text Label
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Name = "ESPLabel"
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = "Alpha Wolf"
+    textLabel.TextColor3 = Color3.fromRGB(255, 0, 0) -- Red
+    textLabel.TextScaled = true
+    textLabel.TextStrokeTransparency = 0
+    textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    textLabel.Font = Enum.Font.GothamBold
+    textLabel.Parent = billboardGui
+    
+    -- Create red highlight
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "AlphaWolfHighlight"
+    highlight.FillColor = Color3.fromRGB(255, 0, 0) -- Red
+    highlight.FillTransparency = 0.5
+    highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+    highlight.OutlineTransparency = 0
+    highlight.Parent = alphaWolfModel
+    
+    -- Create line (only if Drawing is available)
+    local line = nil
+    local lineConnection = nil
+    
+    if Drawing then
+        line = Drawing.new("Line")
+        line.Visible = false
+        line.Color = Color3.fromRGB(255, 0, 0) -- Red line
+        line.Thickness = 2
+        line.Transparency = 1
+        
+        lineConnection = RunService.Heartbeat:Connect(function()
+            if AlphaWolfESPEnabled and alphaWolfModel and alphaWolfModel.Parent and mainPart and mainPart.Parent and camera then
+                local success, modelPosition, onScreen = pcall(function()
+                    return camera:WorldToViewportPoint(mainPart.Position)
+                end)
+                
+                if success and onScreen then
+                    line.From = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y)
+                    line.To = Vector2.new(modelPosition.X, modelPosition.Y)
+                    line.Visible = true
+                else
+                    line.Visible = false
+                end
+            else
+                line.Visible = false
+            end
+        end)
+    end
+    
+    -- Store ESP objects
+    alphaWolfESPObjects[alphaWolfModel] = {
+        billboard = billboardGui,
+        highlight = highlight,
+        line = line,
+        connection = lineConnection
+    }
+end
+
+-- POLAR BEAR ESP FUNCTIONS
+local function createPolarBearESP(polarBearModel)
+    if polarBearESPObjects[polarBearModel] or not polarBearModel or not polarBearModel.Parent then 
+        return 
+    end
+    
+    local mainPart = polarBearModel:FindFirstChild("NoseMouth") or polarBearModel.PrimaryPart or polarBearModel:FindFirstChildOfClass("BasePart")
+    if not mainPart then return end
+    
+    -- Create BillboardGui
+    local billboardGui = Instance.new("BillboardGui")
+    billboardGui.Name = "PolarBearESP"
+    billboardGui.Adornee = mainPart
+    billboardGui.Size = UDim2.new(0, 150, 0, 20)
+    billboardGui.StudsOffset = Vector3.new(0, 2, 0)
+    billboardGui.AlwaysOnTop = true
+    billboardGui.Parent = mainPart
+    
+    -- Create Text Label
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Name = "ESPLabel"
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = "Sigma Bear"
+    textLabel.TextColor3 = Color3.fromRGB(255, 255, 255) -- White
+    textLabel.TextScaled = true
+    textLabel.TextStrokeTransparency = 0
+    textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    textLabel.Font = Enum.Font.GothamBold
+    textLabel.Parent = billboardGui
+    
+    -- Create white highlight
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "PolarBearHighlight"
+    highlight.FillColor = Color3.fromRGB(255, 255, 255) -- White
+    highlight.FillTransparency = 0.5
+    highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+    highlight.OutlineTransparency = 0
+    highlight.Parent = polarBearModel
+    
+    -- Create line (only if Drawing is available)
+    local line = nil
+    local lineConnection = nil
+    
+    if Drawing then
+        line = Drawing.new("Line")
+        line.Visible = false
+        line.Color = Color3.fromRGB(255, 255, 255) -- White line
+        line.Thickness = 2
+        line.Transparency = 1
+        
+        lineConnection = RunService.Heartbeat:Connect(function()
+            if PolarBearESPEnabled and polarBearModel and polarBearModel.Parent and mainPart and mainPart.Parent and camera then
+                local success, modelPosition, onScreen = pcall(function()
+                    return camera:WorldToViewportPoint(mainPart.Position)
+                end)
+                
+                if success and onScreen then
+                    line.From = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y)
+                    line.To = Vector2.new(modelPosition.X, modelPosition.Y)
+                    line.Visible = true
+                else
+                    line.Visible = false
+                end
+            else
+                line.Visible = false
+            end
+        end)
+    end
+    
+    -- Store ESP objects
+    polarBearESPObjects[polarBearModel] = {
+        billboard = billboardGui,
+        highlight = highlight,
+        line = line,
+        connection = lineConnection
+    }
+end
+
+local function scanForAlphaWolves()
+    if not AlphaWolfESPEnabled then return end
+    
+    local charactersFolder = workspace:FindFirstChild("Characters")
+    if charactersFolder then
+        for _, child in pairs(charactersFolder:GetChildren()) do
+            -- Check if it's an Alpha Wolf (has Tail2 and Head parts)
+            if child:FindFirstChild("Tail2") and child:FindFirstChild("Head") and not alphaWolfESPObjects[child] then
+                createAlphaWolfESP(child)
+            end
+        end
+    end
+end
+
+local function scanForPolarBears()
+    if not PolarBearESPEnabled then return end
+    
+    local charactersFolder = workspace:FindFirstChild("Characters")
+    if charactersFolder then
+        for _, child in pairs(charactersFolder:GetChildren()) do
+            if child.Name == "Polar Bear" and not polarBearESPObjects[child] then
+                createPolarBearESP(child)
+            end
+        end
+    end
+end
+
+-- Function to remove all Alpha Wolf ESP
+local function removeAllAlphaWolfESP()
+    for alphaWolfModel, _ in pairs(alphaWolfESPObjects) do
+        cleanupAlphaWolfESP(alphaWolfModel)
+    end
+end
+
+-- Function to remove all Polar Bear ESP
+local function removeAllPolarBearESP()
+    for polarBearModel, _ in pairs(polarBearESPObjects) do
+        cleanupPolarBearESP(polarBearModel)
+    end
+end
+
+-- FIX 2: Add missing functions before the GetChild buttons
+local function safeTeleport(position)
+    if not char or not hrp then
+        char = player.Character
+        if char then
+            hrp = char:FindFirstChild("HumanoidRootPart")
+        end
+        if not hrp then
+            return false
+        end
+    end
+    
+    local success = pcall(function()
+        hrp.CFrame = CFrame.new(position)
+    end)
+    
+    return success
+end
+
+local function getSpawnLocation()
+    -- Try to find spawn location
+    local spawnLocation = workspace:FindFirstChild("SpawnLocation")
+    if spawnLocation then
+        return spawnLocation.Position + Vector3.new(0, 5, 0)
+    end
+    
+    -- Try to find spawn parts
+    for _, obj in pairs(workspace:GetChildren()) do
+        if obj.Name:lower():find("spawn") and obj:IsA("BasePart") then
+            return obj.Position + Vector3.new(0, 5, 0)
+        end
+    end
+    
+    -- Fallback to default spawn position
+    return Vector3.new(0, 50, 0)
+end
+
+-- Disable CampFire Effect Function
+local function toggleCampFireEffect()
+    disableCampFireEffect = not disableCampFireEffect
+    local lighting = game:GetService("Lighting")
+    
+    if disableCampFireEffect then
+        -- Store original bloom and disable it
+        if lighting:FindFirstChild("Bloom") then
+            originalBloom = lighting.Bloom
+            lighting.Bloom.Enabled = false
+        end
+        
+        -- Store original color correction and disable it
+        if lighting:FindFirstChild("ColorCorrection") then
+            originalColorCorrection = lighting.ColorCorrection
+            lighting.ColorCorrection.Enabled = false
+        end
+    else
+        -- Restore original bloom
+        if originalBloom then
+            originalBloom.Enabled = true
+        end
+        
+        -- Restore original color correction
+        if originalColorCorrection then
+            originalColorCorrection.Enabled = true
+        end
+    end
+end
+
+-- FullBrights Function
+local function toggleFullBrights()
+    fullBrightsEnabled = not fullBrightsEnabled
+    local lighting = game:GetService("Lighting")
+    
+    if fullBrightsEnabled then
+        -- Store original values and enable full brightness
+        originalBrightness = lighting.Brightness
+        originalAmbient = lighting.Ambient
+        
+        lighting.Brightness = 2
+        lighting.Ambient = Color3.new(1, 1, 1)
+    else
+        -- Restore original lighting values
+        if originalBrightness then
+            lighting.Brightness = originalBrightness
+        end
+        if originalAmbient then
+            lighting.Ambient = originalAmbient
+        end
+    end
+end
+
+-- Disable Sky Effect Function
+local function toggleSkyEffect()
+    disableSkyEffect = not disableSkyEffect
+    local lighting = game:GetService("Lighting")
+    
+    if disableSkyEffect then
+        -- Store original sky and disable it
+        if lighting:FindFirstChild("Sky") then
+            originalSky = lighting.Sky
+            lighting.Sky.Parent = nil
+        end
+    else
+        -- Restore original sky
+        if originalSky then
+            originalSky.Parent = lighting
+        end
+    end
+end
+
+-- Disable Fog Function
+local function toggleFogEffect()
+    disableFogEffect = not disableFogEffect
+    
+    if disableFogEffect then
+        -- Disable fog boundaries
+        if workspace.Map.Boundaries:FindFirstChild("Fog") then
+            originalFog = workspace.Map.Boundaries.Fog
+            workspace.Map.Boundaries.Fog.Enabled = false
+        end
+        
+        -- Disable particle smoke
+        if workspace.Particles:FindFirstChild("Smoke") then
+            originalSmoke = workspace.Particles.Smoke
+            workspace.Particles.Smoke.Enabled = false
+        end
+    else
+        -- Restore fog effects
+        if originalFog then
+            originalFog.Enabled = true
+        end
+        if originalSmoke then
+            originalSmoke.Enabled = true
+        end
+    end
+end
+
+-- ESP TOGGLES IN ESP TAB
+local BunnyESPToggle = Tabs.Esp:AddToggle("BunnyESP", {
+    Title = "Esp Bunny",
+    Default = false,
+    Callback = function(Value)
+        BunnyESPEnabled = Value
+        if not Value then
+            for bunnyModel, _ in pairs(bunnyESPObjects) do
+                cleanupBunnyESP(bunnyModel)
+            end
+            createNotif("Viper", "Bunny ESP Off", 2)
+        else
+            createNotif("Viper", "Bunny ESP On", 2)
+            scanForBunnies()
+        end
+    end
+})
+
+ local WolfESPToggle = Tabs.Esp:AddToggle("WolfESP", {
+    Title = "Esp Wolf",
+    Default = false,
+    Callback = function(Value)
+        WolfESPEnabled = Value
+        if not Value then
+            for wolfModel, _ in pairs(wolfESPObjects) do
+                cleanupWolfESP(wolfModel)
+            end
+            createNotif("Viper", "Wolf ESP Off", 2)
+        else
+            createNotif("Viper", "Wolf ESP On", 2)
+            scanForWolves()
+        end
+    end
+})
+
+local DeerESPToggle = Tabs.Esp:AddToggle("DeerESP", {
+    Title = "Esp Deer",
+    Default = false,
+    Callback = function(Value)
+        DeerESPEnabled = Value
+        if not Value then
+            for deerHead, _ in pairs(deerESPObjects) do
+                cleanupDeerESP(deerHead)
+            end
+            createNotif("Viper", "Deer ESP Off", 2)
+        else
+            createNotif("Viper", "Deer ESP On", 2)
+            scanForDeerHead()
+        end
+    end
+})
+
+local TeammatesESPToggle = Tabs.Esp:AddToggle("TeammatesESP", {
+    Title = "Esp Team",
+    Default = false,
+    Callback = function(Value)
+        TeammatesESPEnabled = Value
+        if not Value then
+            for targetPlayer, _ in pairs(teammateESPObjects) do
+                cleanupTeammateESP(targetPlayer)
+            end
+            createNotif("Viper", "Teammates ESP Off", 2)
+        else
+            createNotif("Viper", "Teammates ESP On", 2)
+            scanForTeammates()
+        end
+    end
+})
+
+local BearESPToggle = Tabs.Esp:AddToggle("BearESP", {
+    Title = "Esp Bear",
+    Default = false,
+    Callback = function(Value)
+        BearESPEnabled = Value
+        if not Value then
+            for bearModel, _ in pairs(bearESPObjects) do
+                cleanupBearESP(bearModel)
+            end
+            createNotif("Viper", "Bear ESP Off", 2)
+        else
+            createNotif("Viper", "Bear ESP On", 2)
+            scanForBears()
+        end
+    end
+})
+
+local ChildrenESPToggle = Tabs.Esp:AddToggle("ChildrenESP", {
+    Title = "Esp Children",
+    Default = false,
+    Callback = function(Value)
+        ChildrenESPEnabled = Value
+        if not Value then
+            for childModel, _ in pairs(childrenESPObjects) do
+                cleanupChildrenESP(childModel)
+            end
+            createNotif("Viper", "Children ESP Off", 2)
+        else
+            createNotif("Viper", "Children ESP On", 2)
+            scanForChildren()
+        end
+    end
+})
+
+-- Cultist ESP Toggle
+local CultistESPToggle = Tabs.Esp:AddToggle("CultistESP", {
+    Title = "Cultist",
+    Description = "All Cultist Must Die!",
+    Default = false,
+    Callback = function(Value)
+        CultistESPEnabled = Value
+        
+        if CultistESPEnabled then
+            createNotif("Viper", "Cultist Esp On", 2)
+            
+            -- Scan for existing cultists
+            scanForCultists()
+            
+            -- Listen for new cultists being added
+            local charactersFolder = workspace:FindFirstChild("Characters")
+            if charactersFolder then
+                charactersFolder.ChildAdded:Connect(function(child)
+                    if CultistESPEnabled and (child.Name == "Crossbow Cultist" or child.Name == "Cultist") then
+                        -- Small delay to ensure the model is fully loaded
+                        wait(0.1)
+                        createCultistESP(child)
+                    end
+                end)
+                
+                -- Clean up when cultists are removed
+                charactersFolder.ChildRemoved:Connect(function(child)
+                    if child.Name == "Crossbow Cultist" or child.Name == "Cultist" then
+                        cleanupCultistESP(child)
+                    end
+                end)
+            end
+        else
+            createNotif("Viper", "Cultist Esp Off", 2)
+            removeAllCultistESP()
+        end
+    end
+})
+
+-- Alpha Wolf ESP Toggle
+local AlphaWolfESPToggle = Tabs.Esp:AddToggle("AlphaWolfESP", {
+    Title = "Alpha Wolf",
+    Default = false,
+    Callback = function(Value)
+        AlphaWolfESPEnabled = Value
+        
+        if AlphaWolfESPEnabled then
+            createNotif("Viper", "Alpha Wolf Esp On", 2)
+            
+            -- Scan for existing Alpha Wolves
+            scanForAlphaWolves()
+            
+            -- Listen for new Alpha Wolves being added
+            local charactersFolder = workspace:FindFirstChild("Characters")
+            if charactersFolder then
+                charactersFolder.ChildAdded:Connect(function(child)
+                    if AlphaWolfESPEnabled and child:FindFirstChild("Tail2") and child:FindFirstChild("Head") then
+                        -- Small delay to ensure the model is fully loaded
+                        wait(0.1)
+                        createAlphaWolfESP(child)
+                    end
+                end)
+                
+                -- Clean up when Alpha Wolves are removed
+                charactersFolder.ChildRemoved:Connect(function(child)
+                    if child:FindFirstChild("Tail2") and child:FindFirstChild("Head") then
+                        cleanupAlphaWolfESP(child)
+                    end
+                end)
+            end
+        else
+            createNotif("Viper", "Alpha Wolf Esp Off", 2)
+            removeAllAlphaWolfESP()
+        end
+    end
+})
+
+-- Polar Bear ESP Toggle
+local PolarBearESPToggle = Tabs.Esp:AddToggle("PolarBearESP", {
+    Title = " Esp Polar Bear",
+    Default = false,
+    Callback = function(Value)
+        PolarBearESPEnabled = Value
+        
+        if PolarBearESPEnabled then
+            createNotif("Viper", "Bear Esp On", 2)
+            
+            -- Scan for existing Polar Bears
+            scanForPolarBears()
+            
+            -- Listen for new Polar Bears being added
+            local charactersFolder = workspace:FindFirstChild("Characters")
+            if charactersFolder then
+                charactersFolder.ChildAdded:Connect(function(child)
+                    if PolarBearESPEnabled and child.Name == "Polar Bear" then
+                        -- Small delay to ensure the model is fully loaded
+                        wait(0.1)
+                        createPolarBearESP(child)
+                    end
+                end)
+                
+                -- Clean up when Polar Bears are removed
+                charactersFolder.ChildRemoved:Connect(function(child)
+                    if child.Name == "Polar Bear" then
+                        cleanupPolarBearESP(child)
+                    end
+                end)
+            end
+        else
+            createNotif("Viper", "Polar Bear Esp Off", 2)
+            removeAllPolarBearESP()
+        end
+    end
+})
+
+local AutoChildSection = Tabs.Main:AddSection("AutoChild")
+ 
+-- GetChild 1 Button
+local GetChild1Button = AutoChildSection:AddButton({
+    Title = "GetChild 1",
+    Description = "Wait For the Map to Completely Loads or if your Children Esp find it it will NOT Automatically Get it or Tp to it you will just been tp and tp to camp after 4 sec",
+    Callback = function()
+        if isGetChildrenActive then
+            createNotif("Viper", "Wait!", 0.2)
+            return
+        end
+        
+        isGetChildrenActive = true
+        createNotif("Viper", "Going to Jail Cellar1...", 0.2)
+        
+        task.spawn(function()
+            local success, err = pcall(function()
+                local cellar1 = workspace.Map.Landmarks["Jail Cellar1"].Bed.BedMain
+                if cellar1 then
+                    local teleportSuccess = safeTeleport(cellar1.Position)
+                    if teleportSuccess then
+                        createNotif("Viper", "Sack the Kid", 0.2)
+                        task.wait(4)
+                        
+                        local spawnPos = getSpawnLocation()
+                        if spawnPos then
+                            safeTeleport(spawnPos)
+                            createNotif("Viper", "Returned from Jail Cellar1!", 0.2)
+                        end
+                    else
+                        createNotif("Error", "Not Found try finding child first", 0.2)
+                    end
+                else
+                    createNotif("Error", "Not Found try finding child first", 0.2)
+                end
+            end)
+            
+            if not success then
+                createNotif("Error", "Error: " .. tostring(err), 0.2)
+            end
+            
+            isGetChildrenActive = false
+        end)
+    end
+})
+
+-- GetChild 2 Button
+local GetChild2Button = AutoChildSection:AddButton({
+    Title = "GetChild 2",
+    Callback = function()
+        if isGetChildrenActive then
+            createNotif("Viper", "Wait!", 0.2)
+            return
+        end
+        
+        isGetChildrenActive = true
+        createNotif("Viper", "Going to Jail Cellar2...", 0.2)
+        
+        task.spawn(function()
+            local success, err = pcall(function()
+                local cellar2 = workspace.Map.Landmarks["Jail Cellar2"].Bed.BedMain
+                if cellar2 then
+                    local teleportSuccess = safeTeleport(cellar2.Position)
+                    if teleportSuccess then
+                        createNotif("Viper", "Sack it fast", 0.2)
+                        task.wait(4)
+                        
+                        local spawnPos = getSpawnLocation()
+                        if spawnPos then
+                            safeTeleport(spawnPos)
+                            createNotif("Viper", "Returned from Jail Cellar2!", 0.2)
+                        end
+                    else
+                        createNotif("Error", "Not Found try finding child first", 0.2)
+                    end
+                else
+                    createNotif("Error", "Not Found try finding child first", 0.2)
+                end
+            end)
+            
+            if not success then
+                createNotif("Error", "Error: " .. tostring(err), 0.2)
+            end
+            
+            isGetChildrenActive = false
+        end)
+    end
+})
+
+-- FIX 3: Replace the broken GetChild 3 button code with this:
+local GetChild3Button = AutoChildSection:AddButton({
+    Title = "GetChild 3",
+    Callback = function()
+        if isGetChildrenActive then
+            createNotif("Viper", "Wait!", 2)
+            return
+        end
+        
+        isGetChildrenActive = true
+        createNotif("Viper", "Going to Jail Cellar3...", 2)
+        
+        task.spawn(function()
+            local success, err = pcall(function()
+                local cellar3 = workspace.Map.Landmarks["Jail Cellar3"].Bed.BedMain
+                if cellar3 then
+                    local teleportSuccess = safeTeleport(cellar3.Position)
+                    if teleportSuccess then
+                        createNotif("Viper", "Sack the Kid!", 2) -- FIXED: Added missing parenthesis
+                        task.wait(4)
+                        
+                        local spawnPos = getSpawnLocation()
+                        if spawnPos then
+                            safeTeleport(spawnPos)
+                            createNotif("Viper", "Returned from Jail Cellar3!", 2) -- FIXED: Added missing parenthesis
+                        end
+                    else
+                        createNotif("Error", "Not Found try finding child first", 2)
+                    end
+                else
+                    createNotif("Error", "Not Found try finding child first", 2)
+                end
+            end)
+            
+            if not success then
+                createNotif("Error", "Error: " .. tostring(err), 2)
+            end
+            
+            isGetChildrenActive = false
+        end)
+    end
+})
+
+-- GetChild 4 Button
+local GetChild4Button = AutoChildSection:AddButton({
+    Title = "GetChild 4",
+    Callback = function()
+        if isGetChildrenActive then
+            createNotif("Viper", "Wait!", 0.2)
+            return
+        end
+        
+        isGetChildrenActive = true
+        createNotif("Viper", "Going to Jail Cellar4...", 0.2)
+        
+        task.spawn(function()
+            local success, err = pcall(function()
+                local cellar4 = workspace.Map.Landmarks["Jail Cellar4"].Bed.BedMain
+                if cellar4 then
+                    local teleportSuccess = safeTeleport(cellar4.Position)
+                    if teleportSuccess then
+                        createNotif("Viper", "At Jail Cellar4 - Get the child!", 0.2)
+                        task.wait(4)
+                        
+                        local spawnPos = getSpawnLocation()
+                        if spawnPos then
+                            safeTeleport(spawnPos)
+                            createNotif("Viper", "failed to return??", 1)
+                        end
+                    else
+                        createNotif("Error", "Not Found try finding child first", 1)
+                    end
+                else
+                    createNotif("Error", "Not Found try finding child first", 1)
+                end
+            end)
+            
+            if not success then
+                createNotif("Error", "Error: " .. tostring(err), 2)
+            end
+            
+            isGetChildrenActive = false
+        end)
+    end
+}) 
+
+-- Main ESP loop with error handling
+RunService.Heartbeat:Connect(function()
+    pcall(function()
+        -- Bunny ESP
+        if BunnyESPEnabled then
+            scanForBunnies()
+            
+            -- Clean up removed bunnies
+            for bunnyModel, _ in pairs(bunnyESPObjects) do
+                if not bunnyModel or not bunnyModel.Parent then
+                    cleanupBunnyESP(bunnyModel)
+                end
+            end
+        end
+        
+        -- Wolf ESP
+        if WolfESPEnabled then
+            scanForWolves()
+            
+            -- Clean up removed wolves
+            for wolfModel, _ in pairs(wolfESPObjects) do
+                if not wolfModel or not wolfModel.Parent then
+                    cleanupWolfESP(wolfModel)
+                end
+            end
+        end
+        
+        -- Deer ESP
+        if DeerESPEnabled then
+            scanForDeerHead()
+            
+            -- Clean up removed deer heads
+            for deerHead, _ in pairs(deerESPObjects) do
+                if not deerHead or not deerHead.Parent then
+                    cleanupDeerESP(deerHead)
+                end
+            end
+        end
+        
+        -- Teammates ESP
+        if TeammatesESPEnabled then
+            scanForTeammates()
+            
+            -- Clean up disconnected players or characters that no longer exist
+            for targetPlayer, espData in pairs(teammateESPObjects) do
+                if not targetPlayer.Parent or not targetPlayer.Character or 
+                   targetPlayer.Character ~= espData.character then
+                    cleanupTeammateESP(targetPlayer)
+                end
+            end
+        end
+        
+        -- Bear ESP
+        if BearESPEnabled then
+            scanForBears()
+            
+            -- Clean up removed bears
+            for bearModel, _ in pairs(bearESPObjects) do
+                if not bearModel or not bearModel.Parent then
+                    cleanupBearESP(bearModel)
+                end
+            end
+        end
+        
+        -- Children ESP
+        if ChildrenESPEnabled then
+            scanForChildren()
+            
+            -- Clean up removed children
+            for childModel, _ in pairs(childrenESPObjects) do
+                if not childModel or not childModel.Parent then
+                    cleanupChildrenESP(childModel)
+                end
+            end
+        end
+    end)
+end)
+
+-- Additional scanning loop for children ESP
+spawn(function()
+    while true do
+        wait(1)
+        if ChildrenESPEnabled then
+            scanForChildren()
+        end
+    end
+end)
+
+-- Periodic scan to catch any missed cultists
+spawn(function()
+    while true do
+        wait(2) -- Scan every 2 seconds
+        if CultistESPEnabled then
+            scanForCultists()
+        end
+    end
+end)
+
+-- Periodic scan to catch any missed entities
+spawn(function()
+    while true do
+        wait(2) -- Scan every 2 seconds
+        if AlphaWolfESPEnabled then
+            scanForAlphaWolves()
+        end
+        if PolarBearESPEnabled then
+            scanForPolarBears()
+        end
+    end
+end)
+
+-- Clean up when character respawns
+player.CharacterAdded:Connect(function(newChar)
+    -- Reset state when character respawns
+    isGetChildrenActive = false
+end)
+
+print("ESP System loaded successfully debug")
+
+-- Function to update character references
+local function updateCharacterReferences()
+    if player.Character then
+        humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+        rootPart = player.Character:FindFirstChild("HumanoidRootPart")
+    end
+end
+
+-- Initial character setup
+updateCharacterReferences()
+
+-- Update references when character respawns
+player.CharacterAdded:Connect(function()
+    task.wait(1) -- Wait for character to fully load
+    updateCharacterReferences()
+    
+    -- Reapply speed if it was enabled
+    if isSpeedApplied and humanoid then
+        humanoid.WalkSpeed = speedValue
+    end
+    
+    -- Reapply noclip if it was enabled
+    if isNoclipEnabled then
+        enableNoclip()
+    end
+    
+    -- Reapply infinite jump if it was enabled
+    if isInfiniteJumpEnabled then
+        enableInfiniteJump()
+    end
+end)
+
+-- SPEED FUNCTIONS
+local function applySpeed()
+    updateCharacterReferences()
+    if humanoid then
+        humanoid.WalkSpeed = speedValue
+        createNotif("Viper", "Speed set to " .. speedValue, 2)
+    else
+        createNotif("Error", "Character not found!", 2)
+    end
+end
+
+local function resetSpeed()
+    updateCharacterReferences()
+    if humanoid then
+        humanoid.WalkSpeed = 16 -- Default Roblox speed
+        createNotif("Viper", "Speed reset to default", 2)
+    end
+end
+
+-- NOCLIP FUNCTIONS
+local function enableNoclip()
+    if noclipConnection then
+        noclipConnection:Disconnect()
+    end
+    
+    noclipConnection = RunService.Stepped:Connect(function()
+        updateCharacterReferences()
+        if player.Character then
+            for _, part in pairs(player.Character:GetDescendants()) do
+                if part:IsA("BasePart") and part.CanCollide == true then
+                    part.CanCollide = false
+                end
+            end
+        end
+    end)
+    
+    createNotif("Viper", "Noclip Off", 2)
+end
+
+local function disableNoclip()
+    if noclipConnection then
+        noclipConnection:Disconnect()
+        noclipConnection = nil
+    end
+    
+    updateCharacterReferences()
+    if player.Character then
+        for _, part in pairs(player.Character:GetDescendants()) do
+            if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                part.CanCollide = true
+            end
+        end
+    end
+    
+    createNotif("Viper", "Noclip disabled", 2)
+end
+
+-- INFINITE JUMP FUNCTIONS
+local function enableInfiniteJump()
+    if jumpConnection then
+        jumpConnection:Disconnect()
+    end
+    
+    jumpConnection = UserInputService.JumpRequest:Connect(function()
+        updateCharacterReferences()
+        if humanoid and humanoid.Parent then
+            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
+    end)
+    
+    createNotif("Viper", "Infinite Jump enabled", 2)
+end
+
+local function disableInfiniteJump()
+    if jumpConnection then
+        jumpConnection:Disconnect()
+        jumpConnection = nil
+    end
+    
+    createNotif("Viper", "Infinite Jump disabled", 2)
+end
+
+-- PLAYERMISC TAB UI ELEMENTS
+
+-- Player Speed Input
+local PlayerSpeedInput = Tabs.PlayerMisc:AddInput("PlayerSpeed", {
+    Title = "PlayerSpeed",
+    Default = "16",
+    Placeholder = "Enter Speed.",
+    Numeric = true,
+    Finished = true,
+    Callback = function(Value)
+        local speed = tonumber(Value)
+        if speed and speed >= 0 and speed <= 10000 then
+            speedValue = speed
+            
+            -- If speed is currently applied, update it immediately
+            if isSpeedApplied then
+                applySpeed()
+            else
+                createNotif("Viper", "Speed set to " .. speed .. " Turn on the toggle to apply", 2)
+            end
+        else
+            createNotif("Error", "Max speed is only 10000", 2)
+        end
+    end
+})
+
+-- Apply Speed Toggle
+local ApplySpeedToggle = Tabs.PlayerMisc:AddToggle("ApplySpeed", {
+    Title = "ApplySpeed",
+    Default = false,
+    Callback = function(Value)
+        isSpeedApplied = Value
+        
+        if Value then
+            applySpeed()
+        else
+            resetSpeed()
+        end
+    end
+})
+
+-- Noclip Toggle
+local NoclipToggle = Tabs.PlayerMisc:AddToggle("Noclip", {
+    Title = "Noclip",
+    Default = false,
+    Callback = function(Value)
+        isNoclipEnabled = Value
+        
+        if Value then
+            enableNoclip()
+        else
+            disableNoclip()
+        end
+    end
+})
+
+-- Infinite Jump Toggle
+local InfiniteJumpToggle = Tabs.PlayerMisc:AddToggle("InfiniteJump", {
+    Title = "Infinite Jump",
+    Default = false,
+    Callback = function(Value)
+        isInfiniteJumpEnabled = Value
+        
+        if Value then
+            enableInfiniteJump()
+        else
+            disableInfiniteJump()
+        end
+    end
+})
+
+-- Replace your BindToClose section with this safer version:
+pcall(function()
+    game:BindToClose(function()
+        pcall(function()
+            if noclipConnection then
+                noclipConnection:Disconnect()
+            end
+        end)
+        pcall(function()
+            if jumpConnection then
+                jumpConnection:Disconnect()
+            end
+        end)
+    end)
+end)
+
+-- Disable CampFire Effect Toggle
+local DisableCampFireToggle = Tabs.Vision:AddToggle("DisableCampFire", {
+    Title = "Disable CampFireEffect",
+    Description = "The Effect when its nights and you walk out of the fire it will be darker right so this is to disable CampFireEffect",
+    Default = false,
+    Callback = function(Value)
+        disableCampFireEffect = Value
+        local lighting = game:GetService("Lighting")
+        
+        if Value then
+            -- Store original bloom and disable it
+            if lighting:FindFirstChild("Bloom") then
+                originalBloom = lighting.Bloom
+                lighting.Bloom.Enabled = false
+            end
+            
+            -- Store original color correction and disable it
+            if lighting:FindFirstChild("ColorCorrection") then
+                originalColorCorrection = lighting.ColorCorrection
+                lighting.ColorCorrection.Enabled = false
+            end
+            
+            createNotif("Viper", "CampFire Effect Disabled", 2)
+        else
+            -- Restore original bloom
+            if originalBloom then
+                originalBloom.Enabled = true
+            end
+            
+            -- Restore original color correction
+            if originalColorCorrection then
+                originalColorCorrection.Enabled = true
+            end
+            
+            createNotif("Viper", "CampFire Effect Enabled", 2)
+        end
+    end
+})
+
+-- Fullbright Toggle for Vision Tab
+local fullbrightToggle = Tabs.Vision:AddToggle("FullbrightToggle", {
+    Title = "Fullbright",
+    Default = false
+})
+
+-- Fullbright functionality
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+
+local player = Players.LocalPlayer
+local fullbrightEnabled = false
+local connection1, connection2, connection3
+
+-- Store original lighting values
+local originalValues = {
+    Brightness = Lighting.Brightness,
+    Ambient = Lighting.Ambient,
+    OutdoorAmbient = Lighting.OutdoorAmbient,
+    ShadowSoftness = Lighting.ShadowSoftness,
+    GlobalShadows = Lighting.GlobalShadows,
+    TimeOfDay = Lighting.TimeOfDay,
+    ClockTime = Lighting.ClockTime,
+    FogEnd = Lighting.FogEnd,
+    FogStart = Lighting.FogStart,
+    FogColor = Lighting.FogColor
+}
+
+-- Enable fullbright function
+local function enableFullbright()
+    -- Maximum brightness settings
+    Lighting.Brightness = 10
+    Lighting.Ambient = Color3.new(1, 1, 1)
+    Lighting.OutdoorAmbient = Color3.new(1, 1, 1)
+    Lighting.ShadowSoftness = 0
+    Lighting.GlobalShadows = false
+    
+    -- Force daylight settings
+    Lighting.TimeOfDay = "12:00:00"
+    Lighting.ClockTime = 12
+    
+    -- Remove all darkness effects
+    Lighting.FogEnd = 100000
+    Lighting.FogStart = 100000
+    Lighting.FogColor = Color3.new(1, 1, 1)
+    
+    -- Remove atmosphere effects
+    if Lighting:FindFirstChild("Atmosphere") then
+        Lighting.Atmosphere.Density = 0
+        Lighting.Atmosphere.Offset = 0
+        Lighting.Atmosphere.Color = Color3.new(1, 1, 1)
+        Lighting.Atmosphere.Decay = Color3.new(1, 1, 1)
+        Lighting.Atmosphere.Glare = 0
+        Lighting.Atmosphere.Haze = 0
+    end
+    
+    -- Disable all post-processing effects
+    for _, effect in pairs(Lighting:GetChildren()) do
+        if effect:IsA("PostEffect") then
+            effect.Enabled = false
+        elseif effect:IsA("ColorCorrectionEffect") then
+            effect.Brightness = 0.3
+            effect.Contrast = 0
+            effect.Saturation = 0
+        elseif effect:IsA("BloomEffect") then
+            effect.Enabled = false
+        elseif effect:IsA("SunRaysEffect") then
+            effect.Enabled = false
+        end
+    end
+    
+    -- Force maximum exposure
+    if Lighting:FindFirstChild("Sky") then
+        Lighting.Sky.SunAngularSize = 0
+    end
+end
+
+-- Setup protection connections (only created once)
+connection1 = Lighting.Changed:Connect(function(property)
+    if fullbrightEnabled then
+        wait()
+        Lighting.Brightness = 10
+        Lighting.Ambient = Color3.new(1, 1, 1)
+        Lighting.OutdoorAmbient = Color3.new(1, 1, 1)
+        Lighting.TimeOfDay = "12:00:00"
+        Lighting.ClockTime = 12
+        Lighting.GlobalShadows = false
+        Lighting.ShadowSoftness = 0
+        Lighting.FogEnd = 100000
+        Lighting.FogStart = 100000
+        Lighting.FogColor = Color3.new(1, 1, 1)
+    end
+end)
+
+connection2 = RunService.Heartbeat:Connect(function()
+    if fullbrightEnabled then
+        if Lighting.Brightness ~= 10 then Lighting.Brightness = 10 end
+        if Lighting.TimeOfDay ~= "12:00:00" then Lighting.TimeOfDay = "12:00:00" end
+        if Lighting.ClockTime ~= 12 then Lighting.ClockTime = 12 end
+        if Lighting.GlobalShadows ~= false then Lighting.GlobalShadows = false end
+        if Lighting.Ambient ~= Color3.new(1, 1, 1) then
+            Lighting.Ambient = Color3.new(1, 1, 1)
+        end
+        if Lighting.OutdoorAmbient ~= Color3.new(1, 1, 1) then
+            Lighting.OutdoorAmbient = Color3.new(1, 1, 1)
+        end
+    end
+end)
+
+connection3 = Lighting.ChildAdded:Connect(function(child)
+    if fullbrightEnabled then
+        wait(0.1)
+        if child:IsA("PostEffect") then
+            child.Enabled = false
+        elseif child:IsA("Atmosphere") then
+            child.Density = 0
+            child.Offset = 0
+            child.Color = Color3.new(1, 1, 1)
+            child.Decay = Color3.new(1, 1, 1)
+            child.Glare = 0
+            child.Haze = 0
+        end
+    end
+end)
+
+-- Disable fullbright function
+local function disableFullbright()
+    -- Restore original values
+    for property, value in pairs(originalValues) do
+        Lighting[property] = value
+    end
+    
+    -- Re-enable post-processing effects
+    for _, effect in pairs(Lighting:GetChildren()) do
+        if effect:IsA("PostEffect") then
+            effect.Enabled = true
+        end
+    end
+end
+
+-- Toggle callback
+fullbrightToggle:OnChanged(function(value)
+    fullbrightEnabled = value
+    
+    if fullbrightEnabled then
+        enableFullbright()
+        createNotif("Fullbright", "On", 3)
+    else
+        disableFullbright()
+        createNotif("Fullbright", "Off", 3)
+    end
+end)
+
+-- Disable Sky Effect Toggle
+local DisableSkyToggle = Tabs.Vision:AddToggle("DisableSky", {
+    Title = "Disable Fog Effects",
+    Description = "Not Much but it will disable  the far Fogs",
+    Default = false,
+    Callback = function(Value)
+        disableSkyEffect = Value
+        local lighting = game:GetService("Lighting")
+        
+        if Value then
+            -- Store original sky and disable it
+            if lighting:FindFirstChild("Sky") then
+                originalSky = lighting.Sky
+                lighting.Sky.Parent = nil
+            end
+            createNotif("Viper", "Sky Effect Disable", 2)
+        else
+            -- Restore original sky
+            if originalSky then
+                originalSky.Parent = lighting
+            end
+            createNotif("Viper", "Sky Effect Enable", 2)
+        end
+    end
+})
+
+Window:SelectTab(Tabs.Info)
+
+-- Info Tab Content
+Tabs.Info:AddParagraph({
+    Title = "Viper Supported Games",
+    Content = "Something Evil Will Happen\nTower of Hell\nShrink Hide & Seek\nSlap Battles\nFeed Your Brainrot\n\nJoin my Discord server to get the Script!"
+})
+
+Tabs.Info:AddParagraph({
+    Title = "Updates & Support",
+    Content = "This script will be updated guys, don't worry if you encounter a bug!"
+})
+
+print(" features loaded successfully!")
+
+-- SETTINGS TAB
+if SaveManager and InterfaceManager then
+    SaveManager:SetLibrary(Fluent)
+    InterfaceManager:SetLibrary(Fluent)
+    InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+    SaveManager:BuildConfigSection(Tabs.Settings)
+    SaveManager:LoadAutoloadConfig()
+end
+
+-- Simplified Mobile Toggle with Red Outline Glow Animation
+local function createMobileToggle()
+    local success, err = pcall(function()
+        -- Remove existing toggle
+        local existing = playerGui:FindFirstChild("ViperToggle")
+        if existing then
+            existing:Destroy()
+        end
+        
+        -- Create ScreenGui
+        local toggleGui = Instance.new("ScreenGui")
+        toggleGui.Name = "ViperToggle"
+        toggleGui.ResetOnSpawn = false
+        toggleGui.Parent = playerGui
+
+        -- Toggle frame
+        local toggleFrame = Instance.new("Frame")
+        toggleFrame.Size = UDim2.new(0, 50, 0, 50)
+        toggleFrame.Position = UDim2.new(1, -65, 0.5, -100)
+        toggleFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+        toggleFrame.BackgroundTransparency = 0.3
+        toggleFrame.BorderSizePixel = 0
+        toggleFrame.Parent = toggleGui
+
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 12)
+        corner.Parent = toggleFrame
+
+        local stroke = Instance.new("UIStroke")
+        stroke.Color = Color3.fromRGB(255, 50, 50)
+        stroke.Thickness = 2
+        stroke.Transparency = 0.2
+        stroke.Parent = toggleFrame
+
+        -- Toggle button
+        local toggleButton = Instance.new("TextButton")
+        toggleButton.Size = UDim2.new(1, 0, 1, 0)
+        toggleButton.BackgroundTransparency = 1
+        toggleButton.Text = "V"
+        toggleButton.TextColor3 = Color3.fromRGB(255, 80, 80)
+        toggleButton.TextScaled = true
+        toggleButton.Font = Enum.Font.GothamBold
+        toggleButton.Parent = toggleFrame
+
+        -- Variables
+        local isDragging = false
+        local dragStart = nil
+        local startPos = nil
+        local isVisible = true
+        local strokeTween = nil
+        local isHolding = false
+
+        -- Glow animation functions (only for stroke outline)
+        local function startGlow()
+            if strokeTween then
+                strokeTween:Cancel()
+            end
+            
+            isHolding = true
+            
+            -- Pulsing red outline effect
+            local function pulseStroke()
+                if not isHolding then return end
+                
+                -- Brighten stroke
+                local brighten = TweenService:Create(stroke, 
+                    TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), 
+                    {
+                        Color = Color3.fromRGB(255, 20, 20),
+                        Thickness = 3,
+                        Transparency = 0
+                    }
+                )
+                brighten:Play()
+                
+                brighten.Completed:Connect(function()
+                    if not isHolding then return end
+                    
+                    -- Dim stroke
+                    local dim = TweenService:Create(stroke, 
+                        TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), 
+                        {
+                            Color = Color3.fromRGB(255, 100, 100),
+                            Thickness = 2.5,
+                            Transparency = 0.1
+                        }
+                    )
+                    dim:Play()
+                    
+                    dim.Completed:Connect(function()
+                        pulseStroke() -- Continue pulsing
+                    end)
+                end)
+            end
+            
+            pulseStroke()
+            
+            -- Button color change
+            TweenService:Create(toggleButton, 
+                TweenInfo.new(0.2), 
+                {TextColor3 = Color3.fromRGB(255, 150, 150)}
+            ):Play()
+        end
+
+        local function stopGlow()
+            isHolding = false
+            
+            if strokeTween then
+                strokeTween:Cancel()
+            end
+            
+            -- Reset stroke to normal
+            strokeTween = TweenService:Create(stroke, 
+                TweenInfo.new(0.3), 
+                {
+                    Color = Color3.fromRGB(255, 50, 50),
+                    Thickness = 2,
+                    Transparency = 0.2
+                }
+            )
+            strokeTween:Play()
+            
+            -- Reset button color
+            TweenService:Create(toggleButton, 
+                TweenInfo.new(0.3), 
+                {TextColor3 = Color3.fromRGB(255, 80, 80)}
+            ):Play()
+        end
+
+        -- Toggle function
+        local function toggleWindow()
+            isVisible = not isVisible
+            if Window and Window.Root then
+                Window.Root.Visible = isVisible
+            end
+            
+            -- Simple pulse animation
+            local tween1 = TweenService:Create(toggleFrame, TweenInfo.new(0.1), {Size = UDim2.new(0, 45, 0, 45)})
+            tween1:Play()
+            tween1.Completed:Connect(function()
+                local tween2 = TweenService:Create(toggleFrame, TweenInfo.new(0.1), {Size = UDim2.new(0, 50, 0, 50)})
+                tween2:Play()
+            end)
+        end
+
+        -- Input handling
+        toggleButton.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+                isDragging = false
+                dragStart = input.Position
+                startPos = toggleFrame.Position
+                
+                -- Start glow effect
+                startGlow()
+            end
+        end)
+
+        toggleButton.InputChanged:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
+                if dragStart and not isDragging then
+                    local distance = (input.Position - dragStart).Magnitude
+                    if distance > 10 then
+                        isDragging = true
+                    end
+                end
+                
+                if isDragging and startPos then
+                    local delta = input.Position - dragStart
+                    toggleFrame.Position = UDim2.new(
+                        startPos.X.Scale, startPos.X.Offset + delta.X, 
+                        startPos.Y.Scale, startPos.Y.Offset + delta.Y
+                    )
+                end
+            end
+        end)
+
+        toggleButton.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+                -- Stop glow effect
+                stopGlow()
+                
+                if isDragging then
+                    -- Snap to edges
+                    local screenSize = workspace.CurrentCamera.ViewportSize
+                    local framePos = toggleFrame.AbsolutePosition
+                    
+                    local targetPos
+                    if framePos.X < screenSize.X / 2 then
+                        targetPos = UDim2.new(0, 15, toggleFrame.Position.Y.Scale, toggleFrame.Position.Y.Offset)
+                    else
+                        targetPos = UDim2.new(1, -65, toggleFrame.Position.Y.Scale, toggleFrame.Position.Y.Offset)
+                    end
+                    
+                    local snapTween = TweenService:Create(toggleFrame, TweenInfo.new(0.3), {Position = targetPos})
+                    snapTween:Play()
+                else
+                    toggleWindow()
+                end
+                
+                isDragging = false
+                dragStart = nil
+                startPos = nil
+            end
+        end)
+    end)
+    
+    if not success then
+        warn("Toggle creation error:", err)
+    end
+end
+
+-- Initialize mobile toggle
+task.spawn(function()
+    task.wait(2)
+    createMobileToggle()
+end)
+
+print("Script loaded successfully debug!")
