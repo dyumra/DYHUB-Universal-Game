@@ -15,8 +15,8 @@ getgenv().SeisenHubRunning = true
 -- Load Obsidian UI
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/deividcomsono/Obsidian/main/Library.lua"))()
 local Window = Library:CreateWindow({
-    Title = "DYHUB - Anime Eternal (Beta)",
-    Footer = "DYHUB (dsc.gg/dyhub)",
+    Title = "DYHUB",
+    Footer = "DYHUB @ Premium - Anime Eternal (dsc.gg/dyhub)",
     ToggleKeybind = Enum.KeyCode.LeftAlt,
     Center = true,
     AutoShow = true,
@@ -2765,5 +2765,6 @@ task.defer(function()
         end
     end
 end)
+
 
 
