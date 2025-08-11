@@ -80,7 +80,7 @@ v.Remotes:FindFirstChild("RE"):FireServer()
 end
 end
 end
-task.wait(2)
+task.wait(5)
 end
     end
 })
