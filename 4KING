@@ -28,7 +28,7 @@ local Window = WindUI:CreateWindow({
     IconThemed = true,
     Icon = "user",
     Author = "By กูเอง",
-    Size = UDim2.fromOffset(600, 400),
+    Size = UDim2.fromOffset(500, 300),
     Transparent = true,
     Theme = "Dark",
 })
