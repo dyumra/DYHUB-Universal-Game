@@ -10,7 +10,7 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 
 local Confirmed = false
 WindUI:Popup({
-    Title = "DYHUB Loaded! - Build A Plane",
+    Title = "DYHUB Loaded! - Build My Car",
     Icon = "star",
     IconThemed = true,
     Content = "DYHUB TEAM - Join us at dsc.gg/dyhub",
@@ -22,7 +22,7 @@ WindUI:Popup({
 repeat task.wait() until Confirmed
 
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB - Build A Plane",
+    Title = "DYHUB - Build My Car (Beta)",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
@@ -42,7 +42,7 @@ Window:EditOpenButton({
 
 local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
 local ShopTab = Window:Tab({ Title = "Shop", Icon = "shopping-cart" })
-local PlayerTab = Window:Tab({ Title = "Plane", Icon = "plane" })
+local PlayerTab = Window:Tab({ Title = "Mod", Icon = "car" })
 local MiscTab = Window:Tab({ Title = "Misc", Icon = "file-cog" })
 
 local baseSpeed = 50
@@ -58,11 +58,11 @@ local autoFarmRunning3 = false
 
 PlayerTab:Input({
     Title = "Set Base Speed Boost",
-    Placeholder = "Enter base speed (0-2000)",
+    Placeholder = "Enter base speed (0-500)",
     Icon = "sliders",
     Callback = function(text)
         local number = tonumber(text)
-        if number and number > 0 and number <= 2000 then
+        if number and number > 0 and number <= 500 then
             baseSpeed = number
         else
             warn("[DYHUB] Invalid base speed value. Please enter a number between 1 and 2000.")
@@ -104,8 +104,28 @@ PlayerTab:Toggle({
     end
 })
 
+PlayerTab:Toggle({
+    Title = "Infinite Fuel (Coming Soon)",
+    Icon = "fuel",
+    Default = false,
+    Callback = function(state)
+        autoStartRunning = state
+        if state then
+            task.spawn(function()
+                while autoStartRunning do
+                    local launch = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("DYHUB"):WaitForChild("Fuel")
+                    launch:FireServer()
+                    task.wait(10)
+                end
+            end)
+        else
+            print("[DYHUB] Coming Soon")
+        end
+    end
+})
+
 MainTab:Toggle({
-    Title = "Auto Start (Just Start)",
+    Title = "Auto Start (AFK)",
     Icon = "badge-dollar-sign",
     Default = false,
     Callback = function(state)
@@ -125,7 +145,7 @@ MainTab:Toggle({
 })
 
 MainTab:Toggle({
-    Title = "Auto Farm (1sec - 100K)",
+    Title = "Auto Farm (3sec - 100K)",
     Icon = "badge-dollar-sign",
     Default = false,
     Callback = function(state)
@@ -133,110 +153,8 @@ MainTab:Toggle({
         if state then
             print("[DYHUB] Auto Farm started.")
             task.spawn(function()
-                local LaunchRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Launch")
-                local ReturnRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Return")
-                local player = Players.LocalPlayer
-
-                while autoFarmRunning do
-                    local character = player.Character
-                    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-                    local hrp = character and character:FindFirstChild("HumanoidRootPart")
-
-                    -- รอจนกว่า character จะเกิดและพร้อม (ถ้าเล่นไปตาย จะรอจนเกิดใหม่)
-                    while autoFarmRunning and (not character or not humanoid or humanoid.Health <= 0 or not hrp) do
-                        task.wait(0.5)
-                        character = player.Character
-                        humanoid = character and character:FindFirstChildOfClass("Humanoid")
-                        hrp = character and character:FindFirstChild("HumanoidRootPart")
-                    end
-
-                    if not autoFarmRunning then break end
-
-                    -- ยิง Launch
-                    LaunchRemote:FireServer()
-                    task.wait(1.5)
-
-                    -- วาร์ป
-                    if hrp then
-                        hrp.CFrame = CFrame.new(9e6, 9e6, 9e6)
-                    end
-
-                    task.wait(1.5)
-
-                    -- ยิง Return
-                    ReturnRemote:FireServer()
-
-                    task.wait(4)
-                end
-            end)
-        else
-            print("[DYHUB] Auto Farm stopped.")
-        end
-    end
-})
-
-MainTab:Toggle({
-    Title = "Auto Farm (1sec - 10MILLION)",
-    Icon = "badge-dollar-sign",
-    Default = false,
-    Callback = function(state)
-        autoFarmRunning3 = state
-        if state then
-            print("[DYHUB] Auto Farm started.")
-            task.spawn(function()
-                local LaunchRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Launch")
-                local ReturnRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Return")
-                local player = Players.LocalPlayer
-
-                while autoFarmRunning3 do
-                    local character = player.Character
-                    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-                    local hrp = character and character:FindFirstChild("HumanoidRootPart")
-
-                    -- รอจนกว่า character จะเกิดและพร้อม (ถ้าเล่นไปตาย จะรอจนเกิดใหม่)
-                    while autoFarmRunning3 and (not character or not humanoid or humanoid.Health <= 0 or not hrp) do
-                        task.wait(0.5)
-                        character = player.Character
-                        humanoid = character and character:FindFirstChildOfClass("Humanoid")
-                        hrp = character and character:FindFirstChild("HumanoidRootPart")
-                    end
-
-                    if not autoFarmRunning3 then break end
-
-                    -- ยิง Launch
-                    LaunchRemote:FireServer()
-                    task.wait(1.5)
-
-                    -- วาร์ป
-                    if hrp then
-                        hrp.CFrame = CFrame.new(7e8, 7e8, 7e8)
-                    end
-
-                    task.wait(1.5)
-
-                    -- ยิง Return
-                    ReturnRemote:FireServer()
-
-                    task.wait(4)
-                end
-            end)
-        else
-            print("[DYHUB] Auto Farm stopped.")
-        end
-    end
-})
-
-MainTab:Toggle({
-    Title = "Infinite Money (Fix Lag)",
-    Icon = "badge-dollar-sign",
-    Default = false,
-    Callback = function(state)
-        autoFarmRunning2 = state
-        if state then
-            print("[DYHUB] Auto Farm started.")
-            task.spawn(function()
-                local LaunchRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Launch")
-                local ReturnRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("LaunchEvents"):WaitForChild("Return")
+                local LaunchRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Launch")
+                local ReturnRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Return")
                 local player = Players.LocalPlayer
 
                 while autoFarmRunning2 do
@@ -260,7 +178,13 @@ MainTab:Toggle({
 
                     -- วาร์ป
                     if hrp then
-                        hrp.CFrame = CFrame.new(9e12, 9e12, 9e12)
+                        hrp.CFrame = CFrame.new(6e6, 999, 0)
+                    end
+
+                    task.wait(3)
+
+                    if hrp then
+                        hrp.CFrame = CFrame.new(0, 999, 10000)
                     end
 
                     task.wait(1.5)
@@ -268,7 +192,121 @@ MainTab:Toggle({
                     -- ยิง Return
                     ReturnRemote:FireServer()
 
-                    task.wait(4)
+                    task.wait(3)
+                end
+            end)
+        else
+            print("[DYHUB] Auto Farm stopped.")
+        end
+    end
+})
+
+MainTab:Toggle({
+    Title = "Auto Farm (3sec - 1.0M)",
+    Icon = "badge-dollar-sign",
+    Default = false,
+    Callback = function(state)
+        autoFarmRunning = state
+        if state then
+            print("[DYHUB] Auto Farm started.")
+            task.spawn(function()
+                local LaunchRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Launch")
+                local ReturnRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Return")
+                local player = Players.LocalPlayer
+
+                while autoFarmRunning2 do
+                    local character = player.Character
+                    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+                    local hrp = character and character:FindFirstChild("HumanoidRootPart")
+
+                    -- รอจนกว่า character จะเกิดและพร้อม (ถ้าเล่นไปตาย จะรอจนเกิดใหม่)
+                    while autoFarmRunning2 and (not character or not humanoid or humanoid.Health <= 0 or not hrp) do
+                        task.wait(0.5)
+                        character = player.Character
+                        humanoid = character and character:FindFirstChildOfClass("Humanoid")
+                        hrp = character and character:FindFirstChild("HumanoidRootPart")
+                    end
+
+                    if not autoFarmRunning2 then break end
+
+                    -- ยิง Launch
+                    LaunchRemote:FireServer()
+                    task.wait(1.5)
+
+                    -- วาร์ป
+                    if hrp then
+                        hrp.CFrame = CFrame.new(9e7, 999, 0)
+                    end
+
+                    task.wait(3)
+
+                    if hrp then
+                        hrp.CFrame = CFrame.new(0, 999, 10000)
+                    end
+
+                    task.wait(1.5)
+
+                    -- ยิง Return
+                    ReturnRemote:FireServer()
+
+                    task.wait(3)
+                end
+            end)
+        else
+            print("[DYHUB] Auto Farm stopped.")
+        end
+    end
+})
+
+MainTab:Toggle({
+    Title = "Infinite Money (Max)",
+    Icon = "badge-dollar-sign",
+    Default = false,
+    Callback = function(state)
+        autoFarmRunning2 = state
+        if state then
+            print("[DYHUB] Auto Farm started.")
+            task.spawn(function()
+                local LaunchRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Launch")
+                local ReturnRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Return")
+                local player = Players.LocalPlayer
+
+                while autoFarmRunning2 do
+                    local character = player.Character
+                    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+                    local hrp = character and character:FindFirstChild("HumanoidRootPart")
+
+                    -- รอจนกว่า character จะเกิดและพร้อม (ถ้าเล่นไปตาย จะรอจนเกิดใหม่)
+                    while autoFarmRunning2 and (not character or not humanoid or humanoid.Health <= 0 or not hrp) do
+                        task.wait(0.5)
+                        character = player.Character
+                        humanoid = character and character:FindFirstChildOfClass("Humanoid")
+                        hrp = character and character:FindFirstChild("HumanoidRootPart")
+                    end
+
+                    if not autoFarmRunning2 then break end
+
+                    -- ยิง Launch
+                    LaunchRemote:FireServer()
+                    task.wait(1.5)
+
+                    -- วาร์ป
+                    if hrp then
+                        hrp.CFrame = CFrame.new(9e9, 999, 0)
+                    end
+
+                    task.wait(3)
+
+                    if hrp then
+                        hrp.CFrame = CFrame.new(0, 999, 10000)
+                    end
+
+                    task.wait(1.5)
+
+                    -- ยิง Return
+                    ReturnRemote:FireServer()
+
+                    task.wait(3)
                 end
             end)
         else
@@ -279,19 +317,19 @@ MainTab:Toggle({
 
 local ShopList = {
     "All",       -- เพิ่ม "All" เป็นตัวแรก
-    "block_1",
-    "seat_1",
-    "fuel_1",
-    "fuel_2",
-    "fuel_3",
-    "wing_1",
-    "wing_2",
-    "propeller_1",
-    "propeller_2",
-    "missile_1",
-    "shield",
-    "boost_1",
-    "balloon"
+    "Block",
+    "Wheel",
+    "Basic Engine",
+    "Advanced Fuel",
+    "Super Wheel",
+    "Advanced Engine",
+    "Monster Wheel",
+    "Basic Fuel",
+    "Passenger Seat",
+    "Best Fuel",
+    "Balloon",
+    "Glass",
+    "Thruster"
 }
 
 local selectedShops = {}
@@ -310,7 +348,7 @@ ShopTab:Toggle({
     Title = "Buy (Select)",
     Icon = "badge-dollar-sign",
     Callback = function(state)
-        local shopRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ShopEvents"):WaitForChild("BuyBlock")
+        local shopRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("BuyItem")
         if state then
             print("[DYHUB] Buying selected shop items started.")
             task.spawn(function()
@@ -338,7 +376,7 @@ ShopTab:Toggle({
                         end
                     end
 
-                    task.wait(0.5)
+                    task.wait(0.1)
                 end
             end)
         else
