@@ -15,8 +15,8 @@ getgenv().SeisenHubRunning = true
 -- Load Obsidian UI
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/deividcomsono/Obsidian/main/Library.lua"))()
 local Window = Library:CreateWindow({
-    Title = "Seisen Hub",
-    Footer = "Anime Eternal",
+    Title = "DYHUB - Anime Eternal (Beta)",
+    Footer = "DYHUB (dsc.gg/dyhub)",
     ToggleKeybind = Enum.KeyCode.LeftAlt,
     Center = true,
     AutoShow = true,
@@ -54,12 +54,12 @@ local UISettingsGroup = UISettings:AddLeftGroupbox("UI Customization")
 local InfoGroup = UISettings:AddRightGroupbox("Script Information")
 
 -- Script Information Section
-InfoGroup:AddLabel("Script by: Seisen")
-InfoGroup:AddLabel("Version: 1.0.0")
+InfoGroup:AddLabel("Script by: DYHUB")
+InfoGroup:AddLabel("Version: 2.3.1")
 InfoGroup:AddLabel("Game: Anime Eternal")
 
 InfoGroup:AddButton("Join Discord", function()
-    setclipboard("https://discord.gg/F4sAf6z8Ph")
+    setclipboard("dsc.gg/dyhub")
     print("✅ Copied Discord Invite!")
 end)
 
@@ -173,7 +173,7 @@ local function tryLoadImage()
             FallbackText.Size = UDim2.new(1, 0, 1, 0)
             FallbackText.Position = UDim2.new(0, 0, 0, 0)
             FallbackText.BackgroundTransparency = 1
-            FallbackText.Text = "S"
+            FallbackText.Text = "D"
             FallbackText.TextColor3 = Color3.fromRGB(125, 85, 255) -- Accent color
             FallbackText.TextSize = 24
             FallbackText.Font = Enum.Font.GothamBold
@@ -193,7 +193,7 @@ HubNameText.Name = "HubNameText"
 HubNameText.Size = UDim2.new(1, 0, 0, 20)
 HubNameText.Position = UDim2.new(0, 0, 0, 65) -- Below the circle
 HubNameText.BackgroundTransparency = 1
-HubNameText.Text = "Seisenhub"
+HubNameText.Text = "DYHUB"
 HubNameText.TextColor3 = Color3.fromRGB(255, 255, 255)
 HubNameText.TextSize = 14
 HubNameText.Font = Enum.Font.GothamBold
@@ -363,8 +363,8 @@ local currentTarget = nil
 
 local RunService = game:GetService("RunService")
 
-local configFolder = "SeisenHub"
-local configFile = configFolder .. "/seisen_hub_AE.txt"
+local configFolder = "DYHUBAE"
+local configFile = configFolder .. "/DYHUBAE.txt"
 local HttpService = game:GetService("HttpService")
 
 -- Ensure folder exists
@@ -2763,3 +2763,4 @@ task.defer(function()
         end
     end
 end)
+
