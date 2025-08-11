@@ -12,40 +12,40 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 
 local Confirmed = false
 WindUI:Popup({
-    Title = "Nigga Script Loader",
-    Icon = "user",
-    IconThemed = true,
-    Content = "By กูเอง",
-    Buttons = {
-        { Title = "Cancel", Variant = "Secondary", Callback = function() end },
-        { Title = "Continue", Icon = "arrow-right", Callback = function() Confirmed = true end, Variant = "Primary" }
-    }
+    Title = "Nigga Script Loader",
+    Icon = "user",
+    IconThemed = true,
+    Content = "สคริปเกมกาก By กูเอง",
+    Buttons = {
+        { Title = "Cancel", Variant = "Secondary", Callback = function() end },
+        { Title = "Continue", Icon = "arrow-right", Callback = function() Confirmed = true end, Variant = "Primary" }
+    }
 })
 repeat task.wait() until Confirmed
 
 local Window = WindUI:CreateWindow({
-    Title = "สคริปพ่องตาย",
-    IconThemed = true,
-    Icon = "user",
-    Author = "By กูเอง",
-    Size = UDim2.fromOffset(600, 400),
-    Transparent = true,
-    Theme = "Dark",
+    Title = "สคริปพ่องตาย",
+    IconThemed = true,
+    Icon = "user",
+    Author = "By กูเอง",
+    Size = UDim2.fromOffset(600, 400),
+    Transparent = true,
+    Theme = "Dark",
 })
 
 Window:EditOpenButton({
-    Title = "เปิด UI ไอควาย",
-    Icon = "monitor",
-    CornerRadius = UDim.new(0, 6),
-    StrokeThickness = 2,
-    Color = ColorSequence.new(Color3.fromRGB(30, 30, 30), Color3.fromRGB(255, 255, 255)),
-    Draggable = true,
+    Title = "เปิด UI ไอควาย",
+    Icon = "monitor",
+    CornerRadius = UDim.new(0, 6),
+    StrokeThickness = 2,
+    Color = ColorSequence.new(Color3.fromRGB(30, 30, 30), Color3.fromRGB(255, 255, 255)),
+    Draggable = true,
 })
 
 -- Tabs
 local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
 
-mainTab:Input({
+MainTab:Input({
     Title = "ชื่อของ",
     Placeholder = "เขียนชื่อไอเทมนะจุ",
     Callback = function(text)
@@ -53,7 +53,7 @@ mainTab:Input({
     end,
 })
 
-mainTab:Input({
+MainTab:Input({
     Title = "จำนวน",
     Placeholder = "จำนวนที่ต้องการฮือ",
     Callback = function(text)
@@ -61,7 +61,7 @@ mainTab:Input({
     end,
 })
 
-mainTab:Button({
+MainTab:Button({
     Title = "เสก",
     Icon = "gift",
     Callback = function()
