@@ -53,6 +53,23 @@ local clickConnection
 local lastClickTime = 0
 local clickDelay = 0.3
 
+-- visual full
+
+local Lighting = game:GetService("Lighting")
+local RunService = game:GetService("RunService")
+
+local oldAmbient = Lighting.Ambient
+local oldBrightness = Lighting.Brightness
+local oldClockTime = Lighting.ClockTime
+
+local fullBrightConnection
+
+local oldFogStart = Lighting.FogStart
+local oldFogEnd = Lighting.FogEnd
+local oldFogColor = Lighting.FogColor
+
+local noFogConnection
+
 -- esp
 
 local ie = {
@@ -1834,15 +1851,6 @@ Tabs.Main:Toggle({
 
 Tabs.Setting:Section({ Title = "Visual", Icon = "star" })
 
-local Lighting = game:GetService("Lighting")
-local RunService = game:GetService("RunService")
-
-local oldAmbient = Lighting.Ambient
-local oldBrightness = Lighting.Brightness
-local oldClockTime = Lighting.ClockTime
-
-local fullBrightConnection
-
 Tabs.Setting:Toggle({
     Title = "Full-Bright",
     Default = false,
@@ -1879,15 +1887,6 @@ Tabs.Setting:Toggle({
     end
 })
 
-local Lighting = game:GetService("Lighting")
-local RunService = game:GetService("RunService")
-
-local oldFogStart = Lighting.FogStart
-local oldFogEnd = Lighting.FogEnd
-local oldFogColor = Lighting.FogColor
-
-local noFogConnection
-
 Tabs.Setting:Toggle({
     Title = "No-Fog",
     Default = false,
@@ -1922,8 +1921,6 @@ Tabs.Setting:Toggle({
         end
     end
 })
-
-local Lighting = game:GetService("Lighting")
 
 -- สร้าง ColorCorrectionEffect แค่ครั้งเดียว
 local vibrantEffect = Lighting:FindFirstChild("VibrantEffect") or Instance.new("ColorCorrectionEffect")
@@ -2056,8 +2053,3 @@ Tabs.More:Button({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Detail/refs/heads/main/Somtank"))()
     end
 })
-Tabs.More:Section({ Title = "Info Script", Icon = "info" })
-Tabs.More:Section({ Title = "- Auto Check-Full" })
-Tabs.More:Section({ Title = "- Auto Check-Gem" })
-Tabs.More:Section({ Title = "- Auto Server-Hop" })
-Tabs.More:Section({ Title = "- Auto Execute" })
