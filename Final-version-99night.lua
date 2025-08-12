@@ -1,8 +1,16 @@
+repeat task.wait() until game:IsLoaded()
+
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+getgenv().scan_map = false
 
 -- combat
 
@@ -34,6 +42,16 @@ local alimentos = {
     "Cooked Morsel",
     "Cooked Steak"
 }
+
+-- auto log
+
+local autoTreeFarmActive = false
+local autoFarmEnabled = false
+local originalPosition
+local clickConnection
+
+local lastClickTime = 0
+local clickDelay = 0.3
 
 -- esp
 
@@ -568,6 +586,16 @@ Tabs.Combat = Window:Tab({
     Icon = "sword",
     Desc = "Stellar"
 })
+Tabs.More = Window:Tab({
+    Title = "Other",
+    Icon = "crown",
+    Desc = "Stellar"
+})
+Tabs.Setting = Window:Tab({
+    Title = "Settings",
+    Icon = "settings",
+    Desc = "Stellar"
+})
 
 Window:SelectTab(1)
 
@@ -664,30 +692,6 @@ Tabs.Main:Toggle({
 
 Tabs.Auto:Section({ Title = "Auto Farm Log", Icon = "axe" })
 
-local function createNotif(title, text, duration)
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = title,
-        Text = text,
-        Duration = duration or 2
-    })
-end
-
--- ตัวแปรหลัก
-local autoTreeFarmActive = false
-local autoFarmEnabled = false
-local originalPosition
-local clickConnection
-
--- Services
-local Players = game:GetService("Players")
-local VirtualInputManager = game:GetService("VirtualInputManager")
-local RunService = game:GetService("RunService")
-local player = Players.LocalPlayer
-
--- ตัวแปร Click
-local lastClickTime = 0
-local clickDelay = 0.3
-
 -- ฟังก์ชันจำลองการกดปุ่ม Sprint
 local function simulateClick()
     if not autoFarmEnabled then return end
@@ -714,7 +718,6 @@ local function teleportToAirAndAnchor()
         character.HumanoidRootPart.CFrame = CFrame.new(airPosition)
         task.wait(0.5)
         character.HumanoidRootPart.Anchored = true
-        createNotif("AutoFarmLogs", "Please don't do anything or touch", 2)
         return true
     end
     return false
@@ -728,7 +731,6 @@ local function unanchorPlayer()
         if originalPosition then
             character.HumanoidRootPart.CFrame = originalPosition
         end
-        createNotif("AutoFarmLogs", "AutoFarm Done", 2)
     end
 end
 
@@ -736,14 +738,12 @@ end
 local function teleportAllTreesToPlayer()
     local character = player.Character
     if not (character and character:FindFirstChild("HumanoidRootPart")) then
-        createNotif("AutoFarmLogs", "Player character not found!", 3)
         return false
     end
 
     local playerPos = character.HumanoidRootPart.Position
     local treesFound = 0
     if not workspace:FindFirstChild("Map") then
-        createNotif("AutoFarmLogs", "You're not in the game!", 3)
         return false
     end
 
@@ -789,7 +789,6 @@ local function teleportAllTreesToPlayer()
             end
         end
         if count > 0 then
-            createNotif("AutoFarmLogs", "Wait! " .. count .. " " .. folderName, 1)
         end
         return count
     end
@@ -801,23 +800,19 @@ local function teleportAllTreesToPlayer()
         treesFound += teleportTreesFromFolder(workspace.Map.Foliage, "Foliage")
     end
 
-    createNotif("AutoFarmLogs", "AutoFarm Start " .. treesFound .. " Equip your Axe", 3)
     return treesFound > 0
 end
 
 -- เทเลพอร์ต Logs
 local function teleportAllLogsToPlayer()
-    createNotif("AutoFarmLogs", "Wait.", 2)
     local character = player.Character
     if not (character and character:FindFirstChild("HumanoidRootPart")) then
-        createNotif("AutoFarmLogs", "Player not found!", 3)
         return false
     end
 
     local playerPos = character.HumanoidRootPart.Position
     local logsFound = 0
     if not workspace:FindFirstChild("Items") then
-        createNotif("AutoFarmLogs", "You're not in the game?", 3)
         return false
     end
 
@@ -848,20 +843,18 @@ local function teleportAllLogsToPlayer()
         end
     end
 
-    createNotif("AutoFarmLogs", "Collected " .. logsFound .. " Logs from AutoLogFarm", 3)
     return logsFound > 0
 end
 
 -- Toggle หลัก
 Tabs.Auto:Toggle({
-    Title = "Auto Farm Log (Fix)",
+    Title = "Auto Farm Log (FIX)",
     Default = false,
     Callback = function(state)
         autoTreeFarmActive = state
         autoFarmEnabled = state
 
         if state then
-            createNotif("AutoFarmLogs", "AutoFarm Started", 2)
             if teleportToAirAndAnchor() then
                 task.wait(1)
                 if teleportAllTreesToPlayer() then
@@ -870,7 +863,6 @@ Tabs.Auto:Toggle({
                 end
             end
         else
-            createNotif("AutoFarmLogs", "AutoFarm Stopped!", 2)
             if clickConnection then
                 clickConnection:Disconnect()
                 clickConnection = nil
@@ -1043,6 +1035,53 @@ coroutine.wrap(function()
     end
 end)()
 
+Tabs.Tp:Section({ Title = "Scan Map", Icon = "map" })
+
+Tabs.Tp:Toggle({
+    Title = "Scan Map (Essential)",
+    Default = false,
+    Callback = function(state)
+        getgenv().scan_map = state
+
+        task.spawn(function()
+            local Players = game:GetService("Players")
+            local player = Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local hrp = character:WaitForChild("HumanoidRootPart", 3)
+            if not hrp then return end
+
+            local map = workspace:FindFirstChild("Map")
+            if not map then return end
+
+            local foliage = map:FindFirstChild("Foliage") or map:FindFirstChild("Landmarks")
+            if not foliage then return end
+
+            while getgenv().scan_map do
+                local trees = {}
+                for _, obj in ipairs(foliage:GetChildren()) do
+                    if obj.Name == "Small Tree" and obj:IsA("Model") then
+                        local trunk = obj:FindFirstChild("Trunk") or obj.PrimaryPart
+                        if trunk then
+                            table.insert(trees, trunk)
+                        end
+                    end
+                end
+
+                for _, trunk in ipairs(trees) do
+                    if not getgenv().scan_map then break end
+                    if trunk and trunk.Parent then
+                        local treeCFrame = trunk.CFrame
+                        local rightVector = treeCFrame.RightVector
+                        local targetPosition = treeCFrame.Position + rightVector * 69
+                        hrp.CFrame = CFrame.new(targetPosition)
+                        task.wait(0.01)
+                    end
+                end
+            end
+        end)
+    end
+})
+
 Tabs.Tp:Section({ Title = "Teleport", Icon = "map" })
 
 Tabs.Tp:Button({
@@ -1054,6 +1093,36 @@ Tabs.Tp:Button({
 })
 
 Tabs.Tp:Button({
+    Title = "Teleport to Safe Zone",
+    Callback = function()
+        if not workspace:FindFirstChild("SafeZonePart") then
+            local createpart = Instance.new("Part")
+            createpart.Name = "SafeZonePart"
+            createpart.Size = Vector3.new(20, 20, 20)
+            createpart.Position = Vector3.new(0, 105, 0)
+            createpart.Anchored = true
+            createpart.CanCollide = false
+            createpart.Transparency = 0.8
+            createpart.Color = Color3.fromRGB(255, 255, 255)
+            createpart.Parent = workspace
+        end
+        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hrp = character:WaitForChild("HumanoidRootPart")
+        hrp.CFrame = CFrame.new(0, 110, 0)
+    end
+})
+
+Tabs.Tp:Button({
+    Title="Teleport to Trader (Bunny Foot)",
+    Callback=function()
+        local pos = Vector3.new(-37.08, 3.98, -16.33)
+        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hrp = character:WaitForChild("HumanoidRootPart")
+        hrp.CFrame = CFrame.new(pos)
+    end
+})
+
+Tabs.Tp:Button({
     Title = "Teleport to Stronghold",
     Locked = false,
     Callback = function()
@@ -1061,6 +1130,42 @@ Tabs.Tp:Button({
     end
 })
 
+Tabs.Tp:Section({ Title = "Tree", Icon = "tree-deciduous" })
+
+Tabs.Teleport:Button({
+    Title = "Teleport to Random Tree",
+    Callback = function()
+        local Players = game:GetService("Players")
+        local player = Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local hrp = character:FindFirstChild("HumanoidRootPart", 3)
+        if not hrp then return end
+
+        local map = workspace:FindFirstChild("Map")
+        if not map then return end
+
+        local foliage = map:FindFirstChild("Foliage") or map:FindFirstChild("Landmarks")
+        if not foliage then return end
+
+        local trees = {}
+        for _, obj in ipairs(foliage:GetChildren()) do
+            if obj.Name == "Small Tree" and obj:IsA("Model") then
+                local trunk = obj:FindFirstChild("Trunk") or obj.PrimaryPart
+                if trunk then
+                    table.insert(trees, trunk)
+                end
+            end
+        end
+
+        if #trees > 0 then
+            local trunk = trees[math.random(1, #trees)]
+            local treeCFrame = trunk.CFrame
+            local rightVector = treeCFrame.RightVector
+            local targetPosition = treeCFrame.Position + rightVector * 3
+            hrp.CFrame = CFrame.new(targetPosition)
+        end
+    end
+})
 
 Tabs.Tp:Section({ Title = "Children", Icon = "eye" })
 
@@ -1405,7 +1510,7 @@ local RunService = game:GetService("RunService")
 local noclipConnection
 
 Tabs.Fly:Toggle({
-    Title = "Noclip",
+    Title = "No-Clip",
     Value = false,
     Callback = function(state)
         if state then
@@ -1433,7 +1538,7 @@ local Players = game:GetService("Players")
 local infJumpConnection
 
 Tabs.Fly:Toggle({
-    Title = "Inf Jump",
+    Title = "Infinite Jump",
     Value = false,
     Callback = function(state)
         if state then
@@ -1656,7 +1761,7 @@ Tabs.esp:Toggle({
     end
 })
 
-Tabs.Main:Section({ Title = "Misc", Icon = "settings" })
+Tabs.Main:Section({ Title = "Misc", Icon = "Feature" })
 
 local instantInteractEnabled = false
 local instantInteractConnection
@@ -1726,3 +1831,233 @@ Tabs.Main:Toggle({
         end
     end
 })
+
+Tabs.Setting:Section({ Title = "Visual", Icon = "star" })
+
+local Lighting = game:GetService("Lighting")
+local RunService = game:GetService("RunService")
+
+local oldAmbient = Lighting.Ambient
+local oldBrightness = Lighting.Brightness
+local oldClockTime = Lighting.ClockTime
+
+local fullBrightConnection
+
+Tabs.Setting:Toggle({
+    Title = "Full-Bright",
+    Default = false,
+    Callback = function(state)
+        if state then
+            -- เปิด FullBright
+            Lighting.Ambient = Color3.new(1, 1, 1)
+            Lighting.Brightness = 10
+            Lighting.ClockTime = 14
+
+            -- เริ่มตรวจสอบตลอดเวลา
+            fullBrightConnection = RunService.RenderStepped:Connect(function()
+                if Lighting.ClockTime ~= 14 then
+                    Lighting.ClockTime = 14
+                end
+                if Lighting.Brightness ~= 10 then
+                    Lighting.Brightness = 10
+                end
+                if Lighting.Ambient ~= Color3.new(1, 1, 1) then
+                    Lighting.Ambient = Color3.new(1, 1, 1)
+                end
+            end)
+        else
+            -- ปิด FullBright และหยุดตรวจสอบ
+            if fullBrightConnection then
+                fullBrightConnection:Disconnect()
+                fullBrightConnection = nil
+            end
+
+            Lighting.Ambient = oldAmbient
+            Lighting.Brightness = oldBrightness
+            Lighting.ClockTime = oldClockTime
+        end
+    end
+})
+
+local Lighting = game:GetService("Lighting")
+local RunService = game:GetService("RunService")
+
+local oldFogStart = Lighting.FogStart
+local oldFogEnd = Lighting.FogEnd
+local oldFogColor = Lighting.FogColor
+
+local noFogConnection
+
+Tabs.Setting:Toggle({
+    Title = "No-Fog",
+    Default = false,
+    Callback = function(state)
+        if state then
+            -- ปิดหมอก
+            Lighting.FogStart = 0
+            Lighting.FogEnd = 1e10
+            Lighting.FogColor = Color3.fromRGB(255, 255, 255)
+
+            -- ตรวจสอบตลอดว่าไม่มีใครเปลี่ยน
+            noFogConnection = RunService.RenderStepped:Connect(function()
+                if Lighting.FogStart ~= 0 then
+                    Lighting.FogStart = 0
+                end
+                if Lighting.FogEnd ~= 1e10 then
+                    Lighting.FogEnd = 1e10
+                end
+                if Lighting.FogColor ~= Color3.fromRGB(255, 255, 255) then
+                    Lighting.FogColor = Color3.fromRGB(255, 255, 255)
+                end
+            end)
+        else
+            -- ปิด toggle และคืนค่าหมอกเดิม
+            if noFogConnection then
+                noFogConnection:Disconnect()
+                noFogConnection = nil
+            end
+            Lighting.FogStart = oldFogStart
+            Lighting.FogEnd = oldFogEnd
+            Lighting.FogColor = oldFogColor
+        end
+    end
+})
+
+local Lighting = game:GetService("Lighting")
+
+-- สร้าง ColorCorrectionEffect แค่ครั้งเดียว
+local vibrantEffect = Lighting:FindFirstChild("VibrantEffect") or Instance.new("ColorCorrectionEffect")
+vibrantEffect.Name = "VibrantEffect"
+vibrantEffect.Saturation = 1.2      -- สด 200%
+vibrantEffect.Contrast = 0.4        -- เพิ่มคอนทราสต์
+vibrantEffect.Brightness = 0.1      -- เพิ่มความสว่างเล็กน้อย
+vibrantEffect.Enabled = false
+vibrantEffect.Parent = Lighting
+
+Tabs.Setting:Toggle({
+    Title = "Vibrant Colors 200%",
+    Default = false,
+    Callback = function(state)
+        if state then
+            -- เปิดโหมดสีสด
+            Lighting.Ambient = Color3.fromRGB(180, 180, 180)
+            Lighting.OutdoorAmbient = Color3.fromRGB(170, 170, 170)
+            Lighting.ColorShift_Top = Color3.fromRGB(255, 230, 200)
+            Lighting.ColorShift_Bottom = Color3.fromRGB(200, 240, 255)
+            vibrantEffect.Enabled = true
+        else
+            -- ปิดโหมด กลับค่าดั้งเดิม
+            Lighting.Ambient = Color3.new(0, 0, 0)
+            Lighting.OutdoorAmbient = Color3.new(0, 0, 0)
+            Lighting.ColorShift_Top = Color3.new(0, 0, 0)
+            Lighting.ColorShift_Bottom = Color3.new(0, 0, 0)
+            vibrantEffect.Enabled = false
+        end
+    end
+})
+
+Tabs.Setting:Section({ Title = "Show Status", Icon = "settings-2" })
+
+local showFPS, showPing = true, true
+local fpsText, msText = Drawing.new("Text"), Drawing.new("Text")
+fpsText.Size, fpsText.Position, fpsText.Color, fpsText.Center, fpsText.Outline, fpsText.Visible =
+    16, Vector2.new(Camera.ViewportSize.X-100, 10), Color3.fromRGB(0,255,0), false, true, showFPS
+msText.Size, msText.Position, msText.Color, msText.Center, msText.Outline, msText.Visible =
+    16, Vector2.new(Camera.ViewportSize.X-100, 30), Color3.fromRGB(0,255,0), false, true, showPing
+local fpsCounter, fpsLastUpdate = 0, tick()
+
+RunService.RenderStepped:Connect(function()
+    fpsCounter += 1
+    if tick() - fpsLastUpdate >= 1 then
+        if showFPS then
+            fpsText.Text = "FPS: " .. tostring(fpsCounter)
+            fpsText.Visible = true
+        else
+            fpsText.Visible = false
+        end
+        if showPing then
+            local pingStat = game:GetService("Stats").Network.ServerStatsItem["Data Ping"]
+            local ping = pingStat and math.floor(pingStat:GetValue()) or 0
+            msText.Text = "Ping: " .. ping .. " ms"
+            if ping <= 60 then
+                msText.Color = Color3.fromRGB(0, 255, 0)
+            elseif ping <= 120 then
+                msText.Color = Color3.fromRGB(255, 165, 0)
+            else
+                msText.Color = Color3.fromRGB(255, 0, 0)
+                msText.Text = "Ew Wifi Ping: " .. ping .. " ms"
+            end
+            msText.Visible = true
+        else
+            msText.Visible = false
+        end
+        fpsCounter = 0
+        fpsLastUpdate = tick()
+    end
+end)
+Tabs.Setting:Toggle({Title="Show FPS", Default=true, Callback=function(val) showFPS=val; fpsText.Visible=val end})
+Tabs.Setting:Toggle({Title="Show Ping (ms)", Default=true, Callback=function(val) showPing=val; msText.Visible=val end})
+
+Tabs.Setting:Section({ Title = "Low Graphic", Icon = "user-cog" })
+
+Tabs.Setting:Button({
+    Title = "FPS Boost (By Roblox)",
+    Callback = function()
+        pcall(function()
+            settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+            local lighting = game:GetService("Lighting")
+            lighting.Brightness = 0
+            lighting.FogEnd = 100
+            lighting.GlobalShadows = false
+            lighting.EnvironmentDiffuseScale = 0
+            lighting.EnvironmentSpecularScale = 0
+            lighting.ClockTime = 14
+            lighting.OutdoorAmbient = Color3.new(0, 0, 0)
+            local terrain = workspace:FindFirstChildOfClass("Terrain")
+            if terrain then
+                terrain.WaterWaveSize = 0
+                terrain.WaterWaveSpeed = 0
+                terrain.WaterReflectance = 0
+                terrain.WaterTransparency = 1
+            end
+            for _, obj in ipairs(lighting:GetDescendants()) do
+                if obj:IsA("PostEffect") or obj:IsA("BloomEffect") or obj:IsA("ColorCorrectionEffect") or obj:IsA("SunRaysEffect") or obj:IsA("BlurEffect") then
+                    obj.Enabled = false
+                end
+            end
+            for _, obj in ipairs(game:GetDescendants()) do
+                if obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
+                    obj.Enabled = false
+                elseif obj:IsA("Texture") or obj:IsA("Decal") then
+                    obj.Transparency = 1
+                end
+            end
+            for _, part in ipairs(workspace:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CastShadow = false
+                end
+            end
+        end)
+    end
+})
+
+Tabs.Setting:Button({
+    Title = "FPS Boost (By DYHUB)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Nigga.lua"))()
+    end
+})
+
+Tabs.More:Section({ Title = "Auto Farm", Icon = "gem" })
+
+Tabs.More:Button({
+    Title = "Auto Farm (Gem)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Detail/refs/heads/main/Somtank"))()
+    end
+})
+Tabs.More:Section({ Title = "Info Script", Icon = "info" })
+Tabs.More:Section({ Title = "- Auto Check-Full" })
+Tabs.More:Section({ Title = "- Auto Check-Gem" })
+Tabs.More:Section({ Title = "- Auto Server-Hop" })
+Tabs.More:Section({ Title = "- Auto Execute" })
