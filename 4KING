@@ -1,21 +1,60 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local DYHUB_1 = ReplicatedStorage.GiveItemAll
+-- โหลดรายชื่อผู้ใช้ที่อนุญาตจาก URL --
+local allowedUsersUrl = "https://raw.githubusercontent.com/dyumra/Whitelist/refs/heads/main/4KING-PREMIUM"
+
+local allowedUsers = {}
+
+local success, result = pcall(function()
+    local code = game:HttpGet(allowedUsersUrl)
+    local func = loadstring(code)
+    if func then
+        return func()
+    else
+        error("ไม่สามารถโหลดฟังก์ชันจากโค้ดได้")
+    end
+end)
+
+if success and type(result) == "table" then
+    allowedUsers = result
+    print("[System] โหลดรายชื่อผู้ใช้งานสำเร็จ")
+else
+    warn("[System] โหลดรายชื่อผู้ใช้งานล้มเหลว: ", result)
+    allowedUsers = {}
+end
+
+-- ตรวจสอบสิทธิ์ LocalPlayer --
 local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+if not allowedUsers[LocalPlayer.Name] then
+    local kickMessage = "[Warning] โปรดซื้อสคริปก่อนใช้งาน ราคา 150 บาท\n[Access Denied] คุณไม่มีสิทธิ์ใช้สคริปต์นี้: " .. LocalPlayer.Name
+    warn(kickMessage)
+    LocalPlayer:Kick(kickMessage)
+    return
+end
+
+-- Services --
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local player = Players.LocalPlayer
-local reviveEvent = ReplicatedStorage:WaitForChild("ReviveSystem"):WaitForChild("Event")
 
+-- Remote Events --
+local GiveItemAllEvent = ReplicatedStorage:WaitForChild("GiveItemAll")
+local ReviveEvent = ReplicatedStorage:WaitForChild("ReviveSystem"):WaitForChild("Event")
+
+-- Variables --
 local autoRespawn = false
-
 local itemName = ""
 local itemAmount = 0
 
-local function GiveItem(name, amount)
-    DYHUB_1:FireServer(name, amount)
-end
+local hitboxEnabled = false
+local headSize = 1
 
+-- Event connection management for cleanup --
+local characterAddedConnections = {}
+
+-- Load WindUI --
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+assert(WindUI, "[Error] Failed to load WindUI")
 
+-- Confirmation Popup before showing UI --
 local Confirmed = false
 WindUI:Popup({
     Title = "4KING HIGHCLASS",
@@ -24,11 +63,12 @@ WindUI:Popup({
     Content = "Script By YJSCRIPT",
     Buttons = {
         { Title = "Cancel", Variant = "Secondary", Callback = function() end },
-        { Title = "Continue", Icon = "arrow-right", Callback = function() Confirmed = true end, Variant = "Primary" }
+        { Title = "Continue", Icon = "arrow-right", Variant = "Primary", Callback = function() Confirmed = true end }
     }
 })
 repeat task.wait() until Confirmed
 
+-- Create Main Window --
 local Window = WindUI:CreateWindow({
     Title = "4KING HIGHCLASS",
     IconThemed = true,
@@ -48,11 +88,101 @@ Window:EditOpenButton({
     Draggable = true,
 })
 
--- Tabs
+-- Tabs --
 local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
-local FTab = Window:Tab({ Title = "Feature", Icon = "star" })
-local Hitbox = Window:Tab({ Title = "Hitbox", Icon = "sword" })
+local FeatureTab = Window:Tab({ Title = "Feature", Icon = "star" })
+local HitboxTab = Window:Tab({ Title = "Hitbox", Icon = "sword" })
 
+-- Utility Functions --
+
+-- Function to give item via RemoteEvent --
+local function GiveItem(name, amount)
+    if typeof(name) == "string" and typeof(amount) == "number" and amount > 0 then
+        GiveItemAllEvent:FireServer(name, amount)
+        print(("[GiveAll] เสกของเรียบร้อย: %d x %s"):format(amount, name))
+    else
+        warn("[GiveAll] ข้อมูลไม่ถูกต้อง! กรุณากรอกชื่อและจำนวนให้ถูกต้อง")
+    end
+end
+
+-- Resize all heads except local player --
+local function ResizeHeads()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            local char = player.Character
+            if char and char:FindFirstChild("Head") then
+                char.Head.Size = Vector3.new(headSize, headSize, headSize)
+                local mesh = char.Head:FindFirstChildOfClass("SpecialMesh")
+                if mesh then
+                    mesh.Scale = Vector3.new(1, 1, 1) * headSize
+                end
+            end
+        end
+    end
+end
+
+-- Reset heads to default size --
+local function ResetHeads()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            local char = player.Character
+            if char and char:FindFirstChild("Head") then
+                char.Head.Size = Vector3.new(2, 1, 1) -- Default Roblox head size
+                local mesh = char.Head:FindFirstChildOfClass("SpecialMesh")
+                if mesh then
+                    mesh.Scale = Vector3.new(1, 1, 1)
+                end
+            end
+        end
+    end
+end
+
+-- Disconnect all event connections to avoid duplicates --
+local function DisconnectAllConnections()
+    for _, conn in pairs(characterAddedConnections) do
+        conn:Disconnect()
+    end
+    characterAddedConnections = {}
+end
+
+-- Connect CharacterAdded events for all players and new players --
+local function ConnectCharacterAddedEvents()
+    -- Existing players
+    for _, player in pairs(Players:GetPlayers()) do
+        local conn = player.CharacterAdded:Connect(function(char)
+            if hitboxEnabled and player ~= LocalPlayer then
+                local head = char:WaitForChild("Head")
+                head.Size = Vector3.new(headSize, headSize, headSize)
+                local mesh = head:FindFirstChildOfClass("SpecialMesh")
+                if mesh then
+                    mesh.Scale = Vector3.new(1, 1, 1) * headSize
+                end
+            end
+        end)
+        table.insert(characterAddedConnections, conn)
+    end
+
+    -- New players
+    local playerAddedConn
+    playerAddedConn = Players.PlayerAdded:Connect(function(player)
+        local conn = player.CharacterAdded:Connect(function(char)
+            if hitboxEnabled and player ~= LocalPlayer then
+                local head = char:WaitForChild("Head")
+                head.Size = Vector3.new(headSize, headSize, headSize)
+                local mesh = head:FindFirstChildOfClass("SpecialMesh")
+                if mesh then
+                    mesh.Scale = Vector3.new(1, 1, 1) * headSize
+                end
+            end
+        end)
+        table.insert(characterAddedConnections, conn)
+    end)
+    table.insert(characterAddedConnections, playerAddedConn)
+end
+
+-- UI Setup --
+
+-- Main Tab Inputs --
 MainTab:Input({
     Title = "ชื่อของ",
     Placeholder = "ชื่อของที่ต้องการ",
@@ -75,14 +205,15 @@ MainTab:Button({
     Callback = function()
         if itemName ~= "" and itemAmount > 0 then
             GiveItem(itemName, itemAmount)
-            print("[NIGGA] Given", itemAmount, itemName)
         else
-            print("[NIGGA] Please enter a valid item name and amount")
+            warn("[GiveAll] กรุณากรอกชื่อของและจำนวนให้ถูกต้องก่อนเสก")
         end
     end,
 })
 
-FTab:Toggle({
+-- Feature Tab Toggles and Buttons --
+
+FeatureTab:Toggle({
     Title = "เกิดเอง อัตโนมัติ",
     Default = false,
     Callback = function(state)
@@ -90,124 +221,57 @@ FTab:Toggle({
         if autoRespawn then
             spawn(function()
                 while autoRespawn do
-                    local args = {
-                        "Respawn",
-                        player
-                    }
-                    reviveEvent:FireServer(unpack(args))
+                    ReviveEvent:FireServer("Respawn", LocalPlayer)
                     wait(3)
                 end
             end)
+            print("[AutoRespawn] เปิดใช้งานเกิดเองอัตโนมัติ")
+        else
+            print("[AutoRespawn] ปิดใช้งานเกิดเองอัตโนมัติ")
         end
-    end
+    end,
 })
 
-FTab:Button({
+FeatureTab:Button({
     Title = "เกิดเอง",
     Icon = "gift",
     Callback = function()
-        local player = game.Players.LocalPlayer
-        local args = {
-            "Respawn",
-            player
-        }
-        game.ReplicatedStorage:WaitForChild("ReviveSystem"):WaitForChild("Event"):FireServer(unpack(args))
-    end
+        ReviveEvent:FireServer("Respawn", LocalPlayer)
+        print("[Respawn] เรียกเกิดใหม่สำเร็จ")
+    end,
 })
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
+-- Hitbox Tab Controls --
 
-local hitboxEnabled = false
-local headSize = 1
-
-Hitbox:Slider({
+HitboxTab:Slider({
     Title = "ปรับขนาดหัว",
     Value = { Min = 1, Max = 40, Default = 1 },
     Callback = function(value)
         headSize = value
         if hitboxEnabled then
-            -- ปรับขนาดหัวให้ทุกคน (ยกเว้นตัวเอง) ตามค่าใหม่
-            for _, player in pairs(Players:GetPlayers()) do
-                if player ~= LocalPlayer then
-                    local character = player.Character
-                    if character and character:FindFirstChild("Head") then
-                        character.Head.Size = Vector3.new(headSize, headSize, headSize)
-                        -- ถ้าหัวมี Mesh ให้ปรับด้วยนะ
-                        local mesh = character.Head:FindFirstChildOfClass("SpecialMesh")
-                        if mesh then
-                            mesh.Scale = Vector3.new(1,1,1) * headSize
-                        end
-                    end
-                end
-            end
+            ResizeHeads()
+            print(("[Hitbox] ปรับขนาดหัวเป็น: %d"):format(headSize))
         end
-    end
+    end,
 })
 
-Hitbox:Toggle({
+HitboxTab:Toggle({
     Title = "เริ่มปรับขนาด",
     Icon = "gift",
     Default = false,
     Callback = function(state)
         hitboxEnabled = state
-
         if hitboxEnabled then
-            -- ปรับขนาดหัวของทุกคนตอนเปิด Toggle
-            for _, player in pairs(Players:GetPlayers()) do
-                if player ~= LocalPlayer then
-                    local character = player.Character
-                    if character and character:FindFirstChild("Head") then
-                        character.Head.Size = Vector3.new(headSize, headSize, headSize)
-                        local mesh = character.Head:FindFirstChildOfClass("SpecialMesh")
-                        if mesh then
-                            mesh.Scale = Vector3.new(1,1,1) * headSize
-                        end
-                    end
-                end
-            end
+            ResizeHeads()
+            ConnectCharacterAddedEvents()
+            print("[Hitbox] เปิดการปรับขนาดหัว")
         else
-            -- เมื่อปิด Toggle ให้กลับขนาดหัวของคนอื่นเป็นปกติ (1,1,1)
-            for _, player in pairs(Players:GetPlayers()) do
-                if player ~= LocalPlayer then
-                    local character = player.Character
-                    if character and character:FindFirstChild("Head") then
-                        character.Head.Size = Vector3.new(2, 1, 1) -- หัว Roblox ปกติ Size = (2,1,1)
-                        local mesh = character.Head:FindFirstChildOfClass("SpecialMesh")
-                        if mesh then
-                            mesh.Scale = Vector3.new(1,1,1)
-                        end
-                    end
-                end
-            end
+            ResetHeads()
+            DisconnectAllConnections()
+            print("[Hitbox] ปิดการปรับขนาดหัวและรีเซ็ตขนาด")
         end
-    end
+    end,
 })
 
--- นอกจากนี้ถ้าผู้เล่นใหม่เข้ามา หรือ ตัวละครรีสปawn จะต้องปรับขนาดให้อัตโนมัติถ้าเปิด Toggle ด้วย
-Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function(char)
-        if hitboxEnabled and player ~= LocalPlayer then
-            local head = char:WaitForChild("Head")
-            head.Size = Vector3.new(headSize, headSize, headSize)
-            local mesh = head:FindFirstChildOfClass("SpecialMesh")
-            if mesh then
-                mesh.Scale = Vector3.new(1,1,1) * headSize
-            end
-        end
-    end)
-end)
-
--- สำหรับคนที่อยู่ก่อนหน้า (กรณีรีรันสคริปต์)
-for _, player in pairs(Players:GetPlayers()) do
-    player.CharacterAdded:Connect(function(char)
-        if hitboxEnabled and player ~= LocalPlayer then
-            local head = char:WaitForChild("Head")
-            head.Size = Vector3.new(headSize, headSize, headSize)
-            local mesh = head:FindFirstChildOfClass("SpecialMesh")
-            if mesh then
-                mesh.Scale = Vector3.new(1,1,1) * headSize
-            end
-        end
-    end)
-end
+-- Script Ready Message --
+print("[Script] 4KING HIGHCLASS Script โหลดเรียบร้อยแล้ว")
