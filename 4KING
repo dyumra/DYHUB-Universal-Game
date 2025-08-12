@@ -18,10 +18,10 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 
 local Confirmed = false
 WindUI:Popup({
-    Title = "Nigga Script Loader",
+    Title = "4KING HIGHCLASS",
     Icon = "user",
     IconThemed = true,
-    Content = "สคริปเกมกาก By กูเอง",
+    Content = "Script By YJSCRIPT",
     Buttons = {
         { Title = "Cancel", Variant = "Secondary", Callback = function() end },
         { Title = "Continue", Icon = "arrow-right", Callback = function() Confirmed = true end, Variant = "Primary" }
@@ -30,17 +30,17 @@ WindUI:Popup({
 repeat task.wait() until Confirmed
 
 local Window = WindUI:CreateWindow({
-    Title = "สคริปพ่องตาย",
+    Title = "4KING HIGHCLASS",
     IconThemed = true,
     Icon = "user",
-    Author = "By กูเอง",
+    Author = "By YJSCRIPT",
     Size = UDim2.fromOffset(500, 300),
     Transparent = true,
     Theme = "Dark",
 })
 
 Window:EditOpenButton({
-    Title = "เปิด UI ไอควาย",
+    Title = "OPEN YJSCRIPT",
     Icon = "monitor",
     CornerRadius = UDim.new(0, 6),
     StrokeThickness = 2,
@@ -50,11 +50,12 @@ Window:EditOpenButton({
 
 -- Tabs
 local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
-local FTab = Window:Tab({ Title = "Feature", Icon = "sword" })
+local FTab = Window:Tab({ Title = "Feature", Icon = "star" })
+local Hitbox = Window:Tab({ Title = "Hitbox", Icon = "sword" })
 
 MainTab:Input({
     Title = "ชื่อของ",
-    Placeholder = "เขียนชื่อไอเทมนะจุ",
+    Placeholder = "ชื่อของที่ต้องการ",
     Callback = function(text)
         itemName = text
     end,
@@ -62,14 +63,14 @@ MainTab:Input({
 
 MainTab:Input({
     Title = "จำนวน",
-    Placeholder = "จำนวนที่ต้องการฮือ",
+    Placeholder = "จำนวนที่ต้องการ",
     Callback = function(text)
         itemAmount = tonumber(text) or 0
     end,
 })
 
 MainTab:Button({
-    Title = "เสก",
+    Title = "เริ่มเสก",
     Icon = "gift",
     Callback = function()
         if itemName ~= "" and itemAmount > 0 then
@@ -113,3 +114,100 @@ FTab:Button({
         game.ReplicatedStorage:WaitForChild("ReviveSystem"):WaitForChild("Event"):FireServer(unpack(args))
     end
 })
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local hitboxEnabled = false
+local headSize = 1
+
+Hitbox:Slider({
+    Title = "ปรับขนาดหัว",
+    Value = { Min = 1, Max = 40, Default = 1 },
+    Callback = function(value)
+        headSize = value
+        if hitboxEnabled then
+            -- ปรับขนาดหัวให้ทุกคน (ยกเว้นตัวเอง) ตามค่าใหม่
+            for _, player in pairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer then
+                    local character = player.Character
+                    if character and character:FindFirstChild("Head") then
+                        character.Head.Size = Vector3.new(headSize, headSize, headSize)
+                        -- ถ้าหัวมี Mesh ให้ปรับด้วยนะ
+                        local mesh = character.Head:FindFirstChildOfClass("SpecialMesh")
+                        if mesh then
+                            mesh.Scale = Vector3.new(1,1,1) * headSize
+                        end
+                    end
+                end
+            end
+        end
+    end
+})
+
+Hitbox:Toggle({
+    Title = "เริ่มปรับขนาด",
+    Icon = "gift",
+    Default = false,
+    Callback = function(state)
+        hitboxEnabled = state
+
+        if hitboxEnabled then
+            -- ปรับขนาดหัวของทุกคนตอนเปิด Toggle
+            for _, player in pairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer then
+                    local character = player.Character
+                    if character and character:FindFirstChild("Head") then
+                        character.Head.Size = Vector3.new(headSize, headSize, headSize)
+                        local mesh = character.Head:FindFirstChildOfClass("SpecialMesh")
+                        if mesh then
+                            mesh.Scale = Vector3.new(1,1,1) * headSize
+                        end
+                    end
+                end
+            end
+        else
+            -- เมื่อปิด Toggle ให้กลับขนาดหัวของคนอื่นเป็นปกติ (1,1,1)
+            for _, player in pairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer then
+                    local character = player.Character
+                    if character and character:FindFirstChild("Head") then
+                        character.Head.Size = Vector3.new(2, 1, 1) -- หัว Roblox ปกติ Size = (2,1,1)
+                        local mesh = character.Head:FindFirstChildOfClass("SpecialMesh")
+                        if mesh then
+                            mesh.Scale = Vector3.new(1,1,1)
+                        end
+                    end
+                end
+            end
+        end
+    end
+})
+
+-- นอกจากนี้ถ้าผู้เล่นใหม่เข้ามา หรือ ตัวละครรีสปawn จะต้องปรับขนาดให้อัตโนมัติถ้าเปิด Toggle ด้วย
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(char)
+        if hitboxEnabled and player ~= LocalPlayer then
+            local head = char:WaitForChild("Head")
+            head.Size = Vector3.new(headSize, headSize, headSize)
+            local mesh = head:FindFirstChildOfClass("SpecialMesh")
+            if mesh then
+                mesh.Scale = Vector3.new(1,1,1) * headSize
+            end
+        end
+    end)
+end)
+
+-- สำหรับคนที่อยู่ก่อนหน้า (กรณีรีรันสคริปต์)
+for _, player in pairs(Players:GetPlayers()) do
+    player.CharacterAdded:Connect(function(char)
+        if hitboxEnabled and player ~= LocalPlayer then
+            local head = char:WaitForChild("Head")
+            head.Size = Vector3.new(headSize, headSize, headSize)
+            local mesh = head:FindFirstChildOfClass("SpecialMesh")
+            if mesh then
+                mesh.Scale = Vector3.new(1,1,1) * headSize
+            end
+        end
+    end)
+end
