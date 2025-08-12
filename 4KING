@@ -245,7 +245,7 @@ FeatureTab:Button({
 
 HitboxTab:Slider({
     Title = "ปรับขนาดหัว",
-    Value = { Min = 1, Max = 40, Default = 1 },
+    Value = { Min = 1, Max = 50, Default = 1 },
     Callback = function(value)
         headSize = value
         if hitboxEnabled then
@@ -257,7 +257,7 @@ HitboxTab:Slider({
 
 HitboxTab:Toggle({
     Title = "เริ่มปรับขนาด",
-    Icon = "gift",
+    Icon = "package",
     Default = false,
     Callback = function(state)
         hitboxEnabled = state
