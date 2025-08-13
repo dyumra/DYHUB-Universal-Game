@@ -273,5 +273,39 @@ HitboxTab:Toggle({
     end,
 })
 
+local args = {
+    [1] = "Use",
+    [2] = "Armor",
+    [3] = 1
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("Inventory_Remotes"):WaitForChild("Event"):FireServer(unpack(args))
+
+local args = {
+    [1] = "Use",
+    [2] = "MedicineV",
+    [3] = 1
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("Inventory_Remotes"):WaitForChild("Event"):FireServer(unpack(args))
+
+
+local args = {
+    [1] = "Use",
+    [2] = "Clothes",
+    [3] = 1
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("Inventory_Remotes"):WaitForChild("Event"):FireServer(unpack(args))
+
+local args = {
+    [1] = "Fire",
+    [2] = Vector3.new(4459.00341796875, -26.564987182617188, 4093.643798828125),
+    [3] = workspace:WaitForChild("Garage"):WaitForChild("Part")
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("DeagleFunction"):InvokeServer(unpack(args))
+
+
 -- Script Ready Message --
 print("[Script] 4KING HIGHCLASS Script โหลดเรียบร้อยแล้ว")
