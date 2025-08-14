@@ -510,7 +510,7 @@ TeleportTab:CreateButton({
 
 AutoStuffTab:CreateSection("Auto Bond Farm")
 AutoStuffTab:CreateButton({
-    Name = "Auto Bond Farm V1",
+    Name = "Auto Farm Bond V1 (Cooked)",
     Callback = function()
         loadstring([[
             if not game:IsLoaded() then
@@ -661,7 +661,7 @@ end
 })
 
 AutoStuffTab:CreateButton({
-    Name = "Auto Farm Bond v2",
+    Name = "Auto Farm Bond V2 (Not Cooked)",
     Callback = function()
         local char = game.Players.LocalPlayer.Character
         local hrp = char and char:FindFirstChild("HumanoidRootPart")
@@ -752,6 +752,18 @@ AutoStuffTab:CreateButton({
                     end
                 end
             end
+        end
+    end
+})
+
+AutoStuffTab:CreateButton({
+    Name = "Auto Farm Bond (BY DYHUB)",
+    Callback = function()
+        local success, err = pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/DeadRails.lua"))()
+        end)
+        if not success then
+            warn("❌ Failed to load script: "..err)
         end
     end
 })
@@ -1282,5 +1294,6 @@ MiscTab:CreateToggle({
       Text.Visible = val
    end
 })
+
 
 
