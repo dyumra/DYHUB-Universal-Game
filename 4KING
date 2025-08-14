@@ -31,6 +31,83 @@ if not DYHUB_allowedUsers[LocalPlayer.Name] then
     return
 end
 
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+-- รายชื่อปลอมภาษาอังกฤษฮาๆ
+local fakeNamesEN = {
+	"CaptainObvious", "SpamMaster3000", "KeyboardWarrior", "PixelPotato",
+	"SirLagsALot", "N00bSlayer", "Lagzilla", "ButtonMasher",
+	"CheeseWizard", "EpicDuck", "Toastinator", "BaconSniper",
+	"GlitchGoblin", "PastaNinja", "CrazyUnicorn"
+}
+
+-- รายชื่อปลอมภาษาไทยฮาๆ
+local fakeNamesTH = {
+	"สมศักดิ์", "มะพร้าวแสบ", "ข้าวเหนียวจอมซ่า", "ไก่ทอดตัวแม่",
+	"บักโจ๊ก", "เจ้าเต้าหู้", "หมูปิ้งนักสู้", "ปิงปองบ้าพลัง",
+	"ไข่เจียวสุดติ่ง", "ต้มยำกุ้งเทพ", "หมึกย่างสายฟ้า", "น้องส้มโอ",
+	"ลิงน้อยมหัศจรรย์", "ผัดไทยโหด", "เต่าเร็วจี๋"
+}
+
+-- ฟังก์ชันสุ่มชื่อปลอมแบบรวม EN+TH
+local function getRandomFakeName()
+	if math.random() < 0.5 then
+		return fakeNamesEN[math.random(1, #fakeNamesEN)]
+	else
+		return fakeNamesTH[math.random(1, #fakeNamesTH)]
+	end
+end
+
+local function applyEffects(character)
+	local nametag = character:FindFirstChild("Nametag")
+	if not nametag then return end
+
+	local playerNameLabel = nametag:FindFirstChild("PlayerName")
+	if not playerNameLabel then return end
+
+	local icons = nametag:FindFirstChild("Icons")
+	if icons then
+		icons.Admin = true
+		icons.Owner = true
+		icons.Premium = true
+	end
+
+	-- ข้อความสลับ
+	local messages = {
+		"สคริปโตครดีซื้อที่ YJSCRIPT",
+		"" -- ใส่ชื่อปลอมใน loop
+	}
+
+	local msgIndex = 1
+	playerNameLabel.Text = messages[msgIndex]
+
+	task.spawn(function()
+		while character.Parent do
+			msgIndex = (msgIndex % #messages) + 1
+			if msgIndex == 2 then
+				playerNameLabel.Text = "@" .. getRandomFakeName() .. " (YJSCRIPT)"
+			else
+				playerNameLabel.Text = messages[msgIndex]
+			end
+			task.wait(2)
+		end
+	end)
+
+	local rainbowHue = 0
+
+	RunService.RenderStepped:Connect(function(deltaTime)
+		rainbowHue = (rainbowHue + deltaTime * 0.2) % 1
+		playerNameLabel.TextColor3 = Color3.fromHSV(rainbowHue, 1, 1)
+	end)
+end
+
+local player = Players.LocalPlayer
+if player.Character then
+	applyEffects(player.Character)
+end
+player.CharacterAdded:Connect(applyEffects)
+
 -- Services & Variables
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
