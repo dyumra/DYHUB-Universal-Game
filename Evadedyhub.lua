@@ -75,6 +75,8 @@ local SkullTab = Window:Tab({ Title = "Best", Icon = "skull" })
 local MiscTab = Window:Tab({ Title = "Misc", Icon = "file-cog" })
 local Niggatab = Window:Tab({ Title = "Info", Icon = "settings-2" })
 
+Window:SelectTab(1)
+
 local headlessEnabled = false
 local korbloxEnabled = false
 
