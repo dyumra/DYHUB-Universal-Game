@@ -5,7 +5,7 @@
 
 --]]
 
--- Load Allowed Users from URL
+--[[
 local allowedUsersUrl = "https://raw.githubusercontent.com/dyumra/Whitelist/refs/heads/main/4KING-PREMIUM"
 local allowedUsers = {}
 local success, result = pcall(function()
@@ -36,6 +36,7 @@ if not allowedUsers[LocalPlayer.Name] then
     LocalPlayer:Kick(kickMessage)
     return
 end
+--]]
 
 local RunService = game:GetService("RunService")
 
