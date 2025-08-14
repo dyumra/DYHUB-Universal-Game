@@ -2,7 +2,7 @@
 
 -- Library --
 local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-local Window = OrionLib:MakeWindow({Name = "DYHUB - Mines (Premium)", HidePremium = false, SaveConfig = true, ConfigFolder = "clock.lua.mines"})
+local Window = OrionLib:MakeWindow({Name = "DYHUB - Mines (Premium)", HidePremium = false, SaveConfig = true, ConfigFolder = "DYHUB_MINES"})
 local MineTab = Window:MakeTab({
     Name = "Mining",
     Icon = "rbxassetid://4483345998",
@@ -693,5 +693,16 @@ MiscTab:AddButton({Name = "Remove Fog", Callback = function()
 		end
 	end
 end})
+
+MiscTab:AddButton({
+    Name = "Full Bright",
+    Callback = function()
+        Lighting.Brightness = 2
+        Lighting.ClockTime = 14
+        Lighting.FogEnd = 100000
+        Lighting.GlobalShadows = false
+        Lighting.OutdoorAmbient = Color3.new(1, 1, 1)
+    end
+})
 
 OrionLib:Init()
