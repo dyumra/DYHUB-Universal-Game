@@ -2,7 +2,7 @@
 
 -- Library --
 local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
-local Window = OrionLib:MakeWindow({Name = "DYHUB - Mines (Premium)", HidePremium = false, SaveConfig = true, ConfigFolder = "DYHUB_MINES"})
+local Window = OrionLib:MakeWindow({Name = "DYHUB - Mines (Premium)", HidePremium = false, SaveConfig = true, ConfigFolder = "clock.lua.mines"})
 local MineTab = Window:MakeTab({
     Name = "Mining",
     Icon = "rbxassetid://4483345998",
