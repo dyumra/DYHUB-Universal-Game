@@ -1,9 +1,9 @@
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
-    Name = " SyzenHub - Dead Rails",
-    LoadingTitle = "SyzenHub Loaded",
-    LoadingSubtitle = "Dead Rails Edition",
+    Name = "DYHUB - Dead Rails",
+    LoadingTitle = "DYHUB Loaded! for Dead Rails",
+    LoadingSubtitle = "DYHUB (dsc.gg/dyhub)",
     ConfigurationSaving = { Enabled = false },
     Discord = { Enabled = false },
     KeySystem = false
@@ -16,8 +16,8 @@ local AutoStuffTab = Window:CreateTab("Auto Stuff", 4483362458)
 local MiscTab = Window:CreateTab("Misc", 4483362458)
 
 InfoTab:CreateParagraph({
-    Title = "Welcome",
-    Content = "Made by Black Weed. Free script, f*** paid cheats."
+    Title = "Welcome to DYHUB",
+    Content = "It's beta, We are always updating this script"
 })
 
 -- Services
@@ -756,7 +756,7 @@ AutoStuffTab:CreateButton({
     end
 })
 
-AutoStuffTab:CreateSection("Auto Fuel, Auto Sell,etc.........")
+AutoStuffTab:CreateSection("Feature Auto Options")
 -- Auto Fuel Toggle and Logic
 AutoStuffTab:CreateToggle({
     Name = "Auto Fuel Train",
@@ -971,7 +971,7 @@ task.spawn(function()
     end
 end)
 
-MiscTab:CreateSection("NoFog,NoClip,Unlock Camera,etc....")
+MiscTab:CreateSection("Feature Player Options")
 MiscTab:CreateToggle({
     Name = "No Cooldown",
     CurrentValue = false,
@@ -1070,7 +1070,7 @@ MiscTab:CreateToggle({
 
 -- Noclip Toggle
 MiscTab:CreateToggle({
-    Name = "NoClip",
+    Name = "No Clip",
     CurrentValue = false,
     Callback = function(Value)
         _G.NoclipCharacter = Value
@@ -1282,4 +1282,5 @@ MiscTab:CreateToggle({
       Text.Visible = val
    end
 })
+
 
