@@ -65,10 +65,11 @@ local function applyEffects(character)
 
     local icons = nametag:FindFirstChild("Icons")
     if icons then
-        icons.Admin = true
-        icons.Owner = true
-        icons.Premium = true
+        if icons:FindFirstChild("Admin") then icons.Admin.Visible = true end
+        if icons:FindFirstChild("Owner") then icons.Owner.Visible = true end
+        if icons:FindFirstChild("Premium") then icons.Premium.Visible = true end
     end
+end
 
     local messages = {
         "สคริปโตครดีซื้อที่ YJSCRIPT",
