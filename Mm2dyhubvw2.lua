@@ -1,12 +1,12 @@
 print([[
 
-KRT hub
+DYHUB
 
                                                                         
 
 ]])
 
-loadstring(game:HttpGet("https://pastefy.app/le3JMGVe/raw", true))()
+--loadstring(game:HttpGet("https://pastefy.app/le3JMGVe/raw", true))()
 
 do
     local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
@@ -33,10 +33,10 @@ do
     local Confirmed = false
     WindUI:Popup(
         {
-            Title = gradient("KRT hub", Color3.fromHex("#eb1010"), Color3.fromHex("#1023eb")),
-            Icon = "info",
-            Content = gradient("This script made by", Color3.fromHex("#10eb3c"), Color3.fromHex("#67c97a")) ..
-                gradient(" KRT Hub", Color3.fromHex("#001e80"), Color3.fromHex("#16f2d9")),
+            Title = gradient("DYHUB Loaded! for Murder Mystery 2", Color3.fromHex("#ff0000"), Color3.fromHex("#000000")),
+            Icon = "user",
+            Content = gradient("Premium @ dsc.gg/dyhub", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")) ..
+                gradient("DYHUB OFFICIAL", Color3.fromHex("#001e80"), Color3.fromHex("#16f2d9")),
             Buttons = {
                 {Title = gradient("Cancel", Color3.fromHex("#e80909"), Color3.fromHex("#630404")), Callback = function()
                     end, Variant = "Tertiary"},
@@ -51,20 +51,20 @@ do
     until Confirmed
     WindUI:Notify(
         {
-            Title = gradient("KRT Hub", Color3.fromHex("#eb1010"), Color3.fromHex("#1023eb")),
-            Content = "Скрипт успешно загружен!",
-            Icon = "check-circle",
+            Title = gradient("DYHUB", Color3.fromHex("#ff0000"), Color3.fromHex("#000000")),
+            Content = "Notification!",
+            Icon = "info",
             Duration = 3
         }
     )
     local Window =
         WindUI:CreateWindow(
         {
-            Title = gradient("KRT Hub MM2 [Beta]", Color3.fromHex("#001e80"), Color3.fromHex("#16f2d9")),
+            Title = gradient("DYHUB - MM2 (Beta)", Color3.fromHex("#ff0000"), Color3.fromHex("#000000")),
             Icon = "star",
             Author = gradient("Delta Android", Color3.fromHex("#1bf2b2"), Color3.fromHex("#1bcbf2")),
             Folder = "WindUI",
-            Size = UDim2.fromOffset(300, 270),
+            Size = UDim2.fromOffset(500, 300),
             Transparent = true,
             Theme = "Dark",
             SideBarWidth = 200,
@@ -74,7 +74,7 @@ do
     )
     Window:EditOpenButton(
         {
-            Title = "Open UI",
+            Title = "DYHUB - OPEN",
             Icon = "monitor",
             CornerRadius = UDim.new(2, 6),
             StrokeThickness = 2,
@@ -101,9 +101,6 @@ do
         AutoFarm = Window:Tab(
             {Title = gradient("AUTOFARM", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "user"}
         ),
-        DupeTab = Window:Tab(
-            {Title = gradient("DUPE", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "crown"}
-        ),
         bs = Window:Divider(),
         InnocentTab = Window:Tab(
             {Title = gradient("INNOCENT", Color3.fromHex("#0ff707"), Color3.fromHex("#1e690c")), Icon = "circle"}
@@ -112,7 +109,7 @@ do
             {Title = gradient("MURDER", Color3.fromHex("#e80909"), Color3.fromHex("#630404")), Icon = "circle"}
         ),
         SheriffTab = Window:Tab(
-            {Title = gradient("SHERIFF", Color3.fromHex("#001e80"), Color3.fromHex("#16f2d9")), Icon = "circle"}
+            {Title = gradient("SHERIFF", Color3.fromHex("#16f2d9"), Color3.fromHex("#001e80")), Icon = "circle"}
         ),
         gh = Window:Divider(),
         ServerTab = Window:Tab(
@@ -469,8 +466,8 @@ do
                 localRoot.CFrame = targetRoot.CFrame
                 WindUI:Notify(
                     {
-                        Title = "Телепортация",
-                        Content = "Успешно телепортирован к " .. teleportTarget.Name,
+                        Title = "Teleportation",
+                        Content = "Successfully teleported to " .. teleportTarget.Name,
                         Icon = "check-circle",
                         Duration = 3
                     }
@@ -478,7 +475,7 @@ do
             end
         else
             WindUI:Notify(
-                {Title = "Ошибка", Content = "Цель не найдена или недоступна", Icon = "x-circle", Duration = 3}
+                {Title = "DYHUB", Content = "Target not found or unavailable", Icon = "x-circle", Duration = 3}
             )
         end
     end
@@ -519,8 +516,8 @@ do
                             localRoot.CFrame = targetRoot.CFrame
                             WindUI:Notify(
                                 {
-                                    Title = "Телепортация",
-                                    Content = "Успешно телепортирован к шерифу " .. Sheriff,
+                                    Title = "DYHUB",
+                                    Content = "Successfully teleported to the sheriff: " .. Sheriff,
                                     Icon = "check-circle",
                                     Duration = 3
                                 }
@@ -529,8 +526,8 @@ do
                     else
                         WindUI:Notify(
                             {
-                                Title = "Ошибка",
-                                Content = "Шериф не найден или недоступен",
+                                Title = "DYHUB",
+                                Content = "Sheriff not found or unavailable",
                                 Icon = "x-circle",
                                 Duration = 3
                             }
@@ -539,8 +536,8 @@ do
                 else
                     WindUI:Notify(
                         {
-                            Title = "Ошибка",
-                            Content = "Шериф не определен в текущем матче",
+                            Title = "DYHUB",
+                            Content = "Sheriff is not determined in the current match",
                             Icon = "x-circle",
                             Duration = 3
                         }
@@ -563,8 +560,8 @@ do
                             localRoot.CFrame = targetRoot.CFrame
                             WindUI:Notify(
                                 {
-                                    Title = "Телепортация",
-                                    Content = "Успешно телепортирован к убийце " .. Murder,
+                                    Title = "DYHUB",
+                                    Content = "Successfully teleported to the Murder:" .. Murder,
                                     Icon = "check-circle",
                                     Duration = 3
                                 }
@@ -573,8 +570,8 @@ do
                     else
                         WindUI:Notify(
                             {
-                                Title = "Ошибка",
-                                Content = "Убийца не найден или недоступен",
+                                Title = "DYHUB",
+                                Content = "The Murder has not been found or is unavailable.",
                                 Icon = "x-circle",
                                 Duration = 3
                             }
@@ -583,8 +580,8 @@ do
                 else
                     WindUI:Notify(
                         {
-                            Title = "Ошибка",
-                            Content = "Убийца не определен в текущем матче",
+                            Title = "DYHUB",
+                            Content = "The Murder is not determined in the current match.",
                             Icon = "x-circle",
                             Duration = 3
                         }
@@ -1260,11 +1257,11 @@ do
         end
     )
 
-    Tabs.DupeTab:Section({
+    Tabs.MainTab:Section({
     Title = gradient("Instead Unlock Emote", Color3.fromHex("#ffffff"), Color3.fromHex("#ff0000"))
 })
 
-Tabs.DupeTab:Button({
+Tabs.MainTab:Button({
     Title = "Dupe Emote All",
     Description = "Unlock all emotes by pressing this button.",
     Callback = function()
@@ -1930,7 +1927,7 @@ Tabs.DupeTab:Button({
     Tabs.SettingsTab:Section({Title = gradient("Auto Execute", Color3.fromHex("#00ff40"), Color3.fromHex("#88f2a2"))})
     local AutoInject = {
         Enabled = false,
-        ScriptURL = "https://raw.githubusercontent.com/Snowt-Team/KRT-HUB/refs/heads/main/MM2.txt"
+        ScriptURL = "https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Mm2dyhubvw2.lua"
     }
     Tabs.SettingsTab:Toggle(
         {
@@ -1943,7 +1940,7 @@ Tabs.DupeTab:Button({
                     WindUI:Notify(
                         {
                             Title = "Auto Inject",
-                            Content = "Автоинжект включен! Скрипт перезапустится автоматически.",
+                            Content = "Autoinject is enabled! The script will restart automatically.",
                             Duration = 3
                         }
                     )
@@ -2020,20 +2017,20 @@ Tabs.DupeTab:Button({
     )
     Tabs.SocialsTab:Paragraph(
         {
-            Title = gradient("SnowT", Color3.fromHex("#001e80"), Color3.fromHex("#16f2d9")),
-            Desc = "My socials",
-            Image = "bird",
-            Color = "Green",
+            Title = gradient("DYHUB .GG/DYHUB", Color3.fromHex("#ff0000"), Color3.fromHex("#000000")),
+            Desc = "My Main Social",
+            Image = "star",
+            Color = "Red",
             Buttons = {
                 {
                     Icon = "circle",
-                    Title = "KRT Hub TG",
+                    Title = "DYHUB DISCORD",
                     Callback = function()
-                        if pcall(setclipboard, "https://t.me/KRT_client") then
+                        if pcall(setclipboard, "https://dsc.gg/dyhub") then
                             WindUI:Notify(
                                 {
-                                    Title = "Скопировано!",
-                                    Content = "Ссылка скопирована в буфер обмена.",
+                                    Title = "Copied!",
+                                    Content = "Link copied to clipboard.",
                                     Duration = 3,
                                     Icon = "check-fill"
                                 }
@@ -2041,8 +2038,8 @@ Tabs.DupeTab:Button({
                         else
                             WindUI:Notify(
                                 {
-                                    Title = "Ошибка копирования",
-                                    Content = "Не удалось скопировать ссылку. Возможно, функция setclipboard не доступна.",
+                                    Title = "Copy error",
+                                    Content = "Failed to copy link. The setclipboard function may not be available..",
                                     Duration = 5,
                                     Icon = "x-fill"
                                 }
@@ -2055,20 +2052,20 @@ Tabs.DupeTab:Button({
     )
     Tabs.SocialsTab:Paragraph(
         {
-            Title = gradient("Kawasaki", Color3.fromHex("#ffffff"), Color3.fromHex("#363636")),
-            Desc = "Socials My Friend",
-            Image = "bird",
-            Color = "Green",
+            Title = gradient("DYHUB GUNS.LOL", Color3.fromHex("#ff0000"), Color3.fromHex("#000000")),
+            Desc = "My Another Social",
+            Image = "star",
+            Color = "Red",
             Buttons = {
                 {
-                    Title = "TG Channel",
+                    Title = "DYHUB SOCIAL",
                     Icon = "circle",
                     Callback = function()
-                        if pcall(setclipboard, "https://t.me/+XFKScmKEPS41OWQ1") then
+                        if pcall(setclipboard, "https://guns.lol/DYHUB") then
                             WindUI:Notify(
                                 {
-                                    Title = "Скопировано!",
-                                    Content = "Ссылка скопирована в буфер обмена.",
+                                    Title = "Copied!",
+                                    Content = "Link copied to clipboard.",
                                     Duration = 3,
                                     Icon = "check-fill"
                                 }
@@ -2076,8 +2073,8 @@ Tabs.DupeTab:Button({
                         else
                             WindUI:Notify(
                                 {
-                                    Title = "Ошибка копирования",
-                                    Content = "Не удалось скопировать ссылку. Возможно, функция setclipboard не доступна.",
+                                    Title = "Copy error",
+                                    Content = "Failed to copy link. The setclipboard function may not be available..",
                                     Duration = 5,
                                     Icon = "x-fill"
                                 }
@@ -2093,7 +2090,7 @@ Tabs.DupeTab:Button({
             Title = "Changelogs:",
             Code = [[
 
-      ⚫KRT Hub MM2 commands:
+    DYHUB • MM2 commands:
 
     |• Silent Aimbot
 
@@ -2419,8 +2416,8 @@ Tabs.DupeTab:Button({
                 WindUI:SetTheme(currentThemeName)
                 WindUI:Notify(
                     {
-                        Title = "Тема обновлена",
-                        Content = "Новая тема '" .. currentThemeName .. "' применена!",
+                        Title = "Topic updated",
+                        Content = "New topic '" .. currentThemeName .. "' applied!",
                         Duration = 3,
                         Icon = "check-circle"
                     }
