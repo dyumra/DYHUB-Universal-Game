@@ -739,7 +739,7 @@ local SettingsTab = Window:AddTab({
 
 -- Thêm hỗ trợ Logo khi minimize
 repeat task.wait(0.25) until game:IsLoaded()
-getgenv().Image = "rbxassetid://90319448802378" -- ID tài nguyên hình ảnh logo
+getgenv().Image = "rbxassetid://104487529937663" -- ID tài nguyên hình ảnh logo
 getgenv().ToggleUI = "LeftControl" -- Phím để bật/tắt giao diện
 
 -- Tạo logo để mở lại UI khi đã minimize
@@ -5310,3 +5310,4 @@ PortalSection:AddToggle("OpenPortalToggle", {
     end
 
 })
+
