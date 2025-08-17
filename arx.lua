@@ -792,7 +792,7 @@ end)
 Window:SelectTab(1) -- Chọn tab đầu tiên (Info)
 
 -- Thêm section thông tin trong tab Info
-local InfoSection = InfoTab:AddSection("Thông tin")
+local InfoSection = InfoTab:AddSection("Information")
 
 InfoSection:AddParagraph({
     Title = "Anime Rangers X",
@@ -1521,18 +1521,18 @@ QuestSection:AddToggle("AutoClaimQuestToggle", {
 })
 
 -- Thêm section thiết lập trong tab Settings
-local SettingsSection = SettingsTab:AddSection("Thiết lập")
+local SettingsSection = SettingsTab:AddSection("Establish")
 
 -- Dropdown chọn theme
 SettingsSection:AddDropdown("ThemeDropdown", {
-    Title = "Chọn Theme",
+    Title = "Select Theme",
     Values = {"Dark", "Light", "Darker", "Aqua", "Amethyst"},
     Multi = false,
     Default = ConfigSystem.CurrentConfig.UITheme or "Dark",
     Callback = function(Value)
         ConfigSystem.CurrentConfig.UITheme = Value
         ConfigSystem.SaveConfig()
-        print("Đã chọn theme: " .. Value)
+        print("Theme selected: " .. Value)
     end
 })
 
@@ -1569,18 +1569,18 @@ SaveManager:SetLibrary(Fluent)
 InterfaceManager:SetLibrary(Fluent)
 
 -- Thay đổi cách lưu cấu hình để sử dụng tên người chơi
-InterfaceManager:SetFolder("HTHubAR")
-SaveManager:SetFolder("HTHubAR/" .. playerName)
+InterfaceManager:SetFolder("DYHUB-ARX")
+SaveManager:SetFolder("DYHUB-ARX/" .. playerName)
 
 -- Thêm thông tin vào tab Settings
 SettingsTab:AddParagraph({
-    Title = "Cấu hình tự động",
-    Content = "Cấu hình của bạn đang được tự động lưu theo tên nhân vật: " .. playerName
+    Title = "Auto configuration",
+    Content = "Your configuration is being automatically saved under character name: " .. playerName
 })
 
 SettingsTab:AddParagraph({
-    Title = "Phím tắt",
-    Content = "Nhấn LeftControl để ẩn/hiện giao diện"
+    Title = "Shortcuts",
+    Content = "Press LeftControl to hide/show the interface"
 })
 
 -- Thực thi tự động lưu cấu hình
@@ -3896,7 +3896,7 @@ local WebhookSection = WebhookTab:AddSection("Discord Webhook")
 WebhookSection:AddInput("WebhookURLInput", {
     Title = "Webhook URL",
     Default = webhookURL,
-    Placeholder = "Nhập URL webhook Discord của bạn",
+    Placeholder = "Enter your Discord webhook URL",
     Numeric = false,
     Finished = true,
     Callback = function(Value)
@@ -5308,4 +5308,5 @@ PortalSection:AddToggle("OpenPortalToggle", {
             end
         end
     end
+
 })
