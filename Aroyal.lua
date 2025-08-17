@@ -12,7 +12,7 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 
 local Confirmed = false
 WindUI:Popup({
-    Title = "DYHUB Loaded! - Anime Royal",
+    Title = "DYHUB Loaded! - Anime Royale",
     Icon = "star",
     IconThemed = true,
     Content = "DYHUB'S TEAM | Join our (dsc.gg/dyhub)",
@@ -24,7 +24,7 @@ WindUI:Popup({
 repeat task.wait() until Confirmed
 
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB - Anime Royal (Premium)",
+    Title = "DYHUB - Anime Royale (Premium)",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
