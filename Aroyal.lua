@@ -46,7 +46,7 @@ local MainTab = Window:Tab({ Title = "String Event", Icon = "shell" })
 
 Window:SelectTab(1)
 
-Tabs.MainTab:Section({ Title = "Dupe Item", Icon = "star" })
+MainTab:Section({ Title = "Dupe Item", Icon = "star" })
 
 local morphInputValue = ""
 local quantityValue = 1
