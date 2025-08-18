@@ -5,7 +5,7 @@ local Window = NEVERLOSE:AddWindow("DYHUB", "Text")
 
 -- Tabs and Sections
 local MainTab = Window:AddTab("Main", "home")
-local CharactersTab = Window:AddTab("Characters", "user")
+local CharactersTab = Window:AddTab("Characters", "locked")
 local GodModeTab = Window:AddTab("God Mode", "earth")
 local SettingsTab = Window:AddTab("Settings", "folder")
 
