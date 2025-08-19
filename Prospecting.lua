@@ -20,7 +20,7 @@ repeat task.wait() until Confirmed
 local Window = WindUI:CreateWindow({
     Folder = "DYHUB Config | Prospecting",
     Author = "DYHUB",
-    Title = "DYHUB - Prospecting (Version: 2.9.8)",
+    Title = "DYHUB - Prospecting (Version: 3.05)",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
@@ -398,6 +398,7 @@ Tabs.Farm:Section({ Title = "Set by you", Icon = "badge-dollar-sign" })
 local AutoFarm3Running = false
 local DigInputValue, ShakeInputValue, SellInputValue
 
+-- Copy Position
 Tabs.Farm:Button({
     Title = "Copy Position",
     Icon = "atom",
@@ -442,7 +443,7 @@ Tabs.Farm:Input({
     end,
 })
 
--- Convert Input to CFrame (fixed)
+-- Convert Input to CFrame
 local function parseCFrame(str)
     if not str or str == "" then return nil end
     str = str:gsub("%s+", "")
@@ -452,7 +453,6 @@ local function parseCFrame(str)
     end
 
     if #parts == 3 then
-        -- แค่ x, y, z
         return CFrame.new(parts[1], parts[2], parts[3])
     elseif #parts == 12 then
         return CFrame.new(parts[1], parts[2], parts[3],
@@ -460,11 +460,12 @@ local function parseCFrame(str)
                          parts[7], parts[8], parts[9],
                          parts[10], parts[11], parts[12])
     else
-        warn("[parseCFrame] Invalid format! Use 'x,y,z' or 'x,y,z, r00,r01,...,r22'")
+        warn("[parseCFrame] Invalid format! Use 'x,y,z' or 'x,y,z,r00,r01,...,r22'")
         return nil
     end
 end
 
+-- Auto Farm
 Tabs.Farm:Toggle({
     Title = "Auto Farm: Set By You",
     Value = false,
@@ -472,7 +473,6 @@ Tabs.Farm:Toggle({
         AutoFarm3Running = state
         if state then
             task.spawn(function()
-                local TweenService = game:GetService("TweenService")
                 local ReplicatedStorage = game:GetService("ReplicatedStorage")
                 local sellRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Shop"):WaitForChild("SellAll")
 
@@ -519,10 +519,10 @@ Tabs.Farm:Toggle({
                         step = 1
                     end
 
-                    -- STEP 1
+                    -- STEP 1 : Dig
                     if step == 1 and DigPoint1 then
-                        TweenService:Create(hrp, TweenInfo.new(1.5, Enum.EasingStyle.Linear), {CFrame=DigPoint1}):Play()
-                        task.wait(1.6)
+                        hrp.CFrame = DigPoint1
+                        task.wait(0.5)
                         repeat
                             current, max = getStats()
                             if current >= max then break end
@@ -532,10 +532,10 @@ Tabs.Farm:Toggle({
                         step = 2
                     end
 
-                    -- STEP 2
+                    -- STEP 2 : Shake
                     if step == 2 and ShakePoint2 then
-                        TweenService:Create(hrp, TweenInfo.new(1.5, Enum.EasingStyle.Linear), {CFrame=ShakePoint2}):Play()
-                        task.wait(1.6)
+                        hrp.CFrame = ShakePoint2
+                        task.wait(0.5)
                         repeat
                             current, max = getStats()
                             if current <= 0 then break end
@@ -545,10 +545,10 @@ Tabs.Farm:Toggle({
                         step = 3
                     end
 
-                    -- STEP 3
+                    -- STEP 3 : Sell
                     if step == 3 and sellPoint then
-                        TweenService:Create(hrp, TweenInfo.new(1.5, Enum.EasingStyle.Linear), {CFrame=sellPoint}):Play()
-                        task.wait(1.6)
+                        hrp.CFrame = sellPoint
+                        task.wait(0.5)
                         sellRemote:InvokeServer()
                         step = 1
                     end
@@ -559,6 +559,7 @@ Tabs.Farm:Toggle({
         end
     end
 })
+
 
 -- ประกาศ Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -739,7 +740,7 @@ local selectedList = {}
 -- Dropdown เลือก Shovel
 Tabs.Shop:Dropdown({
     Title = "Select Redeem Shovel",
-    Multi = true,
+    Multi = false,
     Values = ShovelNamesDisplay, -- แสดงชื่อ + ราคา
     Callback = function(value)
         selectedList = {}
