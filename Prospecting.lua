@@ -390,3 +390,159 @@ Tabs.Farm:Toggle({
         end
     end
 })
+
+Tabs.Farm:Section({ Title = "Set by you", Icon = "badge-dollar-sign" })
+
+local AutoFarm3Running = false
+local DigInputValue, ShakeInputValue, SellInputValue
+
+-- Copy Position Button
+Tabs.Farm:Button({
+    Title = "Copy Position",
+    Icon = "atom",
+    Callback = function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            local cfString = string.format("CFrame.new(%s)", tostring(hrp.CFrame))
+            setclipboard(cfString) -- คัดลอกไป Clipboard
+            print("[Copied] "..cfString)
+        else
+            warn("HumanoidRootPart not found!")
+        end
+    end,
+})
+
+-- Input Dig
+Tabs.Farm:Input({
+    Title = "Dig Position",
+    Placeholder = "Put your CFrame here",
+    Callback = function(text)
+        DigInputValue = text
+    end,
+})
+
+-- Input Shake
+Tabs.Farm:Input({
+    Title = "Shake Position",
+    Placeholder = "Put your CFrame here",
+    Callback = function(text)
+        ShakeInputValue = text
+    end,
+})
+
+-- Input Sell
+Tabs.Farm:Input({
+    Title = "Sell Position",
+    Placeholder = "Put your CFrame here",
+    Callback = function(text)
+        SellInputValue = text
+    end,
+})
+
+-- Toggle Auto Farm
+Tabs.Farm:Toggle({
+    Title = "Auto Farm: Set By You",
+    Value = false,
+    Callback = function(state)
+        AutoFarm3Running = state
+        if state then
+            task.spawn(function()
+                local TweenService = game:GetService("TweenService")
+                local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                local sellRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Shop"):WaitForChild("SellAll")
+
+                local function findPan()
+                    local character = player.Character
+                    if not character then return nil end
+                    for _, tool in ipairs(character:GetChildren()) do
+                        if tool:IsA("Tool") and tool.Name:match("Pan$") then
+                            return tool
+                        end
+                    end
+                    return nil
+                end
+
+                local stats = playerGui:WaitForChild("ToolUI"):WaitForChild("FillingPan"):WaitForChild("FillText")
+                local function getStats()
+                    local text = stats.Text
+                    local current, max = text:match("([%d%.]+)/([%d%.]+)")
+                    current = tonumber(current) or 0
+                    max = tonumber(max) or 0
+                    return current, max
+                end
+
+                -- Convert Input to CFrame
+                local function parseCFrame(str)
+                    local success, result = pcall(function()
+                        return loadstring("return "..str)()
+                    end)
+                    if success and typeof(result) == "CFrame" then
+                        return result
+                    end
+                    return nil
+                end
+
+                while AutoFarm2Running do
+                    local DigPoint1 = parseCFrame(DigInputValue)
+                    local ShakePoint2 = parseCFrame(ShakeInputValue)
+                    local sellPoint = parseCFrame(SellInputValue)
+
+                    local character = player.Character
+                    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
+                    local hrp = character.HumanoidRootPart
+                    local rustyPan = findPan()
+                    if not rustyPan then return end
+                    local collectScript = rustyPan:FindFirstChild("Scripts"):FindFirstChild("Collect")
+                    local args = {[1]=99}
+
+                    local current, max = getStats()
+                    local step
+                    if current <= 0 then
+                        step = 1
+                    elseif current >= max then
+                        step = 2
+                    else
+                        step = 1
+                    end
+
+                    -- STEP 1
+                    if step == 1 and DigPoint1 then
+                        TweenService:Create(hrp, TweenInfo.new(1.5, Enum.EasingStyle.Linear), {CFrame=DigPoint1}):Play()
+                        task.wait(1.6)
+                        repeat
+                            current, max = getStats()
+                            if current >= max then break end
+                            if collectScript then collectScript:InvokeServer(unpack(args)) end
+                            task.wait(0.05)
+                        until current >= max
+                        step = 2
+                    end
+
+                    -- STEP 2
+                    if step == 2 and ShakePoint2 then
+                        TweenService:Create(hrp, TweenInfo.new(1.5, Enum.EasingStyle.Linear), {CFrame=ShakePoint2}):Play()
+                        task.wait(1.6)
+                        repeat
+                            current, max = getStats()
+                            if current <= 0 then break end
+                            if collectScript then collectScript:InvokeServer(unpack(args)) end
+                            task.wait(0.05)
+                        until current <= 0
+                        step = 3
+                    end
+
+                    -- STEP 3
+                    if step == 3 and sellPoint then
+                        TweenService:Create(hrp, TweenInfo.new(1.5, Enum.EasingStyle.Linear), {CFrame=sellPoint}):Play()
+                        task.wait(1.6)
+                        sellRemote:InvokeServer()
+                        step = 1
+                    end
+
+                    task.wait(0.1)
+                end
+            end)
+        end
+    end
+})
+
