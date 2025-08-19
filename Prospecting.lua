@@ -5,7 +5,7 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 
 local Confirmed = false
 WindUI:Popup({
-    Title = "DYHUB Loaded! - 99 Night in the Forest",
+    Title = "DYHUB Loaded! - Prospecting",
     Icon = "star",
     IconThemed = true,
     Content = "DYHUB'S TEAM | Join our (dsc.gg/dyhub)",
@@ -18,9 +18,9 @@ repeat task.wait() until Confirmed
 
 -- สร้าง Window
 local Window = WindUI:CreateWindow({
-    Folder = "DYHUB Config | 99NitF | 99",
+    Folder = "DYHUB Config | Prospecting",
     Author = "DYHUB",
-    Title = "DYHUB - Prospective",
+    Title = "DYHUB - Prospecting (Version: 2.6.7)",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
