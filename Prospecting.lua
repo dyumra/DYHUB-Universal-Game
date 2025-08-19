@@ -20,7 +20,7 @@ repeat task.wait() until Confirmed
 local Window = WindUI:CreateWindow({
     Folder = "DYHUB Config | Prospecting",
     Author = "DYHUB",
-    Title = "DYHUB - Prospecting (Version: 3.05)",
+    Title = "DYHUB - Prospecting (Version: 3.42)",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
@@ -443,7 +443,7 @@ Tabs.Farm:Input({
     end,
 })
 
--- Convert Input to CFrame
+-- ✅ รองรับ x,y,z / x,y,z,rx,ry,rz / x,y,z,r00,...,r22
 local function parseCFrame(str)
     if not str or str == "" then return nil end
     str = str:gsub("%s+", "")
@@ -454,18 +454,29 @@ local function parseCFrame(str)
 
     if #parts == 3 then
         return CFrame.new(parts[1], parts[2], parts[3])
+    elseif #parts == 6 then
+        return CFrame.new(parts[1], parts[2], parts[3], parts[4], parts[5], parts[6])
     elseif #parts == 12 then
         return CFrame.new(parts[1], parts[2], parts[3],
                          parts[4], parts[5], parts[6],
                          parts[7], parts[8], parts[9],
                          parts[10], parts[11], parts[12])
     else
-        warn("[parseCFrame] Invalid format! Use 'x,y,z' or 'x,y,z,r00,r01,...,r22'")
+        warn("[parseCFrame] Invalid format! Use 'x,y,z' or 'x,y,z,rx,ry,rz' or 'x,y,z,r00,...,r22'")
         return nil
     end
 end
 
--- Auto Farm
+-- ฟังก์ชัน Tween ไปยัง CFrame
+local TweenService = game:GetService("TweenService")
+local function tweenTo(hrp, targetCF, time)
+    local goal = {CFrame = targetCF}
+    local tween = TweenService:Create(hrp, TweenInfo.new(time or 1.5, Enum.EasingStyle.Linear), goal)
+    tween:Play()
+    tween.Completed:Wait()
+end
+
+-- Auto Farm Toggle
 Tabs.Farm:Toggle({
     Title = "Auto Farm: Set By You",
     Value = false,
@@ -521,8 +532,7 @@ Tabs.Farm:Toggle({
 
                     -- STEP 1 : Dig
                     if step == 1 and DigPoint1 then
-                        hrp.CFrame = DigPoint1
-                        task.wait(0.5)
+                        tweenTo(hrp, DigPoint1, 1.5)
                         repeat
                             current, max = getStats()
                             if current >= max then break end
@@ -534,8 +544,7 @@ Tabs.Farm:Toggle({
 
                     -- STEP 2 : Shake
                     if step == 2 and ShakePoint2 then
-                        hrp.CFrame = ShakePoint2
-                        task.wait(0.5)
+                        tweenTo(hrp, ShakePoint2, 1.5)
                         repeat
                             current, max = getStats()
                             if current <= 0 then break end
@@ -547,8 +556,7 @@ Tabs.Farm:Toggle({
 
                     -- STEP 3 : Sell
                     if step == 3 and sellPoint then
-                        hrp.CFrame = sellPoint
-                        task.wait(0.5)
+                        tweenTo(hrp, sellPoint, 1.5)
                         sellRemote:InvokeServer()
                         step = 1
                     end
@@ -559,7 +567,6 @@ Tabs.Farm:Toggle({
         end
     end
 })
-
 
 -- ประกาศ Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
