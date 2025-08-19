@@ -1,3 +1,5 @@
+-- test
+
 repeat task.wait() until game:IsLoaded()
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
@@ -13,6 +15,8 @@ local SkipHelicopterRemote = ReplicatedStorage:WaitForChild("SkipHelicopter")
 local LMBRemote = ReplicatedStorage:WaitForChild("LMB")
 
 local autoFarmActive = false
+local autoFarmMasteryActive = false
+
 local autoReadyActive = false
 local autoSkipHelicopterActive = false
 local flushAuraActive = false
@@ -30,6 +34,7 @@ getgenv().HitboxSize = 20
 getgenv().HitboxShow = false
 
 local movementMode = "Teleport"
+local CharacterMode = "Used"
 local ActionMode = "Default"
 
 local visitedNPCs = {}
@@ -275,7 +280,6 @@ local function attackHumanoidNoProximity(npc)
 end
 
 local platform
-local autoFarmActive = true -- กำหนดตามระบบของคุณ
 
 local function removePlatform()
     if platform and platform.Parent then
@@ -288,17 +292,17 @@ local function createFollowingPlatform(hrp)
     if platform and platform.Parent then return platform end
 
     platform = Instance.new("Part")
-    platform.Size = Vector3.new(6,1,6)
+    platform.Size = Vector3.new(10,1,10)
     platform.Anchored = true
     platform.CanCollide = true
-    platform.Transparency = 0.5
+    platform.Transparency = 1
     platform.Name = "AutoFarmPlatform"
     platform.Parent = workspace
 
     local connection
     connection = game:GetService("RunService").Stepped:Connect(function()
         if hrp.Parent then
-            platform.Position = hrp.Position - Vector3.new(0,3,0)
+            platform.Position = hrp.Position - Vector3.new(0,4.5,0)
         else
             platform:Destroy()
             connection:Disconnect()
@@ -369,6 +373,43 @@ local function startAutoFarm()
                         pressCount = {}
                         task.wait(1)
                     end
+                end
+            end)
+            task.wait(0.05)
+        end
+
+        removePlatform()
+    end)
+end
+
+local function MasterystartAutoFarm()
+    task.spawn(function()
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+
+        createFollowingPlatform(hrp)
+
+        while autoFarmActive do
+            pcall(function()
+                if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                    hrp = char:FindFirstChild("HumanoidRootPart")
+                    createFollowingPlatform(hrp)
+                end
+
+                -- หา NPC โดยตรงจาก Humanoid ไม่ใช้ FlushProximity อีกแล้ว
+                local npc = findNextNPCWithHumanoidNoProximity(1000, hrp)
+                if npc then
+                    if not isVisited(npc) then
+                        addVisited(npc)
+                    end
+                    attackHumanoidNoProximity(npc)
+                else
+                    -- ถ้าไม่เจอ NPC เลย reset ตาราง
+                    visitedNPCs = {}
+                    pressCount = {}
+                    task.wait(1)
                 end
             end)
             task.wait(0.05)
@@ -771,6 +812,7 @@ task.spawn(function()
 end)
 
 HitboxTab:Section({ Title = "⚠ Beta Version", Icon = "badge-dollar-sign" })
+HitboxTab:Section({ Title = "⚠ Still bug or etc", Icon = "badge-dollar-sign" })
 HitboxTab:Section({ Title = "Feature Hitbox", Icon = "badge-dollar-sign" })
 
 HitboxTab:Button({ 
@@ -834,13 +876,36 @@ QuestTab:Button({
     end,
 })
 
-QuestTab:Button({
-    Title = "Auto Quest (Fixed)",
-    Callback = function()
+QuestTab:Section({ Title = "Start Auto Quest", Icon = "badge-dollar-sign" })
+
+QuestTab:Toggle({
+    Title = "Auto Farm (Upgrade)",
+    Default = false,
+    Callback = function(value)
         autoFarmActive = value
         if autoFarmActive then
             startAutoFarm()
         end
+    end,
+})
+
+QuestTab:Section({ Title = "Setting Auto Quest", Icon = "badge-dollar-sign" })
+
+QuestTab:Toggle({
+    Title = "Auto Quest Collect (Beta)",
+    Default = false,
+    Callback = function(value)
+        autoFarm1Active = value
+        print("[DYHUB] Collect Quest: " .. tostring(value))
+    end,
+})
+
+QuestTab:Toggle({
+    Title = "Auto Quest Skip (Need Robux)",
+    Default = false,
+    Callback = function(value)
+        autoFarm2Active = value
+        print("[DYHUB] Skip Quest: " .. tostring(value))
     end,
 })
 
@@ -856,12 +921,34 @@ MasteryTab:Dropdown({
     end,
 })
 
-MasteryTab:Button({
-    Title = "Auto Mastery (Beta)",
-    Callback = function()
+MasteryTab:Dropdown({
+    Title = "Character List",
+    Values = {"Used", "N/A"},
+    Default = CharacterMode,
+    Multi = false,
+    Callback = function(value)
+        CharacterMode = value
+    end,
+})
+
+MasteryTab:Toggle({
+    Title = "Auto Mastery (Flush+Attack) (Beta)",
+    Default = false,
+    Callback = function(value)
         autoFarmActive = value
         if autoFarmActive then
             startAutoFarm()
+        end
+    end,
+})
+
+MasteryTab:Toggle({
+    Title = "Auto Mastery (No Flush) (Beta)",
+    Default = false,
+    Callback = function(value)
+        autoFarmMasteryActive = value 
+        if autoFarmMasteryActive then 
+            MasterystartAutoFarm() 
         end
     end,
 })
