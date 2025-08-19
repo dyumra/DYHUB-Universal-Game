@@ -397,17 +397,17 @@ Tabs.Farm:Section({ Title = "Set by you", Icon = "badge-dollar-sign" })
 
 local AutoFarm3Running = false
 local DigInputValue, ShakeInputValue, SellInputValue
+local TweenSpeed = 2 -- default
 
--- Copy Position
+-- Copy Position (ปัดเศษเป็นจำนวนเต็ม)
 Tabs.Farm:Button({
     Title = "Copy Position",
     Icon = "atom",
     Callback = function()
         local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         if hrp then
-            local cf = hrp.CFrame
-            local components = {cf:components()}
-            local cfString = table.concat(components, ",")
+            local pos = hrp.Position
+            local cfString = string.format("%d,%d,%d", math.floor(pos.X + 0.5), math.floor(pos.Y + 0.5), math.floor(pos.Z + 0.5))
             setclipboard(cfString)
             print("[Copied] "..cfString)
         else
@@ -443,7 +443,22 @@ Tabs.Farm:Input({
     end,
 })
 
--- ✅ รองรับ x,y,z / x,y,z,rx,ry,rz / x,y,z,r00,...,r22
+-- Input Tween Speed
+Tabs.Farm:Input({
+    Title = "Tween Speed",
+    Placeholder = "Default = 2",
+    Callback = function(text)
+        local num = tonumber(text)
+        if num and num > 0 then
+            TweenSpeed = num
+            print("[Tween Speed] set to "..num)
+        else
+            warn("Invalid Tween Speed, must be a number > 0")
+        end
+    end,
+})
+
+-- ✅ parseCFrame รองรับ x,y,z / x,y,z,rx,ry,rz / x,y,z,r00,...,r22
 local function parseCFrame(str)
     if not str or str == "" then return nil end
     str = str:gsub("%s+", "")
@@ -467,11 +482,11 @@ local function parseCFrame(str)
     end
 end
 
--- ฟังก์ชัน Tween ไปยัง CFrame
+-- ฟังก์ชัน Tween Smooth
 local TweenService = game:GetService("TweenService")
 local function tweenTo(hrp, targetCF, time)
     local goal = {CFrame = targetCF}
-    local tween = TweenService:Create(hrp, TweenInfo.new(time or 1.5, Enum.EasingStyle.Linear), goal)
+    local tween = TweenService:Create(hrp, TweenInfo.new(time or TweenSpeed, Enum.EasingStyle.Linear), goal)
     tween:Play()
     tween.Completed:Wait()
 end
@@ -532,7 +547,7 @@ Tabs.Farm:Toggle({
 
                     -- STEP 1 : Dig
                     if step == 1 and DigPoint1 then
-                        tweenTo(hrp, DigPoint1, 1.5)
+                        tweenTo(hrp, DigPoint1, TweenSpeed)
                         repeat
                             current, max = getStats()
                             if current >= max then break end
@@ -544,7 +559,7 @@ Tabs.Farm:Toggle({
 
                     -- STEP 2 : Shake
                     if step == 2 and ShakePoint2 then
-                        tweenTo(hrp, ShakePoint2, 1.5)
+                        tweenTo(hrp, ShakePoint2, TweenSpeed)
                         repeat
                             current, max = getStats()
                             if current <= 0 then break end
@@ -556,7 +571,7 @@ Tabs.Farm:Toggle({
 
                     -- STEP 3 : Sell
                     if step == 3 and sellPoint then
-                        tweenTo(hrp, sellPoint, 1.5)
+                        tweenTo(hrp, sellPoint, TweenSpeed)
                         sellRemote:InvokeServer()
                         step = 1
                     end
