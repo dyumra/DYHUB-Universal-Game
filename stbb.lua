@@ -1,4 +1,4 @@
--- test
+-- test 2
 
 repeat task.wait() until game:IsLoaded()
 
@@ -206,6 +206,28 @@ local function findNextNPCWithFlushProximity(maxDistance, referencePart)
     return closestNPC, closestPrompt
 end
 
+local function attackHumanoidNoProximity(npc)
+    local humanoid = npc:FindFirstChildOfClass("Humanoid")
+    local hrp = npc:FindFirstChild("HumanoidRootPart")
+
+    if humanoid and hrp and humanoid.Health > 0 then
+        -- loop จนกว่า NPC ตาย หรือ autoFarm ปิด
+        while autoFarmActive and humanoid.Health > 0 and hrp.Parent do
+            -- วาร์ปติด NPC ตลอด (เกาะไว้บนหัว)
+            teleportToTarget(hrp.Position + Vector3.new(0, 3, 0), 0.1)
+
+            -- ยิง LMBRemote ต่อเนื่อง
+            pcall(function()
+                LMBRemote:FireServer()
+            end)
+
+            task.wait(0.1) -- delay เบาๆ กัน crash
+        end
+        -- ลบออกจาก visited หลังจาก NPC ตาย
+        removeVisited(npc)
+    end
+end
+
 local function findNextNPCWithHumanoidNoProximity(maxDistance, referencePart)
     local lastDist = maxDistance
     local closestNPC = nil
@@ -216,6 +238,7 @@ local function findNextNPCWithHumanoidNoProximity(maxDistance, referencePart)
                 if not Players:GetPlayerFromCharacter(npc) and not isVisited(npc) then
                     local humanoid = npc:FindFirstChildOfClass("Humanoid")
                     if humanoid and humanoid.Health > 0 then
+                        -- ข้ามพวกที่มี ProximityPrompt
                         local hasProximity = false
                         for _, child in pairs(npc:GetDescendants()) do
                             if child:IsA("ProximityPrompt") then
@@ -237,6 +260,41 @@ local function findNextNPCWithHumanoidNoProximity(maxDistance, referencePart)
     end
 
     return closestNPC
+end
+
+local function MasterystartAutoFarm()
+    task.spawn(function()
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+
+        createFollowingPlatform(hrp)
+
+        while autoFarmActive do
+            pcall(function()
+                if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                    hrp = char:FindFirstChild("HumanoidRootPart")
+                    createFollowingPlatform(hrp)
+                end
+
+                local npc = findNextNPCWithHumanoidNoProximity(1000, hrp)
+                if npc then
+                    if not isVisited(npc) then
+                        addVisited(npc)
+                    end
+                    attackHumanoidNoProximity(npc)
+                else
+                    visitedNPCs = {}
+                    pressCount = {}
+                    task.wait(1)
+                end
+            end)
+            task.wait(0.05)
+        end
+
+        removePlatform()
+    end)
 end
 
 local function smoothTeleportTo(targetPos, duration)
@@ -262,29 +320,6 @@ local function teleportToTarget(targetPos, duration)
         smoothTeleportTo(targetPos, duration or 0.5)
     else
         instantTeleportTo(targetPos)
-    end
-end
-
-local function attackHumanoidNoProximity(npc)
-    local humanoid = npc:FindFirstChildOfClass("Humanoid")
-    local hrp = npc:FindFirstChild("HumanoidRootPart")
-
-    if humanoid and hrp and humanoid.Health > 0 then
-        while humanoid.Health > 0 and autoFarmActive do
-            teleportToTarget(hrp.Position + Vector3.new(0, 3, 0), 0.5)
-            LMBRemote:FireServer()
-            task.wait(0.1)
-        end
-        removeVisited(npc)
-    end
-end
-
-local platform
-
-local function removePlatform()
-    if platform and platform.Parent then
-        platform:Destroy()
-        platform = nil
     end
 end
 
@@ -373,43 +408,6 @@ local function startAutoFarm()
                         pressCount = {}
                         task.wait(1)
                     end
-                end
-            end)
-            task.wait(0.05)
-        end
-
-        removePlatform()
-    end)
-end
-
-local function MasterystartAutoFarm()
-    task.spawn(function()
-        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-        local hrp = char:FindFirstChild("HumanoidRootPart")
-        if not hrp then return end
-
-        createFollowingPlatform(hrp)
-
-        while autoFarmActive do
-            pcall(function()
-                if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                    char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-                    hrp = char:FindFirstChild("HumanoidRootPart")
-                    createFollowingPlatform(hrp)
-                end
-
-                -- หา NPC โดยตรงจาก Humanoid ไม่ใช้ FlushProximity อีกแล้ว
-                local npc = findNextNPCWithHumanoidNoProximity(1000, hrp)
-                if npc then
-                    if not isVisited(npc) then
-                        addVisited(npc)
-                    end
-                    attackHumanoidNoProximity(npc)
-                else
-                    -- ถ้าไม่เจอ NPC เลย reset ตาราง
-                    visitedNPCs = {}
-                    pressCount = {}
-                    task.wait(1)
                 end
             end)
             task.wait(0.05)
