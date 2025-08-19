@@ -87,11 +87,11 @@ local flowerOptions = {
 }
 
 local Window = Rayfield:CreateWindow({
-    Name = "▶ Container RNG ◀",
-    Icon = 0,
-    LoadingTitle = "Loading...",
-    LoadingSubtitle = "by Agreed 🥵",
-    Theme = "DarkBlue",
+    Name = "DYHUB | Container RNG",
+    Icon = "star",
+    LoadingTitle = "DYHUB Loaded! - Container RNG",
+    LoadingSubtitle = "Join our dsc.gg/dyhub",
+    Theme = "Dark Blue",
 })
 
 local Tab = Window:CreateTab("Main")
@@ -111,7 +111,7 @@ Tab:CreateToggle({
             for _, coin in ipairs(coinHolder:GetChildren()) do
                 remote:FireServer(buffer.fromstring("\6"), buffer.fromstring("\254\1\0\6".."0" .. coin.Name))
             end
-            task.wait()
+            task.wait(0.01)
         end
     end,
 })
