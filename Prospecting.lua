@@ -20,7 +20,7 @@ repeat task.wait() until Confirmed
 local Window = WindUI:CreateWindow({
     Folder = "DYHUB Config | Prospecting",
     Author = "DYHUB",
-    Title = "DYHUB - Prospecting (Version: 2.9.7)",
+    Title = "DYHUB - Prospecting (Version: 2.9.8)",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
@@ -560,8 +560,13 @@ Tabs.Farm:Toggle({
     end
 })
 
+-- ประกาศ Services
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- สร้าง Section ใน GUI
 Tabs.Code:Section({ Title = "Feature Code", Icon = "bird" })
 
+-- รายการโค้ดที่สามารถ redeem
 local redeemCodes = {
     "traveler",
     "fossilized",
@@ -570,39 +575,57 @@ local redeemCodes = {
     "updateone",
 }
 
+-- เก็บโค้ดที่ผู้เล่นเลือก
 local selectedCodes = {}
 
+-- Dropdown เลือกโค้ด
 Tabs.Code:Dropdown({
     Title = "Select Redeem Codes",
     Multi = true,
     Values = redeemCodes,
     Callback = function(value)
         selectedCodes = value or {}
+        print("Selected Codes:", table.concat(selectedCodes, ", "))
     end,
 })
 
+-- ฟังก์ชัน redeem โค้ด 1 ตัว
+local function redeemCode(code)
+    local success, err = pcall(function()
+        local claimEvent = ReplicatedStorage:WaitForChild("Remotes")
+                                      :WaitForChild("Misc")
+                                      :WaitForChild("ClaimCode")
+        claimEvent:FireServer(code)
+    end)
+    if success then
+        print("Redeemed:", code)
+    else
+        warn("Failed to redeem:", code, err)
+    end
+end
+
+-- ปุ่ม redeem โค้ดที่เลือก
 Tabs.Code:Button({
     Title = "Redeem Selected Codes",
     Callback = function()
-        for _, codeKey in ipairs(selectedCodes) do
-            local code = codeKey
-            pcall(function()
-                ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Misc"):WaitForChild("ClaimCode"):FireServer(code)
-                task.wait(0.2)
-            end)
+        if #selectedCodes == 0 then
+            warn("No code selected!")
+            return
+        end
+        for _, code in ipairs(selectedCodes) do
+            redeemCode(code)
+            task.wait(0.5) -- เวลารอ server process
         end
     end,
 })
 
+-- ปุ่ม redeem โค้ดทั้งหมด
 Tabs.Code:Button({
     Title = "Redeem Code All",
     Callback = function()
-        for _, codeKey in ipairs(redeemCodes) do
-            local code = codeKey
-            pcall(function()
-                ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Misc"):WaitForChild("ClaimCode"):FireServer(code)
-                task.wait(0.2)
-            end)
+        for _, code in ipairs(redeemCodes) do
+            redeemCode(code)
+            task.wait(0.5)
         end
     end,
 })
