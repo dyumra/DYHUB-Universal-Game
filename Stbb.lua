@@ -18,8 +18,20 @@ local autoSkipHelicopterActive = false
 local flushAuraActive = false
 local espActive = false
 
-local movementMode = "Teleport"
+local espActiveEnemies = false
+local espActivePlayers = false
+local espShowName = true
+local espShowHealth = true
+local espShowDistance = false
 local espMode = "Highlight"
+
+getgenv().HitboxEnabled = false
+getgenv().HitboxSize = 20
+getgenv().HitboxShow = false
+
+local movementMode = "Teleport"
+local CharacterMode = "Used"
+local ActionMode = "Default"
 
 local visitedNPCs = {}
 local pressCount = {}
@@ -57,13 +69,16 @@ local function createBillboard(model, humanoid)
     textLabel.Parent = billboard
 
     local function updateText()
-        if humanoid and humanoid.Health and humanoid.MaxHealth then
-            local nameText = model.Name or "NPC"
-            local healthText = math.floor(humanoid.Health) .. " / " .. math.floor(humanoid.MaxHealth)
-            textLabel.Text = nameText .. "\n" .. healthText
-        else
-            textLabel.Text = model.Name or "NPC"
+        local parts = {}
+        if espShowName then table.insert(parts, model.Name or "NPC") end
+        if humanoid and humanoid.Health and humanoid.MaxHealth and espShowHealth then
+            table.insert(parts, math.floor(humanoid.Health).." / "..math.floor(humanoid.MaxHealth))
         end
+        if espShowDistance then
+            local dist = (hrp.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+            table.insert(parts, "Dist: "..math.floor(dist))
+        end
+        textLabel.Text = table.concat(parts, "\n")
     end
 
     updateText()
@@ -84,62 +99,40 @@ local function createBillboard(model, humanoid)
     table.insert(espObjects, billboard)
 end
 
-local function applyESPToModel(model)
-    if espMode == "Highlight" then
-        local highlight = Instance.new("Highlight")
-        highlight.Adornee = model
-        highlight.FillColor = Color3.fromRGB(255, 0, 0)
-        highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-        highlight.Parent = workspace
-        table.insert(espObjects, highlight)
-        local humanoid = model:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            createBillboard(model, humanoid)
-        end
-    elseif espMode == "BoxHandle" then
-        local hrp = model:FindFirstChild("HumanoidRootPart")
-        if not hrp then return end
-        local box = Instance.new("BoxHandleAdornment")
-        box.Adornee = hrp
-        box.AlwaysOnTop = true
-        box.ZIndex = 10
-        box.Size = Vector3.new(4, 6, 2)
-        box.Color3 = Color3.fromRGB(255, 0, 0)
-        box.Transparency = 0.5
-        box.Parent = workspace.Terrain
-        table.insert(espObjects, box)
-        local humanoid = model:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            createBillboard(model, humanoid)
+-- แยกฟังก์ชัน update ESP
+function updateESPPlayers()
+    clearESP()
+    if not espActivePlayers then return end
+    for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+        local char = player.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            local humanoid = char:FindFirstChildOfClass("Humanoid")
+            createBillboard(char, humanoid)
         end
     end
 end
 
-local function updateESP()
+function updateESPEnemies()
     clearESP()
-    if not espActive then return end
-
-    local char = LocalPlayer.Character
-    if char and char:FindFirstChild("HumanoidRootPart") then
-        applyESPToModel(char)
-    end
-
+    if not espActiveEnemies then return end
     if workspace:FindFirstChild("Living") then
         for _, npc in pairs(workspace.Living:GetChildren()) do
             if npc:IsA("Model") and npc:FindFirstChild("HumanoidRootPart") then
                 local humanoid = npc:FindFirstChildOfClass("Humanoid")
                 if humanoid and humanoid.Health > 0 then
-                    applyESPToModel(npc)
+                    createBillboard(npc, humanoid)
                 end
             end
         end
     end
 end
 
+-- Loop อัปเดต ESP
 task.spawn(function()
     while true do
-        if espActive then
-            pcall(updateESP)
+        if espActiveEnemies or espActivePlayers then
+            pcall(updateESPPlayers)
+            pcall(updateESPEnemies)
         else
             clearESP()
         end
@@ -282,49 +275,110 @@ local function attackHumanoidNoProximity(npc)
     end
 end
 
+local platform
+local autoFarmActive = true -- กำหนดตามระบบของคุณ
+
+local function removePlatform()
+    if platform and platform.Parent then
+        platform:Destroy()
+        platform = nil
+    end
+end
+
+local function createFollowingPlatform(hrp)
+    if platform and platform.Parent then return platform end
+
+    platform = Instance.new("Part")
+    platform.Size = Vector3.new(10,1,10)
+    platform.Anchored = true
+    platform.CanCollide = true
+    platform.Transparency = 1
+    platform.Name = "AutoFarmPlatform"
+    platform.Parent = workspace
+
+    local connection
+    connection = game:GetService("RunService").Stepped:Connect(function()
+        if hrp.Parent then
+            platform.Position = hrp.Position - Vector3.new(0,4.5,0)
+        else
+            platform:Destroy()
+            connection:Disconnect()
+        end
+    end)
+
+    return platform
+end
+
+local function getDynamicPressCount(npc)
+    local humanoid = npc:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        if humanoid.Health > 100 then
+            return 3
+        elseif humanoid.Health > 50 then
+            return 2
+        else
+            return 1
+        end
+    end
+    return 1
+end
+
 local function startAutoFarm()
     task.spawn(function()
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+
+        createFollowingPlatform(hrp)
+
         while autoFarmActive do
             pcall(function()
-                local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-                local hrp = char:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    local npc, prompt = findNextNPCWithFlushProximity(1000, hrp)
-                    if npc and prompt and prompt.Parent then
-                        local humanoid = npc:FindFirstChildOfClass("Humanoid")
-                        if humanoid and humanoid.Health > 0 then
-                            local targetPos = prompt.Parent.Position + Vector3.new(0, 3, 0)
-                            teleportToTarget(targetPos, 0.5)
-                            while (pressCount[npc] or 0) < 3 do
-                                prompt:InputHoldBegin()
-                                task.wait(0.05)
-                                prompt:InputHoldEnd()
-                                pressCount[npc] = (pressCount[npc] or 0) + 1
-                                task.wait(0.15)
-                            end
-                            addVisited(npc)
-                        else
-                            removeVisited(npc)
+                if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                    hrp = char:FindFirstChild("HumanoidRootPart")
+                    createFollowingPlatform(hrp)
+                end
+
+                local npc, prompt = findNextNPCWithFlushProximity(1000, hrp)
+                if npc and prompt and prompt.Parent then
+                    local humanoid = npc:FindFirstChildOfClass("Humanoid")
+                    if humanoid and humanoid.Health > 0 then
+                        local targetPos = prompt.Parent.Position + Vector3.new(0,3,0)
+                        teleportToTarget(targetPos, 0.5)
+
+                        local maxPress = getDynamicPressCount(npc)
+                        while (pressCount[npc] or 0) < maxPress do
+                            prompt:InputHoldBegin()
+                            task.wait(0.05 + math.random() * 0.05)
+                            prompt:InputHoldEnd()
+                            pressCount[npc] = (pressCount[npc] or 0) + 1
+                            task.wait(0.1 + math.random() * 0.1)
                         end
+                        addVisited(npc)
                     else
-                        local npc2 = findNextNPCWithHumanoidNoProximity(1000, hrp)
-                        if npc2 then
-                            if not isVisited(npc2) then
-                                addVisited(npc2)
-                            end
-                            attackHumanoidNoProximity(npc2)
-                        else
-                            visitedNPCs = {}
-                            pressCount = {}
-                            task.wait(1)
+                        removeVisited(npc)
+                    end
+                else
+                    local npc2 = findNextNPCWithHumanoidNoProximity(1000, hrp)
+                    if npc2 then
+                        if not isVisited(npc2) then
+                            addVisited(npc2)
                         end
+                        attackHumanoidNoProximity(npc2)
+                    else
+                        visitedNPCs = {}
+                        pressCount = {}
+                        task.wait(1)
                     end
                 end
             end)
             task.wait(0.05)
         end
+
+        removePlatform()
     end)
 end
+
 
 local function flushAura()
     task.spawn(function()
@@ -332,17 +386,17 @@ local function flushAura()
             local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
             local hrp = char:FindFirstChild("HumanoidRootPart")
             if hrp then
-                for _, prompt in pairs(workspace:GetDescendants()) do
-                    if prompt:IsA("ProximityPrompt") and prompt.ActionText == "Flush" then
-                        local dist = (prompt.Parent.Position - hrp.Position).Magnitude
-                        if dist <= 1000 then
-                            pcall(function()
-                                prompt:InputHoldBegin()
-                                task.wait(0.05)
-                                prompt:InputHoldEnd()
-                            end)
-                            task.wait(0.2)
-                        end
+                local nearbyParts = workspace:GetPartBoundsInRadius(hrp.Position, 100, nil)
+
+                for _, part in pairs(nearbyParts) do
+                    local prompt = part:FindFirstChildOfClass("ProximityPrompt")
+                    if prompt and prompt.ActionText == "Flush" then
+                        pcall(function()
+                            prompt:InputHoldBegin()
+                            task.wait(0.05)
+                            prompt:InputHoldEnd()
+                        end)
+                        task.wait(0.2)
                     end
                 end
             end
@@ -350,6 +404,7 @@ local function flushAura()
         end
     end)
 end
+
 
 local function sendReady(value)
     GetReadyRemote:FireServer("1", value)
@@ -420,7 +475,34 @@ Window:EditOpenButton({
     Draggable = true,
 })
 
+local InfoTab = Window:Tab({ Title = "Info", Icon = "info" })
 local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
+local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
+local EspTab = Window:Tab({ Title = "Esp", Icon = "eye" })
+local HitboxTab = Window:Tab({ Title = "Hitbox", Icon = "package" })
+local QuestTab = Window:Tab({ Title = "Quest", Icon = "sword" })
+local MasteryTab = Window:Tab({ Title = "Mastery", Icon = "award" })
+local CodesTab = Window:Tab({ Title = "Codes", Icon = "bird" })
+local GameTab = Window:Tab({ Title = "Gamepass", Icon = "cookie" })
+local MiscTab = Window:Tab({ Title = "Misc", Icon = "file-cog" })
+
+Window:SelectTab(1)
+
+InfoTab:Section({ Title = "📌 Info", Icon = "info" })
+InfoTab:Section({ Title = "This script is still under development." })
+InfoTab:Section({ Title = "If there are any bugs or issues" })
+InfoTab:Section({ Title = "you can report them to us on Discord" })
+
+InfoTab:Button({
+    Title = "DYHUB - Discord!",
+    Callback = function()
+        setclipboard("https://dsc.gg/dyhub")
+    end
+})
+
+InfoTab:Section({ Title = "💗 We appreciate your choice to use our script." })
+
+MainTab:Section({ Title = "Feature Farm", Icon = "badge-dollar-sign" })
 
 MainTab:Dropdown({
     Title = "Movement",
@@ -433,7 +515,7 @@ MainTab:Dropdown({
 })
 
 MainTab:Toggle({
-    Title = "Auto Farm (Op)",
+    Title = "Auto Farm (Upgrade)",
     Default = false,
     Callback = function(value)
         autoFarmActive = value
@@ -444,15 +526,27 @@ MainTab:Toggle({
 })
 
 MainTab:Toggle({
-    Title = "Flush Aura (Beta)",
+    Title = "Flush Aura (Upgrade)",
     Default = false,
     Callback = function(value)
         flushAuraActive = value
         if flushAuraActive then
             flushAura()
+            task.spawn(function()
+                while flushAuraActive do
+                    for _, obj in pairs(workspace:GetDescendants()) do
+                        if obj:IsA("ProximityPrompt") then
+                            obj.HoldDuration = 0
+                        end
+                    end
+                    task.wait(2.5)
+                end
+            end)
         end
     end,
 })
+
+MainTab:Section({ Title = "Feature Play", Icon = "badge-dollar-sign" })
 
 MainTab:Toggle({
     Title = "Auto Ready",
@@ -476,7 +570,7 @@ MainTab:Toggle({
     end,
 })
 
-local CodesTab = Window:Tab({ Title = "Codes", Icon = "bird" })
+CodesTab:Section({ Title = "Feature Code", Icon = "badge-dollar-sign" })
 
 local redeemCodes = {
     "AstroInvasionBegin",
@@ -523,7 +617,7 @@ CodesTab:Button({
     end,
 })
 
-local EspTab = Window:Tab({ Title = "Esp", Icon = "eye" })
+EspTab:Section({ Title = "Feature Esp", Icon = "badge-dollar-sign" })
 
 EspTab:Dropdown({
     Title = "ESP Mode",
@@ -532,32 +626,194 @@ EspTab:Dropdown({
     Multi = false,
     Callback = function(value)
         espMode = value
-        if espActive then
-            updateESP()
+        if espActiveEnemies or espActivePlayers then
+            updateESPPlayers()
+            updateESPEnemies()
         end
     end,
 })
 
+-- Toggle ESP Enemies
 EspTab:Toggle({
-    Title = "ESP (Enemy)",
+    Title = "ESP (Enemies)",
     Default = false,
     Callback = function(value)
-        espActive = value
-        if espActive then
-            updateESP()
+        espActiveEnemies = value
+        if espActiveEnemies then
+            updateESPEnemies()
         else
             clearESP()
         end
     end,
 })
 
+-- Toggle ESP Players
+EspTab:Toggle({
+    Title = "ESP (Players)",
+    Default = false,
+    Callback = function(value)
+        espActivePlayers = value
+        if espActivePlayers then
+            updateESPPlayers()
+        else
+            clearESP()
+        end
+    end,
+})
+
+EspTab:Section({ Title = "Esp Setting", Icon = "badge-dollar-sign" })
+
+-- Toggle ESP Name
+EspTab:Toggle({
+    Title = "ESP Name",
+    Default = true,
+    Callback = function(value)
+        espShowName = value
+        if espActiveEnemies or espActivePlayers then
+            updateESPPlayers()
+            updateESPEnemies()
+        end
+    end,
+})
+
+-- Toggle ESP Health
+EspTab:Toggle({
+    Title = "ESP Health",
+    Default = true,
+    Callback = function(value)
+        espShowHealth = value
+        if espActiveEnemies or espActivePlayers then
+            updateESPPlayers()
+            updateESPEnemies()
+        end
+    end,
+})
+
+-- Toggle ESP Distance
+EspTab:Toggle({
+    Title = "ESP Distance",
+    Default = false,
+    Callback = function(value)
+        espShowDistance = value
+        if espActiveEnemies or espActivePlayers then
+            updateESPPlayers()
+            updateESPEnemies()
+        end
+    end,
+})
+
+-- 🌌 DYHUB - Hitbox System
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- 🧩 ฟังก์ชันปรับ Hitbox
+local function applyHitboxToNPC(npc)
+    if not npc:IsA("Model") then return end
+    local humanoid = npc:FindFirstChildOfClass("Humanoid")
+    local hrp = npc:FindFirstChild("HumanoidRootPart")
+
+    if humanoid and hrp then
+        local existing = hrp:FindFirstChild("DYHUB_Hitbox")
+        if getgenv().HitboxEnabled then
+            if not existing then
+                local box = Instance.new("BoxHandleAdornment")
+                box.Name = "DYHUB_Hitbox"
+                box.Adornee = hrp
+                box.AlwaysOnTop = true
+                box.ZIndex = 10
+                box.Size = Vector3.new(getgenv().HitboxSize, getgenv().HitboxSize, getgenv().HitboxSize)
+                box.Transparency = getgenv().HitboxShow and 0.5 or 1
+                box.Color3 = Color3.fromRGB(255, 0, 0)
+                box.Parent = hrp
+            else
+                existing.Size = Vector3.new(getgenv().HitboxSize, getgenv().HitboxSize, getgenv().HitboxSize)
+                existing.Transparency = getgenv().HitboxShow and 0.5 or 1
+            end
+        else
+            if existing then existing:Destroy() end
+        end
+    end
+end
+
+-- 🔍 Scan NPC
+local function scanNPCs()
+    print("[DYHUB] Scan Loading...")
+    task.wait(0.5)
+    for i = 1, 3 do
+        print("[DYHUB] Scan Loading... ["..i.."]")
+        task.wait(0.3)
+    end
+    if workspace:FindFirstChild("Living") then
+        for _, npc in pairs(workspace.Living:GetChildren()) do
+            if npc:IsA("Model") and npc:FindFirstChildOfClass("Humanoid") and npc:FindFirstChild("HumanoidRootPart") then
+                if not Players:GetPlayerFromCharacter(npc) then
+                    applyHitboxToNPC(npc)
+                end
+            end
+        end
+    end
+end
+
+-- 🔄 Loop update
+task.spawn(function()
+    while task.wait(1) do
+        if getgenv().HitboxEnabled then
+            if workspace:FindFirstChild("Living") then
+                for _, npc in pairs(workspace.Living:GetChildren()) do
+                    if npc:IsA("Model") and npc:FindFirstChildOfClass("Humanoid") and npc:FindFirstChild("HumanoidRootPart") then
+                        if not Players:GetPlayerFromCharacter(npc) then
+                            applyHitboxToNPC(npc)
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
+
+HitboxTab:Section({ Title = "⚠ Beta Version", Icon = "badge-dollar-sign" })
+HitboxTab:Section({ Title = "Feature Hitbox", Icon = "badge-dollar-sign" })
+
+HitboxTab:Button({ 
+    Title = "Scan Humanoid",  
+    Callback = function()
+        scanNPCs()
+    end,
+})
+
+HitboxTab:Slider({
+    Title = "Set Size Hitbox", 
+    Value = {Min = 16, Max = 100, Default = 20}, 
+    Step = 1,
+    Callback = function(val)
+        getgenv().HitboxSize = val
+    end,
+})
+
+HitboxTab:Toggle({
+    Title = "Enable Hitbox", 
+    Default = false,
+    Callback = function(value)
+        getgenv().HitboxEnabled = value
+    end,
+})
+
+HitboxTab:Toggle({
+    Title = "Show Hitbox (Transparency)", 
+    Default = false,
+    Callback = function(value)
+        getgenv().HitboxShow = value
+    end,
+})
+
+
+QuestTab:Section({ Title = "Feature Quest", Icon = "badge-dollar-sign" })
+
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Lighting = game:GetService("Lighting")
-
-local QuestTab = Window:Tab({ Title = "Auto Quest", Icon = "sword" })
 
 QuestTab:Button({
     Title = "Open Menu (Quest Clock-Man)",
@@ -579,9 +835,12 @@ QuestTab:Button({
     end,
 })
 
-QuestTab:Button({
-    Title = "Auto Quest (Beta)",
-    Callback = function()
+QuestTab:Section({ Title = "Start Auto Quest", Icon = "badge-dollar-sign" })
+
+QuestTab:Toggle({
+    Title = "Auto Farm (Upgrade)",
+    Default = false,
+    Callback = function(value)
         autoFarmActive = value
         if autoFarmActive then
             startAutoFarm()
@@ -589,9 +848,61 @@ QuestTab:Button({
     end,
 })
 
-local GameTab = Window:Tab({ Title = "Gamepass", Icon = "cookie" })
-local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
-local MiscTab = Window:Tab({ Title = "Misc", Icon = "file-cog" })
+QuestTab:Section({ Title = "Setting Auto Quest", Icon = "badge-dollar-sign" })
+
+QuestTab:Toggle({
+    Title = "Auto Quest Collect (Beta)",
+    Default = false,
+    Callback = function(value)
+        autoFarm1Active = value
+        print("[DYHUB] Collect Quest: " .. tostring(value))
+    end,
+})
+
+QuestTab:Toggle({
+    Title = "Auto Quest Skip (Need Robux)",
+    Default = false,
+    Callback = function(value)
+        autoFarm2Active = value
+        print("[DYHUB] Skip Quest: " .. tostring(value))
+    end,
+})
+
+MasteryTab:Section({ Title = "Feature Mastery", Icon = "badge-dollar-sign" })
+
+MasteryTab:Dropdown({
+    Title = "Action Speed",
+    Values = {"Default", "Slow", "Faster"},
+    Default = ActionMode,
+    Multi = false,
+    Callback = function(value)
+        ActionMode = value
+    end,
+})
+
+MasteryTab:Dropdown({
+    Title = "Character List",
+    Values = {"Used", "N/A"},
+    Default = CharacterMode,
+    Multi = false,
+    Callback = function(value)
+        CharacterMode = value
+    end,
+})
+
+MasteryTab:Toggle({
+    Title = "Auto Mastery (Beta)",
+    Default = false,
+    Callback = function(value)
+        autoFarmActive = value
+        if autoFarmActive then
+            startAutoFarm()
+        end
+    end,
+})
+
+GameTab:Section({ Title = "Feature Gamepass", Icon = "badge-dollar-sign" })
+GameTab:Section({ Title = "Unlock gamepass for real!", Icon = "badge-dollar-sign" })
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
@@ -649,6 +960,8 @@ GameTab:Button({
         end
     end,
 })
+
+PlayerTab:Section({ Title = "Feature Player", Icon = "badge-dollar-sign" })
 
 PlayerTab:Button({
     Title = "Open Menu (Helicopter)",
@@ -780,6 +1093,8 @@ PlayerTab:Button({
     end
 })
 
+MiscTab:Section({ Title = "Feature Visual", Icon = "badge-dollar-sign" })
+
 -- Misc Tab Vars for Lighting Effects
 local oldAmbient = Lighting.Ambient
 local oldBrightness = Lighting.Brightness
@@ -852,7 +1167,7 @@ vibrantEffect.Enabled = false
 vibrantEffect.Parent = Lighting
 
 MiscTab:Toggle({
-    Title = "Vibrant Colors 200%",
+    Title = "Vibrant Colors",
     Default = false,
     Callback = function(state)
         if state then
@@ -870,6 +1185,8 @@ MiscTab:Toggle({
         end
     end
 })
+
+MiscTab:Section({ Title = "Feature Boost", Icon = "badge-dollar-sign" })
 
 local showFPS, showPing = true, true
 local fpsText, msText = Drawing.new("Text"), Drawing.new("Text")
@@ -928,12 +1245,12 @@ MiscTab:Toggle({
 })
 
 MiscTab:Button({
-    Title = "FPS Boost",
+    Title = "FPS Boost (Fixed)",
     Callback = function()
         pcall(function()
             settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
             local lighting = game:GetService("Lighting")
-            lighting.Brightness = 0
+            lighting.Brightness = 2
             lighting.FogEnd = 100
             lighting.GlobalShadows = false
             lighting.EnvironmentDiffuseScale = 0
@@ -965,7 +1282,7 @@ MiscTab:Button({
                 end
             end
         end)
-        print("✅ FPS Boost Applied")
+        print("[Boost] FPS Boost Applied")
     end
 })
 
