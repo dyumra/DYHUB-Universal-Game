@@ -572,7 +572,9 @@ Tabs.Farm:Toggle({
                     -- STEP 3 : Sell
                     if step == 3 and sellPoint then
                         tweenTo(hrp, sellPoint, TweenSpeed)
+                        task.wait(1.5)
                         sellRemote:InvokeServer()
+                        task.wait(0.5)
                         step = 1
                     end
 
