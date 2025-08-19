@@ -20,7 +20,7 @@ repeat task.wait() until Confirmed
 local Window = WindUI:CreateWindow({
     Folder = "DYHUB Config | Prospecting",
     Author = "DYHUB",
-    Title = "DYHUB - Prospecting (Version: 2.6.7)",
+    Title = "DYHUB - Prospecting (Version: 2.9.7)",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
@@ -45,6 +45,8 @@ local Tabs = {}
 Tabs.Main = Window:Tab({ Title = "Main", Icon = "rocket", Desc = "DYHUB" })
 Tabs.Auto = Window:Tab({ Title = "Auto", Icon = "wrench", Desc = "DYHUB" })
 Tabs.Farm = Window:Tab({ Title = "Farm", Icon = "badge-dollar-sign", Desc = "DYHUB" })
+Tabs.Shop = Window:Tab({ Title = "Shop", Icon = "shopping-cart", Desc = "DYHUB" })
+Tabs.Code = Window:Tab({ Title = "Code", Icon = "bird", Desc = "DYHUB" })
 
 Window:SelectTab(1)
 
@@ -396,15 +398,16 @@ Tabs.Farm:Section({ Title = "Set by you", Icon = "badge-dollar-sign" })
 local AutoFarm3Running = false
 local DigInputValue, ShakeInputValue, SellInputValue
 
--- Copy Position Button
 Tabs.Farm:Button({
     Title = "Copy Position",
     Icon = "atom",
     Callback = function()
         local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         if hrp then
-            local cfString = string.format("CFrame.new(%s)", tostring(hrp.CFrame))
-            setclipboard(cfString) -- คัดลอกไป Clipboard
+            local cf = hrp.CFrame
+            local components = {cf:components()}
+            local cfString = table.concat(components, ",")
+            setclipboard(cfString)
             print("[Copied] "..cfString)
         else
             warn("HumanoidRootPart not found!")
@@ -439,7 +442,29 @@ Tabs.Farm:Input({
     end,
 })
 
--- Toggle Auto Farm
+-- Convert Input to CFrame (fixed)
+local function parseCFrame(str)
+    if not str or str == "" then return nil end
+    str = str:gsub("%s+", "")
+    local parts = {}
+    for num in str:gmatch("[%-%.%d]+") do
+        table.insert(parts, tonumber(num))
+    end
+
+    if #parts == 3 then
+        -- แค่ x, y, z
+        return CFrame.new(parts[1], parts[2], parts[3])
+    elseif #parts == 12 then
+        return CFrame.new(parts[1], parts[2], parts[3],
+                         parts[4], parts[5], parts[6],
+                         parts[7], parts[8], parts[9],
+                         parts[10], parts[11], parts[12])
+    else
+        warn("[parseCFrame] Invalid format! Use 'x,y,z' or 'x,y,z, r00,r01,...,r22'")
+        return nil
+    end
+end
+
 Tabs.Farm:Toggle({
     Title = "Auto Farm: Set By You",
     Value = false,
@@ -471,28 +496,17 @@ Tabs.Farm:Toggle({
                     return current, max
                 end
 
-                -- Convert Input to CFrame
-                local function parseCFrame(str)
-                    local success, result = pcall(function()
-                        return loadstring("return "..str)()
-                    end)
-                    if success and typeof(result) == "CFrame" then
-                        return result
-                    end
-                    return nil
-                end
-
-                while AutoFarm2Running do
+                while AutoFarm3Running do
                     local DigPoint1 = parseCFrame(DigInputValue)
                     local ShakePoint2 = parseCFrame(ShakeInputValue)
                     local sellPoint = parseCFrame(SellInputValue)
 
                     local character = player.Character
-                    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
+                    if not character or not character:FindFirstChild("HumanoidRootPart") then break end
                     local hrp = character.HumanoidRootPart
                     local rustyPan = findPan()
-                    if not rustyPan then return end
-                    local collectScript = rustyPan:FindFirstChild("Scripts"):FindFirstChild("Collect")
+                    if not rustyPan then break end
+                    local collectScript = rustyPan:FindFirstChild("Scripts") and rustyPan.Scripts:FindFirstChild("Collect")
                     local args = {[1]=99}
 
                     local current, max = getStats()
@@ -546,3 +560,198 @@ Tabs.Farm:Toggle({
     end
 })
 
+Tabs.Code:Section({ Title = "Feature Code", Icon = "bird" })
+
+local redeemCodes = {
+    "traveler",
+    "fossilized",
+    "sorrytwo",
+    "millions",
+    "updateone",
+}
+
+local selectedCodes = {}
+
+Tabs.Code:Dropdown({
+    Title = "Select Redeem Codes",
+    Multi = true,
+    Values = redeemCodes,
+    Callback = function(value)
+        selectedCodes = value or {}
+    end,
+})
+
+Tabs.Code:Button({
+    Title = "Redeem Selected Codes",
+    Callback = function()
+        for _, codeKey in ipairs(selectedCodes) do
+            local code = codeKey
+            pcall(function()
+                ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Misc"):WaitForChild("ClaimCode"):FireServer(code)
+                task.wait(0.2)
+            end)
+        end
+    end,
+})
+
+Tabs.Code:Button({
+    Title = "Redeem Code All",
+    Callback = function()
+        for _, codeKey in ipairs(redeemCodes) do
+            local code = codeKey
+            pcall(function()
+                ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Misc"):WaitForChild("ClaimCode"):FireServer(code)
+                task.wait(0.2)
+            end)
+        end
+    end,
+})
+
+Tabs.Shop:Section({ Title = "Feature Buy: Pan", Icon = "bird" })
+
+-- รายการ Pan พร้อมรายละเอียด
+local PanList = {
+    {
+        Name = "Plastic Pan",
+        Price = 500,
+        Luck = 1.5,
+        Capacity = 10,
+        ShakeSTR = 0.4,
+        ShakeSPD = "80%",
+        Passive = "None",
+        Description = "A lightweight pan made from wear-resistant plastic."
+    },
+    {
+        Name = "Metal Pan",
+        Price = 12000,
+        Luck = 2,
+        Capacity = 20,
+        ShakeSTR = 0.5,
+        ShakeSPD = "80%",
+        Passive = "None",
+        Description = "A large and heavy metal pan made from sheet metal."
+    },
+    {
+        Name = "Silver Pan",
+        Price = 55000,
+        Luck = 4,
+        Capacity = 30,
+        ShakeSTR = 0.8,
+        ShakeSPD = "90%",
+        Passive = "None",
+        Description = "A shining silver pan."
+    },
+}
+
+-- สร้างข้อความสำหรับ Dropdown แสดงชื่อ + ราคา
+local PanNamesDisplay = {}
+for _, pan in ipairs(PanList) do
+    table.insert(PanNamesDisplay, pan.Name.." ($"..pan.Price..")")
+end
+
+local selectedPan = nil
+
+-- Dropdown เลือก Pan
+Tabs.Shop:Dropdown({
+    Title = "Select Pan",
+    Multi = false,
+    Values = PanNamesDisplay,
+    Callback = function(value)
+        local name = value:match("^(.-) %(")
+        for _, pan in ipairs(PanList) do
+            if pan.Name == name then
+                selectedPan = pan
+                break
+            end
+        end
+    end,
+})
+
+-- ปุ่ม Buy Pan
+Tabs.Shop:Button({
+    Title = "Buy Selected Pan",
+    Callback = function()
+        if selectedPan then
+            local success, err = pcall(function()
+                local item = workspace:WaitForChild("Purchasable")
+                                    :WaitForChild("StarterTown")
+                                    :WaitForChild(selectedPan.Name)
+                                    :WaitForChild("ShopItem")
+                game:GetService("ReplicatedStorage")
+                    :WaitForChild("Remotes")
+                    :WaitForChild("Shop")
+                    :WaitForChild("BuyItem")
+                    :InvokeServer(item)
+            end)
+            if success then
+                print("Bought: "..selectedPan.Name.." ($"..selectedPan.Price..")")
+            else
+                warn("Failed to buy "..selectedPan.Name..": "..tostring(err))
+            end
+        else
+            warn("No Pan selected!")
+        end
+    end,
+})
+
+
+Tabs.Shop:Section({ Title = "Feature Buy: Shovel", Icon = "bird" })
+
+-- รายการ Shovel พร้อมราคา
+local ShovelList = {
+    {Name = "Iron Shovel", Price = 3000},
+    {Name = "Steel Shovel", Price = 25000},
+    {Name = "Silver Shovel", Price = 75000},
+    {Name = "Reinforced Shovel", Price = 135000},
+}
+
+-- สร้างข้อความสำหรับ Dropdown ให้แสดงชื่อ + ราคา
+local ShovelNamesDisplay = {}
+for _, shovel in ipairs(ShovelList) do
+    table.insert(ShovelNamesDisplay, shovel.Name.." ("..shovel.Price..")")
+end
+
+local selectedList = {}
+
+-- Dropdown เลือก Shovel
+Tabs.Shop:Dropdown({
+    Title = "Select Redeem Shovel",
+    Multi = true,
+    Values = ShovelNamesDisplay, -- แสดงชื่อ + ราคา
+    Callback = function(value)
+        selectedList = {}
+        for _, v in ipairs(value) do
+            -- แปลงกลับเป็นชื่อ Shovel ล้วน ๆ สำหรับซื้อ
+            local name = v:match("^(.-) %(")
+            if name then table.insert(selectedList, name) end
+        end
+    end,
+})
+
+-- ปุ่มซื้อ Shovel ที่เลือก
+Tabs.Shop:Button({
+    Title = "Buy Selected Shovel",
+    Callback = function()
+        for _, shovelName in ipairs(selectedList) do
+            local success, err = pcall(function()
+                -- หา ShopItem ใน Workspace ตามชื่อ Shovel
+                local item = workspace:WaitForChild("Purchasable")
+                                    :WaitForChild("StarterTown")
+                                    :WaitForChild(shovelName)
+                                    :WaitForChild("ShopItem")
+                -- ซื้อผ่าน Remote
+                game:GetService("ReplicatedStorage")
+                    :WaitForChild("Remotes")
+                    :WaitForChild("Shop")
+                    :WaitForChild("BuyItem")
+                    :InvokeServer(item)
+                task.wait(0.2)
+            end)
+            if success then
+                print("Bought: "..shovelName)
+            else
+                warn("Failed to buy "..shovelName..": "..tostring(err))
+            end
+        end
+    end,
+})
