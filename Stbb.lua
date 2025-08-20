@@ -16,7 +16,7 @@ local LMBRemote = ReplicatedStorage:WaitForChild("LMB")
 
 local autoFarmActive = false
 local autoReadyActive = false
-local MasteryautoFarmActive = false
+local MasteryAutoFarmActive = false
 local autoSkipHelicopterActive = false
 local flushAuraActive = false
 local espActive = false
@@ -410,25 +410,35 @@ local function attackHumanoidNoProximity(npc)
     end
 end
 
-local function MasteryAutoFarm()
+-- ฟังก์ชันเปิด/ปิด Mastery AutoFarm
+local function toggleMasteryAutoFarm(state)
+    MasteryAutoFarmActive = state
+    if not MasteryAutoFarmActive then
+        removeSupportPart() -- ลบ SupportPart ถ้า AutoFarm ถูกปิด
+    else
+        MasteryAutoFarm()
+    end
+end
+
+-- ฟังก์ชัน Mastery AutoFarm
+function MasteryAutoFarm()
     task.spawn(function()
-        while MasteryautoFarmActive do
+        while MasteryAutoFarmActive do
             pcall(function()
                 local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
                 local hrp = char:FindFirstChild("HumanoidRootPart")
                 if hrp then
-                    -- หา NPC ตัวต่อไปใน workspace.Living
-                    local npc = findNextNPCWithHumanoidNoProximity2(1000, hrp)
+                    -- หา NPC ใกล้ที่สุดใน workspace.Living
+                    local npc = findNextNPCWithHumanoid(1000, hrp)
                     if npc then
                         if not isVisited(npc) then
                             addVisited(npc)
                         end
-                        attackHumanoidNoProximity(npc)
+                        attackHumanoid(npc)
                     else
-                        -- ถ้าไม่เจอ NPC ตัวใหม่ รีเซ็ตตัวแปร
+                        -- ถ้าไม่เจอ NPC รีเซ็ตตัวแปร
                         visitedNPCs = {}
-                        pressCount = {}
-                        task.wait(1)
+                        task.wait(0.5)
                     end
                 end
             end)
@@ -436,6 +446,50 @@ local function MasteryAutoFarm()
         end
     end)
 end
+
+-- ฟังก์ชันต่อย NPC
+function attackHumanoid(npc)
+    local humanoid = npc:FindFirstChildOfClass("Humanoid")
+    local hrp = npc:FindFirstChild("HumanoidRootPart")
+    local character = LocalPlayer.Character
+
+    if humanoid and hrp and humanoid.Health > 0 then
+        createSupportPart(character) -- สร้างแผ่นรองใต้เท้า
+        while humanoid.Health > 0 and MasteryAutoFarmActive do
+            teleportToTarget(hrp.Position + Vector3.new(0, 3, 0), 0.5)
+            LMBRemote:FireServer() -- ต่อย NPC
+            task.wait(0.1)
+        end
+        removeSupportPart() -- ลบแผ่นรอง
+        removeVisited(npc)
+    end
+end
+
+-- ฟังก์ชันหาตัว NPC ใกล้ที่สุดใน workspace.Living
+function findNextNPCWithHumanoid(maxDistance, referencePart)
+    local lastDist = maxDistance
+    local closestNPC = nil
+
+    if workspace:FindFirstChild("Living") then
+        for _, npc in pairs(workspace.Living:GetDescendants()) do
+            if npc:IsA("Model") and npc:FindFirstChild("HumanoidRootPart") then
+                if not Players:GetPlayerFromCharacter(npc) and not isVisited(npc) then
+                    local humanoid = npc:FindFirstChildOfClass("Humanoid")
+                    if humanoid and humanoid.Health > 0 then
+                        local dist = (npc.HumanoidRootPart.Position - referencePart.Position).Magnitude
+                        if dist < lastDist then
+                            closestNPC = npc
+                            lastDist = dist
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    return closestNPC
+end
+
 
 local function startAutoFarm()
     task.spawn(function()
@@ -1020,10 +1074,7 @@ MasteryTab:Toggle({
     Title = "Auto Mastery (No Flush) (Beta)",
     Default = false,
     Callback = function(value)
-        MasteryautoFarmActive = value
-        if MasteryautoFarmActive then
-            MasteryAutoFarm()
-        end
+        toggleMasteryAutoFarm(value)
     end,
 })
 
