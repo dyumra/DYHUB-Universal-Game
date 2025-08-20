@@ -1,4 +1,4 @@
--- pre-2.36
+-- pre-2.36-fixed
 
 repeat task.wait() until game:IsLoaded()
 
@@ -293,6 +293,30 @@ local function findNextNPCWithHumanoidNoProximity(maxDistance, referencePart)
     return closestNPC
 end
 
+local function findNextNPCWithHumanoidNoProximity2(maxDistance, referencePart)
+    local lastDist = maxDistance
+    local closestNPC = nil
+
+    if workspace:FindFirstChild("Living") then
+        for _, npc in pairs(workspace.Living:GetDescendants()) do
+            if npc:IsA("Model") and npc:FindFirstChild("HumanoidRootPart") then
+                if not Players:GetPlayerFromCharacter(npc) and not isVisited(npc) then
+                    local humanoid = npc:FindFirstChildOfClass("Humanoid")
+                    if humanoid and humanoid.Health > 0 then
+                        local dist = (npc.HumanoidRootPart.Position - referencePart.Position).Magnitude
+                        if dist < lastDist then
+                            closestNPC = npc
+                            lastDist = dist
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    return closestNPC
+end
+
 local function smoothTeleportTo(targetPos, duration)
     local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     local hrp = char:WaitForChild("HumanoidRootPart")
@@ -393,32 +417,18 @@ local function MasteryAutoFarm()
                 local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
                 local hrp = char:FindFirstChild("HumanoidRootPart")
                 if hrp then
-                    -- ใช้ FlushProximity หา NPC ก่อน
-                    local npc, prompt = findNextNPCWithFlushProximity(1000, hrp)
-                    if npc and prompt and prompt.Parent then
-                        local humanoid = npc:FindFirstChildOfClass("Humanoid")
-                        if humanoid and humanoid.Health > 0 then
-                            if not isVisited(npc) then
-                                addVisited(npc)
-                            end
-                            -- ตรงนี้แทนการกด Prompt → ใช้ตีเลย
-                            attackHumanoidNoProximity(npc)
-                        else
-                            removeVisited(npc)
+                    -- หา NPC ตัวต่อไปใน workspace.Living
+                    local npc = findNextNPCWithHumanoidNoProximity2(1000, hrp)
+                    if npc then
+                        if not isVisited(npc) then
+                            addVisited(npc)
                         end
+                        attackHumanoidNoProximity(npc)
                     else
-                        -- ถ้าไม่เจอ FlushPrompt → ไปใช้ noProximity แบบเดิม
-                        local npc2 = findNextNPCWithHumanoidNoProximity(1000, hrp)
-                        if npc2 then
-                            if not isVisited(npc2) then
-                                addVisited(npc2)
-                            end
-                            attackHumanoidNoProximity(npc2)
-                        else
-                            visitedNPCs = {}
-                            pressCount = {}
-                            task.wait(1)
-                        end
+                        -- ถ้าไม่เจอ NPC ตัวใหม่ รีเซ็ตตัวแปร
+                        visitedNPCs = {}
+                        pressCount = {}
+                        task.wait(1)
                     end
                 end
             end)
@@ -426,7 +436,6 @@ local function MasteryAutoFarm()
         end
     end)
 end
-
 
 local function startAutoFarm()
     task.spawn(function()
