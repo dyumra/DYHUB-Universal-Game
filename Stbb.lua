@@ -1,3 +1,5 @@
+-- pre-2.36
+
 repeat task.wait() until game:IsLoaded()
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
@@ -318,22 +320,25 @@ local function teleportToTarget(targetPos, duration)
 end
 
 local RunService = game:GetService("RunService")
-local partConnection
 local supportPart
+local partConnection
 
--- ฟังก์ชันสร้าง part รองใต้เท้า
 local function createSupportPart(character)
     -- ลบของเก่าถ้ามี
     if supportPart then
         supportPart:Destroy()
         supportPart = nil
     end
+    if partConnection then
+        partConnection:Disconnect()
+        partConnection = nil
+    end
 
     supportPart = Instance.new("Part")
-    supportPart.Size = Vector3.new(6, 1, 6) -- ขนาดแผ่น
+    supportPart.Size = Vector3.new(5, 1, 5) -- ขนาดแผ่น
     supportPart.Anchored = true
     supportPart.CanCollide = true
-    supportPart.Transparency = 0.5 -- โปร่งใสหน่อย
+    supportPart.Transparency = 0.8 -- โปร่งใสหน่อย
     supportPart.Name = "AutoFarmSupport"
     supportPart.Parent = workspace
 
@@ -341,12 +346,16 @@ local function createSupportPart(character)
     partConnection = RunService.Heartbeat:Connect(function()
         if character and character:FindFirstChild("HumanoidRootPart") then
             local hrp = character.HumanoidRootPart
-            supportPart.Position = hrp.Position - Vector3.new(0, (hrp.Size.Y/2 + supportPart.Size.Y/2), 0)
+            -- วางแผ่นใต้เท้า (พอดีกับพื้น)
+            supportPart.Position = hrp.Position - Vector3.new(
+                0,
+                (hrp.Size.Y/2 + supportPart.Size.Y/2),
+                0
+            )
         end
     end)
 end
 
--- ฟังก์ชันลบ part ตอนหยุด
 local function removeSupportPart()
     if partConnection then
         partConnection:Disconnect()
@@ -357,6 +366,7 @@ local function removeSupportPart()
         supportPart = nil
     end
 end
+
 
 -- ฟังก์ชันหลัก (เพิ่มระบบสร้าง part เข้าไป)
 local function attackHumanoidNoProximity(npc)
@@ -378,21 +388,37 @@ end
 
 local function MasteryAutoFarm()
     task.spawn(function()
-        while autoFarmActive do
+        while MasteryautoFarmActive do
             pcall(function()
                 local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
                 local hrp = char:FindFirstChild("HumanoidRootPart")
                 if hrp then
-                    local npc = findNextNPCWithHumanoidNoProximity(1000, hrp)
-                    if npc then
-                        if not isVisited(npc) then
-                            addVisited(npc)
+                    -- ใช้ FlushProximity หา NPC ก่อน
+                    local npc, prompt = findNextNPCWithFlushProximity(1000, hrp)
+                    if npc and prompt and prompt.Parent then
+                        local humanoid = npc:FindFirstChildOfClass("Humanoid")
+                        if humanoid and humanoid.Health > 0 then
+                            if not isVisited(npc) then
+                                addVisited(npc)
+                            end
+                            -- ตรงนี้แทนการกด Prompt → ใช้ตีเลย
+                            attackHumanoidNoProximity(npc)
+                        else
+                            removeVisited(npc)
                         end
-                        attackHumanoidNoProximity(npc)
                     else
-                        visitedNPCs = {}
-                        pressCount = {}
-                        task.wait(1)
+                        -- ถ้าไม่เจอ FlushPrompt → ไปใช้ noProximity แบบเดิม
+                        local npc2 = findNextNPCWithHumanoidNoProximity(1000, hrp)
+                        if npc2 then
+                            if not isVisited(npc2) then
+                                addVisited(npc2)
+                            end
+                            attackHumanoidNoProximity(npc2)
+                        else
+                            visitedNPCs = {}
+                            pressCount = {}
+                            task.wait(1)
+                        end
                     end
                 end
             end)
@@ -400,6 +426,7 @@ local function MasteryAutoFarm()
         end
     end)
 end
+
 
 local function startAutoFarm()
     task.spawn(function()
@@ -522,7 +549,7 @@ WindUI:Popup({
 repeat task.wait() until Confirmed
 
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB - ST : Blockade Battlefront (Version: pre-2.35)",
+    Title = "DYHUB - ST : Blockade Battlefront (Version: pre-2.36)",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
