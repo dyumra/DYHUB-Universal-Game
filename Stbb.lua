@@ -362,7 +362,7 @@ local function createSupportPart(character)
     supportPart.Size = Vector3.new(5, 1, 5) -- ขนาดแผ่น
     supportPart.Anchored = true
     supportPart.CanCollide = true
-    supportPart.Transparency = 0.8 -- โปร่งใสหน่อย
+    supportPart.Transparency = 0.9 -- โปร่งใสหน่อย
     supportPart.Name = "AutoFarmSupport"
     supportPart.Parent = workspace
 
@@ -373,7 +373,7 @@ local function createSupportPart(character)
             -- วางแผ่นใต้เท้า (พอดีกับพื้น)
             supportPart.Position = hrp.Position - Vector3.new(
                 0,
-                (hrp.Size.Y/2 + supportPart.Size.Y/2),
+                (hrp.Size.Y/1 + supportPart.Size.Y/1),
                 0
             )
         end
@@ -401,7 +401,7 @@ local function attackHumanoidNoProximity(npc)
     if humanoid and hrp and humanoid.Health > 0 then
         createSupportPart(character) -- เริ่มสร้างแผ่นรอง
         while humanoid.Health > 0 and autoFarmActive do
-            teleportToTarget(hrp.Position + Vector3.new(0, 3, 0), 0.5)
+            teleportToTarget(hrp.Position + Vector3.new(0, 1, 0), 0.5)
             LMBRemote:FireServer()
             task.wait(0.1)
         end
