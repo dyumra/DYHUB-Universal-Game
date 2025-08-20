@@ -14,9 +14,12 @@ local LMBRemote = ReplicatedStorage:WaitForChild("LMB")
 
 local autoFarmActive = false
 local autoReadyActive = false
+local MasteryautoFarmActive = false
 local autoSkipHelicopterActive = false
 local flushAuraActive = false
 local espActive = false
+
+local MMovementMode = "Teleport"
 
 local espActiveEnemies = false
 local espActivePlayers = false
@@ -373,6 +376,31 @@ local function attackHumanoidNoProximity(npc)
     end
 end
 
+local function MasteryAutoFarm()
+    task.spawn(function()
+        while autoFarmActive do
+            pcall(function()
+                local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                local hrp = char:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    local npc = findNextNPCWithHumanoidNoProximity(1000, hrp)
+                    if npc then
+                        if not isVisited(npc) then
+                            addVisited(npc)
+                        end
+                        attackHumanoidNoProximity(npc)
+                    else
+                        visitedNPCs = {}
+                        pressCount = {}
+                        task.wait(1)
+                    end
+                end
+            end)
+            task.wait(0.05)
+        end
+    end)
+end
+
 local function startAutoFarm()
     task.spawn(function()
         while autoFarmActive do
@@ -494,7 +522,7 @@ WindUI:Popup({
 repeat task.wait() until Confirmed
 
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB - ST : Blockade Battlefront (Version: pre-2.34)",
+    Title = "DYHUB - ST : Blockade Battlefront (Version: pre-2.35)",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
@@ -912,7 +940,7 @@ MasteryTab:Section({ Title = "Feature Mastery", Icon = "badge-dollar-sign" })
 
 MasteryTab:Dropdown({
     Title = "Action Speed",
-    Values = {"Default", "Slow", "Faster"},
+    Values = {"Default", "Slow", "Faster", "Flash (Lag)"},
     Default = ActionMode,
     Multi = false,
     Callback = function(value)
@@ -922,7 +950,7 @@ MasteryTab:Dropdown({
 
 MasteryTab:Dropdown({
     Title = "Character List",
-    Values = {"Used", "N/A"},
+    Values = {"Small", "Large", "Support (Not Good)", "Titan"},
     Default = CharacterMode,
     Multi = false,
     Callback = function(value)
@@ -930,13 +958,35 @@ MasteryTab:Dropdown({
     end,
 })
 
+MasteryTab:Dropdown({
+    Title = "Movement",
+    Values = {"Teleport", "Soon"},
+    Default = MMovementMode,
+    Multi = false,
+    Callback = function(value)
+        MMovementMode = value
+    end,
+})
+
+
 MasteryTab:Toggle({
-    Title = "Auto Mastery (Beta)",
+    Title = "Auto Mastery (ATK+Flush) (Beta)",
     Default = false,
     Callback = function(value)
         autoFarmActive = value
         if autoFarmActive then
             startAutoFarm()
+        end
+    end,
+})
+
+MasteryTab:Toggle({
+    Title = "Auto Mastery (No Flush) (Beta)",
+    Default = false,
+    Callback = function(value)
+        MasteryautoFarmActive = value
+        if MasteryautoFarmActive then
+            MasteryAutoFarm()
         end
     end,
 })
