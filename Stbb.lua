@@ -494,7 +494,7 @@ WindUI:Popup({
 repeat task.wait() until Confirmed
 
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB - ST : Blockade Battlefront (Version: 2.34)",
+    Title = "DYHUB - ST : Blockade Battlefront (Version: pre-2.34)",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
