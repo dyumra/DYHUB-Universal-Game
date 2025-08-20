@@ -1,4 +1,4 @@
--- pre-2.36-fixed
+-- pre-2.37-fixed
 
 repeat task.wait() until game:IsLoaded()
 
@@ -612,7 +612,7 @@ WindUI:Popup({
 repeat task.wait() until Confirmed
 
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB - ST : Blockade Battlefront (Version: pre-2.36)",
+    Title = "DYHUB - ST : Blockade Battlefront (Version: pre-2.37)",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
@@ -929,7 +929,7 @@ task.spawn(function()
     end
 end)
 
-HitboxTab:Section({ Title = "⚠ Beta Version", Icon = "badge-dollar-sign" })
+HitboxTab:Section({ Title = "⚠️ Beta Version: Bugs or Etc", Icon = "badge-dollar-sign" })
 HitboxTab:Section({ Title = "Feature Hitbox", Icon = "badge-dollar-sign" })
 
 HitboxTab:Button({ 
