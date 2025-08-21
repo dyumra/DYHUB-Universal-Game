@@ -42,13 +42,29 @@ Window:EditOpenButton({
 
 -- สร้าง Tabs
 local Tabs = {}
+Tabs.InfoTab = Window:Tab({ Title = "Info", Icon = "rocket", Desc = "DYHUB" })
 Tabs.Main = Window:Tab({ Title = "Main", Icon = "rocket", Desc = "DYHUB" })
+Tabs.PlayerTab = Window:Tab({ Title = "Player", Icon = "user", Desc = "DYHUB" })
 Tabs.Auto = Window:Tab({ Title = "Auto", Icon = "wrench", Desc = "DYHUB" })
 Tabs.Farm = Window:Tab({ Title = "Farm", Icon = "badge-dollar-sign", Desc = "DYHUB" })
 Tabs.Shop = Window:Tab({ Title = "Shop", Icon = "shopping-cart", Desc = "DYHUB" })
 Tabs.Code = Window:Tab({ Title = "Code", Icon = "bird", Desc = "DYHUB" })
 
 Window:SelectTab(1)
+
+InfoTab:Section({ Title = "📌 Info", Icon = "info" })
+InfoTab:Section({ Title = "This script is still under development." })
+InfoTab:Section({ Title = "If there are any bugs or issues" })
+InfoTab:Section({ Title = "you can report them to us on Discord" })
+
+InfoTab:Button({
+    Title = "DYHUB - Discord!",
+    Callback = function()
+        setclipboard("https://dsc.gg/dyhub")
+    end
+})
+
+InfoTab:Section({ Title = "💗 We appreciate your choice to use our script." })
 
 -- ฟังก์ชันช่วยเหลือ
 local Players = game:GetService("Players")
@@ -813,4 +829,126 @@ Tabs.Shop:Button({
             end
         end
     end,
+})
+
+PlayerTab:Section({ Title = "Feature Player", Icon = "badge-dollar-sign" })
+
+-- Player Tab Vars
+getgenv().speedEnabled = false
+getgenv().speedValue = 20
+
+PlayerTab:Slider({
+    Title = "Set Speed Value",
+    Value = {Min = 16, Max = 600, Default = 20},
+    Step = 1,
+    Callback = function(val)
+        getgenv().speedValue = val
+        if getgenv().speedEnabled then
+            local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
+            if hum then hum.WalkSpeed = val end
+        end
+    end
+})
+
+PlayerTab:Toggle({
+    Title = "Enable Speed",
+    Default = false,
+    Callback = function(v)
+        getgenv().speedEnabled = v
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hum = char:FindFirstChild("Humanoid")
+        if hum then hum.WalkSpeed = v and getgenv().speedValue or 16 end
+    end
+})
+
+getgenv().jumpEnabled = false
+getgenv().jumpValue = 50
+
+PlayerTab:Slider({
+    Title = "Set Jump Value",
+    Value = {Min = 10, Max = 600, Default = 50},
+    Step = 1,
+    Callback = function(val)
+        getgenv().jumpValue = val
+        if getgenv().jumpEnabled then
+            local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
+            if hum then hum.JumpPower = val end
+        end
+    end
+})
+
+PlayerTab:Toggle({
+    Title = "Enable JumpPower",
+    Default = false,
+    Callback = function(v)
+        getgenv().jumpEnabled = v
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hum = char:FindFirstChild("Humanoid")
+        if hum then hum.JumpPower = v and getgenv().jumpValue or 50 end
+    end
+})
+
+local noclipConnection
+
+PlayerTab:Toggle({
+    Title = "No Clip",
+    Default = false,
+    Callback = function(state)
+        if state then
+            noclipConnection = RunService.Stepped:Connect(function()
+                local Character = LocalPlayer.Character
+                if Character then
+                    for _, part in pairs(Character:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+            end)
+        else
+            if noclipConnection then
+                noclipConnection:Disconnect()
+                noclipConnection = nil
+            end
+            local Character = LocalPlayer.Character
+            if Character then
+                for _, part in pairs(Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = true
+                    end
+                end
+            end
+        end
+    end
+})
+
+PlayerTab:Toggle({
+    Title = "Infinity Jump",
+    Default = false,
+    Callback = function(state)
+        local uis = game:GetService("UserInputService")
+        local player = game.Players.LocalPlayer
+        local infJumpConnection
+
+        if state then
+            infJumpConnection = uis.JumpRequest:Connect(function()
+                if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+                    player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                end
+            end)
+            getgenv().infJumpConnection = infJumpConnection
+        else
+            if getgenv().infJumpConnection then
+                getgenv().infJumpConnection:Disconnect()
+                getgenv().infJumpConnection = nil
+            end
+        end
+    end
+})
+
+PlayerTab:Button({
+    Title = "Fly (Beta)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/dyumrascript-/refs/heads/main/Flua"))()
+    end
 })
