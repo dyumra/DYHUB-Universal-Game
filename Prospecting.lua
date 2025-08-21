@@ -20,7 +20,7 @@ repeat task.wait() until Confirmed
 local Window = WindUI:CreateWindow({
     Folder = "DYHUB Config | Prospecting",
     Author = "DYHUB",
-    Title = "DYHUB - Prospecting (Version: 3.42)",
+    Title = "DYHUB - Prospecting (Version: 3.51)",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
@@ -151,7 +151,7 @@ Tabs.Auto:Toggle({
 Tabs.Main:Section({ Title = "Feature Sell", Icon = "badge-dollar-sign" })
 
 Tabs.Main:Button({
-    Title = "Sell All",
+    Title = "Sell All (Anywhere)",
     Icon = "shopping-cart",
     Callback = function()
         local character = player.Character
@@ -189,6 +189,17 @@ Tabs.Main:Button({
         tweenBack.Completed:Wait()
     end
 })
+
+Tabs.Main:Button({
+    Title = "Sell All (Near NPC)",
+    Icon = "shopping-cart",
+    Callback = function()
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local sellRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Shop"):WaitForChild("SellAll")
+        sellRemote:InvokeServer()
+    end
+})
+
 
 Tabs.Farm:Section({ Title = "⚠️ Warning: Use this feature on private servers", Icon = "badge-dollar-sign" })
 Tabs.Farm:Section({ Title = "🌏 Island (1)", Icon = "badge-dollar-sign" })
