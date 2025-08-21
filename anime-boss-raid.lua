@@ -6,9 +6,9 @@ WindUI:SetTheme("Dark")
 
 -- Create Main Window
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB",
+    Title = "DYHUB (dsc.gg/dyhub)",
     Icon = "star",
-    Author = "Anime Boss Raid",
+    Author = "Fight Anime Bosses",
     Folder = "DYHUB",
     Size = UDim2.fromOffset(400, 360),
     Transparent = true,
@@ -356,9 +356,9 @@ task.spawn(function()
 end)
 
 local redeemCodes = {
-    "UPDATE1",
-    "lowerprices",
-    "95KLIKES",
+    "160KLIKES",
+    "DUNGEONS",
+    "150KLIKES",
 }
 
 local selectedCodes = {}
