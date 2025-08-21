@@ -42,7 +42,7 @@ Window:EditOpenButton({
 
 -- สร้าง Tabs
 local Tabs = {}
-Tabs.InfoTab = Window:Tab({ Title = "Info", Icon = "rocket", Desc = "DYHUB" })
+Tabs.InfoTab = Window:Tab({ Title = "Info", Icon = "info", Desc = "DYHUB" })
 Tabs.Main = Window:Tab({ Title = "Main", Icon = "rocket", Desc = "DYHUB" })
 Tabs.PlayerTab = Window:Tab({ Title = "Player", Icon = "user", Desc = "DYHUB" })
 Tabs.Auto = Window:Tab({ Title = "Auto", Icon = "wrench", Desc = "DYHUB" })
