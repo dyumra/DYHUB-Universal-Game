@@ -68,7 +68,8 @@ local dupeNames = {
     "AntMorph", "AntMorphS", "AssasinMorph", "LightAura", "AlterAura", "Alter", "Saber", "SaberMorph", "AlterMorph",
     "Hakai", "PridfulWarrior", "EarthWarrior", "GreatApe", "BeerusMorph", "VegetaMorph", "BeerusBoss", "Mahoraga",
     "AkazaMorph", "DSEventMorph", "InsectBreather", "MasterKokoshibo", "SunStyleSwordsman", "ThunderBreather", "Tips", 
-    "ZeroMoon", "DomaMorph"
+    "ZeroMoon", "DomaMorph", "DarkHollow", "Hollow", "HollowAura", "IchigoMorph", "WingedAizen", "TrueIchigo", "BanAizen",
+    "AizenMorph"
 }
 
 local morphInputValue = ""
