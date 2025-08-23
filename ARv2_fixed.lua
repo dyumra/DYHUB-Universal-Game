@@ -53,44 +53,38 @@ local MiscTab = Window:Tab({ Title = "Misc", Icon = "file-cog" })
 local ConfigTab = Window:Tab({ Title = "Config", Icon = "cog" })
 
 -- Main Tab
+local player = LocalPlayer
+local data = player:WaitForChild("Data") -- ensure data is loaded
 local event = ReplicatedStorage:WaitForChild("Events"):WaitForChild("ChangeValue")
-
-local dupeNames = {
-    "Infinity", "Solar", "Crimson", "DarkArcher", "PurpleAssasin", "WolfBoss", "Merchant", "SickCurse", "Tank",
-    "CrimsonMaster", "Lightning", "SunBreather", "KnightBoss", "Materials", "Baryon", "HeinEra", "Sukuna",
-    "Naruto", "SSGoku", "Tanjiro", "Goku", "Shadows", "Kaiser", "Puzzle", "Knight", "Shake", "Hapticss",
-    "MuzanAura", "MoonAura", "YellowAura", "MuzanClass", "KokoshiboClass", "CompassClass", "MuzanMorph",
-    "MoonMorph", "HakiPower", "InfinityVoid", "Dismantle", "Restriction", "BlackFlashAura", "ShadowAura",
-    "CriticalHit", "Gear4", "BlackFlash", "Toji", "InfinityEyes", "MasteredReflex", "LavaMasterClass",
-    "RedeemedWolfBoss", "RedeemedKnight", "LuffyMorph", "DoughMorph", "GravityAura", "DoughAura",
-    "LavaAura", "Gear5Class", "MochiClass", "Rinnegan", "Kurama", "Sasuke", "Pain", "EightGates", "Sed",
-    "Cid", "Gojo", "Assasin", "AntKing", "BlueFlames", "BloodKnight", "BloodMorph", "BloodMorphS",
-    "AntMorph", "AntMorphS", "AssasinMorph", "LightAura", "AlterAura", "Alter", "Saber", "SaberMorph", "AlterMorph",
-    "Hakai", "PridfulWarrior", "EarthWarrior", "GreatApe", "BeerusMorph", "VegetaMorph", "BeerusBoss", "Mahoraga",
-    "AkazaMorph", "DSEventMorph", "InsectBreather", "MasterKokoshibo", "SunStyleSwordsman", "ThunderBreather", "Tips", 
-    "ZeroMoon", "DomaMorph", "DarkHollow", "Hollow", "HollowAura", "IchigoMorph", "WingedAizen", "TrueIchigo", "BanAizen",
-    "AizenMorph"
-}
 
 local morphInputValue = ""
 local classInputValue = ""
 local auraInputValue = ""
 
+-- ดึงชื่อทั้งหมดจาก Data
+local function getDataNames()
+    local names = {}
+    for _, child in ipairs(data:GetChildren()) do
+        table.insert(names, child.Name)
+    end
+    return names
+end
+
 MainTab:Button({
     Title = "Dupe All (Click me for All)",
     Icon = "atom",
     Callback = function()
-        for _, name in ipairs(dupeNames) do
+        for _, name in ipairs(getDataNames()) do
             event:FireServer("SetMorphBuy", name, 0)
             wait(0.05)
         end
-        print("[DYHUB] All Morphs, Classes and Auras unlocked!")
+        print("[DYHUB] All Morphs, Classes and Auras unlocked from Data!")
     end,
 })
 
 MainTab:Input({
     Title = "Dupe Morph",
-    Placeholder = "Use the name from Npc Morph",
+    Placeholder = "Use the name from Data.Morph",
     Callback = function(text)
         morphInputValue = text
     end,
@@ -101,7 +95,7 @@ MainTab:Button({
     Icon = "crown",
     Callback = function()
         local found = false
-        for _, name in ipairs(dupeNames) do
+        for _, name in ipairs(getDataNames()) do
             if name:lower() == morphInputValue:lower() then
                 event:FireServer("SetMorphBuy", name, 0)
                 print("[DYHUB] Morph unlocked:", name)
@@ -117,7 +111,7 @@ MainTab:Button({
 
 MainTab:Input({
     Title = "Dupe Class",
-    Placeholder = "Use the name from Npc Class",
+    Placeholder = "Use the name from Data.Class",
     Callback = function(text)
         classInputValue = text
     end,
@@ -128,7 +122,7 @@ MainTab:Button({
     Icon = "swords",
     Callback = function()
         local found = false
-        for _, name in ipairs(dupeNames) do
+        for _, name in ipairs(getDataNames()) do
             if name:lower() == classInputValue:lower() then
                 event:FireServer("SetMorphBuy", name, 0)
                 print("[DYHUB] Class unlocked:", name)
@@ -144,7 +138,7 @@ MainTab:Button({
 
 MainTab:Input({
     Title = "Dupe Aura",
-    Placeholder = "Use the name from Npc Aura",
+    Placeholder = "Use the name from Data.Aura",
     Callback = function(text)
         auraInputValue = text
     end,
@@ -155,7 +149,7 @@ MainTab:Button({
     Icon = "flame",
     Callback = function()
         local found = false
-        for _, name in ipairs(dupeNames) do
+        for _, name in ipairs(getDataNames()) do
             if name:lower() == auraInputValue:lower() then
                 event:FireServer("SetMorphBuy", name, 0)
                 print("[DYHUB] Aura unlocked:", name)
@@ -168,6 +162,7 @@ MainTab:Button({
         end
     end,
 })
+
 
 -- Gamepass Tab
 local selectedGamepass = "All"
@@ -586,24 +581,22 @@ MiscTab:Toggle({
     end,
 })
 
-local indexList = {
-    "Infinity", "Solar", "Crimson", "DarkArcher", "PurpleAssasin", "WolfBoss", "Merchant", "SickCurse", "Tank",
-    "CrimsonMaster", "Lightning", "SunBreather", "KnightBoss", "Materials", "Baryon", "HeinEra", "Sukuna",
-    "Naruto", "SSGoku", "Tanjiro", "Goku", "Shadows", "Kaiser", "Puzzle", "Knight", "Shake", "Hapticss",
-    "MuzanAura", "MoonAura", "YellowAura", "MuzanClass", "KokoshiboClass", "CompassClass", "MuzanMorph",
-    "MoonMorph", "HakiPower", "InfinityVoid", "Dismantle", "Restriction", "BlackFlashAura", "ShadowAura",
-    "CriticalHit", "Gear4", "BlackFlash", "Toji", "InfinityEyes", "MasteredReflex", "LavaMasterClass",
-    "RedeemedWolfBoss", "RedeemedKnight", "LuffyMorph", "DoughMorph", "GravityAura", "DoughAura",
-    "LavaAura", "Gear5Class", "MochiClass", "Rinnegan", "Kurama", "Sasuke", "Pain", "EightGates", "Sed",
-    "Cid", "Gojo", "Assasin", "AntKing", "BlueFlames", "BloodKnight", "BloodMorph", "BloodMorphS",
-    "AntMorph", "AntMorphS", "AssasinMorph", "LightAura", "AlterAura", "Alter", "Saber", "SaberMorph", "AlterMorph",
-    "Hakai", "PridfulWarrior", "EarthWarrior", "GreatApe", "BeerusMorph", "VegetaMorph", "BeerusBoss", "Mahoraga"
-}
+local player1 = LocalPlayer
+local data1 = player1:WaitForChild("Data") -- ensure data is loaded
 
--- Dropdown สำหรับดู index ทั้งหมด
+-- ฟังก์ชันดึงชื่อทั้งหมดจาก Data
+local function getDataNamesDY()
+    local names = {}
+    for _, child in ipairs(data1:GetChildren()) do
+        table.insert(names, child.Name)
+    end
+    return names
+end
+
+-- สร้าง Dropdown โดยใช้ชื่อที่ดึงจาก Data
 GUI:Dropdown({
     Title = "Index List",
-    Values = indexList,
+    Values = getDataNamesDY(),
     Multi = false,
     Callback = function(value)
         print("[DYHUB] Selected index:", value)
