@@ -279,9 +279,20 @@ local Interval = 0.1
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ByteNetReliable = ReplicatedStorage:WaitForChild("ByteNetReliable")
 
+-- ตรวจสอบและโหลด buffer หากยังไม่ได้ประกาศ
+local buffer
+pcall(function()
+    buffer = require(ReplicatedStorage:WaitForChild("Buffer")) -- ชื่อ ModuleScript อาจต้องเปลี่ยนตามเกม
+end)
+
+-- ฟังก์ชันส่งข้อมูล
 local function sendData()
-    local args = { buffer.fromstring("\v") }
-    ByteNetReliable:FireServer(unpack(args))
+    if buffer then
+        local args = { buffer.fromstring("\v") }
+        ByteNetReliable:FireServer(unpack(args))
+    else
+        warn("Buffer module not found! Infinity Perk will not work.")
+    end
 end
 
 FunTab:Toggle({
