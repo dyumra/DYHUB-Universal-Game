@@ -1,4 +1,4 @@
--- pre-2.61-fixed beta
+-- pre-2.67-fixed beta
 
 repeat task.wait() until game:IsLoaded()
 
@@ -30,7 +30,7 @@ local ItemsNormal = "Clock Spider"
 local ItemsValue = {ItemsNormal} 
 local autoCollectEnabled = false
 
-local setPositionMode = "Front"
+local setPositionMode = "Under"
 getgenv().DistanceValue = 1
 
 local autoFarmActive = false
@@ -608,19 +608,32 @@ WindUI:Popup({
     Title = "DYHUB Loaded! - ST : Blockade Battlefront",
     Icon = "star",
     IconThemed = true,
-    Content = "DYHUB TEAM - Join us at dsc.gg/dyhub",
+    Content = "Join our at (https://dsc.gg/dyhub)",
     Buttons = {
-        { Title = "Cancel", Variant = "Secondary", Callback = function() end },
-        { Title = "Continue", Icon = "arrow-right", Callback = function() Confirmed = true end, Variant = "Primary" }
+    {
+        Title = "Cancel",
+        Variant = "Secondary",
+        Callback = function()
+            game.Players.LocalPlayer:Kick("FUCK YOU NIGGA CANCEL DYHUB????")
+        end
+    },
+    {
+        Title = "Continue",
+        Icon = "arrow-right",
+        Variant = "Primary",
+        Callback = function()
+            Confirmed = true
+        end
     }
 })
+
 repeat task.wait() until Confirmed
 
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB - ST : Blockade Battlefront (Version: pre-2.61)",
+    Title = "DYHUB | ST : Blockade Battlefront",
     IconThemed = true,
     Icon = "star",
-    Author = "DYHUB (dsc.gg/dyhub)",
+    Author = "Version: pre-2.67",
     Size = UDim2.fromOffset(600, 400),
     Transparent = true,
     Theme = "Dark",
@@ -651,7 +664,7 @@ local MiscTab = Window:Tab({ Title = "Misc", Icon = "file-cog" })
 
 Window:SelectTab(1)
 
-InfoTab:Section({ Title = "Info", Icon = "info" })
+InfoTab:Section({ Title = "Info - Read before using this script", Icon = "info" })
 InfoTab:Section({ Title = "This script is still under development." })
 InfoTab:Section({ Title = "If there are any bugs or issues" })
 InfoTab:Section({ Title = "you can report them to us on Discord" })
@@ -663,38 +676,39 @@ InfoTab:Button({
     end
 })
 
+InfoTab:Section({ Title = "Use this script in SOLO mode only for safety", Icon = "triangle-alert" })
 InfoTab:Section({ Title = "We appreciate your choice to use our script.", Icon = "heart" })
 
 MainTab:Section({ Title = "Feature Farm", Icon = "tractor" }) 
-MainTab:Section({ Title = "Feature Play", Icon = "gamepad-2" })
 
 CodesTab:Section({ Title = "Feature Code", Icon = "terminal" })
 
 EspTab:Section({ Title = "Feature Esp", Icon = "radar" })
-EspTab:Section({ Title = "Esp Setting", Icon = "settings-2" })
 
 HitboxTab:Section({ Title = "Beta Version: Bugs or Etc", Icon = "bug" })
 HitboxTab:Section({ Title = "Feature Hitbox", Icon = "crosshair" })
 
-QuestTab:Section({ Title = "Feature Quest", Icon = "map" })
-QuestTab:Section({ Title = "Start Auto Quest", Icon = "play-circle" })
-QuestTab:Section({ Title = "Setting Auto Quest", Icon = "sliders" })
+QuestTab:Section({ Title = "Feature Quest", Icon = "album" })
+QuestTab:Section({ Title = "Setting Auto Quest", Icon = "star-half" })
 
 MasteryTab:Section({ Title = "Feature Mastery", Icon = "book-open" })
 
 GameTab:Section({ Title = "Feature Gamepass", Icon = "key-round" })
-GameTab:Section({ Title = "Unlock gamepass for real!", Icon = "unlock" })
+GameTab:Section({ Title = "Unlock gamepass for real!", Icon = "badge-dollar-sign" })
 
 PlayerTab:Section({ Title = "Feature Player", Icon = "user" })
 
 MiscTab:Section({ Title = "Feature Visual", Icon = "eye" })
-MiscTab:Section({ Title = "Feature Boost", Icon = "zap" })
+MiscTab:Section({ Title = "FPS Boost/Settings", Icon = "zap" })
 
+CollectTab:Section({ Title = "Beta Version: Bugs or Etc", Icon = "bug" }) 
 CollectTab:Section({ Title = "Feature Collect", Icon = "package" }) 
 
+CollectTab:Section({ Title = "Beta Version: Bugs or Etc", Icon = "bug" }) 
 SkillTab:Section({ Title = "Feature Skill", Icon = "sparkles" }) 
 
 VoteTab:Section({ Title = "Feature Vote", Icon = "vote" }) 
+CollectTab:Section({ Title = "Settings Difficulty mode", Icon = "book-check" }) 
 
 MainTab:Dropdown({
     Title = "Movement",
@@ -747,6 +761,8 @@ MainTab:Toggle({
         end
     end,
 })
+
+MainTab:Section({ Title = "Feature Play", Icon = "gamepad-2" })
 
 MainTab:Toggle({
     Title = "Auto Ready",
@@ -859,6 +875,8 @@ EspTab:Toggle({
         end
     end,
 })
+
+EspTab:Section({ Title = "Esp Setting", Icon = "settings-2" })
 
 -- Toggle ESP Name
 EspTab:Toggle({
@@ -1234,6 +1252,8 @@ PlayerTab:Toggle({
         if hum then hum.JumpPower = v and getgenv().jumpValue or 50 end
     end
 })
+
+PlayerTab:Section({ Title = "Player Misc", Icon = "sliders-horizontal" })
 
 local noclipConnection
 
