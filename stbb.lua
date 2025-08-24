@@ -19,6 +19,13 @@ local normal = "Normal"
 local autoVoteValue = normal
 local autoVoteEnabled = false
 
+local autoSkillEnabled = false
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Skillnormal = "E"
+local autoSkillValue = Skillnormal
+local Lists = {"Z","X","C","G","T","Y","U","E","R","F"}
+
 local Items = {"Clock Spider","transmitter","flashdrive"}
 local ItemsNormal = "Clock Spider"
 local ItemsValue = {ItemsNormal} 
@@ -556,9 +563,9 @@ VoteTab:Toggle({
     end
 })
 
-SkillTab:Dropdown({ 
+VoteTab:Dropdown({ 
     Title = "Set Skill Auto", 
-    Values = List, 
+    Values = Lists, 
     Default = Skillnormal, 
     Multi = false,
     Callback = function(value) 
@@ -566,9 +573,7 @@ SkillTab:Dropdown({
     end 
 })
 
-local autoSkillEnabled = false
-
-SkillTab:Toggle({
+VoteTab:Toggle({
     Title = "Auto Skill",
     Default = false,
     Callback = function(enabled)
@@ -648,3 +653,4 @@ CollectTab:Toggle({
         end
     end
 })
+
