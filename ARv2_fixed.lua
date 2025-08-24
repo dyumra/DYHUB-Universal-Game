@@ -1,5 +1,3 @@
--- DYHUB - Anime Rails (Upgraded Full Version with Dropdowns)
-
 repeat task.wait() until game:IsLoaded()
 
 -- Services
@@ -33,7 +31,7 @@ local Window = WindUI:CreateWindow({
     Title = "DYHUB - Anime Rails (Lobby)",
     IconThemed = true,
     Icon = "star",
-    Author = "Version: 4.8.9",
+    Author = "Version: 4.9.2",
     Size = UDim2.fromOffset(600, 450),
     Transparent = true,
     Theme = "Dark",
@@ -175,7 +173,7 @@ GUI:Dropdown({ Title="Select Aura", Values=getDataNames(), Multi=false, Callback
 
 -- ====== Cash Tab ======
 
-GUI:Section({ Title = "Dupe Cash", Icon = "circle-dollar-sign" })
+CashTab:Section({ Title = "Dupe Currency", Icon = "circle-dollar-sign" })
 local cashInputValue = ""
 CashTab:Input({ Title = "Enter Dupe Cash Amount", Placeholder = "100 ~ 10000", Callback = function(text) cashInputValue = text end })
 CashTab:Button({
@@ -191,20 +189,72 @@ CashTab:Button({
         end
     end,
 })
+
+local spinInputValue = ""
+CashTab:Input({ Title = "Enter Dupe Spin Amount", Placeholder = "1 ~ 10", Callback = function(text) cashInputValue = text end })
 CashTab:Button({
-    Title = "Infinite Dupe Cash",
-    Icon = "infinity",
+    Title = "Dupe Spin",
+    Icon = "dollar-sign",
     Callback = function()
-        task.spawn(function()
-            local totalAmount, perFire = 999000000, 999999
-            local times = math.floor(totalAmount / perFire)
-            for i = 1, times do
-                ReplicatedStorage:WaitForChild("CodeEvent"):FireServer("Wins", perFire, "DYHUB")
-                task.wait(0.1)
-            end
-            print("[DYHUB] Completed Infinite Cash")
-        end)
+        local input = tonumber(spinInputValue)
+        if input and input >= 1 and input <= 10 then
+            ReplicatedStorage:WaitForChild("CodeEvent"):FireServer("Wins", input, "DYHUB")
+            print("[DYHUB] Dupe Spin:", input)
+        else
+            print("[DYHUB] Invalid amount:", spinInputValue)
+        end
     end,
+})
+
+CashTab:Section({ Title = "Dupe Infinite", Icon = "infinity" })
+
+local autoInfiniteCash = false
+local autoInfiniteSpin = false
+
+CashTab:Toggle({
+    Title = "Infinite Dupe Cash",
+    Default = false,
+    Icon = "infinity",
+    Callback = function(enabled)
+        autoInfiniteCash = enabled
+        if enabled then
+            task.spawn(function()
+                local totalAmount, perFire = 999000000, 999999
+                local times = math.floor(totalAmount / perFire)
+                while autoInfiniteCash do
+                    for i = 1, times do
+                        if not autoInfiniteCash then break end
+                        ReplicatedStorage:WaitForChild("CodeEvent"):FireServer("Wins", perFire, "DYHUB")
+                        task.wait(0.1)
+                    end
+                    task.wait(0.5)
+                end
+            end)
+        end
+    end
+})
+
+CashTab:Toggle({
+    Title = "Infinite Dupe Spin",
+    Default = false,
+    Icon = "infinity",
+    Callback = function(enabled)
+        autoInfiniteSpin = enabled
+        if enabled then
+            task.spawn(function()
+                local totalAmount, perFire = 0, 999999
+                local times = math.floor(totalAmount / perFire)
+                while autoInfiniteSpin do
+                    for i = 1, times do
+                        if not autoInfiniteSpin then break end
+                        ReplicatedStorage:WaitForChild("CodeEvent"):FireServer("Wins", perFire, "DYHUB")
+                        task.wait(0.1)
+                    end
+                    task.wait(0.5)
+                end
+            end)
+        end
+    end
 })
 
 -- ====== Player ESP Tab ======
