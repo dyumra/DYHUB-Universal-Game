@@ -734,7 +734,7 @@ MainTab:Dropdown({
 
 MainTab:Dropdown({
     Title="Set Position",
-    Values={"Above","Back","Under","Front"},
+    Values={"Spin","Above","Back","Under","Front"},
     Default=setPositionMode,
     Multi=false,
     Callback=function(value) setPositionMode=value end
@@ -1060,6 +1060,14 @@ QuestTab:Button({
 })
 
 QuestTab:Section({ Title = "Setting Auto Quest", Icon = "star-half" })
+
+QuestTab:Dropdown({
+    Title="Set Position",
+    Values={"Spin","Above","Back","Under","Front"},
+    Default=setPositionMode,
+    Multi=false,
+    Callback=function(value) setPositionMode=value end
+})
 
 QuestTab:Dropdown({
     Title = "Movement",
@@ -1675,6 +1683,7 @@ CollectTab:Toggle({
 })
 
 print("[DYHUB] DYHUB - Loaded! (Console Show)")
+
 
 
 
