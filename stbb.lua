@@ -705,11 +705,11 @@ MiscTab:Section({ Title = "FPS Boost/Settings", Icon = "zap" })
 CollectTab:Section({ Title = "Beta Version: Bugs or Etc", Icon = "bug" }) 
 CollectTab:Section({ Title = "Feature Collect", Icon = "package" }) 
 
-CollectTab:Section({ Title = "Beta Version: Bugs or Etc", Icon = "bug" }) 
+SkillTab:Section({ Title = "Beta Version: Bugs or Etc", Icon = "bug" }) 
 SkillTab:Section({ Title = "Feature Skill", Icon = "sparkles" }) 
 
 VoteTab:Section({ Title = "Feature Vote", Icon = "vote" }) 
-CollectTab:Section({ Title = "Settings Difficulty mode", Icon = "book-check" }) 
+VoteTab:Section({ Title = "Settings Difficulty mode", Icon = "book-check" }) 
 
 MainTab:Dropdown({
     Title = "Movement",
@@ -1644,4 +1644,5 @@ CollectTab:Toggle({
 })
 
 print("[DYHUB] DYHUB - Loaded! (Console Show)")
+
 
