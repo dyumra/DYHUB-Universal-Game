@@ -216,8 +216,8 @@ local Window = WindUI:CreateWindow({
     Title = "DYHUB | Hunty Zombie",
     IconThemed = true,
     Icon = "star",
-    Author = "Version: 1.3.0",
-    Size = UDim2.fromOffset(600,400),
+    Author = "Version: 1.3.7",
+    Size = UDim2.fromOffset(500,300),
     Transparent = true,
     Theme = "Dark",
 })
@@ -232,13 +232,15 @@ Window:EditOpenButton({
 })
 
 local MainTab = Window:Tab({ Title="Main", Icon="rocket" })
+local FunTab = Window:Tab({ Title="Fun", Icon="flame" })
 
 MainTab:Section({ Title="Feature Farm", Icon="badge-dollar-sign" })
+FunTab:Section({ Title="Feature Perk", Icon="badge-dollar-sign" })
 
 -- Dropdown Movement
 MainTab:Dropdown({
-    Title="Movement",
-    Values={"Teleport","CFrame"},
+    Title ="Movement",
+    Values ={"Teleport","CFrame"},
     Default=movementMode,
     Multi=false,
     Callback=function(value) movementMode=value end
@@ -246,7 +248,7 @@ MainTab:Dropdown({
 
 -- Dropdown Set Position
 MainTab:Dropdown({
-    Title="Set Position",
+    Title ="Set Position",
     Values={"Spin","Above","Back","Under","Front"},
     Default=setPositionMode,
     Multi=false,
@@ -255,7 +257,7 @@ MainTab:Dropdown({
 
 -- Slider Distance
 MainTab:Slider({
-    Title="Set Distance to NPC",
+    Title ="Set Distance to NPC",
     Value={Min=0, Max=20, Default=getgenv().DistanceValue},
     Step=1,
     Callback=function(val) getgenv().DistanceValue=val end
@@ -263,10 +265,37 @@ MainTab:Slider({
 
 -- Toggle Auto Farm
 MainTab:Toggle({
-    Title="Auto Farm",
+    Title = "Auto Farm",
     Default=false,
     Callback=function(value) 
         autoFarmActive=value 
         if value then startAutoFarm() end 
+    end
+})
+
+local RunLoop = false
+local Interval = 0.1
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ByteNetReliable = ReplicatedStorage:WaitForChild("ByteNetReliable")
+
+local function sendData()
+    local args = { buffer.fromstring("\v") }
+    ByteNetReliable:FireServer(unpack(args))
+end
+
+FunTab:Toggle({
+    Title = "Infinity Perk",
+    Default = false,
+    Callback = function(value)
+        RunLoop = value
+        if value then
+            task.spawn(function()
+                while RunLoop do
+                    sendData()
+                    task.wait(Interval)
+                end
+            end)
+        end
     end
 })
