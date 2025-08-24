@@ -563,17 +563,17 @@ VoteTab:Toggle({
     end
 })
 
-VoteTab:Dropdown({ 
+SkillTab:Dropdown({ 
     Title = "Set Skill Auto", 
     Values = Lists, 
     Default = Skillnormal, 
-    Multi = false,
+    Multi = true,
     Callback = function(value) 
         autoSkillValue = value
     end 
 })
 
-VoteTab:Toggle({
+SkillTab:Toggle({
     Title = "Auto Skill",
     Default = false,
     Callback = function(enabled)
@@ -653,4 +653,5 @@ CollectTab:Toggle({
         end
     end
 })
+
 
