@@ -1,26 +1,58 @@
+repeat task.wait() until game:IsLoaded()
+
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
-local Window = WindUI:CreateWindow({
-    Folder = "Ringta Scripts",
-    Title = "RINGTA",
+local Confirmed = false
+WindUI:Popup({
+    Title = "DYHUB Loaded! - Steal A Brainrot",
     Icon = "star",
-    Author = "discord.gg/ringta",
-    Theme = "Dark",
-    Size = UDim2.fromOffset(500, 350),
+    IconThemed = true,
+    Content = "Join us at (https://dsc.gg/dyhub)",
+    Buttons = {
+        {
+            Title = "Cancel",
+            Variant = "Secondary",
+            Callback = function()
+                game.Players.LocalPlayer:Kick("FUCK YOU NIGGA CANCEL DYHUB????")
+            end
+        },
+        {
+            Title = "Continue",
+            Icon = "arrow-right",
+            Variant = "Primary",
+            Callback = function()
+                Confirmed = true
+            end
+        }
+    }
+})
+
+repeat task.wait() until Confirmed
+
+local Window = WindUI:CreateWindow({
+    Folder = "DYHUB Scripts - SAB",
+    Title = "DYHUB | Steal A Brainrot",
+    IconThemed = true,
+    Icon = "star",
+    Author = "Version: 3.17",
+    Size = UDim2.fromOffset(600, 400),
+    Transparent = true,
     Transparent = false,
     HasOutline = true,
+    Theme = "Dark",
 })
 
 Window:EditOpenButton({
-    Title = "Open RINGTA SCRIPTS",
-    Icon = "pointer",
+    Title = "DYHUB - Open",
+    Icon = "monitor",
     CornerRadius = UDim.new(0, 6),
     StrokeThickness = 2,
-    Color = ColorSequence.new(Color3.fromRGB(200, 0, 255), Color3.fromRGB(0, 200, 255)),
+    Color = ColorSequence.new(Color3.fromRGB(30, 30, 30), Color3.fromRGB(255, 255, 255)),
     Draggable = true,
 })
 
@@ -29,22 +61,18 @@ local Tabs = {
     Hide = Window:Tab({ Title = "Visual", Icon = "eye-off" }),
     Jump = Window:Tab({ Title = "Shop", Icon = "shopping-basket" }),
     Random = Window:Tab({ Title = "Random Features", Icon = "dices" }),
-    Brainrot = Window:Tab({ Title = "Brainrot Finder", Icon = "brain" }), -- <-- add this line
-    Credit = Window:Tab({ Title = "Credit", Icon = "medal" }),
+    Brainrot = Window:Tab({ Title = "Brainrot Finder", Icon = "brain" }),
 }
 
+Window:SelectTab(Tabs.Main)
 
 Tabs.Main:Button({
-    Title = "Steal Helper (OP)",
+    Title = "Steal Helper (Collab)",
     Desc = "Opens Up A New Small Gui To Help Steal",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/erewe23/stealhelper.github.io/refs/heads/main/ere.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/erewe23/uitest.github.io/refs/heads/main/ere.lua"))()
     end,
 })
-
-
-
-
 
 local antiTrapGoodEnabled = false
 local antiTrapGoodScript
@@ -523,7 +551,7 @@ Tabs.Brainrot:Button({
     Title = "BRAINROT RARE JOINER",
     Desc = "Opens Up A New Gui To Join Rare Brainrots",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/3eferfer/finder.github.io/refs/heads/main/ere.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/erewe23/stealhelper.github.io/refs/heads/main/ere.lua"))()
     end,
 })
 
@@ -536,50 +564,9 @@ Tabs.Brainrot:Button({
     Title = "Pet Finder Secret Only",
     Desc = "Opens Up A New Gui To Join secret Brainrots",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/eere34/secretonly.github.io/refs/heads/main/secret.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/erewe23/stealhelper.github.io/refs/heads/main/ere.lua"))()
     end,
 })
-
-
-
-
-Tabs.Credit:Button({
-    Title = "JOIN DISCORD SERVER RINGTA",
-    Description = "Click To Copy The Discord Server Link For RINGTA",
-    Callback = function()
-        setclipboard("discord.gg/ringta")
-        -- Notify using WindUI
-        WindUI:Notify({
-            Title = "Copied!",
-            Content = "Discord invite copied to clipboard.",
-            Duration = 3,
-        })
-    end,
-})
-
-Tabs.Credit:Button({
-    Title = "JOIN DISCORD SERVER CYBORG",
-    Description = "Click To Copy The Discord Server Link For BUBLIK6241",
-    Callback = function()
-        setclipboard("https://discord.gg/P6UsmPB3") -- Correct link for ee
-        WindUI:Notify({
-            Title = "Copied!",
-            Content = "Discord invite copied to clipboard.",
-            Duration = 3,
-        })
-    end,
-})
-
-Tabs.Credit:Divider()
-
-
-Tabs.Credit:Paragraph({
-    Title = "PLEASE JOIN BOTH DISCORD SERVER",
-    Desc = "HUGE THANKS TO CYBORG AND UNKNOWN IN DISCORD FOR HUGE HELP MAKING THIS KEYLESS SCRIPT IF YOU DONT JOIN BOTH DISCORD SERVERS IT WONT BE KEYLESS IN THE FUTURE",
-    Color = "Green",
-    Locked = false,
-})
-
 
 
 task.spawn(function()
@@ -587,4 +574,5 @@ task.spawn(function()
     pcall(function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/wedfwef3/ere.github.io/refs/heads/main/infyield.lua"))()
     end)
+
 end)
