@@ -40,7 +40,7 @@ local autoSkipHelicopterActive = false
 local flushAuraActive = false
 local espActive = false
 
-local MMovementMode = "Teleport"
+local MMovementMode = "CFrame"
 
 local espActiveEnemies = false
 local espActivePlayers = false
@@ -53,7 +53,7 @@ getgenv().HitboxEnabled = false
 getgenv().HitboxSize = 20
 getgenv().HitboxShow = false
 
-local movementMode = "Teleport"
+local movementMode = "CFrame"
 local CharacterMode = "Used"
 local ActionMode = "Default"
 
@@ -690,7 +690,6 @@ HitboxTab:Section({ Title = "Beta Version: Bugs or Etc", Icon = "bug" })
 HitboxTab:Section({ Title = "Feature Hitbox", Icon = "crosshair" })
 
 QuestTab:Section({ Title = "Feature Quest", Icon = "album" })
-QuestTab:Section({ Title = "Setting Auto Quest", Icon = "star-half" })
 
 MasteryTab:Section({ Title = "Feature Mastery", Icon = "book-open" })
 
@@ -1048,6 +1047,17 @@ QuestTab:Button({
     end,
 })
 
+QuestTab:Section({ Title = "Setting Auto Quest", Icon = "star-half" })
+
+QuestTab:Dropdown({
+    Title = "Movement",
+    Values = {"Teleport", "CFrame"},
+    Default = movementMode,
+    Multi = false,
+    Callback = function(value)
+        movementMode = value
+    end,
+})
 
 QuestTab:Toggle({
     Title = "Auto Farm (Upgrade)",
@@ -1079,6 +1089,15 @@ QuestTab:Toggle({
     end,
 })
 
+MasteryTab:Dropdown({
+    Title = "Movement",
+    Values = {"Teleport", "CFrame"},
+    Default = movementMode,
+    Multi = false,
+    Callback = function(value)
+        movementMode = value
+    end,
+})
 
 MasteryTab:Dropdown({
     Title = "Action Speed",
@@ -1644,5 +1663,6 @@ CollectTab:Toggle({
 })
 
 print("[DYHUB] DYHUB - Loaded! (Console Show)")
+
 
 
