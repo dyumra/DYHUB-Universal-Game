@@ -143,20 +143,20 @@ local function calculatePosition(npc)
     end
 end
 
--- ฟังก์ชันต่อย NPC โดยการจำลองคลิกเมาส์กลางหน้าจอ
+-- ฟังก์ชันต่อย NPC โดยการจำลองคลิกเมาส์
 local function attackHumanoidWithClick(npc)
     local humanoid = npc:FindFirstChildOfClass("Humanoid")
     if not humanoid or humanoid.Health<=0 then return end
-    local character = LocalPlayer.Character
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     createSupportPart(character)
     while humanoid.Health>0 and autoFarmActive do
         teleportToTarget(calculatePosition(npc),0.5)
-        -- Simulate left mouse button click at screen center
+        -- Simulate left mouse click at screen center with random delay
         local viewport = workspace.CurrentCamera.ViewportSize
         local centerX, centerY = viewport.X/2, viewport.Y/2
-        VirtualInputManager:SendMouseButtonEvent(centerX, centerY, 0, true, game, 0) -- press
-        VirtualInputManager:SendMouseButtonEvent(centerX, centerY, 0, false, game, 0) -- release
-        task.wait(0.1)
+        VirtualInputManager:SendMouseButtonEvent(centerX, centerY, 0, true, game, 0)
+        VirtualInputManager:SendMouseButtonEvent(centerX, centerY, 0, false, game, 0)
+        task.wait(math.random(8,15)/100) -- 0.08-0.15s delay
     end
     removeSupportPart()
     removeVisited(npc)
@@ -216,7 +216,7 @@ local Window = WindUI:CreateWindow({
     Title = "DYHUB | Hunty Zombie",
     IconThemed = true,
     Icon = "star",
-    Author = "Version: 1.2.5",
+    Author = "Version: 1.3.0",
     Size = UDim2.fromOffset(600,400),
     Transparent = true,
     Theme = "Dark",
@@ -261,7 +261,7 @@ MainTab:Slider({
     Callback=function(val) getgenv().DistanceValue=val end
 })
 
--- Toggles
+-- Toggle Auto Farm
 MainTab:Toggle({
     Title="Auto Farm",
     Default=false,
