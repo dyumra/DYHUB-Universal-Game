@@ -608,22 +608,23 @@ WindUI:Popup({
     Title = "DYHUB Loaded! - ST : Blockade Battlefront",
     Icon = "star",
     IconThemed = true,
-    Content = "Join our at (https://dsc.gg/dyhub)",
+    Content = "Join us at (https://dsc.gg/dyhub)",
     Buttons = {
-    {
-        Title = "Cancel",
-        Variant = "Secondary",
-        Callback = function()
-            game.Players.LocalPlayer:Kick("FUCK YOU NIGGA CANCEL DYHUB????")
-        end
-    },
-    {
-        Title = "Continue",
-        Icon = "arrow-right",
-        Variant = "Primary",
-        Callback = function()
-            Confirmed = true
-        end
+        {
+            Title = "Cancel",
+            Variant = "Secondary",
+            Callback = function()
+                game.Players.LocalPlayer:Kick("FUCK YOU NIGGA CANCEL DYHUB????")
+            end
+        },
+        {
+            Title = "Continue",
+            Icon = "arrow-right",
+            Variant = "Primary",
+            Callback = function()
+                Confirmed = true
+            end
+        }
     }
 })
 
@@ -1643,3 +1644,4 @@ CollectTab:Toggle({
 })
 
 print("[DYHUB] DYHUB - Loaded! (Console Show)")
+
