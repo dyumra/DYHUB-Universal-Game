@@ -384,18 +384,30 @@ local function removeSupportPart()
     if supportPart then supportPart:Destroy() supportPart=nil end
 end
 
--- ฟังก์ชันคำนวณตำแหน่งตาม Set Position + Distance
+local spinAngle = 0
+
 local function calculatePosition(npc)
-    if not npc or not npc:FindFirstChild("HumanoidRootPart") then return Vector3.new() end
+    if not npc or not npc:FindFirstChild("HumanoidRootPart") then 
+        return Vector3.new() 
+    end
+
     local hrp = npc.HumanoidRootPart
     local pos = hrp.Position
     local dist = getgenv().DistanceValue or 1
+
     if setPositionMode == "Above" then
         return pos + Vector3.new(0, dist, 0)
     elseif setPositionMode == "Under" then
         return pos - Vector3.new(0, dist, 0)
     elseif setPositionMode == "Back" then
         return pos - (hrp.CFrame.LookVector * dist)
+    elseif setPositionMode == "Spin" then
+        spinAngle = spinAngle + math.rad(5)
+        return pos + Vector3.new(
+            math.cos(spinAngle) * dist,
+            0,
+            math.sin(spinAngle) * dist
+        )
     else
         return pos + (hrp.CFrame.LookVector * dist)
     end
@@ -1121,7 +1133,7 @@ MasteryTab:Dropdown({
 
 MasteryTab:Dropdown({
     Title="Set Position",
-    Values={"Above","Back","Under","Front"},
+    Values={"Spin","Above","Back","Under","Front"},
     Default=setPositionMode,
     Multi=false,
     Callback=function(value) setPositionMode=value end
@@ -1663,6 +1675,7 @@ CollectTab:Toggle({
 })
 
 print("[DYHUB] DYHUB - Loaded! (Console Show)")
+
 
 
 
