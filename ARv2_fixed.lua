@@ -1,5 +1,8 @@
+-- DYHUB - Anime Rails (Upgraded Full Version with Dropdowns)
+
 repeat task.wait() until game:IsLoaded()
 
+-- Services
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -8,14 +11,16 @@ local VirtualUser = game:GetService("VirtualUser")
 
 local LocalPlayer = Players.LocalPlayer
 
+-- WindUI Load
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
+-- Confirm Popup
 local Confirmed = false
 WindUI:Popup({
     Title = "DYHUB Loaded! - Anime Rails",
     Icon = "star",
     IconThemed = true,
-    Content = "DYHUB'S TEAM | Join our (dsc.gg/dyhub)",
+    Content = "Join our Discord at (dsc.gg/dyhub)",
     Buttons = {
         { Title = "Cancel", Variant = "Secondary", Callback = function() end },
         { Title = "Continue", Icon = "arrow-right", Callback = function() Confirmed = true end, Variant = "Primary" }
@@ -23,12 +28,13 @@ WindUI:Popup({
 })
 repeat task.wait() until Confirmed
 
+-- Create Main Window
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB - Anime Rails @ Lobby (Final Version)",
+    Title = "DYHUB - Anime Rails (Lobby)",
     IconThemed = true,
     Icon = "star",
-    Author = "DYHUB (dsc.gg/dyhub)",
-    Size = UDim2.fromOffset(600, 400),
+    Author = "Version: 4.7.6",
+    Size = UDim2.fromOffset(600, 450),
     Transparent = true,
     Theme = "Dark",
 })
@@ -42,224 +48,143 @@ Window:EditOpenButton({
     Draggable = true,
 })
 
--- Tabs
-local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
-local CashTab = Window:Tab({ Title = "Cash", Icon = "circle-dollar-sign" })
-local PartyTab = Window:Tab({ Title = "Auto Join", Icon = "handshake" })
-local GUI = Window:Tab({ Title = "Equip", Icon = "flame" })
-local GamepassTab = Window:Tab({ Title = "Gamepass", Icon = "cookie" })
+-- Tabs with Icons
+local MainTab = Window:Tab({ Title = "Main", Icon = "cpu" })
+local CashTab = Window:Tab({ Title = "Cash", Icon = "dollar-sign" })
+local PartyTab = Window:Tab({ Title = "Auto Join", Icon = "users" })
+local GUI = Window:Tab({ Title = "Equip", Icon = "tool" })
+local GamepassTab = Window:Tab({ Title = "Gamepass", Icon = "gift" })
 local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
-local MiscTab = Window:Tab({ Title = "Misc", Icon = "file-cog" })
-local ConfigTab = Window:Tab({ Title = "Config", Icon = "cog" })
+local MiscTab = Window:Tab({ Title = "Misc", Icon = "settings" })
 
--- Main Tab
+-- ====== Main Tab ======
+MainTab:Section({ Title = "Dupe All", Icon = "terminal" })
+
 local player = LocalPlayer
-local data = player:WaitForChild("Data") -- ensure data is loaded
+local data = player:WaitForChild("Data")
 local event = ReplicatedStorage:WaitForChild("Events"):WaitForChild("ChangeValue")
 
-local morphInputValue = ""
-local classInputValue = ""
-local auraInputValue = ""
+local morphInputValue, classInputValue, auraInputValue = "", "", ""
 
--- ดึงชื่อทั้งหมดจาก Data
 local function getDataNames()
     local names = {}
     for _, child in ipairs(data:GetChildren()) do
-        table.insert(names, child.Name)
+        if child:IsA("BoolValue") then
+            table.insert(names, child.Name)
+        end
     end
     return names
 end
 
+-- Dupe All Button
 MainTab:Button({
-    Title = "Dupe All (Click me for All)",
+    Title = "Dupe All (Unlock All)",
     Icon = "atom",
     Callback = function()
         for _, name in ipairs(getDataNames()) do
             event:FireServer("SetMorphBuy", name, 0)
-            wait(0.05)
+            task.wait(1)
         end
-        print("[DYHUB] All Morphs, Classes and Auras unlocked from Data!")
+        print("[DYHUB] All Morphs, Classes and Auras unlocked!")
     end,
 })
 
-MainTab:Input({
-    Title = "Dupe Morph",
-    Placeholder = "Use the name from Data.Morph",
-    Callback = function(text)
-        morphInputValue = text
-    end,
+-- Morph Dropdown
+MainTab:Dropdown({
+    Title = "Select Morph",
+    Values = getDataNames(),
+    Multi = false,
+    Callback = function(value)
+        morphInputValue = value
+    end
 })
-
 MainTab:Button({
     Title = "Unlock Morph",
     Icon = "crown",
     Callback = function()
-        local found = false
-        for _, name in ipairs(getDataNames()) do
-            if name:lower() == morphInputValue:lower() then
-                event:FireServer("SetMorphBuy", name, 0)
-                print("[DYHUB] Morph unlocked:", name)
-                found = true
-                break
-            end
+        if morphInputValue ~= "" then
+            event:FireServer("SetMorphBuy", morphInputValue, 0)
+            print("[DYHUB] Morph unlocked:", morphInputValue)
         end
-        if not found then
-            print("[DYHUB] Invalid Morph:", morphInputValue)
-        end
-    end,
+    end
 })
 
-MainTab:Input({
-    Title = "Dupe Class",
-    Placeholder = "Use the name from Data.Class",
-    Callback = function(text)
-        classInputValue = text
-    end,
+-- Class Dropdown
+MainTab:Dropdown({
+    Title = "Select Class",
+    Values = getDataNames(),
+    Multi = false,
+    Callback = function(value)
+        classInputValue = value
+    end
 })
-
 MainTab:Button({
     Title = "Unlock Class",
     Icon = "swords",
     Callback = function()
-        local found = false
-        for _, name in ipairs(getDataNames()) do
-            if name:lower() == classInputValue:lower() then
-                event:FireServer("SetMorphBuy", name, 0)
-                print("[DYHUB] Class unlocked:", name)
-                found = true
-                break
-            end
+        if classInputValue ~= "" then
+            event:FireServer("SetMorphBuy", classInputValue, 0)
+            print("[DYHUB] Class unlocked:", classInputValue)
         end
-        if not found then
-            print("[DYHUB] Invalid Class:", classInputValue)
-        end
-    end,
+    end
 })
 
-MainTab:Input({
-    Title = "Dupe Aura",
-    Placeholder = "Use the name from Data.Aura",
-    Callback = function(text)
-        auraInputValue = text
-    end,
+-- Aura Dropdown
+MainTab:Dropdown({
+    Title = "Select Aura",
+    Values = getDataNames(),
+    Multi = false,
+    Callback = function(value)
+        auraInputValue = value
+    end
 })
-
 MainTab:Button({
     Title = "Unlock Aura",
     Icon = "flame",
     Callback = function()
-        local found = false
-        for _, name in ipairs(getDataNames()) do
-            if name:lower() == auraInputValue:lower() then
-                event:FireServer("SetMorphBuy", name, 0)
-                print("[DYHUB] Aura unlocked:", name)
-                found = true
-                break
-            end
+        if auraInputValue ~= "" then
+            event:FireServer("SetMorphBuy", auraInputValue, 0)
+            print("[DYHUB] Aura unlocked:", auraInputValue)
         end
-        if not found then
-            print("[DYHUB] Invalid Aura:", auraInputValue)
-        end
-    end,
+    end
 })
 
+-- ====== Equip Tab ======
+local function fireChangeValue(key,value)
+    event:FireServer(key,value)
+    print("[DYHUB] Sent", key,value)
+end
 
--- Gamepass Tab
-local selectedGamepass = "All"
-GamepassTab:Dropdown({
-    Title = "Select Gamepass",
-    Values = { "All", "DoubleCash", "AlrBoughtSkipSpin", "SecClass", "Emote", "CriticalHit", "SkipSpin" },
-    Multi = false,
-    Callback = function(selected)
-        selectedGamepass = selected
-        print("[DYHUB] Selected Gamepass:", selectedGamepass)
-    end,
-})
+GUI:Dropdown({ Title="Select Character", Values=getDataNames(), Multi=false, Callback=function(v) fireChangeValue("SetCurrChar",v) end })
+GUI:Dropdown({ Title="Select Class Slot 1", Values=getDataNames(), Multi=false, Callback=function(v) fireChangeValue("SetCurClass",v) end })
+GUI:Dropdown({ Title="Select Class Slot 2", Values=getDataNames(), Multi=false, Callback=function(v) fireChangeValue("SetCurClass2",v) end })
+GUI:Dropdown({ Title="Select Aura", Values=getDataNames(), Multi=false, Callback=function(v) fireChangeValue("SetCurAura",v) end })
 
-GamepassTab:Button({
-    Title = "Enter Unlock",
-    Icon = "check",
-    Callback = function()
-        local player = LocalPlayer
-        local data = player:FindFirstChild("Data")
-        if not data then
-            warn("[DYHUB] Data not found!")
-            return
-        end
-
-        if selectedGamepass == "All" then
-            local gamepasses = { "DoubleCash", "AlrBoughtSkipSpin", "SecClass", "Emote", "CriticalHit", "SkipSpin" }
-            for _, gpName in ipairs(gamepasses) do
-                local gp = data:FindFirstChild(gpName)
-                if gp then
-                    gp.Value = true
-                    print("[DYHUB] Unlocked Gamepass:", gpName)
-                end
-            end
-        else
-            local gp = data:FindFirstChild(selectedGamepass)
-            if gp then
-                gp.Value = true
-                print("[DYHUB] Unlocked Gamepass:", selectedGamepass)
-            else
-                warn("[DYHUB] Gamepass not found:", selectedGamepass)
-            end
-        end
-
-        if selectedGamepass == "Emote" or selectedGamepass == "All" then
-            local emotes = player:FindFirstChild("PlayerGui"):FindFirstChild("HUD")
-            if emotes and emotes:FindFirstChild("Emotes") then
-                emotes.Emotes.Visible = true
-            end
-        end
-    end,
-})
-
--- Cash Tab
+-- ====== Cash Tab ======
 local cashInputValue = ""
-
-CashTab:Input({
-    Title = "Enter Dupe Cash Amount",
-    Placeholder = "100 ~ 10000",
-    Callback = function(text)
-        cashInputValue = text
-    end,
-})
-
+CashTab:Input({ Title = "Enter Dupe Cash Amount", Placeholder = "100 ~ 10000", Callback = function(text) cashInputValue = text end })
 CashTab:Button({
     Title = "Dupe Cash",
     Icon = "dollar-sign",
     Callback = function()
         local input = tonumber(cashInputValue)
         if input and input >= 100 and input <= 10000 then
-            local args = {
-                [1] = "Wins",
-                [2] = input,
-                [3] = "DYHUB"
-            }
-            ReplicatedStorage:WaitForChild("CodeEvent"):FireServer(unpack(args))
+            ReplicatedStorage:WaitForChild("CodeEvent"):FireServer("Wins", input, "DYHUB")
             print("[DYHUB] Dupe Cash:", input)
         else
             print("[DYHUB] Invalid amount:", cashInputValue)
         end
     end,
 })
-
 CashTab:Button({
     Title = "Infinite Dupe Cash",
     Icon = "infinity",
     Callback = function()
-        local totalAmount = 999000000
-        local perFire = 999999
-        local times = math.floor(totalAmount / perFire)
         task.spawn(function()
+            local totalAmount, perFire = 999000000, 999999
+            local times = math.floor(totalAmount / perFire)
             for i = 1, times do
-                local args = {
-                    [1] = "Wins",
-                    [2] = perFire,
-                    [3] = "DYHUB"
-                }
-                ReplicatedStorage:WaitForChild("CodeEvent"):FireServer(unpack(args))
+                ReplicatedStorage:WaitForChild("CodeEvent"):FireServer("Wins", perFire, "DYHUB")
                 task.wait(0.1)
             end
             print("[DYHUB] Completed Infinite Cash")
@@ -267,130 +192,49 @@ CashTab:Button({
     end,
 })
 
-CashTab:Button({
-    Title = "Infinite Dupe Spin",
-    Icon = "rotate-ccw",
-    Callback = function()
-        local totalAmount = 9999
-        local perFire = 1
-        local times = math.floor(totalAmount / perFire)
-        task.spawn(function()
-            for i = 1, times do
-                local args = {
-                    [1] = "Wins",
-                    [2] = 0,
-                    [3] = "DYHUB"
-                }
-                ReplicatedStorage:WaitForChild("CodeEvent"):FireServer(unpack(args))
-                task.wait(0.05)
-            end
-            print("[DYHUB] Completed Infinite Dupe Spin +10 Spin")
-        end)
-    end,
-})
-
--- Player Tab
-
+-- ====== Player ESP Tab ======
+-- (ปรับปรุง ESP ให้เสถียรและเลือกสีได้)
 local espEnabled = false
 local espUpdateConnection
-local espOptions = {
-    ShowName = false,
-    ShowHealth = false,
-    ShowDistance = false,
-    ShowMorph = false,
-    ShowClass = false,
-    ShowAura = false,
-    HighlightColor = Color3.fromRGB(0, 255, 0),
-    Rainbow = false,
-}
+local espOptions = { ShowName=false, ShowHealth=false, ShowDistance=false, ShowMorph=false, ShowClass=false, ShowAura=false, HighlightColor=Color3.fromRGB(0,255,0), Rainbow=false }
 
 local function updateESP()
     for _, target in ipairs(Players:GetPlayers()) do
         if target ~= LocalPlayer and target.Character and target.Character:FindFirstChild("Head") then
             local head = target.Character.Head
-            local gui = head:FindFirstChild("DYESP")
-            if not gui then
-                gui = Instance.new("BillboardGui")
-                gui.Name = "DYESP"
-                gui.Size = UDim2.new(0, 200, 0, 100)
-                gui.StudsOffset = Vector3.new(0, 2.5, 0)
-                gui.AlwaysOnTop = true
-                gui.Parent = head
-            end
-
-            for _, child in ipairs(gui:GetChildren()) do
-                if child:IsA("TextLabel") then
-                    child:Destroy()
-                end
-            end
-
-            local function addLine(text, yOffset)
+            local gui = head:FindFirstChild("DYESP") or Instance.new("BillboardGui")
+            gui.Name, gui.Size, gui.StudsOffset, gui.AlwaysOnTop, gui.Parent = "DYESP", UDim2.new(0,200,0,100), Vector3.new(0,2.5,0), true, head
+            for _, child in ipairs(gui:GetChildren()) do if child:IsA("TextLabel") then child:Destroy() end end
+            local y=0
+            local function addLine(text)
                 local label = Instance.new("TextLabel")
-                label.Size = UDim2.new(1, 0, 0, 20)
-                label.Position = UDim2.new(0, 0, 0, yOffset)
-                label.BackgroundTransparency = 1
-                label.TextColor3 = espOptions.Rainbow and Color3.fromHSV((tick() % 5) / 5, 1, 1) or espOptions.HighlightColor
-                label.TextStrokeTransparency = 0
-                label.TextScaled = true
-                label.Font = Enum.Font.SourceSansBold
-                label.Text = text
+                label.Size, label.Position, label.BackgroundTransparency = UDim2.new(1,0,0,20), UDim2.new(0,0,0,y), 1
+                label.TextColor3 = espOptions.Rainbow and Color3.fromHSV((tick()%5)/5,1,1) or espOptions.HighlightColor
+                label.TextStrokeTransparency, label.TextScaled, label.Font, label.Text = 0, true, Enum.Font.SourceSansBold, text
                 label.Parent = gui
+                y = y + 20
             end
-
-            local data = target:FindFirstChild("Data")
-            local y = 0
-
-            if espOptions.ShowName then
-                addLine(target.Name, y)
-                y += 20
-            end
-
-            if espOptions.ShowHealth and target.Character:FindFirstChild("Humanoid") then
-                addLine("HP: " .. math.floor(target.Character.Humanoid.Health), y)
-                y += 20
-            end
-
-            if espOptions.ShowDistance and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and target.Character:FindFirstChild("HumanoidRootPart") then
+            if espOptions.ShowName then addLine(target.Name) end
+            if espOptions.ShowHealth and target.Character:FindFirstChild("Humanoid") then addLine("HP: "..math.floor(target.Character.Humanoid.Health)) end
+            if espOptions.ShowDistance and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
                 local dist = (LocalPlayer.Character.HumanoidRootPart.Position - target.Character.HumanoidRootPart.Position).Magnitude
-                addLine("Dist: " .. math.floor(dist), y)
-                y += 20
+                addLine("Dist: "..math.floor(dist))
             end
-
-            if data and data:FindFirstChild("CurrChar") and data.CurrMorph:IsA("StringValue") then
-                addLine("Morph: " .. data.CurrChar.Value, y)
-                y += 20
-            end
-
-            if data and data:FindFirstChild("CurrClass") and data.CurrClass:IsA("StringValue") then
-                addLine("Class: " .. data.CurrClass.Value, y)
-                y += 20
-            end
-
-            if data and data:FindFirstChild("CurrClassSec") and data.CurrClassSec:IsA("StringValue") then
-                addLine("Class Stol-2: " .. data.CurrClassSec.Value, y)
-                y += 20
-            end
-
-            if data and data:FindFirstChild("CurrTitle") and data.CurrTitle:IsA("StringValue") then
-                addLine("Title: " .. data.CurrTitle.Value, y)
-                y += 20
-            end
-
-            if data and data:FindFirstChild("CurrSelect") and data.CurrSelect:IsA("StringValue") then
-                addLine("Aura: " .. data.CurrSelect.Value, y)
-                y += 20
+            local d = target:FindFirstChild("Data")
+            if d then
+                if espOptions.ShowMorph and d:FindFirstChild("CurrChar") then addLine("Morph: "..d.CurrChar.Value) end
+                if espOptions.ShowClass and d:FindFirstChild("CurrClass") then addLine("Class: "..d.CurrClass.Value) end
+                if espOptions.ShowAura and d:FindFirstChild("CurrSelect") then addLine("Aura: "..d.CurrSelect.Value) end
             end
         end
     end
 end
 
 local function clearESP()
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player.Character and player.Character:FindFirstChild("Head") then
-            local gui = player.Character.Head:FindFirstChild("DYESP")
-            if gui then
-                gui:Destroy()
-            end
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p.Character and p.Character:FindFirstChild("Head") then
+            local gui = p.Character.Head:FindFirstChild("DYESP")
+            if gui then gui:Destroy() end
         end
     end
 end
@@ -402,140 +246,47 @@ local function toggleESP(state)
         espUpdateConnection = RunService.Heartbeat:Connect(updateESP)
     else
         clearESP()
-        if espUpdateConnection then
-            espUpdateConnection:Disconnect()
-            espUpdateConnection = nil
-        end
+        if espUpdateConnection then espUpdateConnection:Disconnect() espUpdateConnection=nil end
     end
 end
 
-Players.PlayerAdded:Connect(function(player)
-    if espEnabled then
-        player.CharacterAdded:Wait()
-        updateESP()
-    end
-end)
-
-PlayerTab:Toggle({
-    Title = "Enable ESP",
-    Value = false,
-    Callback = function(state)
-        toggleESP(state)
-    end,
-})
-
+PlayerTab:Toggle({ Title="Enable ESP", Value=false, Callback=toggleESP })
 PlayerTab:Dropdown({
-    Title = "ESP Color",
-    Default = "Green",
-    Options = {
-        "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "White", "Black", "Rainbow"
-    },
-    Callback = function(colorName)
-        espOptions.Rainbow = false
-        local colors = {
-            Red = Color3.fromRGB(255, 0, 0),
-            Green = Color3.fromRGB(0, 255, 0),
-            Blue = Color3.fromRGB(0, 0, 255),
-            Yellow = Color3.fromRGB(255, 255, 0),
-            Purple = Color3.fromRGB(128, 0, 128),
-            Cyan = Color3.fromRGB(0, 255, 255),
-            White = Color3.fromRGB(255, 255, 255),
-            Black = Color3.fromRGB(0, 0, 0),
-            Rainbow = nil,
-        }
-        if colorName == "Rainbow" then
-            espOptions.Rainbow = true
-        else
-            espOptions.HighlightColor = colors[colorName] or Color3.fromRGB(0, 255, 0)
-        end
-    end,
-})
-
-PlayerTab:Toggle({
-    Title = "Show Player Name",
-    Value = false,
-    Callback = function(state)
-        espOptions.ShowName = state
-    end,
-})
-
-PlayerTab:Toggle({
-    Title = "Show Health",
-    Value = false,
-    Callback = function(state)
-        espOptions.ShowHealth = state
-    end,
-})
-
-PlayerTab:Toggle({
-    Title = "Show Distance",
-    Value = false,
-    Callback = function(state)
-        espOptions.ShowDistance = state
-    end,
-})
-
-PlayerTab:Toggle({
-    Title = "Show Morph",
-    Value = false,
-    Callback = function(state)
-        espOptions.ShowMorph = state
-    end,
-})
-
-PlayerTab:Toggle({
-    Title = "Show Class",
-    Value = false,
-    Callback = function(state)
-        espOptions.ShowClass = state
-    end,
-})
-
-PlayerTab:Toggle({
-    Title = "Show Aura",
-    Value = false,
-    Callback = function(state)
-        espOptions.ShowAura = state
-    end,
-})
-
-RunService.Heartbeat:Connect(function()
-    if espEnabled then
-        updateESP()
+    Title="ESP Color", Default="Green",
+    Options={"Red","Green","Blue","Yellow","Purple","Cyan","White","Black","Rainbow"},
+    Callback=function(c)
+        espOptions.Rainbow = (c=="Rainbow")
+        local colors = {Red=Color3.fromRGB(255,0,0), Green=Color3.fromRGB(0,255,0), Blue=Color3.fromRGB(0,0,255),
+            Yellow=Color3.fromRGB(255,255,0), Purple=Color3.fromRGB(128,0,128), Cyan=Color3.fromRGB(0,255,255),
+            White=Color3.fromRGB(255,255,255), Black=Color3.fromRGB(0,0,0)}
+        if not espOptions.Rainbow then espOptions.HighlightColor = colors[c] or Color3.fromRGB(0,255,0) end
     end
-end)
+})
+PlayerTab:Toggle({ Title="Show Player Name", Value=false, Callback=function(s) espOptions.ShowName=s end })
+PlayerTab:Toggle({ Title="Show Health", Value=false, Callback=function(s) espOptions.ShowHealth=s end })
+PlayerTab:Toggle({ Title="Show Distance", Value=false, Callback=function(s) espOptions.ShowDistance=s end })
+PlayerTab:Toggle({ Title="Show Morph", Value=false, Callback=function(s) espOptions.ShowMorph=s end })
+PlayerTab:Toggle({ Title="Show Class", Value=false, Callback=function(s) espOptions.ShowClass=s end })
+PlayerTab:Toggle({ Title="Show Aura", Value=false, Callback=function(s) espOptions.ShowAura=s end })
 
--- Misc Tab
-local antiAfkEnabled = false
-local antiAdminEnabled = false
-local fakeBypassEnabled = false
+-- ====== Misc Tab ======
+local antiAfkEnabled, antiAdminEnabled, fakeBypassEnabled = false,false,false
 
--- 🌌 Bypass Anti-Cheat (ปลอม)
 MiscTab:Toggle({
-    Title = "Bypass Anti-Cheat (By rhy)",
-    Value = true,
-    Callback = function(state)
-        fakeBypassEnabled = state
-        if fakeBypassEnabled then
-            print("[DYHUB] Bypassing Anti-Cheat... ✅(DYHUB'S TEAM)")
-            Notify({
-                Title = "Bypass Enabled",
-                Description = "Finished: bypass enabled. Just for looks 😉",
-                Duration = 3
-            })
-        else
-            print("[DYHUB] Bypass Anti-Cheat disabled.")
-        end
-    end,
+    Title="Bypass Anti-Cheat (Visual Only)",
+    Value=true,
+    Callback=function(state)
+        fakeBypassEnabled=state
+        if state then print("[DYHUB] Bypass Anti-Cheat Enabled") end
+    end
 })
 
--- 💤 Anti AFK
 MiscTab:Toggle({
-    Title = "Anti AFK",
-    Value = false,
-    Callback = function(state)
-        antiAfkEnabled = state
-        if antiAfkEnabled then
+    Title="Anti AFK",
+    Value=false,
+    Callback=function(state)
+        antiAfkEnabled=state
+        if state then
             task.spawn(function()
                 while antiAfkEnabled do
                     VirtualUser:Button2Down(Vector2.new(0,0))
@@ -546,160 +297,42 @@ MiscTab:Toggle({
         else
             print("[DYHUB] Anti AFK disabled")
         end
-    end,
+    end
 })
 
--- 👮 Anti Admin (Auto ServerHop ถ้าเจอ Roblox123)
 MiscTab:Toggle({
-    Title = "Anti Admin (Auto Hop)",
-    Value = false,
-    Callback = function(state)
-        antiAdminEnabled = state
-        if antiAdminEnabled then
-            print("[DYHUB] Anti Admin enabled - Scanning players... (every: 15 sec)")
+    Title="Anti Admin (Auto Hop)",
+    Value=false,
+    Callback=function(state)
+        antiAdminEnabled=state
+        if state then
             task.spawn(function()
                 while antiAdminEnabled do
-                    for _, player in ipairs(Players:GetPlayers()) do
-                        if player.Name == "Roblox123" then
-                            print("[DYHUB] Detected admin: Roblox123, hopping server...")
-                            Notify({
-                                Title = "Anti Admin",
-                                Description = "Detected admin 'Roblox123'. Hopping server...",
-                                Duration = 3
-                            })
-                            task.wait(1)
+                    for _, p in ipairs(Players:GetPlayers()) do
+                        if p.Name=="Roblox123" then
                             TeleportService:Teleport(game.PlaceId, LocalPlayer)
                             return
                         end
                     end
-                    task.wait(15) -- ตรวจสอบทุก 5 วินาที
+                    task.wait(15)
                 end
             end)
-        else
-            print("[DYHUB] Anti Admin disabled")
         end
-    end,
-})
-
-local player1 = LocalPlayer
-local data1 = player1:WaitForChild("Data") -- ensure data is loaded
-
--- ฟังก์ชันดึงชื่อทั้งหมดจาก Data
-local function getDataNamesDY()
-    local names = {}
-    for _, child in ipairs(data1:GetChildren()) do
-        table.insert(names, child.Name)
     end
-    return names
-end
-
--- สร้าง Dropdown โดยใช้ชื่อที่ดึงจาก Data
-GUI:Dropdown({
-    Title = "Index List",
-    Values = getDataNamesDY(),
-    Multi = false,
-    Callback = function(value)
-        print("[DYHUB] Selected index:", value)
-    end,
 })
 
--- ฟังก์ชันกลางสำหรับปุ่ม FireServer
-local function fireChangeValue(key, value)
-    local args = { key, value }
-    game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("ChangeValue"):FireServer(unpack(args))
-    print("[DYHUB] Sent", key, value)
-end
+-- ====== Auto Join Tab ======
+local maxPlayers, allowFriend, nightmareMode = 1,true,false
 
--- Input: SetCurrChar
-GUI:Input({
-    Title = "Set Character",
-    Placeholder = "Type character name...",
-    Callback = function(value)
-        fireChangeValue("SetCurrChar", value)
-    end,
-})
-
--- Input: SetCurClass
-GUI:Input({
-    Title = "Set Class (Slot 1)",
-    Placeholder = "Type class name...",
-    Callback = function(value)
-        fireChangeValue("SetCurClass", value)
-    end,
-})
-
--- Input: SetCurClass2 (Gamepass Slot 2)
-GUI:Input({
-    Title = "Set Class (Slot 2)",
-    Placeholder = "Type class2 name...",
-    Callback = function(value)
-        fireChangeValue("SetCurClass2", value)
-    end,
-})
-
--- Input: SetCurAura
-GUI:Input({
-    Title = "Set Aura",
-    Placeholder = "Type aura name...",
-    Callback = function(value)
-        fireChangeValue("SetCurAura", value)
-    end,
-})
-
--- auto join
--- ตัวแปรเริ่มต้น
-local maxPlayers = 1
-local allowFriend = true
-local nightmareMode = false
-
--- Input สำหรับ Max Players
-PartyTab:Input({
-    Title = "Max Players",
-    Placeholder = "Enter 1 ~ 8",
-    Callback = function(text)
-        local num = tonumber(text)
-        if num and num >= 1 and num <= 8 then
-            maxPlayers = num
-            print("[DYHUB] Max Players set to:", maxPlayers)
-        else
-            warn("[DYHUB] Invalid max players input, must be between 1 and 8")
-            -- หาก WindUI มี notify: WindUI:Notify("Invalid input", "Please enter a number from 1 to 8")
-        end
-    end,
-})
-
--- Toggle สำหรับ Allow Friend Join
-PartyTab:Toggle({
-    Title = "Allow Friend Join",
-    Default = true,
-    Callback = function(state)
-        allowFriend = state
-        print("[DYHUB] Allow Friend Join:", state)
-    end,
-})
-
--- Toggle สำหรับ Nightmare Mode
-PartyTab:Toggle({
-    Title = "Nightmare Mode",
-    Default = false,
-    Callback = function(state)
-        nightmareMode = state
-        print("[DYHUB] Nightmare Mode:", state)
-    end,
-})
-
--- ปุ่ม Auto Join
-PartyTab:Button({
-    Title = "Auto Join",
-    Callback = function()
-        local args = {
-            allowFriend,
-            maxPlayers,
-            nightmareMode
-        }
-        game:GetService("ReplicatedStorage"):WaitForChild("ApplyTP"):FireServer(unpack(args))
-        print("[DYHUB] Auto Join sent:", allowFriend, maxPlayers, nightmareMode)
-    end,
-}) 
+PartyTab:Input({ Title="Max Players", Placeholder="Enter 1 ~ 8", Callback=function(txt)
+    local n=tonumber(txt)
+    if n and n>=1 and n<=8 then maxPlayers=n else warn("[DYHUB] Invalid Max Players") end
+end})
+PartyTab:Toggle({ Title="Allow Friend Join", Default=true, Callback=function(s) allowFriend=s end })
+PartyTab:Toggle({ Title="Nightmare Mode", Default=false, Callback=function(s) nightmareMode=s end })
+PartyTab:Button({ Title="Auto Join", Callback=function()
+    ReplicatedStorage:WaitForChild("ApplyTP"):FireServer(allowFriend,maxPlayers,nightmareMode)
+    print("[DYHUB] Auto Join sent:",allowFriend,maxPlayers,nightmareMode)
+end })
 
 print("[DYHUB] Script loaded successfully!")
