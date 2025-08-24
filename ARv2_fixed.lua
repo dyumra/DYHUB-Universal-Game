@@ -88,7 +88,7 @@ MainTab:Button({
             local unlocked = data:FindFirstChild(name) and data[name].Value
             if not unlocked then
                 event:FireServer("SetMorphBuy", name, 0)
-                task.wait(0.4)
+                task.wait(0.25)
             end
         end
 
