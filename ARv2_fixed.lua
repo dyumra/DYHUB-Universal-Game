@@ -31,8 +31,8 @@ local Window = WindUI:CreateWindow({
     Title = "DYHUB - Anime Rails (Lobby)",
     IconThemed = true,
     Icon = "star",
-    Author = "Version: 4.9.2",
-    Size = UDim2.fromOffset(600, 450),
+    Author = "Version: 4.9.4",
+    Size = UDim2.fromOffset(500, 300),
     Transparent = true,
     Theme = "Dark",
 })
@@ -73,7 +73,7 @@ local function getDataNames()
     return names
 end
 
-MainTab:Section({ Title = "Dupe All", Icon = "circle-star" })
+MainTab:Section({ Title = "Dupe All", Icon = "copy" })
 
 -- Dupe All Button
 MainTab:Button({
@@ -96,7 +96,7 @@ MainTab:Button({
     end,
 })
 
-MainTab:Section({ Title = "Dupe Select", Icon = "square-star" })
+MainTab:Section({ Title = "Dupe Select", Icon = "layers-2" })
 
 -- Morph Dropdown
 MainTab:Dropdown({
