@@ -816,15 +816,15 @@ Tabs.Shop:Button({
     end,
 })
 
-PlayerTab:Section({ Title = "Feature Player", Icon = "badge-dollar-sign" })
+Tabs.PlayerTab:Section({ Title = "Feature Player", Icon = "badge-dollar-sign" })
 
 -- Player Tab Vars
 getgenv().speedEnabled = false
 getgenv().speedValue = 20
 
-PlayerTab:Slider({
+Tabs.PlayerTab:Slider({
     Title = "Set Speed Value",
-    Value = {Min = 16, Max = 600, Default = 20},
+    Value = {Min = 16, Max = 50, Default = 20},
     Step = 1,
     Callback = function(val)
         getgenv().speedValue = val
@@ -835,7 +835,7 @@ PlayerTab:Slider({
     end
 })
 
-PlayerTab:Toggle({
+Tabs.PlayerTab:Toggle({
     Title = "Enable Speed",
     Default = false,
     Callback = function(v)
@@ -849,7 +849,7 @@ PlayerTab:Toggle({
 getgenv().jumpEnabled = false
 getgenv().jumpValue = 50
 
-PlayerTab:Slider({
+Tabs.PlayerTab:Slider({
     Title = "Set Jump Value",
     Value = {Min = 10, Max = 600, Default = 50},
     Step = 1,
@@ -862,7 +862,7 @@ PlayerTab:Slider({
     end
 })
 
-PlayerTab:Toggle({
+Tabs.PlayerTab:Toggle({
     Title = "Enable JumpPower",
     Default = false,
     Callback = function(v)
@@ -875,7 +875,7 @@ PlayerTab:Toggle({
 
 local noclipConnection
 
-PlayerTab:Toggle({
+Tabs.PlayerTab:Toggle({
     Title = "No Clip",
     Default = false,
     Callback = function(state)
@@ -907,7 +907,7 @@ PlayerTab:Toggle({
     end
 })
 
-PlayerTab:Toggle({
+Tabs.PlayerTab:Toggle({
     Title = "Infinity Jump",
     Default = false,
     Callback = function(state)
@@ -931,7 +931,7 @@ PlayerTab:Toggle({
     end
 })
 
-PlayerTab:Button({
+Tabs.PlayerTab:Button({
     Title = "Fly (Beta)",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/dyumrascript-/refs/heads/main/Flua"))()
