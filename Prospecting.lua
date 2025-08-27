@@ -791,7 +791,7 @@ local selectedList = {}
 
 -- Dropdown เลือก Shovel
 Tabs.Shop:Dropdown({
-    Title = "Select Redeem Shovel",
+    Title = "Select Shovel",
     Multi = false,
     Values = ShovelNamesDisplay, -- แสดงชื่อ + ราคา
     Callback = function(value)
