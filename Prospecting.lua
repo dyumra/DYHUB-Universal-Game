@@ -1,5 +1,21 @@
 repeat task.wait() until game:IsLoaded()
 
+-- Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+local Camera = Workspace.CurrentCamera
+
+-- Player references
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
+
+
 -- โหลด WindUI
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
@@ -20,7 +36,7 @@ repeat task.wait() until Confirmed
 local Window = WindUI:CreateWindow({
     Folder = "DYHUB Config | Prospecting",
     Author = "DYHUB",
-    Title = "DYHUB - Prospecting (Version: 3.51)",
+    Title = "DYHUB - Prospecting (Version: 3.61)",
     IconThemed = true,
     Icon = "star",
     Author = "DYHUB (dsc.gg/dyhub)",
@@ -90,9 +106,9 @@ local shakeRunning = false
 local digRunning = false
 
 -- Tab: Main
-Tabs.Auto:Section({ Title = "⚠️ Please Turn-On All", Icon = "badge-dollar-sign" })
-Tabs.Auto:Section({ Title = "⚠️ Before used to Auto Farm", Icon = "badge-dollar-sign" })
-Tabs.Auto:Section({ Title = "Feature Auto", Icon = "badge-dollar-sign" })
+Tabs.Auto:Section({ Title = "Please Turn-On All", Icon = "triangle-alert" })
+Tabs.Auto:Section({ Title = "Before used to Auto Farm", Icon = "triangle-alert" })
+Tabs.Auto:Section({ Title = "Feature Auto", Icon = "repeat" })
 
 -- Tab: Auto
 Tabs.Auto:Toggle({
@@ -202,9 +218,9 @@ Tabs.Main:Button({
 })
 
 
-Tabs.Farm:Section({ Title = "⚠️ Warning: Use this feature on private servers", Icon = "badge-dollar-sign" })
-Tabs.Farm:Section({ Title = "🌏 Island (1)", Icon = "badge-dollar-sign" })
-Tabs.Farm:Section({ Title = "Rubble Creek Sands", Icon = "badge-dollar-sign" })
+Tabs.Farm:Section({ Title = "Warning: Use this feature on private servers", Icon = "triangle-alert" })
+Tabs.Farm:Section({ Title = "Island (1)", Icon = "earth" })
+Tabs.Farm:Section({ Title = "Rubble Creek Sands", Icon = "locate" })
 
 local FarmToggleRunning = false
 
@@ -304,7 +320,7 @@ Tabs.Farm:Toggle({
     end
 })
 
-Tabs.Farm:Section({ Title = "Rubble Creek Deposit", Icon = "badge-dollar-sign" })
+Tabs.Farm:Section({ Title = "Rubble Creek Deposit", Icon = "locate" })
 
 local AutoFarm2Running = false
 
@@ -405,7 +421,7 @@ Tabs.Farm:Toggle({
     end
 })
 
-Tabs.Farm:Section({ Title = "Set by you", Icon = "badge-dollar-sign" })
+Tabs.Farm:Section({ Title = "Set by you", Icon = "map-pin-plus" })
 
 local AutoFarm3Running = false
 local DigInputValue, ShakeInputValue, SellInputValue
@@ -667,7 +683,7 @@ Tabs.Code:Button({
     end,
 })
 
-Tabs.Shop:Section({ Title = "Feature Buy: Pan", Icon = "bird" })
+Tabs.Shop:Section({ Title = "Feature Buy: Pan", Icon = "circle" })
 
 -- รายการ Pan พร้อมรายละเอียด
 local PanList = {
@@ -755,7 +771,7 @@ Tabs.Shop:Button({
 })
 
 
-Tabs.Shop:Section({ Title = "Feature Buy: Shovel", Icon = "bird" })
+Tabs.Shop:Section({ Title = "Feature Buy: Shovel", Icon = "shovel" })
 
 -- รายการ Shovel พร้อมราคา
 local ShovelList = {
@@ -816,7 +832,7 @@ Tabs.Shop:Button({
     end,
 })
 
-Tabs.PlayerTab:Section({ Title = "Feature Player", Icon = "badge-dollar-sign" })
+Tabs.PlayerTab:Section({ Title = "Feature Player", Icon = "user" })
 
 -- Player Tab Vars
 getgenv().speedEnabled = false
