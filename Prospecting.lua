@@ -42,7 +42,6 @@ Window:EditOpenButton({
 
 -- สร้าง Tabs
 local Tabs = {}
-Tabs.InfoTab = Window:Tab({ Title = "Info", Icon = "info", Desc = "DYHUB" })
 Tabs.Main = Window:Tab({ Title = "Main", Icon = "rocket", Desc = "DYHUB" })
 Tabs.PlayerTab = Window:Tab({ Title = "Player", Icon = "user", Desc = "DYHUB" })
 Tabs.Auto = Window:Tab({ Title = "Auto", Icon = "wrench", Desc = "DYHUB" })
@@ -51,20 +50,6 @@ Tabs.Shop = Window:Tab({ Title = "Shop", Icon = "shopping-cart", Desc = "DYHUB" 
 Tabs.Code = Window:Tab({ Title = "Code", Icon = "bird", Desc = "DYHUB" })
 
 Window:SelectTab(1)
-
-InfoTab:Section({ Title = "📌 Info", Icon = "info" })
-InfoTab:Section({ Title = "This script is still under development." })
-InfoTab:Section({ Title = "If there are any bugs or issues" })
-InfoTab:Section({ Title = "you can report them to us on Discord" })
-
-InfoTab:Button({
-    Title = "DYHUB - Discord!",
-    Callback = function()
-        setclipboard("https://dsc.gg/dyhub")
-    end
-})
-
-InfoTab:Section({ Title = "💗 We appreciate your choice to use our script." })
 
 -- ฟังก์ชันช่วยเหลือ
 local Players = game:GetService("Players")
