@@ -68,7 +68,7 @@ function startAutoFarm()
             local hrp = LocalPlayer.Character.HumanoidRootPart
             local npcRoot = npc.HumanoidRootPart
 
-            -- ตั้ง offset ตาม setPositionMode
+            -- คำนวณ offset ตามโหมด
             local offset = Vector3.new(0,getgenv().DistanceValue,0)
             if getgenv().setPositionMode == "Above" then
                 offset = Vector3.new(0,getgenv().DistanceValue,0)
@@ -84,8 +84,11 @@ function startAutoFarm()
                 offset = Vector3.new(math.cos(spinAngle) * radius, 0, math.sin(spinAngle) * radius)
             end
 
-            -- วาร์ปและล็อกตัวเองกับ NPC
-            hrp.CFrame = CFrame.new(npcRoot.Position + offset)
+            -- ล็อกตัวละครให้นิ่ง ไม่กระตุก
+            hrp.AssemblyLinearVelocity = Vector3.zero
+            hrp.Velocity = Vector3.zero
+            hrp.RotVelocity = Vector3.zero
+            hrp.CFrame = CFrame.new(npcRoot.Position + offset) -- วาร์ปตรง ๆ แบบนิ่ง
         end
     end)
 
@@ -93,10 +96,11 @@ function startAutoFarm()
         if not getgenv().autoFarmActive then return end
         local npc = getClosestNPC()
         if npc then
-            local args1 = { buffer.fromstring("\a\004\001"), {0} } -- Auto Attack NPC
-            local args2 = { buffer.fromstring("\a\003\001"), {0} } -- Skill
-            local args5 = { buffer.fromstring("\a\005\001"), {0} } -- Skill
-            local args6 = { buffer.fromstring("\a\006\001"), {0} } -- Skill
+            -- ยิงเฉพาะ NPC เท่านั้น
+            local args1 = { buffer.fromstring("\a\004\001"), {0} }
+            local args2 = { buffer.fromstring("\a\003\001"), {0} }
+            local args5 = { buffer.fromstring("\a\005\001"), {0} }
+            local args6 = { buffer.fromstring("\a\006\001"), {0} }
             local args3 = { buffer.fromstring("\006\001"), {workspace:WaitForChild("School"):WaitForChild("Doors"):WaitForChild("HallwayDoor")} }
             ByteNetReliable:FireServer(unpack(args3))
             ByteNetReliable:FireServer(unpack(args1))
@@ -109,16 +113,15 @@ end
 
 function stopAutoFarm()
     getgenv().autoFarmActive = false
-    if farmConnection then farmConnection:Disconnect() farmConnection=nil end
-    if attackConnection then attackConnection:Disconnect() attackConnection=nil end
+    if farmConnection then farmConnection:Disconnect() farmConnection = nil end
+    if attackConnection then attackConnection:Disconnect() attackConnection = nil end
 end
-
 -- สร้าง GUI
 local Window = WindUI:CreateWindow({
     Title = "DYHUB | Hunty Zombie",
     IconThemed = true,
     Icon = "star",
-    Author = "Version: 1.5.3",
+    Author = "Version: 1.5.ค",
     Size = UDim2.fromOffset(500,300),
     Transparent = true,
     Theme = "Dark",
@@ -309,19 +312,33 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ================= Auto Tab =================
-AutoTab:Section({ Title="Feature Collect", Icon="flame" })
+AutoTab:Section({ Title="Feature Collect", Icon="hand" })
 
--- ฟังก์ชันวาร์ปไปกด ProximityPrompt แล้วกลับตำแหน่งเดิม
 local function activatePrompt(prompt)
     local character = LocalPlayer.Character
     if not character or not character:FindFirstChild("HumanoidRootPart") then return end
     local hrp = character.HumanoidRootPart
     local originalCFrame = hrp.CFrame
 
-    hrp.CFrame = prompt.Parent.CFrame + Vector3.new(0,3,0)
-    task.wait(0.1)
+    -- ลด HoldDuration ของ ProximityPrompt ทั้งหมด
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("ProximityPrompt") then
+            obj.HoldDuration = 0
+        end
+    end
+
+    -- วาร์ปแบบนิ่ง ๆ ไปยัง Prompt
+    local targetCFrame = prompt.Parent.CFrame + Vector3.new(0,3,0)
+    hrp.AssemblyLinearVelocity = Vector3.zero
+    hrp.Velocity = Vector3.zero
+    hrp.RotVelocity = Vector3.zero
+    hrp.CFrame = targetCFrame
+
+    task.wait(0.05)
     fireproximityprompt(prompt)
-    task.wait(0.1)
+    task.wait(0.05)
+
+    -- กลับตำแหน่งเดิมแบบ Smooth / ไม่มีกระตุก
     hrp.CFrame = originalCFrame
 end
 
