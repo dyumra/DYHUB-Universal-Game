@@ -118,10 +118,10 @@ function stopAutoFarm()
 end
 -- สร้าง GUI
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB | Hunty Zombie (AUTO FARM)",
+    Title = "DYHUB | Hunty Zombie",
     IconThemed = true,
     Icon = "star",
-    Author = "Version: 1.5.ค",
+    Author = "Version: AUTO FARM",
     Size = UDim2.fromOffset(500,300),
     Transparent = true,
     Theme = "Dark",
