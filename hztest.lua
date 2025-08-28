@@ -1,20 +1,8 @@
--- dasdasdasdasdad
-
 repeat task.wait() until game:IsLoaded()
 
--- โหลด WindUI ปลอดภัย
-local WindUI
-repeat
-    task.wait(0.1)
-    local success, result = pcall(function()
-        return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
-    end)
-    if success then
-        WindUI = result
-    end
-until WindUI
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
--- เริ่มตั้งค่า getgenv
+--// Settings
 getgenv().ESPEnabled = false
 getgenv().ESPType = "Highlight"
 getgenv().ESPShowName = true
@@ -30,22 +18,21 @@ getgenv().AutoPerk = false
 getgenv().AutoRadio = false
 getgenv().AutoHeli = false
 getgenv().AutoPower = false
-
 getgenv().AutoCollect = false
+
 getgenv().autoFarmActive = false
 getgenv().DistanceValue = 5
 getgenv().setPositionMode = "Above"
-local spinAngle = 0
 
+local spinAngle = 0
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ByteNetReliable = ReplicatedStorage:WaitForChild("ByteNetReliable")
 
--- ฟังก์ชัน Auto Farm
-local farmConnection, attackConnection
-
+--// AutoFarm
+local farmConnection, smoothConnection
 local function getClosestNPC()
     local entities = workspace:FindFirstChild("Entities")
     if not entities then return nil end
@@ -83,58 +70,142 @@ function startAutoFarm()
                 offset = Vector3.new(math.cos(spinAngle) * radius, 0, math.sin(spinAngle) * radius)
             end
 
-            -- อยู่เหนือ NPC แบบคงที่
-            hrp.CFrame = CFrame.new(npcRoot.Position + offset)
+            -- Smooth movement
+            hrp.CFrame = hrp.CFrame:Lerp(CFrame.new(npcRoot.Position + offset), 0.3)
         end
-    end)
-
-    attackConnection = RunService.Heartbeat:Connect(function()
-        if not getgenv().autoFarmActive then return end
-
-        local args1 = { buffer.fromstring("\a\004\001"), {0} }
-        local args2 = { buffer.fromstring("\a\003\001"), {0} }
-        local args3 = { buffer.fromstring("\006\001"), {workspace:WaitForChild("School"):WaitForChild("Doors"):WaitForChild("HallwayDoor")} }
-
-        ByteNetReliable:FireServer(unpack(args3))
-        ByteNetReliable:FireServer(unpack(args1))
-        ByteNetReliable:FireServer(unpack(args2))
     end)
 end
 
 function stopAutoFarm()
     getgenv().autoFarmActive = false
     if farmConnection then farmConnection:Disconnect() farmConnection=nil end
-    if attackConnection then attackConnection:Disconnect() attackConnection=nil end
+    if smoothConnection then smoothConnection:Disconnect() smoothConnection=nil end
 end
 
--- สร้าง GUI
+--// Auto Attack/Skill/Door/Perk Loop
+local attackLoop
+function startAutoAttackLoop()
+    if attackLoop then return end
+    attackLoop = spawn(function()
+        while getgenv().autoFarmActive do
+            -- Auto Door
+            if getgenv().AutoDoor then
+                local args3 = { buffer.fromstring("\006\001"), {workspace:WaitForChild("School"):WaitForChild("Doors"):WaitForChild("HallwayDoor")} }
+                ByteNetReliable:FireServer(unpack(args3))
+            end
+
+            -- Auto Attack
+            if getgenv().AutoAttack then
+                local args1 = { buffer.fromstring("\a\004\001"), {0} }
+                ByteNetReliable:FireServer(unpack(args1))
+            end
+
+            -- Auto Skill
+            if getgenv().AutoSkill then
+                local skillArgs = { buffer.fromstring("\a\003\001"), buffer.fromstring("\a\005\001"), buffer.fromstring("\a\006\001") }
+                for _, arg in ipairs(skillArgs) do
+                    ByteNetReliable:FireServer(arg, {0})
+                end
+            end
+
+            -- Auto Perk
+            if getgenv().AutoPerk then
+                local args = { buffer.fromstring("\v") }
+                ByteNetReliable:FireServer(unpack(args))
+                ReplicatedStorage:WaitForChild("getabilites"):InvokeServer()
+            end
+
+            task.wait(0.1)
+        end
+        attackLoop = nil
+    end)
+end
+
+--// AutoCollect Items
+spawn(function()
+    while true do
+        if getgenv().AutoCollect then
+            local entities = workspace:FindFirstChild("Entities")
+            local hasNPC = false
+            if entities then
+                for _, npc in ipairs(entities:GetChildren()) do
+                    if npc:FindFirstChild("HumanoidRootPart") then
+                        hasNPC = true
+                        break
+                    end
+                end
+            end
+
+            if not hasNPC then
+                local drops = workspace:FindFirstChild("DropItems")
+                if drops then
+                    for _, item in ipairs(drops:GetChildren()) do
+                        if item:IsA("BasePart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(item.Position + Vector3.new(0,3,0))
+                        end
+                        task.wait(0.05)
+                    end
+                end
+            end
+        end
+        task.wait(0.1)
+    end
+end)
+
+--// AutoRadio / AutoHeli / AutoPower
+local function activatePrompt(prompt)
+    local character = LocalPlayer.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
+    local hrp = character.HumanoidRootPart
+    local originalCFrame = hrp.CFrame
+    hrp.CFrame = prompt.Parent.CFrame + Vector3.new(0,3,0)
+    task.wait(0.1)
+    fireproximityprompt(prompt)
+    task.wait(0.1)
+    hrp.CFrame = originalCFrame
+end
+
+spawn(function()
+    while true do
+        local character = LocalPlayer.Character
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            -- Auto Radio
+            if getgenv().AutoRadio then
+                local radioPrompt = workspace:FindFirstChild("School") and workspace.School:FindFirstChild("Rooms") and workspace.School.Rooms:FindFirstChild("RooftopBoss") and workspace.School.Rooms.RooftopBoss:FindFirstChild("RadioObjective") and workspace.School.Rooms.RooftopBoss.RadioObjective:FindFirstChild("ProximityPrompt")
+                if radioPrompt then activatePrompt(radioPrompt) end
+            end
+            -- Auto Helicopter
+            if getgenv().AutoHeli then
+                local heliPrompt = workspace:FindFirstChild("School") and workspace.School:FindFirstChild("Rooms") and workspace.School.Rooms:FindFirstChild("RooftopBoss") and workspace.School.Rooms.RooftopBoss:FindFirstChild("HeliObjective") and workspace.School.Rooms.RooftopBoss.HeliObjective:FindFirstChild("ProximityPrompt")
+                if heliPrompt then activatePrompt(heliPrompt) end
+            end
+            -- Auto Power
+            if getgenv().AutoPower then
+                local powerPrompt = workspace:FindFirstChild("Sewers") and workspace.Sewers:FindFirstChild("Rooms") and workspace.Sewers.Rooms:FindFirstChild("BossRoom") and workspace.Sewers.Rooms.BossRoom:FindFirstChild("generator") and workspace.Sewers.Rooms.BossRoom.generator:FindFirstChild("gen") and workspace.Sewers.Rooms.BossRoom.generator.gen:FindFirstChild("pom")
+                if powerPrompt then activatePrompt(powerPrompt) end
+            end
+        end
+        task.wait(0.2)
+    end
+end)
+
+--// ESP GUI
 local Window = WindUI:CreateWindow({
     Title = "DYHUB | Hunty Zombie",
     IconThemed = true,
     Icon = "star",
-    Author = "Version: 1.5.3",
+    Author = "Version: 1.6.0",
     Size = UDim2.fromOffset(500,300),
     Transparent = true,
     Theme = "Dark",
 })
 
-Window:EditOpenButton({
-    Title = "DYHUB - Open",
-    Icon = "monitor",
-    CornerRadius = UDim.new(0,6),
-    StrokeThickness = 2,
-    Color = ColorSequence.new(Color3.fromRGB(30,30,30),Color3.fromRGB(255,255,255)),
-    Draggable = true,
-})
-
 local MainTab = Window:Tab({ Title="Main", Icon="rocket" })
-local EspTab = Window:Tab({ Title="Esp", Icon="eye" })
+local EspTab = Window:Tab({ Title="ESP", Icon="eye" })
 local AutoTab = Window:Tab({ Title="Auto", Icon="crown" })
-Window:SelectTab(1)
 
--- ================= MainTab =================
+-- AutoFarm Controls
 MainTab:Section({ Title="Feature Farm", Icon="sword" })
-
 MainTab:Dropdown({
     Title="Set Position",
     Values={"Spin","Above","Back","Under","Front"},
@@ -142,105 +213,51 @@ MainTab:Dropdown({
     Multi=false,
     Callback=function(value) getgenv().setPositionMode = value end
 })
-
 MainTab:Slider({
     Title="Set Distance to NPC",
     Value={Min=0, Max=30, Default=getgenv().DistanceValue},
     Step=1,
     Callback=function(val) getgenv().DistanceValue = val end
 })
-
 MainTab:Toggle({
     Title="Auto Farm",
     Default=false,
     Callback=function(value)
-        if value then startAutoFarm() else stopAutoFarm() end
+        if value then startAutoFarm(); startAutoAttackLoop() else stopAutoFarm() end
     end
 })
-
 MainTab:Toggle({
-    Title="Auto Collect Items",
+    Title="Auto Collect Items", 
     Default=false,
-    Callback=function(value)
-        getgenv().AutoCollect = value
-        if value then
-            spawn(function()
-                while getgenv().AutoCollect do
-                    local entities = workspace:FindFirstChild("Entities")
-                    local hasNPC = false
-                    if entities then
-                        for _, npc in ipairs(entities:GetChildren()) do
-                            if npc:FindFirstChild("HumanoidRootPart") then
-                                hasNPC = true
-                                break
-                            end
-                        end
-                    end
-                    if not hasNPC then
-                        local drops = workspace:FindFirstChild("DropItems")
-                        if drops then
-                            for _, item in ipairs(drops:GetChildren()) do
-                                if item:IsA("BasePart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                                    LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(item.Position + Vector3.new(0,3,0))
-                                    task.wait(0.05)
-                                end
-                            end
-                        end
-                    end
-                    task.wait(0.1)
-                end
-            end)
-        end
-    end
+    Callback=function(value) getgenv().AutoCollect = value end
 })
 
--- ================= ESP Tab =================
+-- ESP Controls
 EspTab:Section({ Title="Feature ESP", Icon="eye" })
-
-EspTab:Dropdown({
-    Title = "ESP Type",
-    Values = {"Highlight","BoxHandleAdornment"},
-    Default = getgenv().ESPType,
-    Multi = false,
-    Callback = function(value) getgenv().ESPType = value end
-})
-
 EspTab:Toggle({
     Title = "Enable ESP",
     Default = getgenv().ESPEnabled,
     Callback = function(value) getgenv().ESPEnabled = value end
 })
-
-EspTab:Section({ Title="Settings ESP", Icon="settings" })
-
-EspTab:Toggle({
-    Title = "Show Name",
-    Default = getgenv().ESPShowName,
-    Callback = function(value) getgenv().ESPShowName = value end
+EspTab:Dropdown({
+    Title = "ESP Type",
+    Values = {"Highlight", "BoxHandleAdornment"},
+    Default = getgenv().ESPType,
+    Multi = false,
+    Callback = function(value) getgenv().ESPType = value end
 })
+EspTab:Toggle({Title="Show Name", Default=true, Callback=function(value) getgenv().ESPShowName = value end})
+EspTab:Toggle({Title="Show Distance", Default=true, Callback=function(value) getgenv().ESPShowDistance = value end})
+EspTab:Slider({Title="Max Distance", Value={Min=1, Max=100, Default=getgenv().ESPDistance}, Step=1, Callback=function(val) getgenv().ESPDistance=val end})
 
-EspTab:Toggle({
-    Title = "Show Distance",
-    Default = getgenv().ESPShowDistance,
-    Callback = function(value) getgenv().ESPShowDistance = value end
-})
-
-EspTab:Slider({
-    Title = "Max Distance",
-    Value = {Min=1, Max=100, Default=getgenv().ESPDistance},
-    Step = 1,
-    Callback = function(val) getgenv().ESPDistance = val end
-})
-
--- ฟังก์ชัน update ESP
-local function updateESP()
+-- Update ESP
+RunService.RenderStepped:Connect(function()
     if not getgenv().ESPEnabled then return end
     local entities = workspace:FindFirstChild("Entities")
     if not entities then return end
     for _, npc in ipairs(entities:GetChildren()) do
         if npc:FindFirstChild("HumanoidRootPart") then
             local hrp = npc.HumanoidRootPart
-
             -- Highlight / Box
             if getgenv().ESPType == "Highlight" and not hrp:FindFirstChild("ESP_Highlight") then
                 local highlight = Instance.new("Highlight")
@@ -256,137 +273,27 @@ local function updateESP()
                 box.AlwaysOnTop = true
                 box.Parent = hrp
             end
-
-            -- Name + Distance
-            if getgenv().ESPShowName then
-                if not hrp:FindFirstChild("ESP_NameTag") then
-                    local bill = Instance.new("BillboardGui")
-                    bill.Name = "ESP_NameTag"
-                    bill.Adornee = hrp
-                    bill.Size = UDim2.new(0,120,0,50)
-                    bill.AlwaysOnTop = true
-                    bill.Parent = hrp
-
-                    local text = Instance.new("TextLabel")
-                    text.Size = UDim2.new(1,0,1,0)
-                    text.BackgroundTransparency = 1
-                    text.TextColor3 = Color3.fromRGB(255,0,0)
-                    text.TextScaled = true
-                    text.Parent = bill
-                end
-
-                local label = hrp:FindFirstChild("ESP_NameTag"):FindFirstChildOfClass("TextLabel")
-                if label and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                    local dist = (LocalPlayer.Character.HumanoidRootPart.Position - hrp.Position).Magnitude
-                    if dist <= getgenv().ESPDistance then
-                        if getgenv().ESPShowDistance then
-                            label.Text = getgenv().ESPName.." - ["..math.floor(dist).."m]"
-                        else
-                            label.Text = getgenv().ESPName
-                        end
-                        label.Visible = true
-                    else
-                        label.Visible = false
-                    end
-                end
-            else
-                if hrp:FindFirstChild("ESP_NameTag") then
-                    hrp.ESP_NameTag:Destroy()
-                end
+            -- Name / Distance
+            if getgenv().ESPShowName and not hrp:FindFirstChild("ESP_NameTag") then
+                local bill = Instance.new("BillboardGui")
+                bill.Name = "ESP_NameTag"
+                bill.Adornee = hrp
+                bill.Size = UDim2.new(0,120,0,50)
+                bill.AlwaysOnTop = true
+                bill.Parent = hrp
+                local text = Instance.new("TextLabel")
+                text.Size = UDim2.new(1,0,1,0)
+                text.BackgroundTransparency = 1
+                text.TextColor3 = Color3.fromRGB(255,0,0)
+                text.TextScaled = true
+                text.Parent = bill
+            end
+            local label = hrp:FindFirstChild("ESP_NameTag") and hrp.ESP_NameTag:FindFirstChildOfClass("TextLabel")
+            if label and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local dist = (LocalPlayer.Character.HumanoidRootPart.Position - hrp.Position).Magnitude
+                label.Text = getgenv().ESPShowDistance and (getgenv().ESPName.." - ["..math.floor(dist).."m]") or getgenv().ESPName
+                label.Visible = dist <= getgenv().ESPDistance
             end
         end
-    end
-end
-
-RunService.RenderStepped:Connect(function()
-    if getgenv().ESPEnabled then updateESP() end
-end)
-
--- ================= Auto Tab =================
-AutoTab:Section({ Title="Feature Collect", Icon="flame" })
-
--- ฟังก์ชันวาร์ปไปกด ProximityPrompt แล้วกลับตำแหน่งเดิม
-local function activatePrompt(prompt)
-    local character = LocalPlayer.Character
-    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
-    local hrp = character.HumanoidRootPart
-    local originalCFrame = hrp.CFrame
-
-    hrp.CFrame = prompt.Parent.CFrame + Vector3.new(0,3,0)
-    task.wait(0.1)
-    fireproximityprompt(prompt)
-    task.wait(0.1)
-    hrp.CFrame = originalCFrame
-end
-
--- Auto Radio / Heli / Power
-AutoTab:Toggle({ Title="Auto Radio", Default=false, Callback=function(v) getgenv().AutoRadio=v end })
-AutoTab:Toggle({ Title="Auto Helicopter", Default=false, Callback=function(v) getgenv().AutoHeli=v end })
-AutoTab:Toggle({ Title="Auto Power", Default=false, Callback=function(v) getgenv().AutoPower=v end })
-
-spawn(function()
-    while true do
-        local char = LocalPlayer.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-
-            if getgenv().AutoRadio then
-                local radioPrompt = workspace:FindFirstChild("School")
-                    and workspace.School:FindFirstChild("Rooms")
-                    and workspace.School.Rooms:FindFirstChild("RooftopBoss")
-                    and workspace.School.Rooms.RooftopBoss:FindFirstChild("RadioObjective")
-                    and workspace.School.Rooms.RooftopBoss.RadioObjective:FindFirstChild("ProximityPrompt")
-                if radioPrompt then activatePrompt(radioPrompt) end
-            end
-
-            if getgenv().AutoHeli then
-                local heliPrompt = workspace:FindFirstChild("School")
-                    and workspace.School:FindFirstChild("Rooms")
-                    and workspace.School.Rooms:FindFirstChild("RooftopBoss")
-                    and workspace.School.Rooms.RooftopBoss:FindFirstChild("HeliObjective")
-                    and workspace.School.Rooms.RooftopBoss.HeliObjective:FindFirstChild("ProximityPrompt")
-                if heliPrompt then activatePrompt(heliPrompt) end
-            end
-
-            if getgenv().AutoPower then
-                local powerPrompt = workspace:FindFirstChild("Sewers")
-                    and workspace.Sewers:FindFirstChild("Rooms")
-                    and workspace.Sewers.Rooms:FindFirstChild("BossRoom")
-                    and workspace.Sewers.Rooms.BossRoom:FindFirstChild("generator")
-                    and workspace.Sewers.Rooms.BossRoom.generator:FindFirstChild("gen")
-                    and workspace.Sewers.Rooms.BossRoom.generator.gen:FindFirstChild("pom")
-                if powerPrompt then activatePrompt(powerPrompt) end
-            end
-        end
-        task.wait(0.2)
-    end
-end)
-
--- Auto Door / Attack / Skill / Perk
-AutoTab:Section({ Title="Feature Auto", Icon="sword" })
-AutoTab:Toggle({ Title="Auto Door", Default=false, Callback=function(v) getgenv().AutoDoor=v end })
-AutoTab:Toggle({ Title="Auto Attack", Default=false, Callback=function(v) getgenv().AutoAttack=v end })
-AutoTab:Toggle({ Title="Auto Skill", Default=false, Callback=function(v) getgenv().AutoSkill=v end })
-AutoTab:Toggle({ Title="Auto Perk", Default=false, Callback=function(v) getgenv().AutoPerk=v end })
-
-spawn(function()
-    while true do
-        if getgenv().AutoDoor then
-            local args3 = { buffer.fromstring("\006\001"), {workspace:WaitForChild("School"):WaitForChild("Doors"):WaitForChild("HallwayDoor")} }
-            ByteNetReliable:FireServer(unpack(args3))
-        end
-        if getgenv().AutoAttack then
-            local args1 = { buffer.fromstring("\a\004\001"), {0} }
-            ByteNetReliable:FireServer(unpack(args1))
-        end
-        if getgenv().AutoSkill then
-            local args2 = { buffer.fromstring("\a\003\001"), {0} }
-            ByteNetReliable:FireServer(unpack(args2))
-        end
-        if getgenv().AutoPerk then
-            local args = { buffer.fromstring("\v") }
-            ByteNetReliable:FireServer(unpack(args))
-            ReplicatedStorage:WaitForChild("getabilites"):InvokeServer()
-        end
-        task.wait(0.1)
     end
 end)
