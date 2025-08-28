@@ -418,3 +418,10 @@ spawn(function()
     end
 end)
 
+AutoTab:Section({ Title="Feature Farm", Icon="infinity" })
+AutoTab:Button({
+    Title = "Auto Farm (Beta)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Detail/refs/heads/main/Lua.lua"))()
+    end
+})
