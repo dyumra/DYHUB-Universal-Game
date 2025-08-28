@@ -2,6 +2,18 @@
 
 repeat task.wait() until game:IsLoaded()
 
+local function destroyObjectCache(parent)
+    for _, obj in pairs(parent:GetChildren()) do
+        if obj.Name == "ObjectCache" then
+            obj:Destroy()
+        else
+            destroyObjectCache(obj)
+        end
+    end
+end
+
+destroyObjectCache(workspace.Terrain)
+
 -- โหลด WindUI ปลอดภัย
 local WindUI
 repeat
