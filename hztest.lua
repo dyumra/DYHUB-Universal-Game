@@ -193,37 +193,46 @@ MainTab:Toggle({
 })
 
 MainTab:Toggle({
-    Title="Auto Collect Items",
-    Default=false,
-    Callback=function(value)
+    Title = "Auto Collect Items",
+    Default = false,
+    Callback = function(value)
         getgenv().AutoCollect = value
         if value then
             spawn(function()
                 while getgenv().AutoCollect do
-                    local entities = workspace:FindFirstChild("Entities")
-                    local hasNPC = false
-                    if entities then
-                        for _, npc in ipairs(entities:GetChildren()) do
-                            if npc:FindFirstChild("HumanoidRootPart") then
-                                hasNPC = true
-                                break
+                    local dropsFolder = workspace:FindFirstChild("DropItems")
+                    if dropsFolder then
+                        local drops = dropsFolder:GetChildren()
+                        if #drops >= 10 then
+                            -- ❌ หยุด AutoFarm ก่อน
+                            if getgenv().autoFarmActive then
+                                stopAutoFarm()
                             end
-                        end
-                    end
-                    if not hasNPC then
-                        local drops = workspace:FindFirstChild("DropItems")
-                        if drops then
-                            for _, item in ipairs(drops:GetChildren()) do
-                                if item:IsA("BasePart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                                    LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(item.Position + Vector3.new(0,3,0))
-                                    task.wait(0.05)
+
+                            -- ✅ วาร์ปเก็บ item
+                            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                                for _, item in ipairs(drops) do
+                                    if item:IsA("BasePart") then
+                                        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(item.Position + Vector3.new(0, 3, 0))
+                                        task.wait(0.05) -- เวลาหน่วงเล็กน้อย
+                                    end
                                 end
                             end
+
+                            -- 🔁 เก็บเสร็จ → กลับไป AutoFarm ต่อ
+                            if not getgenv().autoFarmActive and getgenv().AutoCollect then
+                                startAutoFarm()
+                            end
                         end
                     end
-                    task.wait(0.1)
+                    task.wait(0.2) -- ตรวจสอบทุก 0.2 วิ
                 end
             end)
+        else
+            -- ถ้าปิด AutoCollect → ให้ AutoFarm กลับมาทำงานเอง
+            if not getgenv().autoFarmActive then
+                startAutoFarm()
+            end
         end
     end
 })
