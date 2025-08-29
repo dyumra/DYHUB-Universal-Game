@@ -1,4 +1,4 @@
--- dasdasdasdasdad
+-- test
 
 repeat task.wait() until game:IsLoaded()
 
@@ -75,11 +75,12 @@ function startAutoFarm()
     stopAutoFarm()
     getgenv().autoFarmActive = true
     local spinAngle = 0
+    local moveSpeed = 10 -- ปรับความเร็วการเดิน
 
     farmConnection = RunService.RenderStepped:Connect(function(dt)
         if not getgenv().autoFarmActive then return end
 
-        -- ถ้าไม่มี currentNPC หรืออยู่เกิน 2 วิแล้ว → หา NPC ใหม่
+        -- หา NPC ใหม่ทุก 2 วิ
         if not currentNPC or (tick() - lastSwitchTime >= 2) then
             currentNPC = getClosestNPC()
             lastSwitchTime = tick()
@@ -105,40 +106,46 @@ function startAutoFarm()
                 offset = Vector3.new(math.cos(spinAngle) * radius, 0, math.sin(spinAngle) * radius)
             end
 
-            -- ล็อกไม่ให้กระตุก
-            hrp.AssemblyLinearVelocity = Vector3.zero
-            hrp.Velocity = Vector3.zero
-            hrp.RotVelocity = Vector3.zero
-            hrp.CFrame = CFrame.new(npcRoot.Position + offset)
+            -- คำนวณตำแหน่งเป้าหมาย
+            local targetPos = npcRoot.Position + offset
+            local currentPos = hrp.Position
+            local newPos = currentPos:Lerp(targetPos, moveSpeed * dt)
+
+            -- ปรับ CFrame ไปยัง target แบบ smooth
+            hrp.CFrame = CFrame.new(newPos, npcRoot.Position)
         end
     end)
 
     attackConnection = RunService.Heartbeat:Connect(function()
         if not getgenv().autoFarmActive then return end
         if currentNPC then
-            -- ยิงเฉพาะ NPC
-        local args1 = { buffer.fromstring("\a\004\001"), {0} }
-        local args2 = { buffer.fromstring("\a\003\001"), {0} }
-        local args5 = { buffer.fromstring("\a\005\001"), {0} }
-        local args6 = { buffer.fromstring("\a\006\001"), {0} }
+            -- ยิง NPC และเปิดประตู
+            local args1 = { buffer.fromstring("\a\004\001"), {0} }
+            local args2 = { buffer.fromstring("\a\003\001"), {0} }
+            local args5 = { buffer.fromstring("\a\005\001"), {0} }
+            local args6 = { buffer.fromstring("\a\006\001"), {0} }
 
-        local args3 = { buffer.fromstring("\006\001"), {door} }
-        local args4 = { buffer.fromstring("\005\001"), {door} }
-        local args7 = { buffer.fromstring("\003\001"), {door} }
-        local args8 = { buffer.fromstring("\007\001"), {door} }
-        local args9 = { buffer.fromstring("\008\001"), {door} }
-        local args10 = { buffer.fromstring("\009\001"), {door} }
+            local args3 = { buffer.fromstring("\006\001"), {door} }
+            local args4 = { buffer.fromstring("\005\001"), {door} }
+            local gg = { buffer.fromstring("\002\001"), {door} }
+            local gg2 = { buffer.fromstring("\001\001"), {door} }
+            local args7 = { buffer.fromstring("\003\001"), {door} }
+            local args8 = { buffer.fromstring("\007\001"), {door} }
+            local args9 = { buffer.fromstring("\008\001"), {door} }
+            local args10 = { buffer.fromstring("\009\001"), {door} }
 
-        ByteNetReliable:FireServer(unpack(args3))
-        ByteNetReliable:FireServer(unpack(args1))
-        ByteNetReliable:FireServer(unpack(args2))
-        ByteNetReliable:FireServer(unpack(args5))
-        ByteNetReliable:FireServer(unpack(args6))
-        ByteNetReliable:FireServer(unpack(args4))
-        ByteNetReliable:FireServer(unpack(args7))
-        ByteNetReliable:FireServer(unpack(args8))
-        ByteNetReliable:FireServer(unpack(args10))
-        ByteNetReliable:FireServer(unpack(args9))
+            ByteNetReliable:FireServer(unpack(gg))
+            ByteNetReliable:FireServer(unpack(gg2))
+            ByteNetReliable:FireServer(unpack(args3))
+            ByteNetReliable:FireServer(unpack(args1))
+            ByteNetReliable:FireServer(unpack(args2))
+            ByteNetReliable:FireServer(unpack(args5))
+            ByteNetReliable:FireServer(unpack(args6))
+            ByteNetReliable:FireServer(unpack(args4))
+            ByteNetReliable:FireServer(unpack(args7))
+            ByteNetReliable:FireServer(unpack(args8))
+            ByteNetReliable:FireServer(unpack(args10))
+            ByteNetReliable:FireServer(unpack(args9))
         end
     end)
 end
@@ -149,6 +156,7 @@ function stopAutoFarm()
     if farmConnection then farmConnection:Disconnect() farmConnection = nil end
     if attackConnection then attackConnection:Disconnect() attackConnection = nil end
 end
+
 
 -- สร้าง GUI
 local Window = WindUI:CreateWindow({
@@ -428,8 +436,21 @@ AutoTab:Toggle({ Title="Auto Perk", Default=false, Callback=function(v) getgenv(
 spawn(function()
     while true do
         if getgenv().AutoDoor then
-            local args3 = { buffer.fromstring("\006\001"), {workspace:WaitForChild("School"):WaitForChild("Doors"):WaitForChild("HallwayDoor")} }
-            ByteNetReliable:FireServer(unpack(args3))
+            local gg = { buffer.fromstring("\006\001"), {door} }
+            ByteNetReliable:FireServer(unpack(gg))
+            local args3 = { buffer.fromstring("\002\001"), {door} }
+            local args4 = { buffer.fromstring("\005\001"), {door} }
+            local args7 = { buffer.fromstring("\003\001"), {door} }
+            local args8 = { buffer.fromstring("\007\001"), {door} }
+            local args9 = { buffer.fromstring("\008\001"), {door} }
+            local args10 = { buffer.fromstring("\009\001"), {door} }
+
+           ByteNetReliable:FireServer(unpack(args3))
+           ByteNetReliable:FireServer(unpack(args4))
+           ByteNetReliable:FireServer(unpack(args7))
+           ByteNetReliable:FireServer(unpack(args8))
+           ByteNetReliable:FireServer(unpack(args10))
+           ByteNetReliable:FireServer(unpack(args9))
         end
         if getgenv().AutoAttack then
             local args1 = { buffer.fromstring("\a\004\001"), {0} }
