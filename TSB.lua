@@ -1,11 +1,11 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "DYHUB | The Strongest Battleground (dsc.gg/dyhub)",
-   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "DYHUB | dsc.gg/dyhub",
-   LoadingSubtitle = "Powered by DYHUB TEAM",
-   ShowText = "DYHUB - Open", -- for mobile users to unhide rayfield, change if you'd like
+   Name = "DYHUB | The Strongest Battleground",
+   Icon = 104487529937663, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
+   LoadingTitle = "DYHUB Loaded! - TSB",
+   LoadingSubtitle = "Join our at dsc.gg/dyhub",
+   ShowText = "DYHUB", -- for mobile users to unhide rayfield, change if you'd like
    Theme = "Dark Blue", -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
    ToggleUIKeybind = "K", -- The keybind to toggle the UI visibility (string like "K" or Enum.KeyCode)
@@ -50,6 +50,76 @@ local AdminTab = Window:CreateTab("Admin", 4483362458)
 
 -- Misc Tab
 MiscTab:CreateButton({
+   Name = "Trash Man",
+   Callback = function()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/yes1nt/yes/refs/heads/main/Trashcan%20Man"))()
+   end,
+})
+
+MiscTab:CreateButton({
+   Name = "Kyoto Combo V2",
+   Callback = function()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/Cyborg883/KyotoTechRework/refs/heads/main/Protected_9378660372508532.lua"))()
+   end,
+})
+
+MiscTab:CreateButton({
+   Name = "Saitama Combo",
+   Callback = function()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/Cyborg883/SaitamaCombo/refs/heads/main/Code.txt"))()
+   end,
+})
+
+MiscTab:CreateButton({
+   Name = "Cyborg Combo",
+   Callback = function()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/Cyborg883/AutoTechs/refs/heads/main/Cyborg"))()
+   end,
+})
+
+MiscTab:CreateButton({
+   Name = "Auto Block V11",
+   Callback = function()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/Cyborg883/CombatGuiImproved/refs/heads/main/Protected_9850650779769664.lua"))()
+   end,
+})
+
+MiscTab:CreateButton({
+   Name = "Auto Down Slam",
+   Callback = function()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/Cyborg883/AutoDownSlam/refs/heads/main/Protected_5028072132316425.lua"))()
+   end,
+})
+
+MiscTab:CreateButton({
+   Name = "Back Dash Cancel",
+   Callback = function()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/Cyborg883/BackDashCancel/refs/heads/main/Protected_8787792836664625.lua"))()
+   end,
+})
+
+MiscTab:CreateButton({
+   Name = "Instant Twisted Revamp",
+   Callback = function()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/Cyborg883/InstantTwistedRevamp/refs/heads/main/Protected_7455521176683315.lua"))()
+   end,
+})
+
+MiscTab:CreateButton({
+   Name = "Infinite Dash V1",
+   Callback = function()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/yes1nt/yes/refs/heads/main/Infinite%20Dash"))()
+   end,
+})
+
+MiscTab:CreateButton({
+   Name = "Teleporter Tatsumaki",
+   Callback = function()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/yes1nt/yes/refs/heads/main/Teleporter%20Tatsumaki"))()
+   end,
+})
+
+MiscTab:CreateButton({
    Name = "M1 Reach",
    Callback = function()
       loadstring(game:HttpGet("https://raw.githubusercontent.com/Kietba/Kietba/refs/heads/main/M1%20Reach%20Rework"))()
@@ -57,9 +127,23 @@ MiscTab:CreateButton({
 })
 
 MiscTab:CreateButton({
+   Name = "FakeDash V2",
+   Callback = function()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/Cyborg883/FakeDash/refs/heads/main/Protected_5833389828844912.lua"))()
+   end,
+})
+
+MiscTab:CreateButton({
    Name = "Aimbot",
    Callback = function()
       loadstring(game:HttpGet("https://raw.githubusercontent.com/Kietba/Kietba/refs/heads/main/Aimlock%20By%20YQANTG"))()
+   end,
+})
+
+MiscTab:CreateButton({
+   Name = "Camlock",
+   Callback = function()
+      loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-mobile-camlock-keyless-universal-47033"))()
    end,
 })
 
