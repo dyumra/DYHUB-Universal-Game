@@ -55,27 +55,38 @@ local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ByteNetReliable = ReplicatedStorage:WaitForChild("ByteNetReliable")
 
--- ฟังก์ชัน Auto Farm
 local farmConnection, attackConnection
+local currentTarget, lastSwitchTime = nil, 0
 
-local function getClosestNPC()
+local function getNextNPC()
     local entities = workspace:FindFirstChild("Entities")
     if not entities then return nil end
-    for _, npc in ipairs(entities:GetChildren()) do
-        if npc:FindFirstChild("HumanoidRootPart") then
-            return npc
-        end
-    end
-    return nil
+    local npcs = entities:GetChildren()
+    if #npcs == 0 then return nil end
+    
+    local npc
+    repeat
+        npc = npcs[math.random(1, #npcs)]
+    until npc ~= currentTarget or #npcs == 1
+    return npc
 end
 
 function startAutoFarm()
     stopAutoFarm()
     getgenv().autoFarmActive = true
+    lastSwitchTime = tick()
+    currentTarget = getNextNPC()
 
     farmConnection = RunService.RenderStepped:Connect(function(dt)
         if not getgenv().autoFarmActive then return end
-        local npc = getClosestNPC()
+
+        -- ถ้าผ่านไปเกิน 2 วิ → เปลี่ยนเป้าหมาย
+        if tick() - lastSwitchTime >= 1.5 then
+            currentTarget = getNextNPC()
+            lastSwitchTime = tick()
+        end
+
+        local npc = currentTarget
         if npc and npc:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
             local hrp = LocalPlayer.Character.HumanoidRootPart
             local npcRoot = npc.HumanoidRootPart
@@ -96,38 +107,40 @@ function startAutoFarm()
                 offset = Vector3.new(math.cos(spinAngle) * radius, 0, math.sin(spinAngle) * radius)
             end
 
-            -- ล็อกตัวละครให้นิ่ง ไม่กระตุก
+            -- ล็อกตัวละครให้นิ่ง
             hrp.AssemblyLinearVelocity = Vector3.zero
             hrp.Velocity = Vector3.zero
             hrp.RotVelocity = Vector3.zero
-            hrp.CFrame = CFrame.new(npcRoot.Position + offset) -- วาร์ปตรง ๆ แบบนิ่ง
+            hrp.CFrame = CFrame.new(npcRoot.Position + offset)
         end
     end)
 
-    attackConnection = RunService.Heartbeat:Connect(function()
-        if not getgenv().autoFarmActive then return end
-        local npc = getClosestNPC()
+    attackConnection = task.spawn(function()
+    while getgenv().autoFarmActive do
+        local npc = currentTarget
         if npc then
-            -- ยิงเฉพาะ NPC เท่านั้น
-            local args1 = { buffer.fromstring("\a\004\001"), {0} }
-            local args2 = { buffer.fromstring("\a\003\001"), {0} }
-            local args5 = { buffer.fromstring("\a\005\001"), {0} }
-            local args6 = { buffer.fromstring("\a\006\001"), {0} }
-            local args3 = { buffer.fromstring("\006\001"), {workspace:WaitForChild("School"):WaitForChild("Doors"):WaitForChild("HallwayDoor")} }
-            ByteNetReliable:FireServer(unpack(args3))
-            ByteNetReliable:FireServer(unpack(args1))
-            ByteNetReliable:FireServer(unpack(args2))
-            ByteNetReliable:FireServer(unpack(args5))
-            ByteNetReliable:FireServer(unpack(args6))
+            ByteNetReliable:FireServer(buffer.fromstring("\006\001"), {workspace:WaitForChild("School"):WaitForChild("Doors"):WaitForChild("HallwayDoor")})
+            ByteNetReliable:FireServer(buffer.fromstring("\005\001"), {workspace:WaitForChild("School"):WaitForChild("Doors"):WaitForChild("HallwayDoor")})
+            ByteNetReliable:FireServer(buffer.fromstring("\007\001"), {workspace:WaitForChild("School"):WaitForChild("Doors"):WaitForChild("HallwayDoor")})
+            ByteNetReliable:FireServer(buffer.fromstring("\008\001"), {workspace:WaitForChild("School"):WaitForChild("Doors"):WaitForChild("HallwayDoor")})
+            ByteNetReliable:FireServer(buffer.fromstring("\009\001"), {workspace:WaitForChild("School"):WaitForChild("Doors"):WaitForChild("HallwayDoor")})
+            ByteNetReliable:FireServer(buffer.fromstring("\004\001"), {workspace:WaitForChild("School"):WaitForChild("Doors"):WaitForChild("HallwayDoor")})
+            ByteNetReliable:FireServer(buffer.fromstring("\003\001"), {workspace:WaitForChild("School"):WaitForChild("Doors"):WaitForChild("HallwayDoor")})
+            ByteNetReliable:FireServer(buffer.fromstring("\a\004\001"), {0})
+            ByteNetReliable:FireServer(buffer.fromstring("\a\003\001"), {0})
+            ByteNetReliable:FireServer(buffer.fromstring("\a\005\001"), {0})
+            ByteNetReliable:FireServer(buffer.fromstring("\a\006\001"), {0})
         end
-    end)
-end
+        task.wait(0)
+    end
+end)
 
 function stopAutoFarm()
     getgenv().autoFarmActive = false
     if farmConnection then farmConnection:Disconnect() farmConnection = nil end
     if attackConnection then attackConnection:Disconnect() attackConnection = nil end
 end
+
 -- สร้าง GUI
 local Window = WindUI:CreateWindow({
     Title = "DYHUB | Hunty Zombie",
