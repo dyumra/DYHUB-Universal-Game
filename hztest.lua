@@ -54,44 +54,42 @@ local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ByteNetReliable = ReplicatedStorage:WaitForChild("ByteNetReliable")
+local door = workspace:WaitForChild("School"):WaitForChild("Doors"):WaitForChild("HallwayDoor")
 
 local farmConnection, attackConnection
-local currentTarget, lastSwitchTime = nil, 0
+local lastSwitchTime = 0
+local currentNPC = nil
 
-local function getNextNPC()
+local function getClosestNPC()
     local entities = workspace:FindFirstChild("Entities")
     if not entities then return nil end
-    local npcs = entities:GetChildren()
-    if #npcs == 0 then return nil end
-    
-    local npc
-    repeat
-        npc = npcs[math.random(1, #npcs)]
-    until npc ~= currentTarget or #npcs == 1
-    return npc
+    for _, npc in ipairs(entities:GetChildren()) do
+        if npc:FindFirstChild("HumanoidRootPart") then
+            return npc
+        end
+    end
+    return nil
 end
 
 function startAutoFarm()
     stopAutoFarm()
     getgenv().autoFarmActive = true
-    lastSwitchTime = tick()
-    currentTarget = getNextNPC()
+    local spinAngle = 0
 
     farmConnection = RunService.RenderStepped:Connect(function(dt)
         if not getgenv().autoFarmActive then return end
 
-        -- ถ้าผ่านไปเกิน 2 วิ → เปลี่ยนเป้าหมาย
-        if tick() - lastSwitchTime >= 1.5 then
-            currentTarget = getNextNPC()
+        -- ถ้าไม่มี currentNPC หรืออยู่เกิน 2 วิแล้ว → หา NPC ใหม่
+        if not currentNPC or (tick() - lastSwitchTime >= 2) then
+            currentNPC = getClosestNPC()
             lastSwitchTime = tick()
         end
 
-        local npc = currentTarget
-        if npc and npc:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        if currentNPC and currentNPC:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
             local hrp = LocalPlayer.Character.HumanoidRootPart
-            local npcRoot = npc.HumanoidRootPart
+            local npcRoot = currentNPC.HumanoidRootPart
 
-            -- คำนวณ offset ตามโหมด
+            -- offset mode
             local offset = Vector3.new(0,getgenv().DistanceValue,0)
             if getgenv().setPositionMode == "Above" then
                 offset = Vector3.new(0,getgenv().DistanceValue,0)
@@ -107,7 +105,7 @@ function startAutoFarm()
                 offset = Vector3.new(math.cos(spinAngle) * radius, 0, math.sin(spinAngle) * radius)
             end
 
-            -- ล็อกตัวละครให้นิ่ง
+            -- ล็อกไม่ให้กระตุก
             hrp.AssemblyLinearVelocity = Vector3.zero
             hrp.Velocity = Vector3.zero
             hrp.RotVelocity = Vector3.zero
@@ -115,28 +113,39 @@ function startAutoFarm()
         end
     end)
 
-    attackConnection = task.spawn(function()
-    while getgenv().autoFarmActive do
-        local npc = currentTarget
-        if npc then
-            ByteNetReliable:FireServer(buffer.fromstring("\006\001"), {workspace:WaitForChild("School"):WaitForChild("Doors"):WaitForChild("HallwayDoor")})
-            ByteNetReliable:FireServer(buffer.fromstring("\005\001"), {workspace:WaitForChild("School"):WaitForChild("Doors"):WaitForChild("HallwayDoor")})
-            ByteNetReliable:FireServer(buffer.fromstring("\007\001"), {workspace:WaitForChild("School"):WaitForChild("Doors"):WaitForChild("HallwayDoor")})
-            ByteNetReliable:FireServer(buffer.fromstring("\008\001"), {workspace:WaitForChild("School"):WaitForChild("Doors"):WaitForChild("HallwayDoor")})
-            ByteNetReliable:FireServer(buffer.fromstring("\009\001"), {workspace:WaitForChild("School"):WaitForChild("Doors"):WaitForChild("HallwayDoor")})
-            ByteNetReliable:FireServer(buffer.fromstring("\004\001"), {workspace:WaitForChild("School"):WaitForChild("Doors"):WaitForChild("HallwayDoor")})
-            ByteNetReliable:FireServer(buffer.fromstring("\003\001"), {workspace:WaitForChild("School"):WaitForChild("Doors"):WaitForChild("HallwayDoor")})
-            ByteNetReliable:FireServer(buffer.fromstring("\a\004\001"), {0})
-            ByteNetReliable:FireServer(buffer.fromstring("\a\003\001"), {0})
-            ByteNetReliable:FireServer(buffer.fromstring("\a\005\001"), {0})
-            ByteNetReliable:FireServer(buffer.fromstring("\a\006\001"), {0})
+    attackConnection = RunService.Heartbeat:Connect(function()
+        if not getgenv().autoFarmActive then return end
+        if currentNPC then
+            -- ยิงเฉพาะ NPC
+        local args1 = { buffer.fromstring("\a\004\001"), {0} }
+        local args2 = { buffer.fromstring("\a\003\001"), {0} }
+        local args5 = { buffer.fromstring("\a\005\001"), {0} }
+        local args6 = { buffer.fromstring("\a\006\001"), {0} }
+
+        local args3 = { buffer.fromstring("\006\001"), {door} }
+        local args4 = { buffer.fromstring("\005\001"), {door} }
+        local args7 = { buffer.fromstring("\003\001"), {door} }
+        local args8 = { buffer.fromstring("\007\001"), {door} }
+        local args9 = { buffer.fromstring("\008\001"), {door} }
+        local args10 = { buffer.fromstring("\009\001"), {door} }
+
+        ByteNetReliable:FireServer(unpack(args3))
+        ByteNetReliable:FireServer(unpack(args1))
+        ByteNetReliable:FireServer(unpack(args2))
+        ByteNetReliable:FireServer(unpack(args5))
+        ByteNetReliable:FireServer(unpack(args6))
+        ByteNetReliable:FireServer(unpack(args4))
+        ByteNetReliable:FireServer(unpack(args7))
+        ByteNetReliable:FireServer(unpack(args8))
+        ByteNetReliable:FireServer(unpack(args10))
+        ByteNetReliable:FireServer(unpack(args9))
         end
-        task.wait(0)
-    end
-end)
+    end)
+end
 
 function stopAutoFarm()
     getgenv().autoFarmActive = false
+    currentNPC = nil
     if farmConnection then farmConnection:Disconnect() farmConnection = nil end
     if attackConnection then attackConnection:Disconnect() attackConnection = nil end
 end
