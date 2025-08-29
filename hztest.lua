@@ -75,7 +75,7 @@ function startAutoFarm()
     stopAutoFarm()
     getgenv().autoFarmActive = true
     local spinAngle = 0
-    local moveSpeed = 10 -- ปรับความเร็วการเดิน
+    local moveSpeed = 1 -- ปรับความเร็วการเดิน
 
     farmConnection = RunService.RenderStepped:Connect(function(dt)
         if not getgenv().autoFarmActive then return end
