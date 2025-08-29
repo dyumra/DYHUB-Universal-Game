@@ -80,7 +80,7 @@ MiscTab:CreateButton({
 MiscTab:CreateButton({
    Name = "Auto Block V11",
    Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/Cyborg883/CombatGuiImproved/refs/heads/main/Protected_9850650779769664.lua"))()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/Cyborg883/CombatGUI/refs/heads/main/TSBCombatGUI"))()
    end,
 })
 
