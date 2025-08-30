@@ -1,7 +1,5 @@
 -- test2
 
-repeat task.wait() until game:IsLoaded()
-
 local function destroyObjectCache(parent)
     for _, obj in pairs(parent:GetChildren()) do
         if obj.Name == "ObjectCache" then
