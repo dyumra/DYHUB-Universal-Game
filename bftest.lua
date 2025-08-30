@@ -47,8 +47,8 @@ local SaveManager = loadstring(game:HttpGetAsync("https://raw.githubusercontent.
 local InterfaceManager = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/ActualMasterOogway/Fluent-Renewed/master/Addons/InterfaceManager.luau"))()
  
 local Window = Library:CreateWindow{
-    Title = `DYHUB | {Library.Version}`,
-    SubTitle = "Version: Beta",
+    Title = "DYHUB | Blox Fruit",
+    SubTitle = "Version: 3.7.1",
     TabWidth = 160,
     Size = UDim2.fromOffset(530, 380),
     Acrylic = true, 
