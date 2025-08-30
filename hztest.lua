@@ -1,4 +1,4 @@
--- test
+-- test2
 
 repeat task.wait() until game:IsLoaded()
 
@@ -14,7 +14,6 @@ end
 
 destroyObjectCache(workspace.Terrain)
 
--- โหลด WindUI ปลอดภัย
 local WindUI
 repeat
     task.wait(0.1)
@@ -26,7 +25,6 @@ repeat
     end
 until WindUI
 
--- เริ่มตั้งค่า getgenv
 getgenv().ESPEnabled = false
 getgenv().ESPType = "Highlight"
 getgenv().ESPShowName = true
@@ -47,6 +45,18 @@ getgenv().AutoCollect = false
 getgenv().autoFarmActive = false
 getgenv().DistanceValue = 5
 getgenv().setPositionMode = "Above"
+
+getgenv().Player = 1
+
+getgenv().Setting = getgenv().Setting or {
+    Map = "School",
+    Difficulty = "Normal",
+    Mode = "None"
+}
+
+getgenv().AutoJoin = false
+
+AutoCreateRoom = true
 local spinAngle = 0
 
 local Players = game:GetService("Players")
@@ -71,16 +81,39 @@ local function getClosestNPC()
     return nil
 end
 
+-- ฟังก์ชันหาตำแหน่งปลอดภัย (offset) รอบ NPC
+local function getSafeTargetCFrame(npc)
+    local hrp = npc:FindFirstChild("HumanoidRootPart")
+    if not hrp then return nil end
+
+    local offset = Vector3.new(0, getgenv().DistanceValue or 3, 0)
+
+    if getgenv().setPositionMode == "Above" then
+        offset = Vector3.new(0, getgenv().DistanceValue, 0)
+    elseif getgenv().setPositionMode == "Under" then
+        offset = Vector3.new(0, -getgenv().DistanceValue, 0)
+    elseif getgenv().setPositionMode == "Front" then
+        offset = npc.HumanoidRootPart.CFrame.LookVector * (getgenv().DistanceValue or 3)
+    elseif getgenv().setPositionMode == "Back" then
+        offset = -npc.HumanoidRootPart.CFrame.LookVector * (getgenv().DistanceValue or 3)
+    elseif getgenv().setPositionMode == "Spin" then
+        spinAngle += 0.05
+        local radius = getgenv().DistanceValue or 3
+        offset = Vector3.new(math.cos(spinAngle) * radius, 0, math.sin(spinAngle) * radius)
+    end
+
+    return CFrame.new(hrp.Position + offset + Vector3.new(0, 3, 0)) -- ยกสูงเล็กน้อย
+end
+
 function startAutoFarm()
     stopAutoFarm()
     getgenv().autoFarmActive = true
-    local spinAngle = 0
-    local moveSpeed = 1 -- ปรับความเร็วการเดิน
+    local moveSpeed = 5 -- ปรับความเร็วการเดิน
 
     farmConnection = RunService.RenderStepped:Connect(function(dt)
         if not getgenv().autoFarmActive then return end
 
-        -- หา NPC ใหม่ทุก 2 วิ
+        -- หา NPC ใหม่ทุก 2 วินาที
         if not currentNPC or (tick() - lastSwitchTime >= 2) then
             currentNPC = getClosestNPC()
             lastSwitchTime = tick()
@@ -88,31 +121,10 @@ function startAutoFarm()
 
         if currentNPC and currentNPC:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
             local hrp = LocalPlayer.Character.HumanoidRootPart
-            local npcRoot = currentNPC.HumanoidRootPart
-
-            -- offset mode
-            local offset = Vector3.new(0,getgenv().DistanceValue,0)
-            if getgenv().setPositionMode == "Above" then
-                offset = Vector3.new(0,getgenv().DistanceValue,0)
-            elseif getgenv().setPositionMode == "Under" then
-                offset = Vector3.new(0,-getgenv().DistanceValue,0)
-            elseif getgenv().setPositionMode == "Front" then
-                offset = npcRoot.CFrame.LookVector * getgenv().DistanceValue
-            elseif getgenv().setPositionMode == "Back" then
-                offset = -npcRoot.CFrame.LookVector * getgenv().DistanceValue
-            elseif getgenv().setPositionMode == "Spin" then
-                spinAngle += dt * 2
-                local radius = getgenv().DistanceValue
-                offset = Vector3.new(math.cos(spinAngle) * radius, 0, math.sin(spinAngle) * radius)
+            local targetCFrame = getSafeTargetCFrame(currentNPC)
+            if targetCFrame then
+                hrp.CFrame = hrp.CFrame:Lerp(targetCFrame, moveSpeed * dt)
             end
-
-            -- คำนวณตำแหน่งเป้าหมาย
-            local targetPos = npcRoot.Position + offset
-            local currentPos = hrp.Position
-            local newPos = currentPos:Lerp(targetPos, moveSpeed * dt)
-
-            -- ปรับ CFrame ไปยัง target แบบ smooth
-            hrp.CFrame = CFrame.new(newPos, npcRoot.Position)
         end
     end)
 
@@ -120,19 +132,19 @@ function startAutoFarm()
         if not getgenv().autoFarmActive then return end
         if currentNPC then
             -- ยิง NPC และเปิดประตู
-            local args1 = { buffer.fromstring("\a\004\001"), {0} }
-            local args2 = { buffer.fromstring("\a\003\001"), {0} }
-            local args5 = { buffer.fromstring("\a\005\001"), {0} }
-            local args6 = { buffer.fromstring("\a\006\001"), {0} }
+            local args1 = { buffer.fromstring("\a\004\001"), { 0 } }
+            local args2 = { buffer.fromstring("\a\003\001"), { 0 } }
+            local args5 = { buffer.fromstring("\a\005\001"), { 0 } }
+            local args6 = { buffer.fromstring("\a\006\001"), { 0 } }
 
-            local args3 = { buffer.fromstring("\006\001"), {door} }
-            local args4 = { buffer.fromstring("\005\001"), {door} }
-            local gg = { buffer.fromstring("\002\001"), {door} }
-            local gg2 = { buffer.fromstring("\001\001"), {door} }
-            local args7 = { buffer.fromstring("\003\001"), {door} }
-            local args8 = { buffer.fromstring("\007\001"), {door} }
-            local args9 = { buffer.fromstring("\008\001"), {door} }
-            local args10 = { buffer.fromstring("\009\001"), {door} }
+            local args3 = { buffer.fromstring("\006\001"), { door } }
+            local args4 = { buffer.fromstring("\005\001"), { door } }
+            local gg = { buffer.fromstring("\002\001"), { door } }
+            local gg2 = { buffer.fromstring("\001\001"), { door } }
+            local args7 = { buffer.fromstring("\003\001"), { door } }
+            local args8 = { buffer.fromstring("\007\001"), { door } }
+            local args9 = { buffer.fromstring("\008\001"), { door } }
+            local args10 = { buffer.fromstring("\009\001"), { door } }
 
             ByteNetReliable:FireServer(unpack(gg))
             ByteNetReliable:FireServer(unpack(gg2))
@@ -153,8 +165,14 @@ end
 function stopAutoFarm()
     getgenv().autoFarmActive = false
     currentNPC = nil
-    if farmConnection then farmConnection:Disconnect() farmConnection = nil end
-    if attackConnection then attackConnection:Disconnect() attackConnection = nil end
+    if farmConnection then
+        farmConnection:Disconnect()
+        farmConnection = nil
+    end
+    if attackConnection then
+        attackConnection:Disconnect()
+        attackConnection = nil
+    end
 end
 
 
@@ -164,7 +182,7 @@ local Window = WindUI:CreateWindow({
     IconThemed = true,
     Icon = "star",
     Author = "Version: 1.8.9",
-    Size = UDim2.fromOffset(500,300),
+    Size = UDim2.fromOffset(500, 300),
     Transparent = true,
     Theme = "Dark",
 })
@@ -172,47 +190,48 @@ local Window = WindUI:CreateWindow({
 Window:EditOpenButton({
     Title = "DYHUB - Open",
     Icon = "monitor",
-    CornerRadius = UDim.new(0,6),
+    CornerRadius = UDim.new(0, 6),
     StrokeThickness = 2,
-    Color = ColorSequence.new(Color3.fromRGB(30,30,30),Color3.fromRGB(255,255,255)),
+    Color = ColorSequence.new(Color3.fromRGB(30, 30, 30), Color3.fromRGB(255, 255, 255)),
     Draggable = true,
 })
 
-local MainTab = Window:Tab({ Title="Main", Icon="rocket" })
-local EspTab = Window:Tab({ Title="Esp", Icon="eye" })
-local AutoTab = Window:Tab({ Title="Auto", Icon="crown" })
+local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
+local EspTab = Window:Tab({ Title = "Esp", Icon = "eye" })
+local JoinTab = Window:Tab({ Title = "Auto Party", Icon = "handshake" })
+local AutoTab = Window:Tab({ Title = "Gameplay", Icon = "crown" })
 Window:SelectTab(1)
 
 -- ================= MainTab =================
-MainTab:Section({ Title="Feature Farm", Icon="sword" })
+MainTab:Section({ Title = "Feature Farm", Icon = "sword" })
 
 MainTab:Dropdown({
-    Title="Set Position",
-    Values={"Spin","Above","Back","Under","Front"},
-    Default=getgenv().setPositionMode,
-    Multi=false,
-    Callback=function(value) getgenv().setPositionMode = value end
+    Title = "Set Position",
+    Values = { "Spin", "Above", "Back", "Under", "Front" },
+    Default = getgenv().setPositionMode,
+    Multi = false,
+    Callback = function(value) getgenv().setPositionMode = value end
 })
 
 MainTab:Slider({
-    Title="Set Distance to NPC",
-    Value={Min=0, Max=30, Default=getgenv().DistanceValue},
-    Step=1,
-    Callback=function(val) getgenv().DistanceValue = val end
+    Title = "Set Distance to NPC",
+    Value = { Min = 0, Max = 30, Default = getgenv().DistanceValue },
+    Step = 1,
+    Callback = function(val) getgenv().DistanceValue = val end
 })
 
 MainTab:Toggle({
-    Title="Auto Farm",
-    Default=false,
-    Callback=function(value)
+    Title = "Auto Farm",
+    Default = false,
+    Callback = function(value)
         if value then startAutoFarm() else stopAutoFarm() end
     end
 })
 
 MainTab:Toggle({
-    Title="Auto Collect Items",
-    Default=false,
-    Callback=function(value)
+    Title = "Auto Collect Items",
+    Default = false,
+    Callback = function(value)
         getgenv().AutoCollect = value
         if value then
             spawn(function()
@@ -232,7 +251,8 @@ MainTab:Toggle({
                         if drops then
                             for _, item in ipairs(drops:GetChildren()) do
                                 if item:IsA("BasePart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                                    LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(item.Position + Vector3.new(0,3,0))
+                                    LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(item.Position +
+                                    Vector3.new(0, 3, 0))
                                     task.wait(0.05)
                                 end
                             end
@@ -246,11 +266,11 @@ MainTab:Toggle({
 })
 
 -- ================= ESP Tab =================
-EspTab:Section({ Title="Feature ESP", Icon="eye" })
+EspTab:Section({ Title = "Feature ESP", Icon = "eye" })
 
 EspTab:Dropdown({
     Title = "ESP Type",
-    Values = {"Highlight","BoxHandleAdornment"},
+    Values = { "Highlight", "BoxHandleAdornment" },
     Default = getgenv().ESPType,
     Multi = false,
     Callback = function(value) getgenv().ESPType = value end
@@ -262,7 +282,7 @@ EspTab:Toggle({
     Callback = function(value) getgenv().ESPEnabled = value end
 })
 
-EspTab:Section({ Title="Settings ESP", Icon="settings" })
+EspTab:Section({ Title = "Settings ESP", Icon = "settings" })
 
 EspTab:Toggle({
     Title = "Show Name",
@@ -278,7 +298,7 @@ EspTab:Toggle({
 
 EspTab:Slider({
     Title = "Max Distance",
-    Value = {Min=1, Max=100, Default=getgenv().ESPDistance},
+    Value = { Min = 1, Max = 100, Default = getgenv().ESPDistance },
     Step = 1,
     Callback = function(val) getgenv().ESPDistance = val end
 })
@@ -302,8 +322,8 @@ local function updateESP()
                 local box = Instance.new("BoxHandleAdornment")
                 box.Name = "ESP_Box"
                 box.Adornee = hrp
-                box.Size = hrp.Size or Vector3.new(2,2,1)
-                box.Color3 = Color3.fromRGB(255,0,0)
+                box.Size = hrp.Size or Vector3.new(2, 2, 1)
+                box.Color3 = Color3.fromRGB(255, 0, 0)
                 box.AlwaysOnTop = true
                 box.Parent = hrp
             end
@@ -314,14 +334,14 @@ local function updateESP()
                     local bill = Instance.new("BillboardGui")
                     bill.Name = "ESP_NameTag"
                     bill.Adornee = hrp
-                    bill.Size = UDim2.new(0,120,0,50)
+                    bill.Size = UDim2.new(0, 120, 0, 50)
                     bill.AlwaysOnTop = true
                     bill.Parent = hrp
 
                     local text = Instance.new("TextLabel")
-                    text.Size = UDim2.new(1,0,1,0)
+                    text.Size = UDim2.new(1, 0, 1, 0)
                     text.BackgroundTransparency = 1
-                    text.TextColor3 = Color3.fromRGB(255,0,0)
+                    text.TextColor3 = Color3.fromRGB(255, 0, 0)
                     text.TextScaled = true
                     text.Parent = bill
                 end
@@ -331,7 +351,7 @@ local function updateESP()
                     local dist = (LocalPlayer.Character.HumanoidRootPart.Position - hrp.Position).Magnitude
                     if dist <= getgenv().ESPDistance then
                         if getgenv().ESPShowDistance then
-                            label.Text = getgenv().ESPName.." - ["..math.floor(dist).."m]"
+                            label.Text = getgenv().ESPName .. " - [" .. math.floor(dist) .. "m]"
                         else
                             label.Text = getgenv().ESPName
                         end
@@ -354,7 +374,7 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ================= Auto Tab =================
-AutoTab:Section({ Title="Feature Collect", Icon="hand" })
+AutoTab:Section({ Title = "Feature Collect", Icon = "hand" })
 
 local function activatePrompt(prompt)
     local character = LocalPlayer.Character
@@ -370,7 +390,7 @@ local function activatePrompt(prompt)
     end
 
     -- วาร์ปแบบนิ่ง ๆ ไปยัง Prompt
-    local targetCFrame = prompt.Parent.CFrame + Vector3.new(0,3,0)
+    local targetCFrame = prompt.Parent.CFrame + Vector3.new(0, 3, 0)
     hrp.AssemblyLinearVelocity = Vector3.zero
     hrp.Velocity = Vector3.zero
     hrp.RotVelocity = Vector3.zero
@@ -385,15 +405,14 @@ local function activatePrompt(prompt)
 end
 
 -- Auto Radio / Heli / Power
-AutoTab:Toggle({ Title="Auto Radio", Default=false, Callback=function(v) getgenv().AutoRadio=v end })
-AutoTab:Toggle({ Title="Auto Helicopter", Default=false, Callback=function(v) getgenv().AutoHeli=v end })
-AutoTab:Toggle({ Title="Auto Power", Default=false, Callback=function(v) getgenv().AutoPower=v end })
+AutoTab:Toggle({ Title = "Auto Radio", Default = false, Callback = function(v) getgenv().AutoRadio = v end })
+AutoTab:Toggle({ Title = "Auto Helicopter", Default = false, Callback = function(v) getgenv().AutoHeli = v end })
+AutoTab:Toggle({ Title = "Auto Power", Default = false, Callback = function(v) getgenv().AutoPower = v end })
 
 spawn(function()
     while true do
         local char = LocalPlayer.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
-
             if getgenv().AutoRadio then
                 local radioPrompt = workspace:FindFirstChild("School")
                     and workspace.School:FindFirstChild("Rooms")
@@ -427,41 +446,41 @@ spawn(function()
 end)
 
 -- Auto Door / Attack / Skill / Perk
-AutoTab:Section({ Title="Feature Auto", Icon="sword" })
-AutoTab:Toggle({ Title="Auto Door", Default=false, Callback=function(v) getgenv().AutoDoor=v end })
-AutoTab:Toggle({ Title="Auto Attack", Default=false, Callback=function(v) getgenv().AutoAttack=v end })
-AutoTab:Toggle({ Title="Auto Skill", Default=false, Callback=function(v) getgenv().AutoSkill=v end })
-AutoTab:Toggle({ Title="Auto Perk", Default=false, Callback=function(v) getgenv().AutoPerk=v end })
+AutoTab:Section({ Title = "Feature Auto", Icon = "sword" })
+AutoTab:Toggle({ Title = "Auto Door", Default = false, Callback = function(v) getgenv().AutoDoor = v end })
+AutoTab:Toggle({ Title = "Auto Attack", Default = false, Callback = function(v) getgenv().AutoAttack = v end })
+AutoTab:Toggle({ Title = "Auto Skill", Default = false, Callback = function(v) getgenv().AutoSkill = v end })
+AutoTab:Toggle({ Title = "Auto Perk", Default = false, Callback = function(v) getgenv().AutoPerk = v end })
 
 spawn(function()
     while true do
         if getgenv().AutoDoor then
-            local gg = { buffer.fromstring("\006\001"), {door} }
+            local gg = { buffer.fromstring("\006\001"), { door } }
             ByteNetReliable:FireServer(unpack(gg))
-            local args3 = { buffer.fromstring("\002\001"), {door} }
-            local args4 = { buffer.fromstring("\005\001"), {door} }
-            local args7 = { buffer.fromstring("\003\001"), {door} }
-            local args8 = { buffer.fromstring("\007\001"), {door} }
-            local args9 = { buffer.fromstring("\008\001"), {door} }
-            local args10 = { buffer.fromstring("\009\001"), {door} }
+            local args3 = { buffer.fromstring("\002\001"), { door } }
+            local args4 = { buffer.fromstring("\005\001"), { door } }
+            local args7 = { buffer.fromstring("\003\001"), { door } }
+            local args8 = { buffer.fromstring("\007\001"), { door } }
+            local args9 = { buffer.fromstring("\008\001"), { door } }
+            local args10 = { buffer.fromstring("\009\001"), { door } }
 
-           ByteNetReliable:FireServer(unpack(args3))
-           ByteNetReliable:FireServer(unpack(args4))
-           ByteNetReliable:FireServer(unpack(args7))
-           ByteNetReliable:FireServer(unpack(args8))
-           ByteNetReliable:FireServer(unpack(args10))
-           ByteNetReliable:FireServer(unpack(args9))
+            ByteNetReliable:FireServer(unpack(args3))
+            ByteNetReliable:FireServer(unpack(args4))
+            ByteNetReliable:FireServer(unpack(args7))
+            ByteNetReliable:FireServer(unpack(args8))
+            ByteNetReliable:FireServer(unpack(args10))
+            ByteNetReliable:FireServer(unpack(args9))
         end
         if getgenv().AutoAttack then
-            local args1 = { buffer.fromstring("\a\004\001"), {0} }
+            local args1 = { buffer.fromstring("\a\004\001"), { 0 } }
             ByteNetReliable:FireServer(unpack(args1))
         end
         if getgenv().AutoSkill then
-            local args2 = { buffer.fromstring("\a\003\001"), {0} }
+            local args2 = { buffer.fromstring("\a\003\001"), { 0 } }
             ByteNetReliable:FireServer(unpack(args2))
-            local args5 = { buffer.fromstring("\a\005\001"), {0} }
+            local args5 = { buffer.fromstring("\a\005\001"), { 0 } }
             ByteNetReliable:FireServer(unpack(args5))
-            local args6 = { buffer.fromstring("\a\006\001"), {0} }
+            local args6 = { buffer.fromstring("\a\006\001"), { 0 } }
             ByteNetReliable:FireServer(unpack(args6))
         end
         if getgenv().AutoPerk then
@@ -473,10 +492,245 @@ spawn(function()
     end
 end)
 
-AutoTab:Section({ Title="Feature Farm", Icon="infinity" })
+AutoTab:Section({ Title = "Feature Farm", Icon = "infinity" })
 AutoTab:Button({
     Title = "Auto Farm (Beta)",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Detail/refs/heads/main/Lua.lua"))()
     end
 })
+
+
+--==[ GUI Setup ]==--
+JoinTab:Section({ Title = "Feature Party", Icon = "user-star" })
+
+-- Set Map Dropdown
+JoinTab:Dropdown({
+    Title = "Set Map",
+    Values = { "School", "Sewers" },
+    Default = getgenv().Setting.Map,
+    Multi = false,
+    Callback = function(value)
+        getgenv().Setting.Map = value
+    end
+})
+
+-- Set Difficulty Dropdown
+JoinTab:Dropdown({
+    Title = "Set Difficulty",
+    Values = { "Normal", "Hard", "Nightmare" },
+    Default = getgenv().Setting.Difficulty,
+    Multi = false,
+    Callback = function(value)
+        getgenv().Setting.Difficulty = value
+    end
+})
+
+-- Set Mode Dropdown
+JoinTab:Dropdown({
+    Title = "Set Mode",
+    Values = { "None", "Campain", "Endless" },
+    Default = getgenv().Setting.Mode,
+    Multi = false,
+    Callback = function(value)
+        getgenv().Setting.Mode = value
+    end
+})
+
+-- Set Max Players Slider
+JoinTab:Slider({
+    Title = "Set maxPlayers",
+    Min = 1,
+    Max = 5,
+    Default = getgenv().Player,
+    Step = 1,
+    Callback = function(val)
+        getgenv().Player = val
+    end
+})
+
+-- Auto Join Toggle
+JoinTab:Toggle({
+    Title = "Auto Join",
+    Default = false,
+    Callback = function(v)
+        getgenv().AutoJoin = v
+    end
+})
+
+-- Print Current Settings
+for k, v in pairs(getgenv().Setting) do
+    print("************* "..k, v)
+end
+
+--==[ Roblox Services & Player Info ]==--
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local TeleportService = game:GetService("TeleportService")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:FindFirstChildOfClass("Humanoid")
+local HMNRT = character:WaitForChild("HumanoidRootPart")
+local Camera = workspace.CurrentCamera
+local screenSize = Camera.ViewportSize
+local plrGui = player:WaitForChild("PlayerGui")
+
+--==[ Helper Functions ]==--
+
+-- Check if other players are near a position
+local function OtherPlayerNear(TargetPosition, NearValue)
+    for _, v in ipairs(Players:GetChildren()) do
+        if v ~= player and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+            local Dis = (v.Character.HumanoidRootPart.Position - TargetPosition).Magnitude
+            if Dis < NearValue then
+                return false
+            end
+        end
+    end
+    return true
+end
+
+-- Click a mode/map button
+local function Click_Mode(Grup, TargetButton)
+    if Grup and TargetButton ~= "None" then
+        for _, v in ipairs(Grup:GetChildren()) do
+            local textLabel = v:FindFirstChild("TextLabel")
+            if v:IsA("TextButton") and textLabel and textLabel.Text == TargetButton then
+                firesignal(v.MouseButton1Click)
+            end
+        end
+    end
+end
+
+--==[ Server Hop Functions ]==--
+local PlaceId = game.PlaceId
+
+local function getServerList()
+    local success, result = pcall(function()
+        return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
+    end)
+    if success and result and result.data then
+        return result.data
+    else
+        warn("ไม่สามารถดึงข้อมูล server ได้")
+        return nil
+    end
+end
+
+local function findBestServer(maxPlayers)
+    maxPlayers = maxPlayers or 5
+    local servers = getServerList()
+    if not servers then return nil end
+    table.sort(servers, function(a, b) return a.playing < b.playing end)
+    for _, server in ipairs(servers) do
+        if server.id ~= game.JobId and server.playing <= maxPlayers and server.playing > 0 then
+            return server
+        end
+    end
+    return nil
+end
+
+local function hopToServer(targetServer)
+    if not targetServer then
+        warn("ไม่พบ server ที่เหมาะสม")
+        return false
+    end
+    local success, errorMessage = pcall(function()
+        TeleportService:TeleportToPlaceInstance(PlaceId, targetServer.id, player)
+    end)
+    if not success then
+        warn("ไม่สามารถ teleport ได้: " .. tostring(errorMessage))
+        return false
+    end
+    return true
+end
+
+local function serverHop(maxPlayers)
+    local targetServer = findBestServer(maxPlayers)
+    if targetServer then
+        return hopToServer(targetServer)
+    else
+        wait(2)
+        targetServer = findBestServer(maxPlayers + 3)
+        if targetServer then
+            return hopToServer(targetServer)
+        else
+            warn("ไม่พบ server ที่เหมาะสมเลย")
+            return false
+        end
+    end
+end
+
+_G.ServerHopper = {hop = serverHop, findBest = findBestServer, getServers = getServerList}
+
+--==[ Auto Create Room Loop ]==--
+task.spawn(function()
+    if tonumber(game.PlaceId) ~= 103754275310547 then return end
+
+    local Match = workspace:WaitForChild("Match")
+    local Created, TimeReTry = false, 0
+    local SpawnCFrame = HMNRT.CFrame
+
+    local StartPlaceRedo = plrGui:WaitForChild("GUI"):WaitForChild("StartPlaceRedo")
+    local iContent = StartPlaceRedo:WaitForChild("Content"):WaitForChild("iContent")
+    local Start_Button = iContent:WaitForChild("Button")
+    local F_pls = iContent:WaitForChild("options"):WaitForChild("playerselect"):WaitForChild("F")
+    local De_PlayerSize, Plus_PlayerSize = F_pls:WaitForChild("l"), F_pls:WaitForChild("r")
+
+    local maps_select = iContent:WaitForChild("maps")
+    local modes_select = iContent:WaitForChild("modes")
+    local upmodes_select = iContent:WaitForChild("upmodes")
+
+    while true do
+        if AutoCreateRoom then
+            print("AutoCreateRoom is Reapeat")
+            repeat
+                if TimeReTry >= 5 then
+                    serverHop(15)
+                end
+
+                -- Move to Match Part
+                if StartPlaceRedo.Visible == false and not Created then
+                    for _, PartTouch in ipairs(Match:GetChildren()) do
+                        if PartTouch:IsA("BasePart") and OtherPlayerNear(PartTouch.Position, 7) then
+                            if not Created then
+                                pcall(function()
+                                    HMNRT.CFrame = CFrame.new(PartTouch.Position)
+                                    wait(1.5)
+                                    if StartPlaceRedo.Visible then
+                                        Created = true
+                                    end
+                                end)
+                            end
+                        end
+                    end
+                    HMNRT.CFrame = SpawnCFrame * CFrame.new(0,5,0)
+                    TimeReTry = TimeReTry + 1
+                    task.wait(5)
+                end
+
+                -- Create Room
+                if StartPlaceRedo.Visible then
+                    for i=1,10 do
+                        firesignal(De_PlayerSize.MouseButton1Click)
+                        wait(0.05)
+                    end
+                    print("*** Map "..getgenv().Setting.Map.." Difficulty "..getgenv().Setting.Difficulty.." Mode "..getgenv().Setting.Mode)
+                    wait(0.7)
+                    if getgenv().Setting.Mode ~= "None" then
+                        Click_Mode(upmodes_select, getgenv().Setting.Mode)
+                    end
+                    wait(0.7)
+                    Click_Mode(maps_select, getgenv().Setting.Map)
+                    wait(0.7)
+                    Click_Mode(modes_select, getgenv().Setting.Difficulty)
+                    wait(1)
+                    firesignal(Start_Button.MouseButton1Click)
+                    Created = true
+                end
+                wait(1)
+            until not AutoCreateRoom
+        end
+        wait(1)
+    end
+end)
