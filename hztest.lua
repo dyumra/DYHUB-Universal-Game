@@ -56,7 +56,7 @@ getgenv().Setting = getgenv().Setting or {
 
 getgenv().AutoJoin = false
 
-AutoCreateRoom = true
+local AutoCreateRoom = true
 local spinAngle = 0
 
 local Players = game:GetService("Players")
@@ -81,39 +81,16 @@ local function getClosestNPC()
     return nil
 end
 
--- ฟังก์ชันหาตำแหน่งปลอดภัย (offset) รอบ NPC
-local function getSafeTargetCFrame(npc)
-    local hrp = npc:FindFirstChild("HumanoidRootPart")
-    if not hrp then return nil end
-
-    local offset = Vector3.new(0, getgenv().DistanceValue or 3, 0)
-
-    if getgenv().setPositionMode == "Above" then
-        offset = Vector3.new(0, getgenv().DistanceValue, 0)
-    elseif getgenv().setPositionMode == "Under" then
-        offset = Vector3.new(0, -getgenv().DistanceValue, 0)
-    elseif getgenv().setPositionMode == "Front" then
-        offset = npc.HumanoidRootPart.CFrame.LookVector * (getgenv().DistanceValue or 3)
-    elseif getgenv().setPositionMode == "Back" then
-        offset = -npc.HumanoidRootPart.CFrame.LookVector * (getgenv().DistanceValue or 3)
-    elseif getgenv().setPositionMode == "Spin" then
-        spinAngle += 0.05
-        local radius = getgenv().DistanceValue or 3
-        offset = Vector3.new(math.cos(spinAngle) * radius, 0, math.sin(spinAngle) * radius)
-    end
-
-    return CFrame.new(hrp.Position + offset + Vector3.new(0, 3, 0)) -- ยกสูงเล็กน้อย
-end
-
 function startAutoFarm()
     stopAutoFarm()
     getgenv().autoFarmActive = true
-    local moveSpeed = 5 -- ปรับความเร็วการเดิน
+    local spinAngle = 0
+    local moveSpeed = 0.05 -- ปรับความเร็วการเดิน
 
     farmConnection = RunService.RenderStepped:Connect(function(dt)
         if not getgenv().autoFarmActive then return end
 
-        -- หา NPC ใหม่ทุก 2 วินาที
+        -- หา NPC ใหม่ทุก 2 วิ
         if not currentNPC or (tick() - lastSwitchTime >= 2) then
             currentNPC = getClosestNPC()
             lastSwitchTime = tick()
@@ -121,10 +98,31 @@ function startAutoFarm()
 
         if currentNPC and currentNPC:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
             local hrp = LocalPlayer.Character.HumanoidRootPart
-            local targetCFrame = getSafeTargetCFrame(currentNPC)
-            if targetCFrame then
-                hrp.CFrame = hrp.CFrame:Lerp(targetCFrame, moveSpeed * dt)
+            local npcRoot = currentNPC.HumanoidRootPart
+
+            -- offset mode
+            local offset = Vector3.new(0, getgenv().DistanceValue, 0)
+            if getgenv().setPositionMode == "Above" then
+                offset = Vector3.new(0, getgenv().DistanceValue, 0)
+            elseif getgenv().setPositionMode == "Under" then
+                offset = Vector3.new(0, -getgenv().DistanceValue, 0)
+            elseif getgenv().setPositionMode == "Front" then
+                offset = npcRoot.CFrame.LookVector * getgenv().DistanceValue
+            elseif getgenv().setPositionMode == "Back" then
+                offset = -npcRoot.CFrame.LookVector * getgenv().DistanceValue
+            elseif getgenv().setPositionMode == "Spin" then
+                spinAngle += dt * 2
+                local radius = getgenv().DistanceValue
+                offset = Vector3.new(math.cos(spinAngle) * radius, 0, math.sin(spinAngle) * radius)
             end
+
+            -- คำนวณตำแหน่งเป้าหมาย
+            local targetPos = npcRoot.Position + offset
+            local currentPos = hrp.Position
+            local newPos = currentPos:Lerp(targetPos, moveSpeed * dt)
+
+            -- ปรับ CFrame ไปยัง target แบบ smooth
+            hrp.CFrame = CFrame.new(newPos, npcRoot.Position)
         end
     end)
 
@@ -174,7 +172,6 @@ function stopAutoFarm()
         attackConnection = nil
     end
 end
-
 
 -- สร้าง GUI
 local Window = WindUI:CreateWindow({
