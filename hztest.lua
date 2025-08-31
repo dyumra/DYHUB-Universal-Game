@@ -62,14 +62,12 @@ local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ByteNetReliable = ReplicatedStorage:WaitForChild("ByteNetReliable")
-local doorsFolder = workspace:WaitForChild("School"):WaitForChild("Doors"):WaitForChild("HallwayDoor")
 
 -- ตัวแปร Auto Farm
 local farmConnection, attackConnection
 local currentNPC = nil
 local lastTargetChange = 0
-local doorIndex = 1
-local warpTimer = 0
+local teleportTimer = 0
 
 -- ฟังก์ชันดึง NPC ทั้งหมด
 local function getAllNPCs()
@@ -98,107 +96,58 @@ local function getClosestNPC()
     return closest
 end
 
--- ฟังก์ชันวาร์ปประตูทีละตัว
-local function warpToDoors(dt)
-    if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return false end
-    local hrp = LocalPlayer.Character.HumanoidRootPart
-    local doors = doorsFolder:GetChildren()
-    if #doors == 0 then return false end
-
-    warpTimer += dt
-    if warpTimer >= 0.5 then
-        local door = doors[doorIndex]
-        if door and door:IsA("BasePart") then
-            hrp.CFrame = CFrame.new(door.Position + Vector3.new(0,3,0))
-        end
-
-        doorIndex += 1
-        warpTimer = 0
-
-        if doorIndex > #doors then
-            doorIndex = 1
-            return true -- วาร์ปครบทุกประตูแล้ว
-        end
-    end
-
-    return false -- ยังไม่ครบทุกประตู
-end
-
 -- เริ่ม Auto Farm
 function startAutoFarm()
     stopAutoFarm()
     getgenv().autoFarmActive = true
 
-    -- ฟาร์มตัวละคร + วาร์ป
+    -- ฟาร์มตัวละคร + วาร์ปไปหา NPC
     farmConnection = RunService.RenderStepped:Connect(function(dt)
         if not getgenv().autoFarmActive then return end
         local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
         if not hrp then return end
 
-        -- วาร์ปประตูทีละตัว
-        local finishedWarping = warpToDoors(dt)
+        teleportTimer += dt
+        if teleportTimer >= 0.25 then
+            currentNPC = getClosestNPC()
+            teleportTimer = 0
+        end
 
-        if finishedWarping then
-            -- วาร์ปครบแล้ว → ไปหา NPC
-            lastTargetChange += dt
-            if lastTargetChange >= 0.5 then
-                currentNPC = getClosestNPC()
-                lastTargetChange = 0
+        if currentNPC and currentNPC:FindFirstChild("HumanoidRootPart") then
+            local npcRoot = currentNPC.HumanoidRootPart
+            local offset = Vector3.new(0,getgenv().DistanceValue or 3,0)
+
+            if getgenv().setPositionMode == "Above" then
+                offset = Vector3.new(0,getgenv().DistanceValue or 3,0)
+            elseif getgenv().setPositionMode == "Under" then
+                offset = Vector3.new(0,-(getgenv().DistanceValue or 3),0)
+            elseif getgenv().setPositionMode == "Front" then
+                offset = npcRoot.CFrame.LookVector * (getgenv().DistanceValue or 3)
+            elseif getgenv().setPositionMode == "Back" then
+                offset = -npcRoot.CFrame.LookVector * (getgenv().DistanceValue or 3)
+            elseif getgenv().setPositionMode == "Spin" then
+                spinAngle += dt * 2
+                local radius = getgenv().DistanceValue or 3
+                offset = Vector3.new(math.cos(spinAngle) * radius, 0, math.sin(spinAngle) * radius)
             end
 
-            if currentNPC and currentNPC:FindFirstChild("HumanoidRootPart") then
-                local npcRoot = currentNPC.HumanoidRootPart
-                local offset = Vector3.new(0,getgenv().DistanceValue or 3,0)
-
-                if getgenv().setPositionMode == "Above" then
-                    offset = Vector3.new(0,getgenv().DistanceValue or 3,0)
-                elseif getgenv().setPositionMode == "Under" then
-                    offset = Vector3.new(0,-(getgenv().DistanceValue or 3),0)
-                elseif getgenv().setPositionMode == "Front" then
-                    offset = npcRoot.CFrame.LookVector * (getgenv().DistanceValue or 3)
-                elseif getgenv().setPositionMode == "Back" then
-                    offset = -npcRoot.CFrame.LookVector * (getgenv().DistanceValue or 3)
-                elseif getgenv().setPositionMode == "Spin" then
-                    spinAngle += dt * 2
-                    local radius = getgenv().DistanceValue or 3
-                    offset = Vector3.new(math.cos(spinAngle) * radius, 0, math.sin(spinAngle) * radius)
-                end
-
-                -- ล็อกตัวละครให้นิ่ง
-                hrp.AssemblyLinearVelocity = Vector3.zero
-                hrp.Velocity = Vector3.zero
-                hrp.RotVelocity = Vector3.zero
-                hrp.CFrame = CFrame.new(npcRoot.Position + offset)
-            end
+            -- ล็อกตัวละครให้นิ่ง
+            hrp.AssemblyLinearVelocity = Vector3.zero
+            hrp.Velocity = Vector3.zero
+            hrp.RotVelocity = Vector3.zero
+            hrp.CFrame = CFrame.new(npcRoot.Position + offset)
         end
     end)
 
     -- ยิงคำสั่ง 100 ครั้งต่อวินาที
     attackConnection = task.spawn(function()
-        local interval = 1 / 200 -- 0.01 วินาที
+        local interval = 1 / 200 -- 0.005 วินาที
         while getgenv().autoFarmActive do
             if currentNPC then
-                local args1 = { buffer.fromstring("\b\001\000") }
-                local args2 = { buffer.fromstring("\b\002\000") }
-                local args3 = { buffer.fromstring("\b\003\000") }
-                local args4 = { buffer.fromstring("\b\004\000") }
-                local args5 = { buffer.fromstring("\b\005\000") }
-                local args6 = { buffer.fromstring("\b\006\000") }
-                local args7 = { buffer.fromstring("\b\007\000") }
-                local args8 = { buffer.fromstring("\b\008\000") }
-                local args9 = { buffer.fromstring("\b\009\000") }
-                local args10 = { buffer.fromstring("\b\010\000") }
-
-                ByteNetReliable:FireServer(unpack(args1))
-                ByteNetReliable:FireServer(unpack(args2))
-                ByteNetReliable:FireServer(unpack(args3))
-                ByteNetReliable:FireServer(unpack(args4))
-                ByteNetReliable:FireServer(unpack(args5))
-                ByteNetReliable:FireServer(unpack(args6))
-                ByteNetReliable:FireServer(unpack(args7))
-                ByteNetReliable:FireServer(unpack(args8))
-                ByteNetReliable:FireServer(unpack(args9))
-                ByteNetReliable:FireServer(unpack(args10))
+                for i = 0, 10 do
+                    local args = { buffer.fromstring(string.char(8, i, 0)) }
+                    ByteNetReliable:FireServer(unpack(args))
+                end
             end
             task.wait(interval)
         end
