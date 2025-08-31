@@ -44,17 +44,6 @@ getgenv().autoFarmActive = false
 getgenv().DistanceValue = 5
 getgenv().setPositionMode = "Above"
 
-getgenv().Player = 1
-
-getgenv().Setting = getgenv().Setting or {
-    Map = "School",
-    Difficulty = "Normal",
-    Mode = "None"
-}
-
-getgenv().AutoJoin = false
-
-local AutoCreateRoom = true
 local spinAngle = 0
 
 local Players = game:GetService("Players")
@@ -465,14 +454,17 @@ spawn(function()
     end
 end)
 
-AutoTab:Section({ Title = "Feature Farm", Icon = "infinity" })
-AutoTab:Button({
-    Title = "Auto Farm (Beta)",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Detail/refs/heads/main/Lua.lua"))()
-    end
-})
+getgenv().Player = 1
 
+getgenv().Setting = getgenv().Setting or {
+    Map = "School",
+    Difficulty = "Normal",
+    Mode = "None"
+}
+
+getgenv().AutoJoin = false
+
+local AutoCreateRoom = true
 
 --==[ GUI Setup ]==--
 JoinTab:Section({ Title = "Feature Party", Icon = "user-star" })
@@ -638,8 +630,6 @@ _G.ServerHopper = {hop = serverHop, findBest = findBestServer, getServers = getS
 
 --==[ Auto Create Room Loop ]==--
 task.spawn(function()
-    if tonumber(game.PlaceId) ~= 103754275310547 then return end
-
     local Match = workspace:WaitForChild("Match")
     local Created, TimeReTry = false, 0
     local SpawnCFrame = HMNRT.CFrame
