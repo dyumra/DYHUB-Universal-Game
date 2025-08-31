@@ -51,21 +51,47 @@ Window:SelectTab(1)
 MainTab:Section({ Title = "Feature Farm", Icon = "sword" })
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+local ByteNetReliable = ReplicatedStorage:WaitForChild("ByteNetReliable")
 
 local autoFarmEnabled = false
-local targetZombie = workspace.Entities.Zombie:FindFirstChild("1")
+local waitTime = 1.5 -- เวลารอแต่ละตัว
+
+-- ฟังก์ชันส่งเหตุการณ์รัวๆ
+local function fireByteNet()
+    local argsList = {
+        buffer.fromstring("\b\004\000"),
+        buffer.fromstring("\b\003\000"),
+        buffer.fromstring("\b\005\000"),
+        buffer.fromstring("\b\006\000")
+    }
+    spawn(function()
+        while autoFarmEnabled do
+            for _, args in ipairs(argsList) do
+                ByteNetReliable:FireServer(args)
+            end
+            task.wait(0.1) -- ส่งรัวๆ
+        end
+    end)
+end
 
 -- ฟังก์ชันเริ่มออโต้ฟาร์ม
 function startAutoFarm()
     autoFarmEnabled = true
+    fireByteNet() -- เริ่มส่งเหตุการณ์รัวๆ
+
     spawn(function()
         while autoFarmEnabled do
-            task.wait(0.1)
-            if targetZombie and targetZombie:FindFirstChild("HumanoidRootPart") then
-                HumanoidRootPart.CFrame = targetZombie.HumanoidRootPart.CFrame
+            for _, zombie in ipairs(workspace.Entities.Zombie:GetChildren()) do
+                if not autoFarmEnabled then break end
+                if zombie:FindFirstChild("HumanoidRootPart") then
+                    -- วาร์ปไปบนหัวมัน
+                    HumanoidRootPart.CFrame = zombie.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
+                    task.wait(waitTime)
+                end
             end
         end
     end)
