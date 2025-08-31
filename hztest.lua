@@ -175,23 +175,35 @@ function startAutoFarm()
 
     -- ยิงคำสั่ง 100 ครั้งต่อวินาที
     attackConnection = task.spawn(function()
-        local interval = 1 / 500 -- 0.01 วินาที = 100 ครั้ง/วินาที
+        local interval = 1 / 200 -- 0.01 วินาที
         while getgenv().autoFarmActive do
             if currentNPC then
-            -- loop ยิง \b\001\000 → \b\010\000
-            for i = 1, 20 do
-                local args = { buffer.fromstring(string.char(8, i, 0)) }
-                ByteNetReliable:FireServer(unpack(args))
+                local args1 = { buffer.fromstring("\b\001\000") }
+                local args2 = { buffer.fromstring("\b\002\000") }
+                local args3 = { buffer.fromstring("\b\003\000") }
+                local args4 = { buffer.fromstring("\b\004\000") }
+                local args5 = { buffer.fromstring("\b\005\000") }
+                local args6 = { buffer.fromstring("\b\006\000") }
+                local args7 = { buffer.fromstring("\b\007\000") }
+                local args8 = { buffer.fromstring("\b\008\000") }
+                local args9 = { buffer.fromstring("\b\009\000") }
+                local args10 = { buffer.fromstring("\b\010\000") }
+
+                ByteNetReliable:FireServer(unpack(args1))
+                ByteNetReliable:FireServer(unpack(args2))
+                ByteNetReliable:FireServer(unpack(args3))
+                ByteNetReliable:FireServer(unpack(args4))
+                ByteNetReliable:FireServer(unpack(args5))
+                ByteNetReliable:FireServer(unpack(args6))
+                ByteNetReliable:FireServer(unpack(args7))
+                ByteNetReliable:FireServer(unpack(args8))
+                ByteNetReliable:FireServer(unpack(args9))
+                ByteNetReliable:FireServer(unpack(args10))
             end
-            -- loop ยิง \b\001\001 → \b\010\001
-            for i = 1, 20 do
-                local args = { buffer.fromstring(string.char(8, i, 1)) }
-                ByteNetReliable:FireServer(unpack(args))
-            end
+            task.wait(interval)
         end
-        task.wait(interval)
-    end
-end)
+    end)
+end
 
 -- หยุด Auto Farm
 function stopAutoFarm()
