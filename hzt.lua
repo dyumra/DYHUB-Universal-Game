@@ -58,39 +58,39 @@ local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 local ByteNetReliable = ReplicatedStorage:WaitForChild("ByteNetReliable")
 
 local autoFarmEnabled = false
-local waitTime = 1.5 -- เวลารอแต่ละตัว
+local waitTime = 0.2 -- เวลารอแต่ละตัว 
 
--- ฟังก์ชันส่งเหตุการณ์รัวๆ
-local function fireByteNet()
-    local argsList = {
-        buffer.fromstring("\b\004\000"),
-        buffer.fromstring("\b\003\000"),
-        buffer.fromstring("\b\005\000"),
-        buffer.fromstring("\b\006\000")
-    }
-    spawn(function()
-        while autoFarmEnabled do
-            for _, args in ipairs(argsList) do
-                ByteNetReliable:FireServer(args)
-            end
-            task.wait(0.1) -- ส่งรัวๆ
-        end
-    end)
-end
+-- รายการ args สำหรับตี
+local argsList = {
+    buffer.fromstring("\b\004\000"),
+    buffer.fromstring("\b\003\000"),
+    buffer.fromstring("\b\005\000"),
+    buffer.fromstring("\b\006\000")
+}
 
 -- ฟังก์ชันเริ่มออโต้ฟาร์ม
 function startAutoFarm()
     autoFarmEnabled = true
-    fireByteNet() -- เริ่มส่งเหตุการณ์รัวๆ
 
     spawn(function()
         while autoFarmEnabled do
             for _, zombie in ipairs(workspace.Entities.Zombie:GetChildren()) do
                 if not autoFarmEnabled then break end
                 if zombie:FindFirstChild("HumanoidRootPart") then
-                    -- วาร์ปไปบนหัวมัน
+                    -- วาร์ปไปบนหัว Zombie
                     HumanoidRootPart.CFrame = zombie.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
-                    task.wait(waitTime)
+                    
+                    -- เริ่มรัน argsList รัวๆ
+                    spawn(function()
+                        while autoFarmEnabled do
+                            for _, args in ipairs(argsList) do
+                                ByteNetReliable:FireServer(args)
+                            end
+                            task.wait(0.01) -- รัวๆ ทุก 0.05 วิ 
+                        end
+                    end)
+
+                    task.wait(waitTime) -- รอ 1.5 วิ ก่อนไปตัวถัดไป
                 end
             end
         end
