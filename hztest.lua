@@ -1,4 +1,4 @@
--- test2
+-- test2/ๅ-/ๅ-
 
 local function destroyObjectCache(parent)
     for _, obj in pairs(parent:GetChildren()) do
@@ -441,21 +441,8 @@ AutoTab:Toggle({ Title = "Auto Perk", Default = false, Callback = function(v) ge
 spawn(function()
     while true do
         if getgenv().AutoDoor then
-            local gg = { buffer.fromstring("\006\001"), { door } }
+            local gg = { buffer.fromstring("\001\001"), { door } }
             ByteNetReliable:FireServer(unpack(gg))
-            local args3 = { buffer.fromstring("\002\001"), { door } }
-            local args4 = { buffer.fromstring("\005\001"), { door } }
-            local args7 = { buffer.fromstring("\003\001"), { door } }
-            local args8 = { buffer.fromstring("\007\001"), { door } }
-            local args9 = { buffer.fromstring("\008\001"), { door } }
-            local args10 = { buffer.fromstring("\009\001"), { door } }
-
-            ByteNetReliable:FireServer(unpack(args3))
-            ByteNetReliable:FireServer(unpack(args4))
-            ByteNetReliable:FireServer(unpack(args7))
-            ByteNetReliable:FireServer(unpack(args8))
-            ByteNetReliable:FireServer(unpack(args10))
-            ByteNetReliable:FireServer(unpack(args9))
         end
         if getgenv().AutoAttack then
             local args1 = { buffer.fromstring("\a\004\001"), { 0 } }
