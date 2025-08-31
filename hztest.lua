@@ -62,134 +62,107 @@ local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ByteNetReliable = ReplicatedStorage:WaitForChild("ByteNetReliable")
-local door = workspace:WaitForChild("School"):WaitForChild("Doors"):WaitForChild("HallwayDoor")
+local doorsFolder = workspace:WaitForChild("School"):WaitForChild("Doors"):WaitForChild("HallwayDoor")
 
+-- ฟังก์ชัน Auto Farm
 local farmConnection, attackConnection
-local lastSwitchTime = 0
 local currentNPC = nil
+local lastTargetChange = 0
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
+local function getAllNPCs()
+    local entities = workspace:FindFirstChild("Entities").Zombie
+    if not entities then return {} end
+    return entities:GetChildren()
+end
 
 local function getClosestNPC()
-    local entitiesFolder = workspace:FindFirstChild("Entities")
-    if not entitiesFolder then return nil end
+    local npcs = getAllNPCs()
+    local closest = nil
+    local minDist = math.huge
+    local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return nil end
 
-    local closestNPC = nil
-    local shortestDistance = math.huge
-
-    local playerHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if not playerHRP then return nil end
-    local playerPos = playerHRP.Position
-
-    -- รวมทั้ง Zombie และ Phantom
-    local npcTypes = {"Zombie", "Phantom"}
-
-    for _, npcType in ipairs(npcTypes) do
-        local npcFolder = entitiesFolder:FindFirstChild(npcType)
-        if npcFolder then
-            for _, npc in ipairs(npcFolder:GetChildren()) do
-                -- ตรวจสอบเฉพาะโมเดลที่ชื่อเป็นตัวเลข
-                if tonumber(npc.Name) then
-                    local hrp = npc:FindFirstChild("HumanoidRootPart")
-                    if hrp then
-                        local distance = (playerPos - hrp.Position).Magnitude
-                        if distance < shortestDistance then
-                            shortestDistance = distance
-                            closestNPC = npc
-                        end
-                    end
-                end
+    for _, npc in ipairs(npcs) do
+        if npc:FindFirstChild("HumanoidRootPart") then
+            local dist = (npc.HumanoidRootPart.Position - hrp.Position).Magnitude
+            if dist < minDist then
+                minDist = dist
+                closest = npc
             end
         end
     end
-
-    return closestNPC
+    return closest
 end
 
--- ตัวอย่างการใช้งาน
-local nearestNPC = getClosestNPC()
-if nearestNPC then
-    print("NPC ใกล้ที่สุดคือ:", nearestNPC.Name)
-else
-    print("ไม่พบ NPC ใกล้ผู้เล่น")
+local function warpToDoors()
+    if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
+    local hrp = LocalPlayer.Character.HumanoidRootPart
+
+    for _, door in ipairs(doorsFolder:GetChildren()) do
+        if door:IsA("BasePart") then
+            hrp.CFrame = CFrame.new(door.Position + Vector3.new(0,3,0)) -- วาร์ปเหนือประตู 3 stud
+            wait(0.25) -- รอให้วาร์ปเสร็จ
+        end
+    end
 end
 
 function startAutoFarm()
     stopAutoFarm()
     getgenv().autoFarmActive = true
-    local spinAngle = 0
-    local moveSpeed = 0.05 -- ปรับความเร็วการเดิน
 
     farmConnection = RunService.RenderStepped:Connect(function(dt)
         if not getgenv().autoFarmActive then return end
+        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
 
-        -- หา NPC ใหม่ทุก 2 วิ
-        if not currentNPC or (tick() - lastSwitchTime >= 2) then
+        warpToDoors()
+
+        lastTargetChange += dt
+        if lastTargetChange >= 0.5 then
             currentNPC = getClosestNPC()
-            lastSwitchTime = tick()
+            lastTargetChange = 0
         end
 
-        if currentNPC and currentNPC:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            local hrp = LocalPlayer.Character.HumanoidRootPart
+        if currentNPC and currentNPC:FindFirstChild("HumanoidRootPart") then
             local npcRoot = currentNPC.HumanoidRootPart
+            local offset = Vector3.new(0,getgenv().DistanceValue or 3,0)
 
-            -- offset mode
-            local offset = Vector3.new(0, getgenv().DistanceValue, 0)
             if getgenv().setPositionMode == "Above" then
-                offset = Vector3.new(0, getgenv().DistanceValue, 0)
+                offset = Vector3.new(0,getgenv().DistanceValue or 3,0)
             elseif getgenv().setPositionMode == "Under" then
-                offset = Vector3.new(0, -getgenv().DistanceValue, 0)
+                offset = Vector3.new(0,-(getgenv().DistanceValue or 3),0)
             elseif getgenv().setPositionMode == "Front" then
-                offset = npcRoot.CFrame.LookVector * getgenv().DistanceValue
+                offset = npcRoot.CFrame.LookVector * (getgenv().DistanceValue or 3)
             elseif getgenv().setPositionMode == "Back" then
-                offset = -npcRoot.CFrame.LookVector * getgenv().DistanceValue
+                offset = -npcRoot.CFrame.LookVector * (getgenv().DistanceValue or 3)
             elseif getgenv().setPositionMode == "Spin" then
                 spinAngle += dt * 2
-                local radius = getgenv().DistanceValue
+                local radius = getgenv().DistanceValue or 3
                 offset = Vector3.new(math.cos(spinAngle) * radius, 0, math.sin(spinAngle) * radius)
             end
 
-            -- คำนวณตำแหน่งเป้าหมาย
-            local targetPos = npcRoot.Position + offset
-            local currentPos = hrp.Position
-            local newPos = currentPos:Lerp(targetPos, moveSpeed * dt)
-
-            -- ปรับ CFrame ไปยัง target แบบ smooth
-            hrp.CFrame = CFrame.new(newPos, npcRoot.Position)
+            hrp.AssemblyLinearVelocity = Vector3.zero
+            hrp.Velocity = Vector3.zero
+            hrp.RotVelocity = Vector3.zero
+            hrp.CFrame = CFrame.new(npcRoot.Position + offset)
         end
     end)
 
-    attackConnection = RunService.Heartbeat:Connect(function()
-        if not getgenv().autoFarmActive then return end
-        if currentNPC then
-            -- ยิง NPC และเปิดประตู
-            local args1 = { buffer.fromstring("\a\004\001"), { 0 } }
-            local args2 = { buffer.fromstring("\a\003\001"), { 0 } }
-            local args5 = { buffer.fromstring("\a\005\001"), { 0 } }
-            local args6 = { buffer.fromstring("\a\006\001"), { 0 } }
-
-            local args3 = { buffer.fromstring("\006\001"), { door } }
-            local args4 = { buffer.fromstring("\005\001"), { door } }
-            local gg = { buffer.fromstring("\002\001"), { door } }
-            local gg2 = { buffer.fromstring("\001\001"), { door } }
-            local args7 = { buffer.fromstring("\003\001"), { door } }
-            local args8 = { buffer.fromstring("\007\001"), { door } }
-            local args9 = { buffer.fromstring("\008\001"), { door } }
-            local args10 = { buffer.fromstring("\009\001"), { door } }
-
-            ByteNetReliable:FireServer(unpack(gg))
-            ByteNetReliable:FireServer(unpack(gg2))
-            ByteNetReliable:FireServer(unpack(args3))
-            ByteNetReliable:FireServer(unpack(args1))
-            ByteNetReliable:FireServer(unpack(args2))
-            ByteNetReliable:FireServer(unpack(args5))
-            ByteNetReliable:FireServer(unpack(args6))
-            ByteNetReliable:FireServer(unpack(args4))
-            ByteNetReliable:FireServer(unpack(args7))
-            ByteNetReliable:FireServer(unpack(args8))
-            ByteNetReliable:FireServer(unpack(args10))
-            ByteNetReliable:FireServer(unpack(args9))
+    -- ยิงคำสั่ง 100 ครั้งต่อวินาที
+    attackConnection = task.spawn(function()
+        local interval = 1 / 100 -- 0.01 วินาที = 100 ครั้งต่อวินาที
+        while getgenv().autoFarmActive do
+            if currentNPC then
+                local args1 = { buffer.fromstring("\a\004\001") }
+                local args2 = { buffer.fromstring("\a\003\001") }
+                local args3 = { buffer.fromstring("\b\005\000") }
+                local args4 = { buffer.fromstring("\a\006\001") }
+                ByteNetReliable:FireServer(unpack(args1))
+                ByteNetReliable:FireServer(unpack(args2))
+                ByteNetReliable:FireServer(unpack(args3))
+                ByteNetReliable:FireServer(unpack(args4))
+            end
+            task.wait(interval)
         end
     end)
 end
@@ -197,15 +170,10 @@ end
 function stopAutoFarm()
     getgenv().autoFarmActive = false
     currentNPC = nil
-    if farmConnection then
-        farmConnection:Disconnect()
-        farmConnection = nil
-    end
-    if attackConnection then
-        attackConnection:Disconnect()
-        attackConnection = nil
-    end
+    if farmConnection then farmConnection:Disconnect() farmConnection = nil end
+    if attackConnection then attackConnection:Disconnect() attackConnection = nil end
 end
+
 
 -- สร้าง GUI
 local Window = WindUI:CreateWindow({
