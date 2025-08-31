@@ -821,7 +821,7 @@ PlayerTab:Button({
 
 MiscTab:Section({ Title = "Feature Visual", Icon = "eye" })
 
--- Misc Tab Vars for Lighting Effects
+local Lighting = game:GetService("Lighting")
 local oldAmbient = Lighting.Ambient
 local oldBrightness = Lighting.Brightness
 local oldClockTime = Lighting.ClockTime
