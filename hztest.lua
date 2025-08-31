@@ -54,12 +54,10 @@ local ByteNetReliable = ReplicatedStorage:WaitForChild("ByteNetReliable")
 
 -- ตัวแปร Auto Farm
 local farmConnection, attackConnection
-local currentNPC = nil
-local teleportTimer = 0
 
 -- ฟังก์ชันดึง NPC ทั้งหมด
 local function getAllNPCs()
-    local entities = workspace:FindFirstChild("Entities").Zombie
+    local entities = workspace:FindFirstChild("Entities"):FindFirstChild("Zombie")
     if not entities then return {} end
     return entities:GetChildren()
 end
@@ -73,8 +71,9 @@ local function getClosestNPC()
     if not hrp then return nil end
 
     for _, npc in ipairs(npcs) do
-        if npc:FindFirstChild("HumanoidRootPart") then
-            local dist = (npc.HumanoidRootPart.Position - hrp.Position).Magnitude
+        local npcRoot = npc:FindFirstChild("HumanoidRootPart")
+        if npcRoot then
+            local dist = (npcRoot.Position - hrp.Position).Magnitude
             if dist < minDist then
                 minDist = dist
                 closest = npc
@@ -89,20 +88,15 @@ function startAutoFarm()
     stopAutoFarm()
     getgenv().autoFarmActive = true
 
-    -- วาร์ปตัวละคร + ยิงโจมตี
+    -- วาร์ปตัวละคร
     farmConnection = RunService.RenderStepped:Connect(function(dt)
         if not getgenv().autoFarmActive then return end
         local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
         if not hrp then return end
 
-        teleportTimer += dt
-        if teleportTimer >= 0.25 then
-            currentNPC = getClosestNPC()
-            teleportTimer = 0
-        end
-
-        if currentNPC and currentNPC:FindFirstChild("HumanoidRootPart") then
-            local npcRoot = currentNPC.HumanoidRootPart
+        local targetNPC = getClosestNPC()
+        if targetNPC and targetNPC:FindFirstChild("HumanoidRootPart") then
+            local npcRoot = targetNPC.HumanoidRootPart
             local offset = Vector3.new(0,getgenv().DistanceValue or 3,0)
 
             if getgenv().setPositionMode == "Above" then
@@ -127,11 +121,13 @@ function startAutoFarm()
         end
     end)
 
-    -- ยิงคำสั่งต่อเนื่องแบบรั่ว ๆ
+    -- ยิงคำสั่งโจมตีใส่ target ที่ใกล้ที่สุด
     attackConnection = task.spawn(function()
-        local interval = 1 / 200 -- 0.005 วินาที
+        local interval = 1 / 500 -- 0.005 วินาที
         while getgenv().autoFarmActive do
-            if currentNPC and currentNPC:FindFirstChild("HumanoidRootPart") then
+            local targetNPC = getClosestNPC()
+            local npcRoot = targetNPC and targetNPC:FindFirstChild("HumanoidRootPart")
+            if npcRoot then
                 for i = 0, 10 do
                     local args = { buffer.fromstring(string.char(8, i, 0)) }
                     ByteNetReliable:FireServer(unpack(args))
@@ -145,7 +141,6 @@ end
 -- หยุด Auto Farm
 function stopAutoFarm()
     getgenv().autoFarmActive = false
-    currentNPC = nil
     if farmConnection then farmConnection:Disconnect() farmConnection = nil end
     if attackConnection then attackConnection = nil end
 end
@@ -156,7 +151,7 @@ local Window = WindUI:CreateWindow({
     Title = "DYHUB | Hunty Zombie",
     IconThemed = true,
     Icon = "star",
-    Author = "Version: 1.9.5",
+    Author = "Version: 1.9.8",
     Size = UDim2.fromOffset(500, 300),
     Transparent = true,
     Theme = "Dark",
