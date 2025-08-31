@@ -66,7 +66,6 @@ local ByteNetReliable = ReplicatedStorage:WaitForChild("ByteNetReliable")
 -- ตัวแปร Auto Farm
 local farmConnection, attackConnection
 local currentNPC = nil
-local lastTargetChange = 0
 local teleportTimer = 0
 
 -- ฟังก์ชันดึง NPC ทั้งหมด
@@ -101,7 +100,7 @@ function startAutoFarm()
     stopAutoFarm()
     getgenv().autoFarmActive = true
 
-    -- ฟาร์มตัวละคร + วาร์ปไปหา NPC
+    -- วาร์ปตัวละคร + ยิงโจมตี
     farmConnection = RunService.RenderStepped:Connect(function(dt)
         if not getgenv().autoFarmActive then return end
         local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
@@ -139,11 +138,11 @@ function startAutoFarm()
         end
     end)
 
-    -- ยิงคำสั่ง 100 ครั้งต่อวินาที
+    -- ยิงคำสั่งต่อเนื่องแบบรั่ว ๆ
     attackConnection = task.spawn(function()
         local interval = 1 / 200 -- 0.005 วินาที
         while getgenv().autoFarmActive do
-            if currentNPC then
+            if currentNPC and currentNPC:FindFirstChild("HumanoidRootPart") then
                 for i = 0, 10 do
                     local args = { buffer.fromstring(string.char(8, i, 0)) }
                     ByteNetReliable:FireServer(unpack(args))
@@ -161,6 +160,7 @@ function stopAutoFarm()
     if farmConnection then farmConnection:Disconnect() farmConnection = nil end
     if attackConnection then attackConnection = nil end
 end
+
 
 -- สร้าง GUI
 local Window = WindUI:CreateWindow({
