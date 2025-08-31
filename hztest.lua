@@ -64,17 +64,21 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ByteNetReliable = ReplicatedStorage:WaitForChild("ByteNetReliable")
 local doorsFolder = workspace:WaitForChild("School"):WaitForChild("Doors"):WaitForChild("HallwayDoor")
 
--- ฟังก์ชัน Auto Farm
+-- ตัวแปร Auto Farm
 local farmConnection, attackConnection
 local currentNPC = nil
 local lastTargetChange = 0
+local doorIndex = 1
+local warpTimer = 0
 
+-- ฟังก์ชันดึง NPC ทั้งหมด
 local function getAllNPCs()
     local entities = workspace:FindFirstChild("Entities").Zombie
     if not entities then return {} end
     return entities:GetChildren()
 end
 
+-- ฟังก์ชันหา NPC ใกล้ที่สุด
 local function getClosestNPC()
     local npcs = getAllNPCs()
     local closest = nil
@@ -94,93 +98,115 @@ local function getClosestNPC()
     return closest
 end
 
-local function warpToDoors()
-    if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
+-- ฟังก์ชันวาร์ปประตูทีละตัว
+local function warpToDoors(dt)
+    if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return false end
     local hrp = LocalPlayer.Character.HumanoidRootPart
+    local doors = doorsFolder:GetChildren()
+    if #doors == 0 then return false end
 
-    for _, door in ipairs(doorsFolder:GetChildren()) do
-        if door:IsA("BasePart") then
-            hrp.CFrame = CFrame.new(door.Position + Vector3.new(0,3,0)) -- วาร์ปเหนือประตู 3 stud
-            wait(0.25) -- รอให้วาร์ปเสร็จ
+    warpTimer += dt
+    if warpTimer >= 0.5 then
+        local door = doors[doorIndex]
+        if door and door:IsA("BasePart") then
+            hrp.CFrame = CFrame.new(door.Position + Vector3.new(0,3,0))
+        end
+
+        doorIndex += 1
+        warpTimer = 0
+
+        if doorIndex > #doors then
+            doorIndex = 1
+            return true -- วาร์ปครบทุกประตูแล้ว
         end
     end
+
+    return false -- ยังไม่ครบทุกประตู
 end
 
+-- เริ่ม Auto Farm
 function startAutoFarm()
     stopAutoFarm()
     getgenv().autoFarmActive = true
 
+    -- ฟาร์มตัวละคร + วาร์ป
     farmConnection = RunService.RenderStepped:Connect(function(dt)
         if not getgenv().autoFarmActive then return end
         local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
         if not hrp then return end
 
-        warpToDoors()
+        -- วาร์ปประตูทีละตัว
+        local finishedWarping = warpToDoors(dt)
 
-        lastTargetChange += dt
-        if lastTargetChange >= 0.5 then
-            currentNPC = getClosestNPC()
-            lastTargetChange = 0
-        end
-
-        if currentNPC and currentNPC:FindFirstChild("HumanoidRootPart") then
-            local npcRoot = currentNPC.HumanoidRootPart
-            local offset = Vector3.new(0,getgenv().DistanceValue or 3,0)
-
-            if getgenv().setPositionMode == "Above" then
-                offset = Vector3.new(0,getgenv().DistanceValue or 3,0)
-            elseif getgenv().setPositionMode == "Under" then
-                offset = Vector3.new(0,-(getgenv().DistanceValue or 3),0)
-            elseif getgenv().setPositionMode == "Front" then
-                offset = npcRoot.CFrame.LookVector * (getgenv().DistanceValue or 3)
-            elseif getgenv().setPositionMode == "Back" then
-                offset = -npcRoot.CFrame.LookVector * (getgenv().DistanceValue or 3)
-            elseif getgenv().setPositionMode == "Spin" then
-                spinAngle += dt * 2
-                local radius = getgenv().DistanceValue or 3
-                offset = Vector3.new(math.cos(spinAngle) * radius, 0, math.sin(spinAngle) * radius)
+        if finishedWarping then
+            -- วาร์ปครบแล้ว → ไปหา NPC
+            lastTargetChange += dt
+            if lastTargetChange >= 0.5 then
+                currentNPC = getClosestNPC()
+                lastTargetChange = 0
             end
 
-            hrp.AssemblyLinearVelocity = Vector3.zero
-            hrp.Velocity = Vector3.zero
-            hrp.RotVelocity = Vector3.zero
-            hrp.CFrame = CFrame.new(npcRoot.Position + offset)
+            if currentNPC and currentNPC:FindFirstChild("HumanoidRootPart") then
+                local npcRoot = currentNPC.HumanoidRootPart
+                local offset = Vector3.new(0,getgenv().DistanceValue or 3,0)
+
+                if getgenv().setPositionMode == "Above" then
+                    offset = Vector3.new(0,getgenv().DistanceValue or 3,0)
+                elseif getgenv().setPositionMode == "Under" then
+                    offset = Vector3.new(0,-(getgenv().DistanceValue or 3),0)
+                elseif getgenv().setPositionMode == "Front" then
+                    offset = npcRoot.CFrame.LookVector * (getgenv().DistanceValue or 3)
+                elseif getgenv().setPositionMode == "Back" then
+                    offset = -npcRoot.CFrame.LookVector * (getgenv().DistanceValue or 3)
+                elseif getgenv().setPositionMode == "Spin" then
+                    spinAngle += dt * 2
+                    local radius = getgenv().DistanceValue or 3
+                    offset = Vector3.new(math.cos(spinAngle) * radius, 0, math.sin(spinAngle) * radius)
+                end
+
+                -- ล็อกตัวละครให้นิ่ง
+                hrp.AssemblyLinearVelocity = Vector3.zero
+                hrp.Velocity = Vector3.zero
+                hrp.RotVelocity = Vector3.zero
+                hrp.CFrame = CFrame.new(npcRoot.Position + offset)
+            end
         end
     end)
 
     -- ยิงคำสั่ง 100 ครั้งต่อวินาที
     attackConnection = task.spawn(function()
-        local interval = 1 / 100 -- 0.01 วินาที = 100 ครั้งต่อวินาที
+        local interval = 1 / 500 -- 0.01 วินาที = 100 ครั้ง/วินาที
         while getgenv().autoFarmActive do
             if currentNPC then
-                local args1 = { buffer.fromstring("\a\004\001") }
-                local args2 = { buffer.fromstring("\a\003\001") }
-                local args3 = { buffer.fromstring("\b\005\000") }
-                local args4 = { buffer.fromstring("\a\006\001") }
-                ByteNetReliable:FireServer(unpack(args1))
-                ByteNetReliable:FireServer(unpack(args2))
-                ByteNetReliable:FireServer(unpack(args3))
-                ByteNetReliable:FireServer(unpack(args4))
+            -- loop ยิง \b\001\000 → \b\010\000
+            for i = 1, 20 do
+                local args = { buffer.fromstring(string.char(8, i, 0)) }
+                ByteNetReliable:FireServer(unpack(args))
             end
-            task.wait(interval)
+            -- loop ยิง \b\001\001 → \b\010\001
+            for i = 1, 20 do
+                local args = { buffer.fromstring(string.char(8, i, 1)) }
+                ByteNetReliable:FireServer(unpack(args))
+            end
         end
-    end)
-end
+        task.wait(interval)
+    end
+end)
 
+-- หยุด Auto Farm
 function stopAutoFarm()
     getgenv().autoFarmActive = false
     currentNPC = nil
     if farmConnection then farmConnection:Disconnect() farmConnection = nil end
-    if attackConnection then attackConnection:Disconnect() attackConnection = nil end
+    if attackConnection then attackConnection = nil end
 end
-
 
 -- สร้าง GUI
 local Window = WindUI:CreateWindow({
     Title = "DYHUB | Hunty Zombie",
     IconThemed = true,
     Icon = "star",
-    Author = "Version: 1.8.9",
+    Author = "Version: 1.9.5",
     Size = UDim2.fromOffset(500, 300),
     Transparent = true,
     Theme = "Dark",
