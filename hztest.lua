@@ -1,4 +1,4 @@
--- test2/ๅ-/ๅ-
+-- [[ v888 ]]
 
 local function destroyObjectCache(parent)
     for _, obj in pairs(parent:GetChildren()) do
@@ -167,9 +167,11 @@ Window:EditOpenButton({
 })
 
 local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
+local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
 local EspTab = Window:Tab({ Title = "Esp", Icon = "eye" })
-local JoinTab = Window:Tab({ Title = "Auto Party", Icon = "handshake" })
 local AutoTab = Window:Tab({ Title = "Gameplay", Icon = "crown" })
+local JoinTab = Window:Tab({ Title = "Auto Party", Icon = "handshake" })
+local MiscTab = Window:Tab({ Title = "Misc", Icon = "file-cog" })
 Window:SelectTab(1)
 
 -- ================= MainTab =================
@@ -206,7 +208,7 @@ MainTab:Toggle({
         if value then
             spawn(function()
                 while getgenv().AutoCollect do
-                    local entities = workspace:FindFirstChild("Entities")
+                    local entities = workspace:FindFirstChild("Entities"):FindFirstChild("Zombie")
                     local hasNPC = false
                     if entities then
                         for _, npc in ipairs(entities:GetChildren()) do
@@ -276,7 +278,7 @@ EspTab:Slider({
 -- ฟังก์ชัน update ESP
 local function updateESP()
     if not getgenv().ESPEnabled then return end
-    local entities = workspace:FindFirstChild("Entities")
+    local entities = workspace:FindFirstChild("Entities"):FindFirstChild("Zombie")
     if not entities then return end
     for _, npc in ipairs(entities:GetChildren()) do
         if npc:FindFirstChild("HumanoidRootPart") then
@@ -462,7 +464,7 @@ getgenv().AutoJoin = false
 local AutoCreateRoom = true
 
 --==[ GUI Setup ]==--
-JoinTab:Section({ Title = "Feature Party", Icon = "user-star" })
+JoinTab:Section({ Title = "Feature Party", Icon = "party-popper" })
 
 -- Set Map Dropdown
 JoinTab:Dropdown({
@@ -692,3 +694,319 @@ task.spawn(function()
         wait(1)
     end
 end)
+
+PlayerTab:Section({ Title = "Feature Player", Icon = "user" })
+
+-- Player Tab Vars
+getgenv().speedEnabled = false
+getgenv().speedValue = 20
+
+PlayerTab:Slider({
+    Title = "Set Speed Value",
+    Value = {Min = 16, Max = 600, Default = 20},
+    Step = 1,
+    Callback = function(val)
+        getgenv().speedValue = val
+        if getgenv().speedEnabled then
+            local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
+            if hum then hum.WalkSpeed = val end
+        end
+    end
+})
+
+PlayerTab:Toggle({
+    Title = "Enable Speed",
+    Default = false,
+    Callback = function(v)
+        getgenv().speedEnabled = v
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hum = char:FindFirstChild("Humanoid")
+        if hum then hum.WalkSpeed = v and getgenv().speedValue or 16 end
+    end
+})
+
+getgenv().jumpEnabled = false
+getgenv().jumpValue = 50
+
+PlayerTab:Slider({
+    Title = "Set Jump Value",
+    Value = {Min = 10, Max = 600, Default = 50},
+    Step = 1,
+    Callback = function(val)
+        getgenv().jumpValue = val
+        if getgenv().jumpEnabled then
+            local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
+            if hum then hum.JumpPower = val end
+        end
+    end
+})
+
+PlayerTab:Toggle({
+    Title = "Enable JumpPower",
+    Default = false,
+    Callback = function(v)
+        getgenv().jumpEnabled = v
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hum = char:FindFirstChild("Humanoid")
+        if hum then hum.JumpPower = v and getgenv().jumpValue or 50 end
+    end
+})
+
+PlayerTab:Section({ Title = "Player Misc", Icon = "sliders-horizontal" })
+
+local noclipConnection
+
+PlayerTab:Toggle({
+    Title = "No Clip",
+    Default = false,
+    Callback = function(state)
+        if state then
+            noclipConnection = RunService.Stepped:Connect(function()
+                local Character = LocalPlayer.Character
+                if Character then
+                    for _, part in pairs(Character:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+            end)
+        else
+            if noclipConnection then
+                noclipConnection:Disconnect()
+                noclipConnection = nil
+            end
+            local Character = LocalPlayer.Character
+            if Character then
+                for _, part in pairs(Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = true
+                    end
+                end
+            end
+        end
+    end
+})
+
+PlayerTab:Toggle({
+    Title = "Infinity Jump",
+    Default = false,
+    Callback = function(state)
+        local uis = game:GetService("UserInputService")
+        local player = game.Players.LocalPlayer
+        local infJumpConnection
+
+        if state then
+            infJumpConnection = uis.JumpRequest:Connect(function()
+                if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+                    player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                end
+            end)
+            getgenv().infJumpConnection = infJumpConnection
+        else
+            if getgenv().infJumpConnection then
+                getgenv().infJumpConnection:Disconnect()
+                getgenv().infJumpConnection = nil
+            end
+        end
+    end
+})
+
+PlayerTab:Button({
+    Title = "Fly (Beta)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/dyumrascript-/refs/heads/main/Flua"))()
+    end
+})
+
+MiscTab:Section({ Title = "Feature Visual", Icon = "eye" })
+
+-- Misc Tab Vars for Lighting Effects
+local oldAmbient = Lighting.Ambient
+local oldBrightness = Lighting.Brightness
+local oldClockTime = Lighting.ClockTime
+local oldFogStart = Lighting.FogStart
+local oldFogEnd = Lighting.FogEnd
+local oldFogColor = Lighting.FogColor
+
+local fullBrightConnection
+local noFogConnection
+
+MiscTab:Toggle({
+    Title = "FullBright",
+    Default = false,
+    Callback = function(state)
+        if state then
+            Lighting.Ambient = Color3.new(1, 1, 1)
+            Lighting.Brightness = 5
+            Lighting.ClockTime = 14
+
+            fullBrightConnection = RunService.RenderStepped:Connect(function()
+                if Lighting.ClockTime ~= 14 then Lighting.ClockTime = 14 end
+                if Lighting.Brightness ~= 10 then Lighting.Brightness = 10 end
+                if Lighting.Ambient ~= Color3.new(1,1,1) then Lighting.Ambient = Color3.new(1,1,1) end
+            end)
+        else
+            if fullBrightConnection then
+                fullBrightConnection:Disconnect()
+                fullBrightConnection = nil
+            end
+            Lighting.Ambient = oldAmbient
+            Lighting.Brightness = oldBrightness
+            Lighting.ClockTime = oldClockTime
+        end
+    end
+})
+
+MiscTab:Toggle({
+    Title = "No Fog",
+    Default = false,
+    Callback = function(state)
+        if state then
+            Lighting.FogStart = 0
+            Lighting.FogEnd = 1e10
+            Lighting.FogColor = Color3.fromRGB(255, 255, 255)
+
+            noFogConnection = RunService.RenderStepped:Connect(function()
+                if Lighting.FogStart ~= 0 then Lighting.FogStart = 0 end
+                if Lighting.FogEnd ~= 1e10 then Lighting.FogEnd = 1e10 end
+                if Lighting.FogColor ~= Color3.fromRGB(255, 255, 255) then Lighting.FogColor = Color3.fromRGB(255, 255, 255) end
+            end)
+        else
+            if noFogConnection then
+                noFogConnection:Disconnect()
+                noFogConnection = nil
+            end
+            Lighting.FogStart = oldFogStart
+            Lighting.FogEnd = oldFogEnd
+            Lighting.FogColor = oldFogColor
+        end
+    end
+})
+
+local vibrantEffect = Lighting:FindFirstChild("VibrantEffect") or Instance.new("ColorCorrectionEffect")
+vibrantEffect.Name = "VibrantEffect"
+vibrantEffect.Saturation = 1
+vibrantEffect.Contrast = 0.4
+vibrantEffect.Brightness = 0.05
+vibrantEffect.Enabled = false
+vibrantEffect.Parent = Lighting
+
+MiscTab:Toggle({
+    Title = "Vibrant Colors",
+    Default = false,
+    Callback = function(state)
+        if state then
+            Lighting.Ambient = Color3.fromRGB(180, 180, 180)
+            Lighting.OutdoorAmbient = Color3.fromRGB(170, 170, 170)
+            Lighting.ColorShift_Top = Color3.fromRGB(255, 230, 200)
+            Lighting.ColorShift_Bottom = Color3.fromRGB(200, 240, 255)
+            vibrantEffect.Enabled = true
+        else
+            Lighting.Ambient = Color3.new(0, 0, 0)
+            Lighting.OutdoorAmbient = Color3.new(0, 0, 0)
+            Lighting.ColorShift_Top = Color3.new(0, 0, 0)
+            Lighting.ColorShift_Bottom = Color3.new(0, 0, 0)
+            vibrantEffect.Enabled = false
+        end
+    end
+})
+
+
+local showFPS, showPing = true, true
+local fpsText, msText = Drawing.new("Text"), Drawing.new("Text")
+fpsText.Size, fpsText.Position, fpsText.Color, fpsText.Center, fpsText.Outline, fpsText.Visible =
+    16, Vector2.new(Camera.ViewportSize.X - 100, 10), Color3.fromRGB(0, 255, 0), false, true, showFPS
+msText.Size, msText.Position, msText.Color, msText.Center, msText.Outline, msText.Visible =
+    16, Vector2.new(Camera.ViewportSize.X - 100, 30), Color3.fromRGB(0, 255, 0), false, true, showPing
+local fpsCounter, fpsLastUpdate = 0, tick()
+
+RunService.RenderStepped:Connect(function()
+    fpsCounter += 1
+    if tick() - fpsLastUpdate >= 1 then
+        if showFPS then
+            fpsText.Text = "FPS: " .. tostring(fpsCounter)
+            fpsText.Visible = true
+        else
+            fpsText.Visible = false
+        end
+        if showPing then
+            local pingStat = game:GetService("Stats").Network.ServerStatsItem["Data Ping"]
+            local ping = pingStat and math.floor(pingStat:GetValue()) or 0
+            msText.Text = "Ping: " .. ping .. " ms"
+            if ping <= 60 then
+                msText.Color = Color3.fromRGB(0, 255, 0)
+            elseif ping <= 120 then
+                msText.Color = Color3.fromRGB(255, 165, 0)
+            else
+                msText.Color = Color3.fromRGB(255, 0, 0)
+                msText.Text = "Ew Wifi Ping: " .. ping .. " ms"
+            end
+            msText.Visible = true
+        else
+            msText.Visible = false
+        end
+        fpsCounter = 0
+        fpsLastUpdate = tick()
+    end
+end)
+
+MiscTab:Toggle({
+    Title = "Show FPS",
+    Default = true,
+    Callback = function(val)
+        showFPS = val
+        fpsText.Visible = val
+    end
+})
+
+MiscTab:Toggle({
+    Title = "Show Ping (ms)",
+    Default = true,
+    Callback = function(val)
+        showPing = val
+        msText.Visible = val
+    end
+})
+
+MiscTab:Button({
+    Title = "FPS Boost (Fixed)",
+    Callback = function()
+        pcall(function()
+            settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+            local lighting = game:GetService("Lighting")
+            lighting.Brightness = 2
+            lighting.FogEnd = 100
+            lighting.GlobalShadows = false
+            lighting.EnvironmentDiffuseScale = 0
+            lighting.EnvironmentSpecularScale = 0
+            lighting.ClockTime = 14
+            lighting.OutdoorAmbient = Color3.new(0, 0, 0)
+            local terrain = workspace:FindFirstChildOfClass("Terrain")
+            if terrain then
+                terrain.WaterWaveSize = 0
+                terrain.WaterWaveSpeed = 0
+                terrain.WaterReflectance = 0
+                terrain.WaterTransparency = 1
+            end
+            for _, obj in ipairs(lighting:GetDescendants()) do
+                if obj:IsA("PostEffect") or obj:IsA("BloomEffect") or obj:IsA("ColorCorrectionEffect") or obj:IsA("SunRaysEffect") or obj:IsA("BlurEffect") then
+                    obj.Enabled = false
+                end
+            end
+            for _, obj in ipairs(game:GetDescendants()) do
+                if obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
+                    obj.Enabled = false
+                elseif obj:IsA("Texture") or obj:IsA("Decal") then
+                    obj.Transparency = 1
+                end
+            end
+            for _, part in ipairs(workspace:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CastShadow = false
+                end
+            end
+        end)
+        print("[Boost] FPS Boost Applied")
+    end
+})
