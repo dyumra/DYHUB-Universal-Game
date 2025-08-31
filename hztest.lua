@@ -131,6 +131,8 @@ function startAutoFarm()
                 for i = 0, 10 do
                     local args = { buffer.fromstring(string.char(8, i, 0)) }
                     ByteNetReliable:FireServer(unpack(args))
+                    local f1 = { buffer.fromstring("\001\001"), {} }
+                    ByteNetReliable:FireServer(unpack(f1))
                 end
             end
             task.wait(interval)
@@ -427,7 +429,7 @@ AutoTab:Toggle({ Title = "Auto Perk", Default = false, Callback = function(v) ge
 spawn(function()
     while true do
         if getgenv().AutoDoor then
-            local gg = { buffer.fromstring("\001\001"), { door } }
+            local gg = { buffer.fromstring("\001\001"), {} }
             ByteNetReliable:FireServer(unpack(gg))
         end
         if getgenv().AutoAttack then
