@@ -68,15 +68,51 @@ local farmConnection, attackConnection
 local lastSwitchTime = 0
 local currentNPC = nil
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
 local function getClosestNPC()
-    local entities = workspace:FindFirstChild("Entities")
-    if not entities then return nil end
-    for _, npc in ipairs(entities:GetChildren()) do
-        if npc:FindFirstChild("HumanoidRootPart") then
-            return npc
+    local entitiesFolder = workspace:FindFirstChild("Entities")
+    if not entitiesFolder then return nil end
+
+    local closestNPC = nil
+    local shortestDistance = math.huge
+
+    local playerHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not playerHRP then return nil end
+    local playerPos = playerHRP.Position
+
+    -- รวมทั้ง Zombie และ Phantom
+    local npcTypes = {"Zombie", "Phantom"}
+
+    for _, npcType in ipairs(npcTypes) do
+        local npcFolder = entitiesFolder:FindFirstChild(npcType)
+        if npcFolder then
+            for _, npc in ipairs(npcFolder:GetChildren()) do
+                -- ตรวจสอบเฉพาะโมเดลที่ชื่อเป็นตัวเลข
+                if tonumber(npc.Name) then
+                    local hrp = npc:FindFirstChild("HumanoidRootPart")
+                    if hrp then
+                        local distance = (playerPos - hrp.Position).Magnitude
+                        if distance < shortestDistance then
+                            shortestDistance = distance
+                            closestNPC = npc
+                        end
+                    end
+                end
+            end
         end
     end
-    return nil
+
+    return closestNPC
+end
+
+-- ตัวอย่างการใช้งาน
+local nearestNPC = getClosestNPC()
+if nearestNPC then
+    print("NPC ใกล้ที่สุดคือ:", nearestNPC.Name)
+else
+    print("ไม่พบ NPC ใกล้ผู้เล่น")
 end
 
 function startAutoFarm()
