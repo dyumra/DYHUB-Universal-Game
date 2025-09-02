@@ -28,7 +28,7 @@ local ConfigManager = Compkiller:ConfigManager({
 Compkiller:Loader("rbxassetid://104487529937663" , 2.5).yield();
 
 local Window = Compkiller.new({
-    Name = "DYHUB | Kat",
+    Name = "DYHUB | KAT X",
     Keybind = "LeftAlt",
     Logo = "rbxassetid://104487529937663",
     Scale = Compkiller.Scale.Window,
