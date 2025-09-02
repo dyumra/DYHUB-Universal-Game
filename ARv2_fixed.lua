@@ -298,7 +298,7 @@ task.spawn(function()
     CashTab:Section({ Title = "Dupe Infinite", Icon = "infinity" })
 
     CashTab:Toggle({
-        Title = "Infinite Dupe Cash",
+        Title = "Infinite Dupe Cash & Spin",
         Default = false,
         Icon = "infinity",
         Callback = function(enabled)
@@ -311,29 +311,6 @@ task.spawn(function()
                         for _ = 1, times do
                             if not autoInfiniteCash then break end
                             ReplicatedStorage:WaitForChild("CodeEvent"):FireServer("Wins", perFire, "DYHUB")
-                            task.wait(0.1)
-                        end
-                        task.wait(0.5)
-                    end
-                end)
-            end
-        end
-    })
-
-    CashTab:Toggle({
-        Title = "Infinite Dupe Spin",
-        Default = false,
-        Icon = "infinity",
-        Callback = function(enabled)
-            autoInfiniteSpin = enabled
-            if enabled then
-                task.spawn(function()
-                    local totalAmount1, perFire1 = 500, 999999
-                    local times1 = math.floor(totalAmount1 / perFire1)
-                    while autoInfiniteSpin do
-                        for _ = 1, times1 do
-                            if not autoInfiniteSpin then break end
-                            ReplicatedStorage:WaitForChild("CodeEvent"):FireServer("Wins", perFire1, "DYHUB")
                             task.wait(0.1)
                         end
                         task.wait(0.5)
