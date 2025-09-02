@@ -1,3 +1,5 @@
+-- HI
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -24,54 +26,164 @@ local morphInputValue = false
 local classInputValue = false
 local auraInputValue = false
 
-local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "Loading"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = game:GetService("CoreGui")
 
--- Create Main Window
-local Window = WindUI:CreateWindow({
-    Title = "DYHUB - Anime Rails (Lobby)",
-    IconThemed = true,
-    Icon = "star",
-    Author = "Version: 5.1.4 | dsc.gg/dyhub",
-    Size = UDim2.fromOffset(500, 300),
-    Transparent = true,
-    Theme = "Dark",
-})
+-- กล่องหลัก
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 350, 0, 120)
+MainFrame.Position = UDim2.new(0.5, -175, 0.5, -60)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+MainFrame.BorderSizePixel = 0
+MainFrame.BackgroundTransparency = 0.05
+MainFrame.Parent = ScreenGui
 
-Window:EditOpenButton({
-    Title = "DYHUB - Open",
-    Icon = "monitor",
-    CornerRadius = UDim.new(0, 6),
-    StrokeThickness = 2,
-    Color = ColorSequence.new(Color3.fromRGB(30, 30, 30), Color3.fromRGB(255, 255, 255)),
-    Draggable = true,
-})
+-- มุมโค้งมน
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 15)
+UICorner.Parent = MainFrame
 
--- Tabs with Icons
-local InfoTab = Window:Tab({ Title = "Info", Icon = "info" })
-local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" }) 
-local CashTab = Window:Tab({ Title = "Cash", Icon = "dollar-sign" }) 
-local PartyTab = Window:Tab({ Title = "Auto Join", Icon = "handshake" }) 
-local GUI = Window:Tab({ Title = "Equip", Icon = "flame" }) 
-local GamepassTab = Window:Tab({ Title = "Gamepass", Icon = "cookie" }) 
-local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" }) 
-local MiscTab = Window:Tab({ Title = "Misc", Icon = "file-cog" }) 
+-- เงา
+local Shadow = Instance.new("ImageLabel")
+Shadow.AnchorPoint = Vector2.new(0.5, 0.5)
+Shadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+Shadow.Size = UDim2.new(1, 60, 1, 60)
+Shadow.BackgroundTransparency = 1
+Shadow.Image = "rbxassetid://5028857084"
+Shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+Shadow.ImageTransparency = 0.5
+Shadow.ScaleType = Enum.ScaleType.Slice
+Shadow.SliceCenter = Rect.new(24, 24, 276, 276)
+Shadow.Parent = MainFrame
 
-Window:SelectTab(1)
+-- ข้อความ Title
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -20, 0, 40)
+Title.Position = UDim2.new(0, 10, 0, 10)
+Title.BackgroundTransparency = 1
+Title.Text = "DYHUB"
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 28
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextStrokeTransparency = 0.8
+Title.Parent = MainFrame
 
-InfoTab:Section({ Title = "Info - Read before using this script", Icon = "info" })
-InfoTab:Section({ Title = "This script is still under development." })
-InfoTab:Section({ Title = "If there are any bugs or issues" })
-InfoTab:Section({ Title = "you can report them to us on Discord" })
+-- ข้อความ Loading
+local LoadingLabel = Instance.new("TextLabel")
+LoadingLabel.Size = UDim2.new(1, -20, 0, 30)
+LoadingLabel.Position = UDim2.new(0, 10, 0, 50)
+LoadingLabel.BackgroundTransparency = 1
+LoadingLabel.Text = "Loading..."
+LoadingLabel.Font = Enum.Font.Gotham
+LoadingLabel.TextSize = 20
+LoadingLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+LoadingLabel.Parent = MainFrame
 
-InfoTab:Button({
-    Title = "DYHUB - Discord!",
-    Callback = function()
-        setclipboard("https://dsc.gg/dyhub")
+-- Progress Bar พื้นหลัง
+local ProgressBarBg = Instance.new("Frame")
+ProgressBarBg.Size = UDim2.new(1, -40, 0, 12)
+ProgressBarBg.Position = UDim2.new(0, 20, 1, -30)
+ProgressBarBg.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+ProgressBarBg.BorderSizePixel = 0
+ProgressBarBg.Parent = MainFrame
+
+local UICorner2 = Instance.new("UICorner")
+UICorner2.CornerRadius = UDim.new(0, 6)
+UICorner2.Parent = ProgressBarBg
+
+-- Progress Bar ขยับได้
+local ProgressBar = Instance.new("Frame")
+ProgressBar.Size = UDim2.new(0, 0, 1, 0)
+ProgressBar.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+ProgressBar.BorderSizePixel = 0
+ProgressBar.Parent = ProgressBarBg
+
+local UICorner3 = Instance.new("UICorner")
+UICorner3.CornerRadius = UDim.new(0, 6)
+UICorner3.Parent = ProgressBar
+
+-- Animation
+spawn(function()
+	while true do
+		for i = 0, 1, 0.01 do
+			ProgressBar.Size = UDim2.new(i, 0, 1, 0)
+			wait(0.03)
+		end
+		wait(0.5)
+		ProgressBar.Size = UDim2.new(0, 0, 1, 0)
+	end
+end)
+
+-- ====== โหลด WindUI แบบ Async ======
+task.spawn(function()
+    local success, WindUI = pcall(function()
+        return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+    end)
+
+    if not success or not WindUI then
+        LoadingLabel.Text = "Failed to load WindUI!"
+        task.wait(3)
+        LoadingLabel.Text = "Change your executor!"
+        task.wait(2)
+        ScreenGui:Destroy()
+        return
     end
-})
 
-InfoTab:Section({ Title = "inf money & spin, if rejoin u will be reset.", Icon = "triangle-alert" })
-InfoTab:Section({ Title = "We appreciate your choice to use our script.", Icon = "heart" })
+    -- ลบ Loading UI
+    ScreenGui:Destroy()
+
+    -- สร้างหน้าต่างหลัก
+    local Window = WindUI:CreateWindow({
+        Title = "DYHUB - Anime Rails (Lobby)",
+        IconThemed = true,
+        Icon = "star",
+        Author = "Version: 5.2.6 | dsc.gg/dyhub",
+        Size = UDim2.fromOffset(500, 300),
+        Transparent = true,
+        Theme = "Dark",
+    })
+
+    Window:EditOpenButton({
+        Title = "DYHUB - Open",
+        Icon = "monitor",
+        CornerRadius = UDim.new(0, 6),
+        StrokeThickness = 2,
+        Color = ColorSequence.new(
+            Color3.fromRGB(30, 30, 30),
+            Color3.fromRGB(255, 255, 255)
+        ),
+        Draggable = true,
+    })
+
+    -- Tabs with Icons
+    local InfoTab = Window:Tab({ Title = "Info", Icon = "info" })
+    local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" }) 
+    local CashTab = Window:Tab({ Title = "Cash", Icon = "dollar-sign" }) 
+    local PartyTab = Window:Tab({ Title = "Auto Join", Icon = "handshake" }) 
+    local GUI = Window:Tab({ Title = "Equip", Icon = "flame" }) 
+    local GamepassTab = Window:Tab({ Title = "Gamepass", Icon = "cookie" }) 
+    local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" }) 
+    local MiscTab = Window:Tab({ Title = "Misc", Icon = "file-cog" }) 
+
+    Window:SelectTab(1)
+
+    InfoTab:Section({ Title = "Info - Read before using this script", Icon = "info" })
+    InfoTab:Section({ Title = "This script is still under development." })
+    InfoTab:Section({ Title = "If there are any bugs or issues" })
+    InfoTab:Section({ Title = "you can report them to us on Discord" })
+
+    InfoTab:Button({
+        Title = "DYHUB - Discord!",
+        Callback = function()
+            setclipboard("https://dsc.gg/dyhub")
+        end
+    })
+
+    InfoTab:Section({ Title = "inf money & spin, if rejoin u will be reset.", Icon = "triangle-alert" })
+    InfoTab:Section({ Title = "We appreciate your choice to use our script.", Icon = "heart" })
+end)
 
 -- ====== Main Tab ======
 
