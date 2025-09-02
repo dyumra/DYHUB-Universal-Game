@@ -8,7 +8,7 @@ local VirtualUser = game:GetService("VirtualUser")
 local LocalPlayer = Players.LocalPlayer
 
 local cashInputValue, spinInputValue = "", ""
-local autoInfiniteCash, autoInfiniteSpin = false, false
+local autoInfiniteCash = false
 local espEnabled, espUpdateConnection = false, nil
 local espOptions = { ShowName=false, ShowHealth=false, ShowDistance=false, ShowMorph=false, ShowClass=false, ShowAura=false, HighlightColor=Color3.fromRGB(0,255,0), Rainbow=false }
 local ESPNormal = "Red"
