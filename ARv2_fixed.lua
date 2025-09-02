@@ -3,32 +3,17 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local TeleportService = game:GetService("TeleportService")
 local VirtualUser = game:GetService("VirtualUser")
-
 local LocalPlayer = Players.LocalPlayer
-
 -- WindUI Load
-local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
--- Confirm Popup
-local Confirmed = false
-WindUI:Popup({
-    Title = "DYHUB Loaded! - Anime Rails",
-    Icon = "star",
-    IconThemed = true,
-    Content = "Join our Discord at (dsc.gg/dyhub)",
-    Buttons = {
-        { Title = "Cancel", Variant = "Secondary", Callback = function() end },
-        { Title = "Continue", Icon = "arrow-right", Callback = function() Confirmed = true end, Variant = "Primary" }
-    }
-})
-repeat task.wait() until Confirmed
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 -- Create Main Window
 local Window = WindUI:CreateWindow({
     Title = "DYHUB - Anime Rails (Lobby)",
     IconThemed = true,
     Icon = "star",
-    Author = "Version: 4.9.4",
+    Author = "Version: 5.1.4 | dsc.gg/dyhub",
     Size = UDim2.fromOffset(500, 300),
     Transparent = true,
     Theme = "Dark",
@@ -188,6 +173,7 @@ GUI:Dropdown({ Title="Select Aura", Values=getDataNames(), Multi=false, Callback
 
 -- ====== Cash Tab ======
 
+CashTab:Section({ Title = "Join Group first!", Icon = "triangle-alert" })
 CashTab:Section({ Title = "Dupe Currency", Icon = "circle-dollar-sign" })
 local cashInputValue = ""
 CashTab:Input({ Title = "Enter Dupe Cash Amount", Placeholder = "100 ~ 10000", Callback = function(text) cashInputValue = text end })
@@ -206,13 +192,13 @@ CashTab:Button({
 })
 
 local spinInputValue = ""
-CashTab:Input({ Title = "Enter Dupe Spin Amount", Placeholder = "1 ~ 10", Callback = function(text) cashInputValue = text end })
+CashTab:Input({ Title = "Enter Dupe Spin Amount", Placeholder = "10 ~ 100", Callback = function(text) cashInputValue = text end })
 CashTab:Button({
     Title = "Dupe Spin",
     Icon = "dollar-sign",
     Callback = function()
         local input = tonumber(spinInputValue)
-        if input and input >= 1 and input <= 10 then
+        if input and input >= 5 and input <= 100 then
             ReplicatedStorage:WaitForChild("CodeEvent"):FireServer("Wins", input, "DYHUB")
             print("[DYHUB] Dupe Spin:", input)
         else
@@ -221,6 +207,7 @@ CashTab:Button({
     end,
 })
 
+CashTab:Section({ Title = "You will got reset!, if rejoin.", Icon = "triangle-alert" })
 CashTab:Section({ Title = "Dupe Infinite", Icon = "infinity" })
 
 local autoInfiniteCash = false
@@ -257,7 +244,7 @@ CashTab:Toggle({
         autoInfiniteSpin = enabled
         if enabled then
             task.spawn(function()
-                local totalAmount, perFire = 0, 999999
+                local totalAmount, perFire = 10, 999999
                 local times = math.floor(totalAmount / perFire)
                 while autoInfiniteSpin do
                     for i = 1, times do
@@ -364,7 +351,7 @@ MiscTab:Section({ Title = "Feature Safe", Icon = "shield" })
 local antiAfkEnabled, antiAdminEnabled, fakeBypassEnabled = false,false,false
 
 MiscTab:Toggle({
-    Title="Bypass Anti-Cheat (Visual Only)",
+    Title="Bypass Anti-Cheat (V2)",
     Value=true,
     Callback=function(state)
         fakeBypassEnabled=state
