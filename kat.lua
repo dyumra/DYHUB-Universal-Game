@@ -25,28 +25,28 @@ local ConfigManager = Compkiller:ConfigManager({
     Config = "TrapnBang-Configs"
 });
 
-Compkiller:Loader("rbxassetid://107364585564917" , 2.5).yield();
+Compkiller:Loader("rbxassetid://104487529937663" , 2.5).yield();
 
 local Window = Compkiller.new({
-    Name = "Aqua",
+    Name = "DYHUB | Kat",
     Keybind = "LeftAlt",
-    Logo = "rbxassetid://107364585564917",
+    Logo = "rbxassetid://104487529937663",
     Scale = Compkiller.Scale.Window,
     TextSize = 15,
 });
 
 Notifier.new({
     Title = "Notification",
-    Content = "Welcome to Aqua (Trap n Bang)! Join discord.gg/Astra",
+    Content = "Welcome to DYHUB! - Join our at (dsc.gg/dyhub)",
     Duration = 10,
-    Icon = "rbxassetid://107364585564917"
+    Icon = "rbxassetid://104487529937663"
 });
 
 local Watermark = Window:Watermark();
 
 Watermark:AddText({
     Icon = "user",
-    Text = "Trap n Bang",
+    Text = "Main",
 });
 
 Watermark:AddText({
@@ -55,8 +55,8 @@ Watermark:AddText({
 });
 
 local Time = Watermark:AddText({
-    Icon = "timer",
-    Text = "TIME",
+    Icon = "hourglass",
+    Text = "Time",
 });
 
 task.spawn(function()
@@ -349,54 +349,61 @@ Window:DrawCategory({
 
 local MainTab = Window:DrawTab({
     Name = "Main",
-    Icon = "user",
+    Icon = "rocket",
     EnableScrolling = true
 });
 
 local AutofarmTab = Window:DrawTab({
-    Name = "Autofarm",
-    Icon = "money",
+    Name = "Auto Farm",
+    Icon = "dollar-sign",
     EnableScrolling = true
 });
 
 local VulnsTab = Window:DrawTab({
-    Name = "Vulns",
-    Icon = "alert",
+    Name = "Valne",
+    Icon = "triangle-alert",
     EnableScrolling = true
 });
 
 local playerSection = MainTab:DrawSection({
-    Name = "LocalPlayer 🧑",
+    Name = "LocalPlayer",
+    Icon = "candy",
     Position = 'left'
 });
 
 local playersSection = MainTab:DrawSection({
-    Name = "Players 🐱‍👤",
+    Name = "Players",
+    Icon = "user",
     Position = 'left'
 });
 
 local vehicleSection = MainTab:DrawSection({
-    Name = "Vehicle Exploits 🚔",
+    Name = "Vehicle",
+    Icon = "car",
     Position = 'right'
 });
 
 local teleportSection = MainTab:DrawSection({
-    Name = "Teleports 🏢",
+    Name = "Teleports",
+    Icon = "hexagon",
     Position = 'right'
 });
 
 local dishwasherSection = AutofarmTab:DrawSection({
     Name = "Dishwasher",
+    Icon = "file-user",
     Position = 'left'
 });
 
 local shelfStockerSection = AutofarmTab:DrawSection({
-    Name = "Shelf Stocker Autofarm",
+    Name = "Shelf Stocker",
+    Icon = "shield",
     Position = 'left'
 });
 
 local vulnSection = VulnsTab:DrawSection({
-    Name = "Vulnerabilities 🔍",
+    Name = "Vulnerabilities",
+    Icon = "search",
     Position = 'left'
 });
 
@@ -1051,7 +1058,7 @@ ThemeTab:DrawSection({
     Name = "UI Themes"
 }):AddDropdown({
     Name = "Select Theme",
-    Default = "Default",
+    Default = "Dark Blue",
     Values = {
         "Default",
         "Dark Green",
