@@ -156,36 +156,36 @@ task.spawn(function()
         ),
         Draggable = true,
     })
+
+    -- Tabs with Icons (ต้องอยู่ในนี้)
+    local InfoTab = Window:Tab({ Title = "Info", Icon = "info" })
+    local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" }) 
+    local CashTab = Window:Tab({ Title = "Cash", Icon = "dollar-sign" }) 
+    local PartyTab = Window:Tab({ Title = "Auto Join", Icon = "handshake" }) 
+    local GUI = Window:Tab({ Title = "Equip", Icon = "flame" }) 
+    local GamepassTab = Window:Tab({ Title = "Gamepass", Icon = "cookie" }) 
+    local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" }) 
+    local MiscTab = Window:Tab({ Title = "Misc", Icon = "file-cog" }) 
+
+    Window:SelectTab(1)
+
+    InfoTab:Section({ Title = "Read before using this script", Icon = "info" })
+    InfoTab:Section({ Title = "This script is still under development." })
+    InfoTab:Section({ Title = "If there are any bugs or issues" })
+    InfoTab:Section({ Title = "you can report them to us on Discord" })
+
+    InfoTab:Button({
+        Title = "DYHUB - Discord! (Copy Link)",
+        Callback = function()
+            setclipboard("https://dsc.gg/dyhub")
+        end
+    })
+
+    InfoTab:Section({ Title = "inf money & spin, if rejoin u will be reset.", Icon = "triangle-alert" })
+    InfoTab:Section({ Title = "We appreciate your choice to use our script.", Icon = "heart" })
 end)
-    -- Tabs with Icons
-local InfoTab = Window:Tab({ Title = "Info", Icon = "info" })
-local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" }) 
-local CashTab = Window:Tab({ Title = "Cash", Icon = "dollar-sign" }) 
-local PartyTab = Window:Tab({ Title = "Auto Join", Icon = "handshake" }) 
-local GUI = Window:Tab({ Title = "Equip", Icon = "flame" }) 
-local GamepassTab = Window:Tab({ Title = "Gamepass", Icon = "cookie" }) 
-local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" }) 
-local MiscTab = Window:Tab({ Title = "Misc", Icon = "file-cog" }) 
-
-Window:SelectTab(1)
-
-InfoTab:Section({ Title = "Read before using this script", Icon = "info" })
-InfoTab:Section({ Title = "This script is still under development." })
-InfoTab:Section({ Title = "If there are any bugs or issues" })
-InfoTab:Section({ Title = "you can report them to us on Discord" })
-
-InfoTab:Button({
-    Title = "DYHUB - Discord! (Copy Link)",
-    Callback = function()
-        setclipboard("https://dsc.gg/dyhub")
-    end
-})
-
-InfoTab:Section({ Title = "inf money & spin, if rejoin u will be reset.", Icon = "triangle-alert" })
-InfoTab:Section({ Title = "We appreciate your choice to use our script.", Icon = "heart" })
 
 -- ====== Main Tab ======
-
 local player = LocalPlayer
 local data = player:WaitForChild("Data")
 local event = ReplicatedStorage:WaitForChild("Events"):WaitForChild("ChangeValue")
