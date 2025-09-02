@@ -81,7 +81,7 @@ UICorner2.Parent = ProgressBarBg
 
 local ProgressBar = Instance.new("Frame")
 ProgressBar.Size = UDim2.new(0, 0, 1, 0)
-ProgressBar.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+ProgressBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
 ProgressBar.BorderSizePixel = 0
 ProgressBar.Parent = ProgressBarBg
 
