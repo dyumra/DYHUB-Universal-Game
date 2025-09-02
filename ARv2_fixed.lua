@@ -524,6 +524,8 @@ task.spawn(function()
         end,
     })
 
+    GamepassTab:Section({ Title = "Feature Hide", Icon = "eye-off" })
+
     GamepassTab:Dropdown({
         Title = "Select Hide",
         Values = { "All", "HideMorph", "HideArmor" },
