@@ -170,7 +170,7 @@ task.spawn(function()
     local function getDataNames()
         local names = {}
         for _, child in ipairs(data:GetChildren()) do
-            if child:IsA("BoolValue") then
+            if child:IsA("BoolValue") and child.Name ~= "HideMorph" and child.Name ~= "HideArmor" then
                 table.insert(names, child.Name)
             end
         end
@@ -519,6 +519,38 @@ task.spawn(function()
                 local emotes = player:FindFirstChild("PlayerGui"):FindFirstChild("HUD")
                 if emotes and emotes:FindFirstChild("Emotes") then
                     emotes.Emotes.Visible = true
+                end
+            end
+        end,
+    })
+
+    GamepassTab:Dropdown({
+        Title = "Select Hide",
+        Values = { "All", "HideMorph", "HideArmor" },
+        Multi = false,
+        Callback = function(selected1)
+            selectedGamepass1 = selected1
+            print("[DYHUB] Selected Hide:", selectedGamepass1)
+        end,
+    })
+
+    GamepassTab:Button({
+        Title = "Enter Hide",
+        Icon = "check",
+        Callback = function()
+            local d1 = player:FindFirstChild("Data")
+            if not d1 then warn("[DYHUB] Data not found!") return end
+            local gamepasses1 = selectedGamepass1 == "All"
+                and { "HideMorph", "HideArmor" }
+                or { selectedGamepass1 }
+
+            for _, gpName1 in ipairs(gamepasses1) do
+                local gp1 = d1:FindFirstChild(gpName1)
+                if gp1 then
+                    gp1.Value = true
+                    print("[DYHUB] Let Hide:", gpName1)
+                else
+                    warn("[DYHUB] Hide not found:", gpName1)
                 end
             end
         end,
