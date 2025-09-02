@@ -1,10 +1,10 @@
 local VLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/vep1032/VepStuff/main/VL"))()
 
-local s = VLib:Window("Tower Of Hell Gui", "By GedHub", "TOH")
+local s = VLib:Window("DYHUB | Tower Of Hell", "[ Premium ]", "TOH")
  
 local ss = s:Tab("General")
  
-ss:Button("Bypass Anticheat",function()  -- Credits For The Bypass To https://www.youtube.com/watch?v=SlPzMVf-lNQ&t=0s
+ss:Button("Bypass Anti-Cheat",function()  -- Credits For The Bypass To https://www.youtube.com/watch?v=SlPzMVf-lNQ&t=0s
     local reg = getreg()
  
     for i, Function in next, reg do
@@ -39,7 +39,7 @@ ss:Button("Bypass Anticheat",function()  -- Credits For The Bypass To https://ww
     script2:Destroy()
 end)
  
-ss:Button("Go To End",function()
+ss:Button("Go to End Zone!",function()
     local endzone = game.Workspace.tower.sections.finish.FinishGlow.CFrame
  
     local player = game.Players.LocalPlayer.Character
@@ -63,7 +63,7 @@ ss:Button("Get All Items",function()
         end
 end)
  
-ss:Button("God Mode (Remove KillParts)",function()
+ss:Button("God Mode (Remove Kill-Parts)",function()
     for i,v in pairs(game:GetService("Workspace").tower:GetDescendants()) do
         if v:IsA("BoolValue") and v.Name == "kills" then
             v.Parent:Destroy()
@@ -84,12 +84,16 @@ ss:Button("Reset Walk and Jump",function()
     game.Players.LocalPlayer.Character.Humanoid.JumpPower = 50
 end)
  
-ss:Button("IY (Infinite Yield)",function()
+ss:Button("Infinite Yield",function()
     loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
 end)
  
 ss:Button("Anti Lag",function()
     loadstring(game:HttpGet('https://pastebin.com/raw/eVHmQQvQ'))()
+end)
+
+ss:Button("Anti Lag (BY DYHUB)",function()
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Nigga.lua'))()
 end)
  
 local sss = s:Tab("Auto Farm")
@@ -97,7 +101,7 @@ local sss = s:Tab("Auto Farm")
 -- Table
 getgenv().Boolean = false
  
-sss:Toggle("Auto Farm",function(v)
+sss:Toggle("Auto Win!",function(v)
     getgenv().Boolean = v
  
     if v then -- if v == true then
@@ -130,9 +134,7 @@ end)
  
 local ssss = s:Tab("Credits")
  
-ssss:Label("Gui By TheMystery_O_O in robloxscripts")
-ssss:Label("forum.robloxscripts.com/member.php?action=profile&uid=48177")
-ssss:Label("Ui Lib By Vep in robloxscripts")
-ssss:Label("forum.robloxscripts.com/member.php?action=profile&uid=4869")
-ssss:Label("AntiCheat Bypass By TechHog")
-ssss:Label("Video Link: (youtube.com/watch?v=SlPzMVf-lNQ&t=0s)")
+ssss:Label("Dev / Script - by DYHUB")
+ssss:Label("Tester / Helper - by oszq")
+ssss:Label("Anti-Cheat Bypass By rhy")
+ssss:Label("Auto-Win Farming By rhy")
