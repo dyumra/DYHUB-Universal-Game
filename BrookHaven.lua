@@ -2,8 +2,8 @@ local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/tbao1
 workspace.FallenPartsDestroyHeight = -math.huge
 
 local Window = Library:MakeWindow({
-    Title = "DYHUB | Brookhaven RP ",
-    SubTitle = "[Premium]",
+    Title = "DYHUB | Brookhaven RP",
+    SubTitle = "[ Premium ]",
     LoadText = "Loaded! - DYHUB",
     Flags = "DYHUB_Broookhaven"
 })
@@ -4782,18 +4782,18 @@ Tab:AddParagraph({
     "O script começa a causar lag após 35 segundos"
 })
 
-local Tab = Window:MakeTab({"Nomes", "Paper"})
+local Tab = Window:MakeTab({"Name", "Paper"})
 
 local isNameActive = false
 local isBioActive = false
 
 local SectionRGBName = Tab:AddSection({
-    Name = "Nome RGB"
+    Name = "Name RGB"
 })
 
 Tab:AddToggle({
-    Name = "Nome RGB",
-    Description = "Ativar Nome RGB",
+    Name = "Name RGB",
+    Description = "Ativar Name RGB",
     Default = false,
     Callback = function(value)
         isNameActive = value
@@ -4886,7 +4886,7 @@ for _, name in ipairs(names) do
 end
 
 
-local CarTab = Window:MakeTab({"Carro", "car"})
+local CarTab = Window:MakeTab({"Vehicle", "car"})
 
 -- Colors for RGB
 local colors = {
@@ -5791,7 +5791,7 @@ end
 updatePlayerList()
 
 -- Aba Child
-local ChildTab = Window:MakeTab({"Criança", "baby"})
+local ChildTab = Window:MakeTab({"Child", "baby"})
 
 local Section = ChildTab:AddSection({
     Name = "Child"
@@ -5799,7 +5799,7 @@ local Section = ChildTab:AddSection({
 
 local chasingplayer = nil
 local playerChild = ChildTab:AddDropdown({
-    Name = "Selecione um player para perseguir",
+    Name = "Select a player to chase",
     Options = players,
     Default = "",
     Callback = function(selected)
@@ -5812,7 +5812,7 @@ local playerChild = ChildTab:AddDropdown({
 })
 
 ChildTab:AddButton({
-    Name = "Atualizar Player List",
+    Name = "Update Player List",
     Callback = function()
         local updatedPlayers = updatePlayerList()
         if playerChild and updatedPlayers then
@@ -5977,19 +5977,19 @@ ChildTab:AddToggle({
 
 ChildTab:AddParagraph({
     Title = "FE",
-    Content = "Funcionalidades FE"
+    Content = "Function FE"
 })
 
 -- Aba Local Player
 local LocalPlayerTab = Window:MakeTab({"Local Player", "user"})
 
 local Section = LocalPlayerTab:AddSection({
-    Name = "Velocidade, Gravidade e Pulo"
+    Name = "Speed, Gravity and Jump"
 })
 
 LocalPlayerTab:AddTextBox({
-    Name = "Velocidade do Player",
-    PlaceholderText = "Digite a velocidade",
+    Name = "Player Speed",
+    PlaceholderText = "Enter the speed",
     Callback = function(value)
         local speed = tonumber(value)
         if speed and pl.Character and pl.Character:FindFirstChild("Humanoid") then
@@ -6001,7 +6001,7 @@ LocalPlayerTab:AddTextBox({
 })
 
 LocalPlayerTab:AddButton({
-    Name = "Resetar velocidade",
+    Name = "Reset speed",
     Callback = function()
         if pl.Character and pl.Character:FindFirstChild("Humanoid") then
             pl.Character.Humanoid.WalkSpeed = 16
@@ -6010,8 +6010,8 @@ LocalPlayerTab:AddButton({
 })
 
 LocalPlayerTab:AddTextBox({
-    Name = "Tamanho do Pulo",
-    PlaceholderText = "Digite a altura do pulo",
+    Name = "Jump Size",
+    PlaceholderText = "Enter the jump height",
     Callback = function(value)
         local jumpHeight = tonumber(value)
         if jumpHeight and pl.Character and pl.Character:FindFirstChild("Humanoid") then
@@ -6023,7 +6023,7 @@ LocalPlayerTab:AddTextBox({
 })
 
 LocalPlayerTab:AddButton({
-    Name = "Resetar Pulo",
+    Name = "Reset Jump",
     Callback = function()
         if pl.Character and pl.Character:FindFirstChild("Humanoid") then
             pl.Character.Humanoid.JumpPower = 50
@@ -6032,8 +6032,8 @@ LocalPlayerTab:AddButton({
 })
 
 LocalPlayerTab:AddTextBox({
-    Name = "Gravidade",
-    PlaceholderText = "Digite a gravidade",
+    Name = "Gravity",
+    PlaceholderText = "Enter gravity",
     Callback = function(value)
         local gravity = tonumber(value)
         if gravity then
@@ -6045,7 +6045,7 @@ LocalPlayerTab:AddTextBox({
 })
 
 LocalPlayerTab:AddButton({
-    Name = "Resetar Gravidade",
+    Name = "Reset gravity",
     Callback = function()
         workspace.Gravity = 196.2
     end
@@ -6096,7 +6096,7 @@ LocalPlayerTab:AddButton({
 getgenv().ChaosHubEnviarDelay = 1
 
 LocalPlayerTab:AddSlider({
-    Name = "Delay do Spam",
+    Name = "Delay to Spam",
     Min = 0.4,
     Max = 10,
     Default = 1,
@@ -6123,9 +6123,9 @@ LocalPlayerTab:AddButton({
     Name = "Spam chat Hacked By Mafia",
     Callback = function()
         if game:GetService("TextChatService").ChatVersion == Enum.ChatVersion.TextChatService then 
-            game:GetService("TextChatService").TextChannels.RBXGeneral:SendAsync("hi\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\rServer: Hacked by Mafia Hub")
+            game:GetService("TextChatService").TextChannels.RBXGeneral:SendAsync("Wsp\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\rServer: Hacked by DYHUB")
         else 
-            print("Nadaa")
+            print("Yoyo DYHUB")
     end
 end
 })
@@ -6134,7 +6134,7 @@ LocalPlayerTab:AddButton({
     Name = "Clear Chat",
     Callback = function()
         if game:GetService("TextChatService").ChatVersion == Enum.ChatVersion.TextChatService then 
-            game:GetService("TextChatService").TextChannels.RBXGeneral:SendAsync("hi\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\rServer: Chat Cleared")
+            game:GetService("TextChatService").TextChannels.RBXGeneral:SendAsync("Wsp\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\rServer: Chat Cleared")
         else 
             print("Nadaa")
     end
@@ -6158,7 +6158,7 @@ local headSitDropdown = LocalPlayerTab:AddDropdown({
 })
 
 LocalPlayerTab:AddToggle({
-    Name = "Head Sit (Cavalinho)",
+    Name = "Head Sit (Little horse)",
     Default = false,
     Callback = function(bool)
         local player = game.Players.LocalPlayer
@@ -6208,7 +6208,7 @@ LocalPlayerTab:AddToggle({
 })
 
 LocalPlayerTab:AddButton({
-    Name = "Atualizar tabela",
+    Name = "Update table",
     Callback = function()
         local updatedPlayers = updatePlayerList()
         if headSitDropdown and updatedPlayers then
@@ -6229,28 +6229,28 @@ local Tab = Window:MakeTab({"Teleportes", "tp"}) -- Nome do ícone: 'portal' em 
 
 -- Botões de Teleporte
 local teleportButtons = {
-    {"Aos Bastidores", CFrame.new(192, 4, 272)},
-    {"Ao Centro Urbano", CFrame.new(136, 4, 117)},
-    {"À Área do Crime", CFrame.new(-119, -28, 235)},
-    {"À Casa Deserta", CFrame.new(986, 4, 63)},
-    {"Ao Portal da Agência", CFrame.new(672, 4, -296)},
-    {"Ao Esconderijo", CFrame.new(505, -75, 143)},
-    {"À Escola", CFrame.new(-312, 4, 211)},
-    {"Ao Café Brook", CFrame.new(161, 8, 52)},
-    {"Ao Ponto Inicial", CFrame.new(-26, 4, -23)},
-    {"Ao Arco Principal", CFrame.new(-589, 141, -59)},
-    {"Ao Hospital", CFrame.new(-309, 4, 71)},
-    {"À Base da Agência", CFrame.new(179, 4, -464)},
-    {"À Sala Oculta da Oficina", CFrame.new(0, 4, -495)},
-    {"À Sala Secreta 2", CFrame.new(-343, 4, -613)},
-    {"À Ilha Isolada", CFrame.new(-1925, 23, 127)},
-    {"À Praça dos Hotéis", CFrame.new(182, 4, 150)},
-    {"Escalar Montanha 1", CFrame.new(-670, 251, 765)},
-    {"Ao Banco Principal", CFrame.new(2.28, 4.65, 254.58)},
-    {"À Loja de Roupas", CFrame.new(-46.15, 4.65, 253.20)},
-    {"Ao Refúgio", CFrame.new(-88.48, 22.05, 262.34)},
-    {"À Clínica Dentária", CFrame.new(-53.58, 22.15, 265.61)},
-    {"À Cafeteria", CFrame.new(-97.12, 4.65, 254.99)}
+    {"Backstage", CFrame.new(192, 4, 272)},
+    {"Downtown", CFrame.new(136, 4, 117)},
+    {"Crime Area", CFrame.new(-119, -28, 235)},
+    {"Abandoned House", CFrame.new(986, 4, 63)},
+    {"Agency Portal", CFrame.new(672, 4, -296)},
+    {"Hideout", CFrame.new(505, -75, 143)},
+    {"School", CFrame.new(-312, 4, 211)},
+    {"Brook Café", CFrame.new(161, 8, 52)},
+    {"Spawn Point", CFrame.new(-26, 4, -23)},
+    {"Main Arch", CFrame.new(-589, 141, -59)},
+    {"Hospital", CFrame.new(-309, 4, 71)},
+    {"Agency Base", CFrame.new(179, 4, -464)},
+    {"Workshop Hidden Room", CFrame.new(0, 4, -495)},
+    {"Secret Room 2", CFrame.new(-343, 4, -613)},
+    {"Isolated Island", CFrame.new(-1925, 23, 127)},
+    {"Hotel Plaza", CFrame.new(182, 4, 150)},
+    {"Climb Mountain 1", CFrame.new(-670, 251, 765)},
+    {"Main Bank", CFrame.new(2.28, 4.65, 254.58)},
+    {"Clothing Store", CFrame.new(-46.15, 4.65, 253.20)},
+    {"Refuge", CFrame.new(-88.48, 22.05, 262.34)},
+    {"Dental Clinic", CFrame.new(-53.58, 22.15, 265.61)},
+    {"Cafeteria", CFrame.new(-97.12, 4.65, 254.99)}
 }
 
 for _, btn in ipairs(teleportButtons) do
@@ -6267,19 +6267,19 @@ local ToolsTab = Window:MakeTab({"Itens", "backpack"})
 
 -- Tabela de cores
 local colorsTable = {
-    {Name = "Vermelho", Color = Color3.fromRGB(255, 0, 0)},
-    {Name = "Laranja", Color = Color3.fromRGB(255, 165, 0)},
-    {Name = "Amarelo", Color = Color3.fromRGB(255, 255, 0)},
-    {Name = "Verde", Color = Color3.fromRGB(0, 255, 0)},
-    {Name = "Ciano", Color = Color3.fromRGB(0, 255, 255)},
-    {Name = "Azul", Color = Color3.fromRGB(0, 0, 255)},
-    {Name = "Roxo", Color = Color3.fromRGB(128, 0, 128)},
-    {Name = "Preto", Color = Color3.fromRGB(0, 0, 0)}
+    {Name = "Red", Color = Color3.fromRGB(255, 0, 0)},
+    {Name = "Orange", Color = Color3.fromRGB(255, 165, 0)},
+    {Name = "Yellow", Color = Color3.fromRGB(255, 255, 0)},
+    {Name = "Green", Color = Color3.fromRGB(0, 255, 0)},
+    {Name = "Cyan", Color = Color3.fromRGB(0, 255, 255)},
+    {Name = "Blue", Color = Color3.fromRGB(0, 0, 255)},
+    {Name = "Purple", Color = Color3.fromRGB(128, 0, 128)},
+    {Name = "Black", Color = Color3.fromRGB(0, 0, 0)}
 }
 
 -- Botão para colorir o mapa
 ToolsTab:AddButton({
-    Name = "Colorir Mapa Chão [Muito OP]",
+    Name = "Color Map Ground [Very OP]",
     Callback = function()
       local toolselected = "PaintRoller"
 local dupeamot = 100
@@ -6336,9 +6336,9 @@ else
     wait(0.2)
     
     game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Mafia Hub Dupe",
-        Text = "Não Clique em nada enquanto as tool estiverem sendo dupadas",
-        Button1 = "Tendeu",
+        Title = "DYHUB Dupe",
+        Text = "Do Not Click Anything While the Tools Are Being Duplicated",
+        Button1 = "Got it",
         Duration = 3
     })
     
@@ -6473,8 +6473,8 @@ else
         game:GetService("Players").LocalPlayer.Character:FindFirstChild(toolselected).Parent = game.Players.LocalPlayer.Backpack
         game:GetService("Players").LocalPlayer.Backpack:FindFirstChild(toolselected).Parent = game.Players.LocalPlayer.Character
         game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Mafia Hub Tool",
-            Text = "Tool Dupada: " .. m .. " / " .. dupeamot,
+            Title = "DYHUB Tool",
+            Text = "Tool Dupe: " .. m .. " / " .. dupeamot,
             Duration = 1
         })
         repeat
@@ -6576,7 +6576,7 @@ end
 })
 
 ToolsTab:AddButton({
-    Name = "Colorir Mapa Céu [Muito OP]",
+    Name = "Color Sky Map [Very OP]",
     Callback = function()
        local toolselected = "PaintRoller"
 local dupeamot = 100
@@ -6633,8 +6633,8 @@ else
     wait(0.2)
     
     game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Mafia Hub Dupe",
-        Text = "Não Clique em nada enquanto as tool estiverem sendo dupadas",
+        Title = "DYHUB Dupe",
+        Text = "Do Not Click Anything While the Tools Are Being Duplicated",
         Button1 = "Tendeu",
         Duration = 3
     })
@@ -6770,8 +6770,8 @@ else
         game:GetService("Players").LocalPlayer.Character:FindFirstChild(toolselected).Parent = game.Players.LocalPlayer.Backpack
         game:GetService("Players").LocalPlayer.Backpack:FindFirstChild(toolselected).Parent = game.Players.LocalPlayer.Character
         game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Mafia Hub Tool",
-            Text = "Tool Dupada: " .. m .. " / " .. dupeamot,
+            Title = "DYHUB Tool",
+            Text = "Tool Dupe: " .. m .. " / " .. dupeamot,
             Duration = 1
         })
         repeat
@@ -6929,8 +6929,8 @@ end
 
 -- Dropdown para selecionar a cor
 ToolsTab:AddDropdown({
-    Name = "Selecione a Cor",
-    Description = "Escolha uma cor para aplicar",
+    Name = "Select the Color",
+    Description = "Choose a color to apply",
     Options = (function()
         local colorNames = {}
         for _, color in ipairs(colorsTable) do
@@ -7003,8 +7003,8 @@ end
 
 -- Dropdown para combinações de cores
 ToolsTab:AddDropdown({
-    Name = "Selecione a Combinação de Cores",
-    Description = "Escolha uma combinação de cores",
+    Name = "Select a Color Combination",
+    Description = "Choose a color combination",
     Options = (function()
         local combinationNames = {}
         for _, combination in ipairs(colorCombinations) do
@@ -7081,7 +7081,7 @@ Section = ToolsTab:AddSection({
 
 -- Botão para equipar todos os itens
 ToolsTab:AddButton({
-    Name = "Equipar todos os itens",
+    Name = "Equip All Items",
     Callback = function()
         for _, tool in pairs(game:GetService("Players").LocalPlayer.Backpack:GetChildren()) do
             if tool:IsA("Tool") then
@@ -7093,12 +7093,12 @@ ToolsTab:AddButton({
 
 -- Seção para N4zi Grip
 Section = ToolsTab:AddSection({
-    Name = "N4zi Grip"
+    Name = "DYHUB Grip"
 })
 
 -- Botão para Giant Joust Blue N4zi
 ToolsTab:AddButton({
-    Name = "Giant Joust Blue N4zi",
+    Name = "Giant Joust Blue DYHUB",
     Callback = function()
        toolselcted = "JoustBlue"
         dupeamot = 175 --Put amouth to dupe
@@ -7420,7 +7420,7 @@ local TablaGripPos = {
 
 -- Botão para Giant Joust Red N4zi
 ToolsTab:AddButton({
-    Name = "Giant Joust Red N4zi",
+    Name = "Giant Joust Red DYHUB",
     Callback = function()
         toolselcted = "JoustRed"
         dupeamot = 175 --Put amouth to dupe
@@ -7742,7 +7742,7 @@ local TablaGripPos = {
 
 -- Botão para Fire N4zi
 ToolsTab:AddButton({
-    Name = "Fire N4zi",
+    Name = "Fire DYHUB",
     Callback = function()
         local nametools = "crystal nazi lel"
         local oldcframe = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
@@ -7843,7 +7843,7 @@ ToolsTab:AddButton({
 
 -- Botão para Crystal N4zi
 ToolsTab:AddButton({
-    Name = "Crystal N4zi",
+    Name = "Crystal DYHUB",
     Callback = function()
         local nametools = "crystal nazi lel"
         local oldcframe = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
@@ -7944,7 +7944,7 @@ ToolsTab:AddButton({
 
 -- Botão para FireX N4zi
 ToolsTab:AddButton({
-    Name = "FireX N4zi",
+    Name = "FireX DYHUB",
     Callback = function()
         local nametools = "nazi firex lel"
         local oldcframe = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
