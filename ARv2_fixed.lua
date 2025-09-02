@@ -1,4 +1,4 @@
--- asdasdasdasdasd2312321
+-- HIHI
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -123,7 +123,7 @@ task.spawn(function()
         Title = "DYHUB - Anime Rails (Lobby)",
         IconThemed = true,
         Icon = "star",
-        Author = "Version: 5.2.6 | dsc.gg/dyhub",
+        Author = "Version: 5.2.9 | dsc.gg/dyhub",
         Size = UDim2.fromOffset(500, 300),
         Transparent = true,
         Theme = "Dark",
@@ -139,14 +139,14 @@ task.spawn(function()
     })
 
     -- Tabs (KEEP THESE LOCALS USED BELOW)
-    local InfoTab   = Window:Tab({ Title = "Info",      Icon = "info" })
-    local MainTab   = Window:Tab({ Title = "Main",      Icon = "rocket" }) 
-    local CashTab   = Window:Tab({ Title = "Cash",      Icon = "dollar-sign" }) 
-    local PartyTab  = Window:Tab({ Title = "Auto Join", Icon = "handshake" }) 
-    local EquipTab  = Window:Tab({ Title = "Equip",     Icon = "flame" }) 
+    local InfoTab   = Window:Tab({ Title = "Info",       Icon = "info" })
+    local MainTab   = Window:Tab({ Title = "Main",       Icon = "rocket" }) 
+    local CashTab   = Window:Tab({ Title = "Cash",       Icon = "dollar-sign" }) 
+    local PartyTab  = Window:Tab({ Title = "Auto Join",  Icon = "handshake" }) 
+    local EquipTab  = Window:Tab({ Title = "Equip",      Icon = "flame" }) 
     local GamepassTab = Window:Tab({ Title = "Gamepass", Icon = "cookie" }) 
-    local PlayerTab = Window:Tab({ Title = "Player",    Icon = "user" }) 
-    local MiscTab   = Window:Tab({ Title = "Misc",      Icon = "file-cog" }) 
+    local PlayerTab = Window:Tab({ Title = "Player",     Icon = "user" }) 
+    local MiscTab   = Window:Tab({ Title = "Misc",       Icon = "file-cog" }) 
 
     Window:SelectTab(1)
 
@@ -328,12 +328,12 @@ task.spawn(function()
             autoInfiniteSpin = enabled
             if enabled then
                 task.spawn(function()
-                    local totalAmount, perFire = 100, 999999
-                    local times = math.floor(totalAmount / perFire)
+                    local totalAmount1, perFire1 = 500, 999999
+                    local times1 = math.floor(totalAmount1 / perFire1)
                     while autoInfiniteSpin do
-                        for _ = 1, times do
+                        for _ = 1, times1 do
                             if not autoInfiniteSpin then break end
-                            ReplicatedStorage:WaitForChild("CodeEvent"):FireServer("Wins", perFire, "DYHUB")
+                            ReplicatedStorage:WaitForChild("CodeEvent"):FireServer("Wins", perFire1, "DYHUB")
                             task.wait(0.1)
                         end
                         task.wait(0.5)
