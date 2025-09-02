@@ -4,7 +4,25 @@ local RunService = game:GetService("RunService")
 local TeleportService = game:GetService("TeleportService")
 local VirtualUser = game:GetService("VirtualUser")
 local LocalPlayer = Players.LocalPlayer
--- WindUI Load
+
+local cashInputValue = ""
+local spinInputValue = ""
+local autoInfiniteCash = false
+local autoInfiniteSpin = false
+local espEnabled = false
+local espUpdateConnection
+local espOptions = { ShowName=false, ShowHealth=false, ShowDistance=false, ShowMorph=false, ShowClass=false, ShowAura=false, HighlightColor=Color3.fromRGB(0,255,0), Rainbow=false }
+local ESPNormal = "Red"
+local antiAfkEnabled = false
+local antiAdminEnabled = false 
+local fakeBypassEnabled = false
+local maxPlayers = 1
+local allowFriend = true
+local nightmareMode = false
+local selectedGamepass = "All"
+local morphInputValue = false
+local classInputValue = false
+local auraInputValue = false
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
@@ -60,8 +78,6 @@ InfoTab:Section({ Title = "We appreciate your choice to use our script.", Icon =
 local player = LocalPlayer
 local data = player:WaitForChild("Data")
 local event = ReplicatedStorage:WaitForChild("Events"):WaitForChild("ChangeValue")
-
-local morphInputValue, classInputValue, auraInputValue = "", "", ""
 
 local function getDataNames()
     local names = {}
@@ -175,7 +191,7 @@ GUI:Dropdown({ Title="Select Aura", Values=getDataNames(), Multi=false, Callback
 
 CashTab:Section({ Title = "Join Group first!", Icon = "triangle-alert" })
 CashTab:Section({ Title = "Dupe Currency", Icon = "circle-dollar-sign" })
-local cashInputValue = ""
+
 CashTab:Input({ Title = "Enter Dupe Cash Amount", Placeholder = "100 ~ 10000", Callback = function(text) cashInputValue = text end })
 CashTab:Button({
     Title = "Dupe Cash",
@@ -191,14 +207,13 @@ CashTab:Button({
     end,
 })
 
-local spinInputValue = ""
-CashTab:Input({ Title = "Enter Dupe Spin Amount", Placeholder = "10 ~ 100", Callback = function(text) cashInputValue = text end })
+CashTab:Input({ Title = "Enter Dupe Spin Amount", Placeholder = "100 ~ 500", Callback = function(text) spinInputValue = text end })
 CashTab:Button({
     Title = "Dupe Spin",
     Icon = "dollar-sign",
     Callback = function()
         local input = tonumber(spinInputValue)
-        if input and input >= 5 and input <= 100 then
+        if input and input >= 100 and input <= 500 then
             ReplicatedStorage:WaitForChild("CodeEvent"):FireServer("Wins", input, "DYHUB")
             print("[DYHUB] Dupe Spin:", input)
         else
@@ -209,9 +224,6 @@ CashTab:Button({
 
 CashTab:Section({ Title = "You will got reset!, if rejoin.", Icon = "triangle-alert" })
 CashTab:Section({ Title = "Dupe Infinite", Icon = "infinity" })
-
-local autoInfiniteCash = false
-local autoInfiniteSpin = false
 
 CashTab:Toggle({
     Title = "Infinite Dupe Cash",
@@ -244,7 +256,7 @@ CashTab:Toggle({
         autoInfiniteSpin = enabled
         if enabled then
             task.spawn(function()
-                local totalAmount, perFire = 10, 999999
+                local totalAmount, perFire = 100, 999999
                 local times = math.floor(totalAmount / perFire)
                 while autoInfiniteSpin do
                     for i = 1, times do
@@ -260,10 +272,6 @@ CashTab:Toggle({
 })
 
 -- ====== Player ESP Tab ======
--- (ปรับปรุง ESP ให้เสถียรและเลือกสีได้)
-local espEnabled = false
-local espUpdateConnection
-local espOptions = { ShowName=false, ShowHealth=false, ShowDistance=false, ShowMorph=false, ShowClass=false, ShowAura=false, HighlightColor=Color3.fromRGB(0,255,0), Rainbow=false }
 
 local function updateESP()
     for _, target in ipairs(Players:GetPlayers()) do
@@ -319,8 +327,6 @@ end
 
 PlayerTab:Section({ Title = "Featrue ESP", Icon = "eye" })
 
-local ESPNormal = "Red"
-
 PlayerTab:Toggle({ Title="Enable ESP", Value=false, Callback=toggleESP })
 PlayerTab:Dropdown({
     Title="ESP Color", Default="Green",
@@ -347,8 +353,6 @@ PlayerTab:Toggle({ Title="Show Aura", Value=false, Callback=function(s) espOptio
 
 -- ====== Misc Tab ======
 MiscTab:Section({ Title = "Feature Safe", Icon = "shield" })
-
-local antiAfkEnabled, antiAdminEnabled, fakeBypassEnabled = false,false,false
 
 MiscTab:Toggle({
     Title="Bypass Anti-Cheat (V2)",
@@ -400,7 +404,6 @@ MiscTab:Toggle({
 })
 
 -- ====== Auto Join Tab ======
-local maxPlayers, allowFriend, nightmareMode = 1,true,false
 
 PartyTab:Section({ Title = "Feature Join", Icon = "user" })
 
@@ -418,7 +421,6 @@ end })
 -- ====== Gamepass Tab ======
 GamepassTab:Section({ Title = "Feature Gamepass", Icon = "moon-star" })
 
-local selectedGamepass = "All"
 GamepassTab:Dropdown({
     Title = "Select Gamepass",
     Values = { "All", "DoubleCash", "AlrBoughtSkipSpin", "SecClass", "Emote", "CriticalHit", "SkipSpin" },
