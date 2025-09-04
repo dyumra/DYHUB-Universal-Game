@@ -1,6 +1,6 @@
 print([[
 
-DYHUB
+DYHUB WWWWWWWWW
 
                                                                         
 
@@ -35,8 +35,8 @@ do
         {
             Title = gradient("DYHUB Loaded! for Murder Mystery 2", Color3.fromHex("#ff0000"), Color3.fromHex("#000000")),
             Icon = "user",
-            Content = gradient("Premium @ dsc.gg/dyhub", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")) ..
-                gradient("DYHUB OFFICIAL", Color3.fromHex("#001e80"), Color3.fromHex("#16f2d9")),
+            Content = gradient("+ Version: Premium", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")) ..
+                gradient(" [DYHUB OFFICIAL]", Color3.fromHex("#ff0000"), Color3.fromHex("#000000")),
             Buttons = {
                 {Title = gradient("Cancel", Color3.fromHex("#e80909"), Color3.fromHex("#630404")), Callback = function()
                     end, Variant = "Tertiary"},
@@ -178,7 +178,7 @@ do
                 updateCharacter()
             end}
     )
-    Tabs.CharacterTab:Section({Title = gradient("JumpPower", Color3.fromHex("#001aff"), Color3.fromHex("#020524"))})
+    Tabs.CharacterTab:Section({Title = gradient("JumpPower", Color3.fromHex("#ff0000"), Color3.fromHex("#300000"))})
     Tabs.CharacterTab:Slider(
         {Title = "Jumppower", Value = {Min = 0, Max = 200, Default = 50}, Callback = function(value)
                 CharacterSettings.JumpPower.Value = value
