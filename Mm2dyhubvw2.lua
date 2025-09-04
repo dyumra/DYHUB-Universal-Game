@@ -33,10 +33,10 @@ do
     local Confirmed = false
     WindUI:Popup(
         {
-            Title = gradient("DYHUB Loaded! for Murder Mystery 2", Color3.fromHex("#ff0000"), Color3.fromHex("#000000")),
-            Icon = "user",
-            Content = gradient("+ Version: Premium", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")) ..
-                gradient(" [DYHUB OFFICIAL]", Color3.fromHex("#ff0000"), Color3.fromHex("#000000")),
+            Title = gradient("DYHUB Loaded! - Murder Mystery 2", Color3.fromHex("#ff0000"), Color3.fromHex("#000000")),
+            Icon = "rbxassetid://104487529937663",
+            Content = gradient("Thank for Support", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")) ..
+                gradient(" [DYHUB OFFICIAL]", Color3.fromHex("#ffd700"), Color3.fromHex("#fc6600")),
             Buttons = {
                 {Title = gradient("Cancel", Color3.fromHex("#e80909"), Color3.fromHex("#630404")), Callback = function()
                     end, Variant = "Tertiary"},
@@ -60,9 +60,9 @@ do
     local Window =
         WindUI:CreateWindow(
         {
-            Title = gradient("DYHUB - MM2 (Beta)", Color3.fromHex("#ff0000"), Color3.fromHex("#000000")),
-            Icon = "star",
-            Author = gradient("Delta Android", Color3.fromHex("#1bf2b2"), Color3.fromHex("#1bcbf2")),
+            Title = gradient("DYHUB - Murder Mystery 2", Color3.fromHex("#ff0000"), Color3.fromHex("#000000")),
+            Icon = "rbxassetid://104487529937663",
+            Author = "Version: 2.8.6 | Executor"
             Folder = "WindUI",
             Size = UDim2.fromOffset(500, 300),
             Transparent = true,
