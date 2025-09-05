@@ -1,6 +1,6 @@
 print([[
 
-DYHUB WWWWWWWWW
+DYHUB - dsc.gg/dyhub
 
                                                                         
 
@@ -140,7 +140,6 @@ do
             }
         )
     }
-    Tabs.MainTab:SelectTab(1)
     local Players = game:GetService("Players")
     local RunService = game:GetService("RunService")
     local LocalPlayer = Players.LocalPlayer
