@@ -1,3 +1,5 @@
+-- hihi
+
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
@@ -10443,12 +10445,12 @@ elseif game.PlaceId == 13833961666 then
     })
 elseif game.PlaceId == 9431156611 then
     local Window = Library:CreateWindow({
-        Title = "Slap Royale 🏆",
+        Title = "DYHUB",
         Center = true,
         AutoShow = true,
         Resizable = true,
-        Footer = "Omega X Article Hub Version: 1.0.5",
-        Icon = 83462777349222,
+        Footer = "DYHUB @ Premium - Slap Royale 🏆 (dsc.gg/dyhub)",
+        Icon = 86730141841188,
         ShowCustomCursor = true,
         NotifySide = "Right",
         TabPadding = 2,
@@ -11513,12 +11515,12 @@ elseif game.PlaceId == 9431156611 then
     })
 elseif game.PlaceId == 14422118326 then
     local Window = Library:CreateWindow({
-        Title = "Maze Null ☠️",
+        Title = "DYHUB",
         Center = true,
         AutoShow = true,
         Resizable = true,
-        Footer = "Omega X Article Hub Version: 1.0.5",
-        Icon = 83462777349222,
+        Footer = "DYHUB @ Premium - Maze Null ☠️ (dsc.gg/dyhub)",
+        Icon = 86730141841188,
         ShowCustomCursor = true,
         NotifySide = "Right",
         TabPadding = 2,
@@ -11832,12 +11834,12 @@ elseif game.PlaceId == 17290438723 then
     end)
 elseif game.PlaceId == 18550498098 then
     local Window = Library:CreateWindow({
-        Title = "Boss Guide ⚔️",
+        Title = "DYHUB",
         Center = true,
         AutoShow = true,
         Resizable = true,
-        Footer = "Omega X Article Hub Version: 1.0.5",
-        Icon = 83462777349222,
+        Footer = "DYHUB @ Premium - Boss Guide ⚔️ (dsc.gg/dyhub)",
+        Icon = 86730141841188,
         ShowCustomCursor = true,
         NotifySide = "Right",
         TabPadding = 2,
@@ -12389,12 +12391,12 @@ elseif game.PlaceId == 18550498098 then
     })
 elseif game.PlaceId == 7234087065 then
     local Window = Library:CreateWindow({
-        Title = "Lobby OOG 🐕",
+        Title = "DYHUB",
         Center = true,
         AutoShow = true,
         Resizable = true,
-        Footer = "Omega X Article Hub Version: 1.0.5",
-        Icon = 83462777349222,
+        Footer = "DYHUB @ Premium - Lobby OOG 🐕 (dsc.gg/dyhub)",
+        Icon = 86730141841188,
         ShowCustomCursor = true,
         NotifySide = "Right",
         TabPadding = 2,
@@ -12506,12 +12508,12 @@ elseif game.PlaceId == 7234087065 then
     })
 elseif game.PlaceId == 74169485398268 then
     local Window = Library:CreateWindow({
-        Title = "Maze Bind 👁️‍🗨️",
+        Title = "DYHUB",
         Center = true,
         AutoShow = true,
         Resizable = true,
-        Footer = "Omega X Article Hub Version: 1.0.5",
-        Icon = 83462777349222,
+        Footer = "DYHUB @ Premium - Maze Bind 👁️‍🗨️ (dsc.gg/dyhub)",
+        Icon = 86730141841188,
         ShowCustomCursor = true,
         NotifySide = "Right",
         TabPadding = 2,
@@ -12538,12 +12540,12 @@ elseif game.PlaceId == 74169485398268 then
     end)
 elseif game.PlaceId == 102908326578005 then
     local Window = Library:CreateWindow({
-        Title = "OOG Home Jorgis 🏠",
+        Title = "DYHUB",
         Center = true,
         AutoShow = true,
         Resizable = true,
-        Footer = "Omega X Article Hub Version: 1.0.5",
-        Icon = 83462777349222,
+        Footer = "DYHUB @ Premium - OOG Home Jorgis 🏠 (dsc.gg/dyhub)",
+        Icon = 86730141841188,
         ShowCustomCursor = true,
         NotifySide = "Right",
         TabPadding = 2,
@@ -12583,12 +12585,12 @@ elseif game.PlaceId == 102908326578005 then
     end)
 elseif game.PlaceId == 115782629143468 then
     local Window = Library:CreateWindow({
-        Title = "TOH 🪜",
+        Title = "DYHUB",
         Center = true,
         AutoShow = true,
         Resizable = true,
-        Footer = "Omega X Article Hub Version: 1.0.5",
-        Icon = 83462777349222,
+        Footer = "DYHUB @ Premium - TOH 🪜 (dsc.gg/dyhub)",
+        Icon = 86730141841188,
         ShowCustomCursor = true,
         NotifySide = "Right",
         TabPadding = 2,
@@ -12604,12 +12606,12 @@ elseif game.PlaceId == 115782629143468 then
     end)
 elseif game.PlaceId == 92516899071319 then
     local Window = Library:CreateWindow({
-        Title = "Map Dreams 💤",
+        Title = "DYHUB",
         Center = true,
         AutoShow = true,
         Resizable = true,
-        Footer = "Omega X Article Hub Version: 1.0.5",
-        Icon = 83462777349222,
+        Footer = "DYHUB @ Premium - Map Dreams 💤 (dsc.gg/dyhub)",
+        Icon = 86730141841188,
         ShowCustomCursor = true,
         NotifySide = "Right",
         TabPadding = 2,
@@ -12640,12 +12642,12 @@ elseif game.PlaceId == 92516899071319 then
     end)
 elseif game.PlaceId == 118650724506449 then
     local Window = Library:CreateWindow({
-        Title = "Bad Dreams 💤",
+        Title = "DYHUB",
         Center = true,
         AutoShow = true,
         Resizable = true,
-        Footer = "Omega X Article Hub Version: 1.0.5",
-        Icon = 83462777349222,
+        Footer = "DYHUB @ Premium - Bad Dreams 💤 (dsc.gg/dyhub)",
+        Icon = 86730141841188,
         ShowCustomCursor = true,
         NotifySide = "Right",
         TabPadding = 2,
@@ -12661,12 +12663,12 @@ elseif game.PlaceId == 118650724506449 then
     end)
 elseif game.PlaceId == 97220865182663 then
     local Window = Library:CreateWindow({
-        Title = "Boss Mouse 🐀",
+        Title = "DYHUB",
         Center = true,
         AutoShow = true,
         Resizable = true,
-        Footer = "Omega X Article Hub Version: 1.0.5",
-        Icon = 83462777349222,
+        Footer = "DYHUB @ Premium - Boss Mouse 🐀 (dsc.gg/dyhub)",
+        Icon = 86730141841188,
         ShowCustomCursor = true,
         NotifySide = "Right",
         TabPadding = 2,
@@ -12726,12 +12728,12 @@ elseif game.PlaceId == 97220865182663 then
     })
 elseif game.PlaceId == 98726100529621 then
     local Window = Library:CreateWindow({
-        Title = "Map Obby Hexa 🔰",
+        Title = "DYHUB",
         Center = true,
         AutoShow = true,
         Resizable = true,
-        Footer = "Omega X Article Hub Version: 1.0.5",
-        Icon = 83462777349222,
+        Footer = "DYHUB @ Premium - Map Obby Hexa 🔰 (dsc.gg/dyhub)",
+        Icon = 86730141841188,
         ShowCustomCursor = true,
         NotifySide = "Right",
         TabPadding = 2,
@@ -12779,12 +12781,12 @@ elseif game.PlaceId == 98726100529621 then
     end)
 elseif game.PlaceId == 136005148166028 then
     local Window = Library:CreateWindow({
-        Title = "Map Designer Roblox 🛠️",
+        Title = "DYHUB",
         Center = true,
         AutoShow = true,
         Resizable = true,
-        Footer = "Omega X Article Hub Version: 1.0.5",
-        Icon = 83462777349222,
+        Footer = "DYHUB @ Premium - Map Designer Roblox 🛠️ (dsc.gg/dyhub)",
+        Icon = 86730141841188,
         ShowCustomCursor = true,
         NotifySide = "Right",
         TabPadding = 2,
