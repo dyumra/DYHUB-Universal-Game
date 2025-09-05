@@ -6,8 +6,6 @@ DYHUB - dsc.gg/dyhub
 
 ]])
 
---loadstring(game:HttpGet("https://pastefy.app/le3JMGVe/raw", true))()
-
 do
     local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
     local Players = game:GetService("Players")
@@ -1945,7 +1943,7 @@ Tabs.MainTab:Button({
                         }
                     )
                 else
-                    WindUI:Notify({Title = "Auto Inject", Content = "Автоинжект отключен", Duration = 3})
+                    WindUI:Notify({Title = "Auto Inject", Content = "Autoinjection disabled", Duration = 3})
                 end
             end
         }
@@ -2009,7 +2007,7 @@ Tabs.MainTab:Button({
                 pcall(
                     function()
                         loadstring(game:HttpGet(AutoInject.ScriptURL))()
-                        WindUI:Notify({Title = "Manual Inject", Content = "Скрипт успешно перезагружен!", Duration = 3})
+                        WindUI:Notify({Title = "Manual Inject", Content = "The script has been successfully reloaded!", Duration = 3})
                     end
                 )
             end
