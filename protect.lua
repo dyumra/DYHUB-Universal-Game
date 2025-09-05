@@ -1,4 +1,4 @@
-local start = getgenv().auto_farm or true 
+local start = getgenv().auto_farm or false
 
 local DELAY_BEFORE_WARP = getgenv().delay_teleport or 0.1
 local OFFSET_ABOVE = 1
