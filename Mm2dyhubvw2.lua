@@ -1,6 +1,6 @@
 print([[
 
-DYHUB WWWWWWWWW
+DYHUB WWWWWWWWW right?
 
                                                                         
 
@@ -62,7 +62,7 @@ do
         {
             Title = gradient("DYHUB - Murder Mystery 2", Color3.fromHex("#ff0000"), Color3.fromHex("#000000")),
             Icon = "rbxassetid://104487529937663",
-            Author = "Version: 2.8.6 | Executor"
+            Author = "Version: 2.8.6 | Executor",
             Folder = "WindUI",
             Size = UDim2.fromOffset(500, 300),
             Transparent = true,
