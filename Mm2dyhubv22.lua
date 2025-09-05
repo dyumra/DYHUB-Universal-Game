@@ -1,6 +1,6 @@
 print([[
 
-DYHUB WWWWWWWWWreal
+DYHUB WWWWWWWWW
 
                                                                         
 
@@ -140,7 +140,7 @@ do
             }
         )
     }
-    Tabs.Window:SelectTab(1)
+    Tabs.MainTab:SelectTab(1)
     local Players = game:GetService("Players")
     local RunService = game:GetService("RunService")
     local LocalPlayer = Players.LocalPlayer
