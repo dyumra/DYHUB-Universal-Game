@@ -1,6 +1,6 @@
 print([[
 
-DYHUB WWWWWWWWW
+DYHUB WWWWWWWWWreal
 
                                                                         
 
@@ -34,7 +34,7 @@ do
     WindUI:Popup(
         {
             Title = gradient("DYHUB Loaded! - Murder Mystery 2", Color3.fromHex("#ff0000"), Color3.fromHex("#000000")),
-            Icon = 104487529937663,
+            Icon = "rbxassetid://104487529937663",
             Content = gradient("+ Version: Premium", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")) ..
                 gradient(" [DYHUB OFFICIAL]", Color3.fromHex("#ff0000"), Color3.fromHex("#000000")),
             Buttons = {
@@ -61,7 +61,7 @@ do
         WindUI:CreateWindow(
         {
             Title = gradient("DYHUB - Murder Mystery 2", Color3.fromHex("#ff0000"), Color3.fromHex("#000000")),
-            Icon = 104487529937663,
+            Icon = "rbxassetid://104487529937663",
             Author = gradient("Version: 3.2.8 | Executor", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")),
             Folder = "WindUI",
             Size = UDim2.fromOffset(500, 300),
@@ -140,6 +140,7 @@ do
             }
         )
     }
+    Tabs.Window:SelectTab(1)
     local Players = game:GetService("Players")
     local RunService = game:GetService("RunService")
     local LocalPlayer = Players.LocalPlayer
