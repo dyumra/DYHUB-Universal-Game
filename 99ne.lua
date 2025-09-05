@@ -2,9 +2,9 @@
 local loop = getgenv().loop or false
 
 -- ====== settings ======
-local tp = getgenv().auto_win or 1
+local tp = getgenv().auto_win
 local speed = getgenv().get_speed or 1
-local egg = getgenv().buy_egg or 1
+local egg = getgenv().buy_egg
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
