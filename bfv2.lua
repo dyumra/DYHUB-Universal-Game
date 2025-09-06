@@ -2,7 +2,7 @@ local WindUI = (loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/re
 local Window = WindUI:CreateWindow({
     Title = "DYHUB",
     Icon = "rbxassetid://104487529937663",
-    Author = "Blox Fruit | Pre-3.51",
+    Author = "Blox Fruit | Premium Version",
     Folder = "DYHUB_BF",
     Size = UDim2.fromOffset(550, 300),
     Transparent = true,
@@ -23,10 +23,6 @@ Window:EditOpenButton({
     StrokeThickness = 2,
     Color = ColorSequence.new(Color3.fromRGB(30, 30, 30), Color3.fromRGB(255, 255, 255)),
     Draggable = true
-});
-Window:Tag({
-    Title = "Premium",
-    Color = Color3.fromHex("#ffd000ff")
 });
 local Tabs = {
     InfoTab = Window:Tab({
