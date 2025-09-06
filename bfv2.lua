@@ -32,6 +32,7 @@ local Tabs = {
         Icon = "info",
         Desc = "Info Section"
     }),
+    MainDivider = Window:Divider(),
     MainTab = Window:Tab({
         Title = "Farming",
         Icon = "rocket",
@@ -52,6 +53,7 @@ local Tabs = {
         Icon = "settings",
         Desc = "Settings Section"
     }),
+    PlayerDivider = Window:Divider(),
     LocalPlayerTab = Window:Tab({
         Title = "Player",
         Icon = "user",
