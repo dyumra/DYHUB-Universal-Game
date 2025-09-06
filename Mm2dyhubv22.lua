@@ -61,7 +61,7 @@ do
             Title = gradient("DYHUB - Murder Mystery 2", Color3.fromHex("#ff0000"), Color3.fromHex("#000000")),
             Icon = "rbxassetid://104487529937663",
             Author = gradient("Version: 3.2.8 | Executor", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")),
-            Folder = "WindUI",
+            Folder = "DYHUB_MM2",
             Size = UDim2.fromOffset(500, 300),
             Transparent = true,
             Theme = "Dark",
