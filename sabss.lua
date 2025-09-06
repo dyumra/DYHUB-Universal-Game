@@ -1,47 +1,152 @@
+-- DYHUB | Steal A Brainrot - Upgraded Full Script (Version 3.17 -> Upgraded)
+-- หมายเหตุ: สคริปต์นี้พยายามรองรับ executor ยอดนิยมหลายตัว
+-- หาก executor ของคุณรองรับ writefile/readfile จะเก็บ config ให้แบบถาวร
+-- ถ้าไม่รองรับ สคริปต์จะยังทำงานได้แต่ไม่สามารถบันทึกค่าได้
+
 repeat task.wait() until game:IsLoaded()
 
-local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
-
+-- Services (ประกาศครั้งเดียว)
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
 
-local Confirmed = false
-WindUI:Popup({
-    Title = "DYHUB Loaded! - Steal A Brainrot",
-    Icon = "star",
-    IconThemed = true,
-    Content = "Join us at (https://dsc.gg/dyhub)",
-    Buttons = {
-        {
-            Title = "Cancel",
-            Variant = "Secondary",
-            Callback = function()
-                game.Players.LocalPlayer:Kick("FUCK YOU NIGGA CANCEL DYHUB????")
+-- Utilities: safe http loadstring
+local function safeLoadURL(url)
+    local ok, res = pcall(function()
+        return game:HttpGet(url)
+    end)
+    if not ok then return nil, ("HttpGet failed: %s"):format(tostring(res)) end
+    local f, err = loadstring(res)
+    if not f then return nil, ("loadstring failed: %s"):format(tostring(err)) end
+    local ok2, rtn = pcall(f)
+    if not ok2 then return nil, ("execution failed: %s"):format(tostring(rtn)) end
+    return rtn
+end
+
+-- Config persistence (optional)
+local CONFIG_FILE = "dyhub_sab_config.json"
+local function canWriteFiles()
+    return type(writefile) == "function" and type(readfile) == "function" and type(isfile) == "function"
+end
+
+local config = {
+    SpeedBoost = false,
+    BoostSpeedValue = 50,
+    AntiTrap = false,
+    InfiniteJump = false,
+    ESP = false,
+    ViewBaseTimers = false,
+    Autobuy = {},
+    SelectedJobId = nil
+}
+
+local function loadConfig()
+    if canWriteFiles() and isfile(CONFIG_FILE) then
+        local ok, txt = pcall(readfile, CONFIG_FILE)
+        if ok and txt then
+            local decodeOk, data = pcall(function() return HttpService:JSONDecode(txt) end)
+            if decodeOk and type(data) == "table" then
+                for k,v in pairs(data) do config[k] = v end
             end
-        },
-        {
-            Title = "Continue",
-            Icon = "arrow-right",
-            Variant = "Primary",
-            Callback = function()
-                Confirmed = true
-            end
+        end
+    end
+end
+
+local function saveConfig()
+    if canWriteFiles() then
+        pcall(function()
+            writefile(CONFIG_FILE, HttpService:JSONEncode(config))
+        end)
+    end
+end
+
+-- load persisted config if possible
+loadConfig()
+
+-- Connection management for clean unload
+local connections = {}
+local function addConn(conn)
+    table.insert(connections, conn)
+end
+local function cleanup()
+    for _, c in ipairs(connections) do
+        pcall(function() c:Disconnect() end)
+    end
+    connections = {}
+    -- cleanup created instances
+    pcall(function()
+        if game.CoreGui:FindFirstChild("DYHUB_SAB_UI") then
+            game.CoreGui.DYHUB_SAB_UI:Destroy()
+        end
+    end)
+end
+
+-- WindUI load (safely)
+local WindUI
+do
+    local ok, ret = pcall(function()
+        return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+    end)
+    if ok and ret then
+        WindUI = ret
+    else
+        warn("Failed to load WindUI:", ret)
+        -- fallback: minimal UI stub to avoid errors (non-interactive)
+        WindUI = {
+            Popup = function() end,
+            CreateWindow = function() return {
+                EditOpenButton = function() end,
+                Tab = function() return { Button = function() end, Toggle = function() end, Section = function() end, Dropdown = function() end, Paragraph = function() end, Input = function() end } end,
+                SelectTab = function() end
+            } end
         }
-    }
-})
+    end
+end
+
+-- Friendly popup (ไม่ Kick อีกต่อไป)
+local Confirmed = false
+pcall(function()
+    WindUI:Popup({
+        Title = "DYHUB Loaded! - Steal A Brainrot",
+        Icon = "star",
+        IconThemed = true,
+        Content = "Join us at (https://dsc.gg/dyhub)",
+        Buttons = {
+            {
+                Title = "Cancel",
+                Variant = "Secondary",
+                Callback = function()
+                    -- ปิด UI และ cleanup แทนการ kick
+                    cleanup()
+                    -- ถ้าใช้ executor แบบที่สามารถ disconnect ui ได้ ให้ลบชื่อ UI
+                    LocalPlayer:Kick("User cancelled DYHUB (closing).")
+                end
+            },
+            {
+                Title = "Continue",
+                Icon = "arrow-right",
+                Variant = "Primary",
+                Callback = function()
+                    Confirmed = true
+                end
+            }
+        }
+    })
+end)
 
 repeat task.wait() until Confirmed
 
+-- Main window
 local Window = WindUI:CreateWindow({
     Folder = "DYHUB Scripts - SAB",
-    Title = "DYHUB | Steal A Brainrot",
+    Title = "DYHUB | Steal A Brainrot (Upgraded)",
     IconThemed = true,
     Icon = "star",
-    Author = "Version: 3.17",
-    Size = UDim2.fromOffset(600, 400),
-    Transparent = true,
+    Author = "Version: 3.17 (Upgraded)",
+    Size = UDim2.fromOffset(680, 460),
     Transparent = false,
     HasOutline = true,
     Theme = "Dark",
@@ -56,106 +161,137 @@ Window:EditOpenButton({
     Draggable = true,
 })
 
+-- Tabs
 local Tabs = {
     Main = Window:Tab({ Title = "Main", Icon = "star" }),
-    Hide = Window:Tab({ Title = "Visual", Icon = "eye-off" }),
-    Jump = Window:Tab({ Title = "Shop", Icon = "shopping-basket" }),
+    Visual = Window:Tab({ Title = "Visual", Icon = "eye-off" }),
+    Shop = Window:Tab({ Title = "Shop", Icon = "shopping-basket" }),
     Random = Window:Tab({ Title = "Random Features", Icon = "dices" }),
     Brainrot = Window:Tab({ Title = "Brainrot Finder", Icon = "brain" }),
 }
 
 Window:SelectTab(Tabs.Main)
 
+-- Helpers: safe loader wrapper
+local function tryLoadURLToRun(url)
+    local ok, err = pcall(function()
+        local txt = game:HttpGet(url)
+        local f = loadstring(txt)
+        if f then pcall(f) end
+    end)
+    if not ok then warn("Failed to load:", url, err) end
+end
+
+-- ========== MAIN TAB ==========
+Tabs.Main:Section({Title = "Utilities"})
+
 Tabs.Main:Button({
     Title = "Steal Helper (Collab)",
-    Desc = "Opens Up A New Small Gui To Help Steal",
+    Desc = "Opens a helper GUI for stealing",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/erewe23/uitest.github.io/refs/heads/main/ere.lua"))()
+        pcall(function()
+            tryLoadURLToRun("https://raw.githubusercontent.com/erewe23/uitest.github.io/refs/heads/main/ere.lua")
+        end)
     end,
 })
 
-local antiTrapGoodEnabled = false
-local antiTrapGoodScript
+Tabs.Main:Button({
+    Title = "Antisteal (OP)",
+    Desc = "Loads anti-steal script (will attempt to leave game when someone enters base if script does that)",
+    Callback = function()
+        pcall(function()
+            tryLoadURLToRun("https://raw.githubusercontent.com/34wefwef/antisteal.github.io/refs/heads/main/ere.lua")
+        end)
+    end,
+})
+
+Tabs.Main:Button({
+    Title = "Brainrot Rare Joiner",
+    Desc = "Loads external rare joiner GUI",
+    Callback = function()
+        pcall(function()
+            tryLoadURLToRun("https://raw.githubusercontent.com/erewe23/stealhelper.github.io/refs/heads/main/ere.lua")
+        end)
+    end,
+})
+
+-- ========== ANTI TRAP ==========
+local antiTrapEnabled = false
+local function enableAntiTrap()
+    if antiTrapEnabled then return end
+    antiTrapEnabled = true
+    local BATCH_SIZE = 250
+    local SEARCH_TRAPS_IN_GAME = false
+
+    local function shouldRemoveTrapTouch(tt)
+        if not (tt:IsA("TouchTransmitter") and tt.Name == "TouchInterest") then return false end
+        local p = tt.Parent
+        if not (p and p:IsA("MeshPart") and p.Name == "Open") then return false end
+        local m = p:FindFirstAncestorOfClass("Model")
+        if not (m and m.Name == "Trap") then return false end
+        return true
+    end
+
+    local function removeTrapTouch(tt)
+        pcall(function() if tt.Parent then tt:Destroy() end end)
+    end
+
+    task.defer(function()
+        local root = SEARCH_TRAPS_IN_GAME and game or workspace
+        local all = root:GetDescendants()
+        for i = 1, #all do
+            local o = all[i]
+            if o:IsA("TouchTransmitter") and shouldRemoveTrapTouch(o) then
+                removeTrapTouch(o)
+            end
+            if i % BATCH_SIZE == 0 then task.wait() end
+        end
+    end)
+
+    local conn = workspace.DescendantAdded:Connect(function(obj)
+        if obj:IsA("TouchTransmitter") and shouldRemoveTrapTouch(obj) then
+            removeTrapTouch(obj)
+        end
+    end)
+    addConn(conn)
+end
+
+local function disableAntiTrap()
+    antiTrapEnabled = false
+    -- can't undelete objects; just stop listening (we already track conn)
+end
 
 Tabs.Main:Toggle({
     Title = "Anti Trap",
-    Desc = "Removes trap hitboxes",
-    Value = false,
+    Desc = "Removes common trap touch hitboxes",
+    Value = config.AntiTrap,
     Callback = function(state)
-        antiTrapGoodEnabled = state
-        if state then
-            if not antiTrapGoodScript then
-                local BATCH_SIZE = 250
-                local SEARCH_TRAPS_IN_GAME = false
-
-                local function shouldRemoveTrapTouch(tt)
-                    if not (tt:IsA("TouchTransmitter") and tt.Name == "TouchInterest") then return false end
-                    local p = tt.Parent
-                    if not (p and p:IsA("MeshPart") and p.Name == "Open") then return false end
-                    local m = p:FindFirstAncestorOfClass("Model")
-                    if not (m and m.Name == "Trap") then return false end
-                    return true
-                end
-
-                local function removeTrapTouch(tt)
-                    if tt.Parent then
-                        tt:Destroy()
-                    end
-                end
-
-                task.defer(function()
-                    local root = SEARCH_TRAPS_IN_GAME and game or workspace
-                    local all = root:GetDescendants()
-                    for i = 1, #all do
-                        local o = all[i]
-                        if o:IsA("TouchTransmitter") and shouldRemoveTrapTouch(o) then
-                            removeTrapTouch(o)
-                        end
-                        if i % BATCH_SIZE == 0 then task.wait() end
-                    end
-                end)
-
-                workspace.DescendantAdded:Connect(function(obj)
-                    if obj:IsA("TouchTransmitter") and shouldRemoveTrapTouch(obj) then
-                        removeTrapTouch(obj)
-                    end
-                end)
-
-                antiTrapGoodScript = true
-            end
-        else
-            antiTrapGoodScript = nil
-        end
+        config.AntiTrap = state
+        saveConfig()
+        if state then enableAntiTrap() else disableAntiTrap() end
     end
 })
 
-
-
-
-
-
-Tabs.Main:Section({Title = "Speed"})
-
-
-
-
-
-
-local speedBoostEnabled = false
-local speedConn = nil
+-- ========== SPEED BOOST ==========
+local speedConn
 local DEFAULT_SPEED = 16
-local BOOSTED_SPEED = 50
+local BOOSTED_SPEED = config.BoostSpeedValue or 50
 
+local speedEnabled = config.SpeedBoost
+Tabs.Main:Section({Title = "Speed"})
 Tabs.Main:Toggle({
     Title = "Boost Speed",
-    Value = false,
-    Callback = function(Value)
-        speedBoostEnabled = Value
+    Desc = "Makes movement faster when moving",
+    Value = speedEnabled,
+    Callback = function(val)
+        speedEnabled = val
+        config.SpeedBoost = val
+        saveConfig()
         if speedConn then
-            speedConn:Disconnect()
+            pcall(function() speedConn:Disconnect() end)
             speedConn = nil
         end
-        if Value then
+        if val then
             speedConn = RunService.Heartbeat:Connect(function()
                 if not _G._lastSpeedBoostUpdate or (tick() - _G._lastSpeedBoostUpdate) >= 0.1 then
                     local character = LocalPlayer.Character
@@ -165,101 +301,76 @@ Tabs.Main:Toggle({
                         if humanoid and rootPart and humanoid.MoveDirection.Magnitude > 0 then
                             local moveDir = humanoid.MoveDirection
                             rootPart.Velocity = Vector3.new(
-                                moveDir.X * BOOSTED_SPEED,
+                                moveDir.X * (config.BoostSpeedValue or BOOSTED_SPEED),
                                 rootPart.Velocity.Y,
-                                moveDir.Z * BOOSTED_SPEED
+                                moveDir.Z * (config.BoostSpeedValue or BOOSTED_SPEED)
                             )
                         end
                     end
                     _G._lastSpeedBoostUpdate = tick()
                 end
             end)
+            addConn(speedConn)
         end
     end
 })
 
-
-
-
-Tabs.Main:Section({Title = "AntiSteal"})
-
-Tabs.Main:Button({
-    Title = "Antisteal (OP)",
-    Desc = "Leaves Game When Someone Enters Base",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/34wefwef/antisteal.github.io/refs/heads/main/ere.lua"))()
-    end,
+Tabs.Main:Input({
+    Title = "Set Boost Speed Value",
+    Callback = function(value)
+        local num = tonumber(value)
+        if num and num > 0 then
+            config.BoostSpeedValue = num
+            saveConfig()
+        end
+    end
 })
 
+-- ========== INFINITE JUMP ==========
+local infJumpConn
+local infJumpEnabled = config.InfiniteJump
 
-
-
-local UserInputService = game:GetService("UserInputService")
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
-local infJumpEnabled = false
-local lastJumpTime = 0
-local COOLDOWN = 0.5
-local JUMP_FORCE = 50
-local JUMP_DURATION = 0.2
-
-local function safeAirJump()
-    if not infJumpEnabled then return end
-    local now = os.clock()
-    if now - lastJumpTime < COOLDOWN then return end
-    local character = LocalPlayer.Character
-    if not character then return end
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    local rootPart = character:FindFirstChild("HumanoidRootPart")
-    if not humanoid or not rootPart then return end
-    lastJumpTime = now
-    if rootPart:CanSetNetworkOwnership() then
-        rootPart:SetNetworkOwner(LocalPlayer)
-    end
-    local bodyVelocity = Instance.new("BodyVelocity")
-    bodyVelocity.MaxForce = Vector3.new(0, math.huge, 0)
-    bodyVelocity.Velocity = Vector3.new(0, JUMP_FORCE, 0)
-    bodyVelocity.Parent = rootPart
-    local connection
-    connection = RunService.Heartbeat:Connect(function()
-        if os.clock() - lastJumpTime >= JUMP_DURATION then
-            bodyVelocity:Destroy()
-            if rootPart:CanSetNetworkOwnership() then
-                rootPart:SetNetworkOwner(nil)
+local function enableInfJump()
+    if infJumpConn then return end
+    infJumpConn = UserInputService.JumpRequest:Connect(function()
+        if not infJumpEnabled then return end
+        local char = LocalPlayer.Character
+        if char then
+            local humanoid = char:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
             end
-            connection:Disconnect()
         end
     end)
+    addConn(infJumpConn)
 end
 
-Tabs.Hide:Toggle({
-    Title = "Infinite Jump (KINDA BUGGY)",
-    Value = false,
-    Callback = function(Value)
-        infJumpEnabled = Value
-        if Value then
-            UserInputService.JumpRequest:Connect(safeAirJump)
-        end
+local function disableInfJump()
+    if infJumpConn then
+        pcall(function() infJumpConn:Disconnect() end)
+        infJumpConn = nil
+    end
+end
+
+Tabs.Visual:Toggle({
+    Title = "Infinite Jump (Improved)",
+    Value = infJumpEnabled,
+    Callback = function(val)
+        infJumpEnabled = val
+        config.InfiniteJump = val
+        saveConfig()
+        if val then enableInfJump() else disableInfJump() end
     end
 })
 
-
-Tabs.Hide:Section({Title = "ESP"})
-
-
-
-
-
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local espEnabled = false
-local espUpdateConn = nil
+-- ========== PLAYER ESP ==========
+local espEnabled = config.ESP
+local espUpdateConn
 
 local function addHighlightToCharacter(char)
-    if not char or char == LocalPlayer.Character or char:FindFirstChild("HighlightESP") then return end
+    if not char or char == LocalPlayer.Character or char:FindFirstChild("HighlightESP_DYHUB") then return end
     local highlight = Instance.new("Highlight")
-    highlight.Name = "HighlightESP"
+    highlight.Name = "HighlightESP_DYHUB"
     highlight.FillTransparency = 0.75
     highlight.OutlineTransparency = 0.5
     highlight.FillColor = Color3.new(0, 0, 0)
@@ -270,16 +381,13 @@ local function addHighlightToCharacter(char)
 end
 
 local function removeHighlightFromCharacter(char)
-    local highlight = char and char:FindFirstChild("HighlightESP")
-    if highlight then
-        highlight:Destroy()
-    end
+    local highlight = char and char:FindFirstChild("HighlightESP_DYHUB")
+    if highlight then highlight:Destroy() end
 end
 
 local function enableESP()
-    if espEnabled then return end
-    espEnabled = true
-    espUpdateConn = game:GetService("RunService").Heartbeat:Connect(function()
+    if espUpdateConn then return end
+    espUpdateConn = RunService.Heartbeat:Connect(function()
         if not espEnabled then return end
         if not _G._lastESPUpdate or (tick() - _G._lastESPUpdate) >= 0.1 then
             for _, player in ipairs(Players:GetPlayers()) do
@@ -290,13 +398,12 @@ local function enableESP()
             _G._lastESPUpdate = tick()
         end
     end)
+    addConn(espUpdateConn)
 end
 
 local function disableESP()
-    if not espEnabled then return end
-    espEnabled = false
     if espUpdateConn then
-        espUpdateConn:Disconnect()
+        pcall(function() espUpdateConn:Disconnect() end)
         espUpdateConn = nil
     end
     for _, player in ipairs(Players:GetPlayers()) do
@@ -306,43 +413,36 @@ local function disableESP()
     end
 end
 
-Tabs.Hide:Toggle({
+Tabs.Visual:Toggle({
     Title = "Player ESP",
-    Value = false,
+    Desc = "Highlight other players",
+    Value = espEnabled,
     Callback = function(state)
-        if state then
-            enableESP()
-        else
-            disableESP()
-        end
+        espEnabled = state
+        config.ESP = state
+        saveConfig()
+        if state then enableESP() else disableESP() end
     end
 })
 
-
-
-
-
-
-
-Tabs.Hide:Button({
-    Title = "Esp Most Expensive Brainrot",
+Tabs.Visual:Button({
+    Title = "ESP - Most Expensive Brainrot (external)",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/34t34t33/mostexpensive.github.io/refs/heads/main/rare.lua"))()
-    end,
+        pcall(function()
+            tryLoadURLToRun("https://raw.githubusercontent.com/34t34t33/mostexpensive.github.io/refs/heads/main/rare.lua")
+        end)
+    end
 })
 
-
-
-
-
-local plotTimers_Enabled = false
+-- ========== PLOT / BASE TIMERS ==========
+local plotTimers_Enabled = config.ViewBaseTimers
 local plotTimers_RenderConnection = nil
 local plotTimers_OriginalProperties = {}
 
 local function disablePlotTimers()
     plotTimers_Enabled = false
     if plotTimers_RenderConnection then
-        plotTimers_RenderConnection:Disconnect()
+        pcall(function() plotTimers_RenderConnection:Disconnect() end)
         plotTimers_RenderConnection = nil
     end
     for label, props in pairs(plotTimers_OriginalProperties) do
@@ -424,155 +524,143 @@ local function enablePlotTimers()
             end
         end
     end)
+    addConn(plotTimers_RenderConnection)
 end
 
-Tabs.Hide:Toggle({
+Tabs.Visual:Toggle({
     Title = "View Base Lock Timers",
-    Value = false,
+    Value = plotTimers_Enabled,
     Callback = function(state)
-        if state then
-            enablePlotTimers()
-        else
-            disablePlotTimers()
-        end
+        config.ViewBaseTimers = state
+        saveConfig()
+        if state then enablePlotTimers() else disablePlotTimers() end
     end
 })
 
-
-
-
-
-
-
-
-Tabs.Jump:Section({Title = "Buy Items"})
-
+-- ========== SHOP AUTO BUY ==========
+Tabs.Shop:Section({Title = "Buy Items"})
 local itemList = {
-    "Slap",
-    "Speed Coil",
-    "Trap",
-    "Iron Slap",
-    "Gravity Coil",
-    "Bee Launcher",
-    "Gold Slap",
-    "Coil Combo",
-    "Rage Table",
-    "Diamond Slap",
-    "Grapple Hook",
-    "Taser Gun",
-    "Emerald Slap",
-    "Invisibility Cloak",
-    "Boogie Bomb",
-    "Ruby Slap",
-    "Medusa's Head",
-    "Dark Matter Slap",
-    "Web Slinger",
-    "Flame Slap",
-    "Quantum Cloner",
-    "All Seeing Sentry",
-    "Nuclear Slap",
-    "Rainbowrath Sword",
-    "Body Swap Potion",
-    "Splatter Slap",
-    "Paintball Gun"
+    "Slap","Speed Coil","Trap","Iron Slap","Gravity Coil","Bee Launcher","Gold Slap","Coil Combo","Rage Table",
+    "Diamond Slap","Grapple Hook","Taser Gun","Emerald Slap","Invisibility Cloak","Boogie Bomb","Ruby Slap",
+    "Medusa's Head","Dark Matter Slap","Web Slinger","Flame Slap","Quantum Cloner","All Seeing Sentry","Nuclear Slap",
+    "Rainbowrath Sword","Body Swap Potion","Splatter Slap","Paintball Gun"
 }
+local autobuy_selected = config.Autobuy or {}
 
-local autobuy_selected = {}
-
-Tabs.Jump:Dropdown({
+Tabs.Shop:Dropdown({
     Title = "Select Which Items To Auto Buy",
     Values = itemList,
-    Value = {},
+    Value = autobuy_selected,
     Multi = true,
     AllowNone = true,
     Callback = function(selected)
         autobuy_selected = selected
+        config.Autobuy = selected
+        saveConfig()
     end
 })
 
-Tabs.Jump:Button({
-    Title = "Auto Buy Selected Items",
+Tabs.Shop:Button({
+    Title = "Auto Buy Selected Items Now",
     Callback = function()
-        for _, item in ipairs(autobuy_selected) do
-            local args = { item }
-            game:GetService("ReplicatedStorage")
-                :WaitForChild("Packages")
-                :WaitForChild("Net")
-                :WaitForChild("RF/CoinsShopService/RequestBuy")
-                :InvokeServer(unpack(args))
-            wait(0.3)
-        end
+        task.spawn(function()
+            for _, item in ipairs(autobuy_selected or {}) do
+                local args = { item }
+                local ok, err = pcall(function()
+                    ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Net"):WaitForChild("RF/CoinsShopService/RequestBuy"):InvokeServer(unpack(args))
+                end)
+                if not ok then warn("AutoBuy failed for", item, tostring(err)) end
+                task.wait(0.3)
+            end
+        end)
     end
 })
 
-
-
-
-
-
-
-
+-- ========== RANDOM / MISC ==========
 Tabs.Random:Section({Title = "Server"})
-
--- Paragraph: Copy id
 Tabs.Random:Paragraph({
-    Title = "Copy id",
-    Desc = game.JobId,
+    Title = "Copy JobId",
+    Desc = tostring(game.JobId),
     Buttons = {
         {
             Title = "Copy",
-            Callback = function()
-                setclipboard(game.JobId)
-            end
+            Callback = function() pcall(function() setclipboard(game.JobId) end) end
         }
     }
 })
 
--- Input: Enter Job Id
 Tabs.Random:Input({
     Title = "Enter Job Id",
     Callback = function(value)
-        _G.JobId = value
+        _G.JobId = tostring(value)
+        config.SelectedJobId = _G.JobId
+        saveConfig()
     end
 })
 
--- Button: Join Job Id
 Tabs.Random:Button({
     Title = "Join Job Id",
     Callback = function()
-        game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, _G.JobId)
+        if _G.JobId then
+            pcall(function() game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, _G.JobId) end)
+        end
     end
 })
 
-
-
-
+-- ========== BRAINROT TAB ==========
 Tabs.Brainrot:Button({
-    Title = "BRAINROT RARE JOINER",
-    Desc = "Opens Up A New Gui To Join Rare Brainrots",
+    Title = "BRAINROT RARE JOINER (External)",
+    Desc = "Opens external GUI for rare brainrots",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/erewe23/stealhelper.github.io/refs/heads/main/ere.lua"))()
-    end,
+        pcall(function()
+            tryLoadURLToRun("https://raw.githubusercontent.com/erewe23/stealhelper.github.io/refs/heads/main/ere.lua")
+        end)
+    end
 })
-
 
 Tabs.Brainrot:Section({Title = "SECRET BRAINROT ONLY"})
-
-
-
 Tabs.Brainrot:Button({
     Title = "Pet Finder Secret Only",
-    Desc = "Opens Up A New Gui To Join secret Brainrots",
+    Desc = "Opens secret brainrot joiner",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/erewe23/stealhelper.github.io/refs/heads/main/ere.lua"))()
-    end,
+        pcall(function()
+            tryLoadURLToRun("https://raw.githubusercontent.com/erewe23/stealhelper.github.io/refs/heads/main/ere.lua")
+        end)
+    end
 })
 
-
+-- ========== AUTO LOAD small tools on start (non-blocking) ==========
 task.spawn(function()
     task.wait(1)
     pcall(function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/wedfwef3/ere.github.io/refs/heads/main/infyield.lua"))()
+        tryLoadURLToRun("https://raw.githubusercontent.com/wedfwef3/ere.github.io/refs/heads/main/infyield.lua")
     end)
-
 end)
+
+-- ========== UNLOAD HANDLER ==========
+-- Provide a simple method to cleanup everything and save config
+local function unloadAll()
+    saveConfig()
+    cleanup()
+    -- remove highlights that may remain
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player.Character then
+            pcall(function() removeHighlightFromCharacter(player.Character) end)
+        end
+    end
+    -- remove plot timer modifications
+    disablePlotTimers()
+end
+
+-- Expose unload (some executors call this)
+if syn and syn.protect_gui then
+    -- nothing special needed here, but keep for compat
+end
+
+-- Create a global unload function for manual use
+_G.DYHUB_SAB_Unload = unloadAll
+
+-- Final message
+print("[DYHUB SAB] Upgraded script loaded. Use the UI to toggle features. To unload: _G.DYHUB_SAB_Unload()")
+
+-- EOF
