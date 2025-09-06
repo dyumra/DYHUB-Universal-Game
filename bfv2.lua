@@ -27,7 +27,7 @@ Window:EditOpenButton({
 Window:Tag({
     Title = "Premium",
     Color = Color3.fromHex("#ffd000ff")
-})
+});
 local Tabs = {
     InfoTab = Window:Tab({
         Title = "Information",
@@ -64,7 +64,6 @@ local Tabs = {
         Icon = "sliders-horizontal",
         Desc = "Stats Section"
     }),
-    bs2 = Window:Divider(),
     SeaEventTab = Window:Tab({
         Title = "Sea Event",
         Icon = "anchor",
@@ -90,7 +89,6 @@ local Tabs = {
         Icon = "bot",
         Desc = "Race Section"
     }),
-    bs1 = Window:Divider(),
     CombatTab = Window:Tab({
         Title = "Combat",
         Icon = "sword",
@@ -121,7 +119,6 @@ local Tabs = {
         Icon = "apple",
         Desc = "Fruit Section"
     }),
-    bs = Window:Divider(),
     MiscTab = Window:Tab({
         Title = "Misc",
         Icon = "layout-grid",
