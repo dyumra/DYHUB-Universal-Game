@@ -1,4 +1,27 @@
--- v8719
+-- v8724
+
+if not game:IsLoaded() then
+    repeat task.wait() until game:IsLoaded()
+end
+
+if setfpscap then
+    setfpscap(1000000)
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "dsc.gg/dyhub",
+        Text = "FPS Unlocked!",
+        Duration = 5,
+        Button1 = "Okay"
+    })
+    warn("FPS Unlocked!")
+else
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "dsc.gg/dyhub",
+        Text = "Your exploit does not support setfpscap.",
+        Duration = 5,
+        Button1 = "Okay"
+    })
+    warn("Your exploit does not support setfpscap.")
+end
 
 local WindUI = (loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua")))();
 local Window = WindUI:CreateWindow({
@@ -10322,9 +10345,15 @@ function boostFps()
     end
 end
 FpsBoostButton = Tabs.MiscTab:Button({
-    Title = "Fps Boost",
+    Title = "Fps Boost (Roblox)",
     Callback = function()
         boostFps();
+    end
+});
+FpsBoostButton = Tabs.MiscTab:Button({
+    Title = "Fps Boost (DYHUB)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Nigga.lua"))()
     end
 });
 RemoveFogButton = Tabs.MiscTab:Button({
