@@ -1,3 +1,5 @@
+-- v8712
+
 local WindUI = (loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua")))();
 local Window = WindUI:CreateWindow({
     Title = "DYHUB",
@@ -9123,24 +9125,24 @@ spawn(function()
     pcall(function()
         while wait(0.2) do
             if game.Workspace._WorldOrigin.Locations:FindFirstChild("Mirage Island") then
-                MirageStatusSeaStackParagraph:SetDesc("ðŸï¸ Mirage Island Spawning");
+                MirageStatusSeaStackParagraph:SetDesc("✅ Mirage Island Spawning");
             else
-                MirageStatusSeaStackParagraph:SetDesc("ðŸï¸ Mirage Island Not Spawn");
+                MirageStatusSeaStackParagraph:SetDesc("❌ Mirage Island Not Spawn");
             end
             if game.Workspace._WorldOrigin.Locations:FindFirstChild("Kitsune Island") then
-                KitsuneStatusSeaStackParagraph:SetDesc("â›©ï¸ Kitsune Island Spawning");
+                KitsuneStatusSeaStackParagraph:SetDesc("✅ Kitsune Island Spawning");
             else
-                KitsuneStatusSeaStackParagraph:SetDesc("â›©ï¸ Kitsune Island Not Spawn");
+                KitsuneStatusSeaStackParagraph:SetDesc("❌ Kitsune Island Not Spawn");
             end
             if game.Workspace._WorldOrigin.Locations:FindFirstChild("Frozen Dimension") then
-                FrozenStatusSeaStackParagraph:SetDesc("â„ï¸ Frozen Dimension Spawning");
+                FrozenStatusSeaStackParagraph:SetDesc("✅ Frozen Dimension Spawning");
             else
-                FrozenStatusSeaStackParagraph:SetDesc("â„ï¸ Frozen Dimension Not Spawn");
+                FrozenStatusSeaStackParagraph:SetDesc("❌ Frozen Dimension Not Spawn");
             end
             if game.Workspace._WorldOrigin.Locations:FindFirstChild("Prehistoric Island") then
-                PrehistoricStatusSeaStackParagraph:SetDesc("ðŸ¦´ Prehistoric Island Spawning");
+                PrehistoricStatusSeaStackParagraph:SetDesc("✅ Prehistoric Island Spawning");
             else
-                PrehistoricStatusSeaStackParagraph:SetDesc("ðŸ¦´ Prehistoric Island Not Spawn");
+                PrehistoricStatusSeaStackParagraph:SetDesc("❌ Prehistoric Island Not Spawn");
             end
         end
     end);
