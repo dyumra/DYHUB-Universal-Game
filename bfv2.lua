@@ -1,4 +1,4 @@
--- v8713
+-- v8716
 
 local WindUI = (loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua")))();
 local Window = WindUI:CreateWindow({
@@ -62,7 +62,7 @@ local Tabs = {
         Icon = "sliders-horizontal",
         Desc = "Stats Section"
     }),
-    SeaDivider = Window:Divider()
+    SeaDivider = Window:Divider(),
     SeaEventTab = Window:Tab({
         Title = "Sea Event",
         Icon = "anchor",
@@ -78,7 +78,7 @@ local Tabs = {
         Icon = "cog",
         Desc = "Sea Settings Section"
     }),
-    AutoDivider = Window:Divider()
+    AutoDivider = Window:Divider(),
     DragonDojoTab = Window:Tab({
         Title = "Dragon Dojo",
         Icon = "shield",
@@ -89,7 +89,7 @@ local Tabs = {
         Icon = "bot",
         Desc = "Race Section"
     }),
-    CombatDivider = Window:Divider()
+    CombatDivider = Window:Divider(),
     CombatTab = Window:Tab({
         Title = "Combat",
         Icon = "sword",
@@ -120,7 +120,7 @@ local Tabs = {
         Icon = "apple",
         Desc = "Fruit Section"
     }),
-    MiscDivider = Window:Divider()
+    MiscDivider = Window:Divider(),
     MiscTab = Window:Tab({
         Title = "Misc",
         Icon = "layout-grid",
