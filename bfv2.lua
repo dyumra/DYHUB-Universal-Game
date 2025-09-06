@@ -1,4 +1,4 @@
--- v8724
+-- v8725
 
 if not game:IsLoaded() then
     repeat task.wait() until game:IsLoaded()
@@ -2452,7 +2452,7 @@ DiscordServerParagraph1 = Tabs.InfoTab:Paragraph({
     Desc = "Link Social DYHUB!",
     TextXAlignment = "Left",
     Buttons = {{
-        Title = "Copy Social Discord",
+        Title = "Copy Social DYHUB",
         Callback = function()
             setclipboard("https://guns.lol/DYHUB");
             WindUI:Notify({
