@@ -2,7 +2,7 @@ local WindUI = (loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/re
 local Window = WindUI:CreateWindow({
     Title = "DYHUB",
     Icon = "rbxassetid://104487529937663",
-    Author = "Blox Fruit | Premium Version",
+    Author = "Blox Fruit | Fixed!",
     Folder = "DYHUB_BF",
     Size = UDim2.fromOffset(550, 300),
     Transparent = true,
@@ -23,6 +23,10 @@ Window:EditOpenButton({
     StrokeThickness = 2,
     Color = ColorSequence.new(Color3.fromRGB(30, 30, 30), Color3.fromRGB(255, 255, 255)),
     Draggable = true
+});
+Window:Tag({
+    Title = "Premium - Pre-Release",
+    Color = Color3.fromHex("#EEFF00")
 });
 local Tabs = {
     InfoTab = Window:Tab({
@@ -60,6 +64,7 @@ local Tabs = {
         Icon = "sliders-horizontal",
         Desc = "Stats Section"
     }),
+    SeaDivider = Window:Divider()
     SeaEventTab = Window:Tab({
         Title = "Sea Event",
         Icon = "anchor",
@@ -75,6 +80,7 @@ local Tabs = {
         Icon = "cog",
         Desc = "Sea Settings Section"
     }),
+    AutoDivider = Window:Divider()
     DragonDojoTab = Window:Tab({
         Title = "Dragon Dojo",
         Icon = "shield",
@@ -85,6 +91,7 @@ local Tabs = {
         Icon = "bot",
         Desc = "Race Section"
     }),
+    CombatDivider = Window:Divider()
     CombatTab = Window:Tab({
         Title = "Combat",
         Icon = "sword",
@@ -115,6 +122,7 @@ local Tabs = {
         Icon = "apple",
         Desc = "Fruit Section"
     }),
+    MiscDivider = Window:Divider()
     MiscTab = Window:Tab({
         Title = "Misc",
         Icon = "layout-grid",
