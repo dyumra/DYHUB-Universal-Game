@@ -11,7 +11,7 @@ if not game:IsLoaded() then
 end
 
 local window = library:CreateWindow({
-    Title = 'DYHUB | Specter | dsc.gg/dyhub',
+    Title = 'DYHUB | SPECTER | dsc.gg/dyhub [Premium]',
     Center = true,
     AutoShow = true,
     TabPadding = 8,
@@ -1526,4 +1526,5 @@ theme_manager:SetFolder('DYHUB')
 save_manager:SetFolder('DYHUB/Specter')
 save_manager:BuildConfigSection(tabs['ui settings'])
 theme_manager:ApplyToTab(tabs['ui settings'])
+
 save_manager:LoadAutoloadConfig()
