@@ -708,7 +708,7 @@ code_group:AddButton({
     DoubleClick = false,
 
     Func = function()
-        local codes = {"jukebox","itsfree","10million","Beta","Alpha","EarlyBird","RT3"}
+        local codes = {"Gullible100","jukebox"}
 
         for _, code in ipairs(codes) do
             local args = {code}
