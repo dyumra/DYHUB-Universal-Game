@@ -1,4 +1,4 @@
--- V972
+-- V975
 
 if not game:IsLoaded() then
     game.Loaded:Wait()
@@ -21,13 +21,14 @@ local window = library:CreateWindow({
 local tabs = {
     main = window:AddTab("Main"),
     misc = window:AddTab("Misc"),
-    ["ui settings"] = window:AddTab("UI Settings")
+    ["ui settings"] = window:AddTab("Settings")
 }
 
-local auto_group = tabs.main:AddLeftGroupbox("Auto Stuff")
+local auto_group = tabs.main:AddLeftGroupbox("Customer Settings")
 local auto_settings_group = tabs.main:AddRightGroupbox("Auto Settings")
-local food_group = tabs.main:AddRightGroupbox("Food Settings")
 local npc_group = tabs.main:AddRightGroupbox("NPC Settings")
+local event_group = tabs.main:AddRightGroupbox("Event Settings")
+local food_group = tabs.main:AddRightGroupbox("Food Settings")
 local teleport_group = tabs.misc:AddLeftGroupbox("Teleport Settings")
 local player_group = tabs.misc:AddRightGroupbox("Player Settings")
 local visual_group = tabs.misc:AddLeftGroupbox("Visual Settings")
@@ -119,6 +120,7 @@ getgenv().settings = {
     auto_order = false,
     fps = false,
     nofog = false,
+    Retro_Radio = false,
     full_bright = false,
     auto_bill = false,
     auto_cook = false,
@@ -169,9 +171,8 @@ end)
 
 auto_group:AddDivider()
 
-auto_group:AddLabel("Stay close rt, these features to work", true)
-
-auto_group:AddDivider()
+auto_group:AddLabel("Please stay close to the restaurant", true)
+auto_group:AddLabel("for the function to work at its best", true)
 
 auto_group:AddToggle('auto_order', {
     Text = 'Auto Take Customer Orders',
@@ -423,6 +424,36 @@ npc_group:AddToggle('fast_npcs', {
     end
 })
 
+event_group:AddDivider()
+
+event_group:AddToggle('acrr', {
+    Text = 'Collect All Retro Radio',
+    Default = false,
+    Tooltip = 'Auto Collect Retro Radio',
+
+    Callback = function(Value)
+        settings.Retro_Radio = Value
+        if Value then
+            task.spawn(function()
+                local player = game.Players.LocalPlayer
+                local character = player.Character or player.CharacterAdded:Wait()
+                local hrp = character:WaitForChild("HumanoidRootPart")
+
+                local radios = workspace:WaitForChild("Map"):WaitForChild("ScavengerHunt"):GetChildren()
+
+                for _, radio in ipairs(radios) do
+                    if not settings.Retro_Radio then break end -- ถ้ากดปิด toggle จะหยุดทันที
+                    if radio.Name == "RetroRadio" then
+                        hrp.CFrame = radio.CFrame + Vector3.new(0, 3, 0) -- วาร์ปไปด้านบน radio หน่อย กันติด
+                        task.wait(1) -- ดีเลย์ 1 วิ ก่อนหาตัวถัดไป
+                    end
+                end
+            end)
+        end
+    end
+})
+
+
 teleport_group:AddDivider()
 
 teleport_group:AddDropdown('selected_place', {
@@ -509,7 +540,7 @@ player_group:AddSlider('player_jump', {
 
 player_group:AddToggle('noclip', {
     Text = 'No Clip',
-    Default = settings.noclip,
+    Default = false,
     Tooltip = 'Walk through walls',
     
     Callback = function(Value)
@@ -526,7 +557,7 @@ player_group:AddToggle('noclip', {
                 end
             end)
         else
-            library:Notify("❌ NoClip Disabled")
+            library:Notify("NoClip Disabled")
             -- รีเซ็ตตัวละครกลับมา Collide ปกติ
             if local_player.Character then
                 for _, part in pairs(local_player.Character:GetDescendants()) do
@@ -549,15 +580,17 @@ player_group:AddButton({
                 v["Disconnect"](v)
             end
         end
-        library:Notify("Anti Afk Enabled!")
+        library:Notify("Anti AFK Enabled!")
     end,
     DoubleClick = false,
     Tooltip = 'Wont disconnect you after 20 minutes'
 })
 
+visual_group:AddDivider()
+
 visual_group:AddToggle('fb', {
     Text = 'Full Bright',
-    Default = settings.full_bright,
+    Default = false,
     Tooltip = 'full bright like cat!',
 
     Callback = function(Value)
@@ -574,7 +607,7 @@ visual_group:AddToggle('fb', {
 
 visual_group:AddToggle('nf', {
     Text = 'No Fog',
-    Default = settings.nofog,
+    Default = false,
     Tooltip = 'Removes fog and makes full bright',
 
     Callback = function(Value)
@@ -588,6 +621,8 @@ visual_group:AddToggle('nf', {
         end
     end
 })
+
+boost_group:AddDivider()
 
 boost_group:AddButton({
     Text = 'Boost Fps',
@@ -654,6 +689,7 @@ menu_group:AddButton('Unload', function()
     settings.auto_seat = false
     settings.auto_tip = false
     settings.noclip = false
+    settings.Retro_Radio = false
     watermark_connection:Disconnect()
     library:Unload()
 end)
