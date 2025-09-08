@@ -1,4 +1,4 @@
--- V989
+-- V991
 
 if not game:IsLoaded() then
     game.Loaded:Wait()
@@ -33,6 +33,7 @@ local teleport_group = tabs.misc:AddLeftGroupbox("Teleport Settings")
 local player_group = tabs.misc:AddRightGroupbox("Player Settings")
 local visual_group = tabs.misc:AddLeftGroupbox("Visual Settings")
 local boost_group = tabs.misc:AddRightGroupbox("Graphic Settings")
+local code_group = tabs.misc:AddRightGroupbox("About Code")
 local menu_group = tabs["ui settings"]:AddLeftGroupbox("Menu Settings")
 
 local marketplace_service = game:GetService("MarketplaceService")
@@ -695,6 +696,45 @@ boost_group:AddToggle('uf', {
             setfpscap(99999999999)
         else
             setfpscap(60)
+        end
+    end
+})
+
+code_group:AddDivider()
+
+code_group:AddButton({
+    Text = "Redeem All Codes",
+    Tooltip = "Redeem all available codes",
+    DoubleClick = false,
+
+    Callback = function()
+        local codes = {
+            "jukebox",   -- Redeem for 5 Diamonds (NEW)
+            "itsfree",   -- Redeem for 500 Cash
+            "10million", -- Redeem for various rewards
+            "Beta",      -- Redeem for 10 Diamonds
+            "Alpha",     -- Redeem for various rewards
+            "EarlyBird", -- Redeem for 10 Diamonds
+            "RT3"        -- Redeem for 500 Cash
+        }
+
+        for _, code in ipairs(codes) do
+            local args = {code}
+
+            local success, err = pcall(function()
+                game:GetService("ReplicatedStorage"):WaitForChild("Events")
+                    :WaitForChild("Shop")
+                    :WaitForChild("CodeSubmitted")
+                    :FireServer(unpack(args))
+            end)
+
+            if success then
+                library:Notify("Code Redeemed: " .. code)
+            else
+                library:Notify("Failed to redeem code: " .. code .. "\nError: " .. tostring(err))
+            end
+
+            task.wait(0.5) -- ดีเลย์เล็กน้อยระหว่าง redeem
         end
     end
 })
