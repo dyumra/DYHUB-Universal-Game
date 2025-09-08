@@ -646,7 +646,7 @@ local Window = WindUI:CreateWindow({
     Title = "DYHUB | ST : Blockade Battlefront",
     IconThemed = true,
     Icon = "star",
-    Author = "Version: pre-2.67",
+    Author = "Version: pre-2.78",
     Size = UDim2.fromOffset(600, 400),
     Transparent = true,
     Theme = "Dark",
@@ -799,6 +799,13 @@ MainTab:Toggle({
 })
 
 local redeemCodes = {
+    "Verified",
+    "BackOnBusiness",
+    "UTSM", 
+    "18k loss",
+    "50KGroup",
+    "WaveStuckIssue",
+    "flying toilet",
     "AstroInvasionBegin",
     "WaveStuckIssue",
     "50KGroup",
@@ -1373,7 +1380,7 @@ local fullBrightConnection
 local noFogConnection
 
 MiscTab:Toggle({
-    Title = "FullBright",
+    Title = "Full Bright",
     Default = false,
     Callback = function(state)
         if state then
@@ -1683,6 +1690,7 @@ CollectTab:Toggle({
 })
 
 print("[DYHUB] DYHUB - Loaded! (Console Show)")
+
 
 
 
