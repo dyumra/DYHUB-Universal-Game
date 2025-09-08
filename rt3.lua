@@ -1,4 +1,4 @@
--- V991
+-- V995
 
 if not game:IsLoaded() then
     game.Loaded:Wait()
@@ -29,11 +29,11 @@ local npc_group = tabs.main:AddRightGroupbox("NPC Settings")
 local event_group = tabs.main:AddRightGroupbox("Event Settings")
 local food_group = tabs.main:AddRightGroupbox("Food Settings")
 local auto_settings_group = tabs.main:AddRightGroupbox("Auto Settings")
+local code_group = tabs.misc:AddLeftGroupbox("About Code")
 local teleport_group = tabs.misc:AddLeftGroupbox("Teleport Settings")
 local player_group = tabs.misc:AddRightGroupbox("Player Settings")
 local visual_group = tabs.misc:AddLeftGroupbox("Visual Settings")
 local boost_group = tabs.misc:AddRightGroupbox("Graphic Settings")
-local code_group = tabs.misc:AddRightGroupbox("About Code")
 local menu_group = tabs["ui settings"]:AddLeftGroupbox("Menu Settings")
 
 local marketplace_service = game:GetService("MarketplaceService")
@@ -707,34 +707,22 @@ code_group:AddButton({
     Tooltip = "Redeem all available codes",
     DoubleClick = false,
 
-    Callback = function()
-        local codes = {
-            "jukebox",   -- Redeem for 5 Diamonds (NEW)
-            "itsfree",   -- Redeem for 500 Cash
-            "10million", -- Redeem for various rewards
-            "Beta",      -- Redeem for 10 Diamonds
-            "Alpha",     -- Redeem for various rewards
-            "EarlyBird", -- Redeem for 10 Diamonds
-            "RT3"        -- Redeem for 500 Cash
-        }
+    Func = function()
+        local codes = {"jukebox","itsfree","10million","Beta","Alpha","EarlyBird","RT3"}
 
         for _, code in ipairs(codes) do
             local args = {code}
-
             local success, err = pcall(function()
-                game:GetService("ReplicatedStorage"):WaitForChild("Events")
-                    :WaitForChild("Shop")
-                    :WaitForChild("CodeSubmitted")
-                    :FireServer(unpack(args))
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Shop"):WaitForChild("CodeSubmitted"):FireServer(unpack(args))
             end)
 
             if success then
-                library:Notify("Code Redeemed: " .. code)
+                library:Notify("Code Redeemed: "..code)
             else
-                library:Notify("Failed to redeem code: " .. code .. "\nError: " .. tostring(err))
+                library:Notify("Failed to redeem code: "..code.."\nError: "..tostring(err))
             end
 
-            task.wait(0.5) -- ดีเลย์เล็กน้อยระหว่าง redeem
+            task.wait(0.5)
         end
     end
 })
