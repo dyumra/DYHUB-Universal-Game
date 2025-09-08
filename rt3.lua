@@ -11,7 +11,7 @@ local theme_manager = loadstring(game:HttpGet('https://raw.githubusercontent.com
 local save_manager = loadstring(game:HttpGet(KINGHUB01 .. 'Gui%20Lib%20%5BSaveManager%5D'))()
 
 local window = library:CreateWindow({
-    Title = "DYHUB | RT3 | dsc.gg/dyhub [Premium]",
+    Title = "DYHUB | RT3 | dsc.gg/dyhub [Free]",
     Center = true,
     AutoShow = true,
     TabPadding = 8,
