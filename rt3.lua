@@ -1,4 +1,4 @@
--- V971
+-- V972
 
 if not game:IsLoaded() then
     game.Loaded:Wait()
@@ -125,7 +125,7 @@ getgenv().settings = {
     auto_seat = false,
     fast_npcs = false,
     auto_tip = false,
-    noclip = false
+    noclip = false,
     toggle_delay = 0.1,
     selected_place = "",
     selected_food = "",
