@@ -1,4 +1,4 @@
--- V975
+-- V978
 
 if not game:IsLoaded() then
     game.Loaded:Wait()
@@ -25,10 +25,10 @@ local tabs = {
 }
 
 local auto_group = tabs.main:AddLeftGroupbox("Customer Settings")
-local auto_settings_group = tabs.main:AddRightGroupbox("Auto Settings")
 local npc_group = tabs.main:AddRightGroupbox("NPC Settings")
 local event_group = tabs.main:AddRightGroupbox("Event Settings")
 local food_group = tabs.main:AddRightGroupbox("Food Settings")
+local auto_settings_group = tabs.main:AddRightGroupbox("Auto Settings")
 local teleport_group = tabs.misc:AddLeftGroupbox("Teleport Settings")
 local player_group = tabs.misc:AddRightGroupbox("Player Settings")
 local visual_group = tabs.misc:AddLeftGroupbox("Visual Settings")
@@ -444,9 +444,9 @@ event_group:AddToggle('acrr', {
                 for _, radio in ipairs(radios) do
                     if not settings.Retro_Radio then break end -- ถ้ากดปิด toggle จะหยุดทันที
                     if radio.Name == "RetroRadio" then
-                        hrp.CFrame = radio.CFrame + Vector3.new(0, 3, 0) -- วาร์ปไปด้านบน radio หน่อย กันติด
+                        hrp.CFrame = radio.CFrame + Vector3.new(0, 2.5, 0) -- วาร์ปไปด้านบน radio หน่อย กันติด
                         task.wait(1) -- ดีเลย์ 1 วิ ก่อนหาตัวถัดไป
-                    end
+                   until not settings.Retro_Radio
                 end
             end)
         end
@@ -552,7 +552,7 @@ player_group:AddToggle('noclip', {
                     for _, part in pairs(local_player.Character:GetDescendants()) do
                         if part:IsA("BasePart") and part.CanCollide then
                             part.CanCollide = false
-                        end
+                        until not settings.noclip
                     end
                 end
             end)
@@ -601,7 +601,7 @@ visual_group:AddToggle('fb', {
         else
             lighting.ClockTime = 0
             lighting.GlobalShadows = true
-        end
+        until not settings.full_bright
     end
 })
 
@@ -618,7 +618,7 @@ visual_group:AddToggle('nf', {
         else
             lighting.FogEnd = 1000
             lighting.FogStart = 0
-        end
+        until not settings.nofog
     end
 })
 
