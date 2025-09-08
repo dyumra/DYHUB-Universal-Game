@@ -1,4 +1,4 @@
--- V978
+-- V987
 
 if not game:IsLoaded() then
     game.Loaded:Wait()
@@ -112,6 +112,22 @@ local path_utility = require(replicated_storage:FindFirstChild("Source"):FindFir
 if not path_utility then
     local_player:Kick("Path utility not found!")
 end
+
+local Lighting = game:GetService("Lighting")
+local RunService = game:GetService("RunService")
+
+local noclipConnection
+local noclipEnabled = false
+
+local nofog88 = false
+local Retro_Radio88 = false
+local fullbright88 = false
+
+-- เก็บค่าเดิมไว้
+local oldClockTime = Lighting.ClockTime
+local oldGlobalShadows = Lighting.GlobalShadows
+local oldFogEnd = Lighting.FogEnd
+local oldFogStart = Lighting.FogStart
 
 getgenv().settings = {
     auto_dirty_dish = false,
@@ -426,33 +442,32 @@ npc_group:AddToggle('fast_npcs', {
 
 event_group:AddDivider()
 
-event_group:AddToggle('acrr', {
+event_group:AddToggle('acrr88', {
     Text = 'Collect All Retro Radio',
     Default = false,
-    Tooltip = 'Auto Collect Retro Radio',
+    Tooltip = 'Feature for Auto Collect Retro Radio',
 
     Callback = function(Value)
-        settings.Retro_Radio = Value
+        Retro_Radio88 = Value
         if Value then
             task.spawn(function()
                 local player = game.Players.LocalPlayer
                 local character = player.Character or player.CharacterAdded:Wait()
                 local hrp = character:WaitForChild("HumanoidRootPart")
 
-                local radios = workspace:WaitForChild("Map"):WaitForChild("ScavengerHunt"):GetChildren()
+                local radios = workspace:WaitForChild("Map"):WaitForChild("ScavengerHunt"):GetDescendants()
 
                 for _, radio in ipairs(radios) do
-                    if not settings.Retro_Radio then break end -- ถ้ากดปิด toggle จะหยุดทันที
+                    if not Retro_Radio88 then break end
                     if radio.Name == "RetroRadio" then
-                        hrp.CFrame = radio.CFrame + Vector3.new(0, 2.5, 0) -- วาร์ปไปด้านบน radio หน่อย กันติด
-                        task.wait(1) -- ดีเลย์ 1 วิ ก่อนหาตัวถัดไป
-                   until not settings.Retro_Radio
+                        hrp.CFrame = radio.CFrame + Vector3.new(0, 2.5, 0)
+                        task.wait(1)
+                    end
                 end
             end)
         end
     end
 })
-
 
 teleport_group:AddDivider()
 
@@ -542,25 +557,37 @@ player_group:AddToggle('noclip', {
     Text = 'No Clip',
     Default = false,
     Tooltip = 'Walk through walls',
-    
+
     Callback = function(Value)
-        settings.noclip = Value
+        noclipEnabled = Value
         if Value then
             library:Notify("NoClip Enabled")
-            game:GetService("RunService").Stepped:Connect(function()
-                if getgenv().noclip and local_player.Character then
-                    for _, part in pairs(local_player.Character:GetDescendants()) do
-                        if part:IsA("BasePart") and part.CanCollide then
+
+            -- สร้าง connection
+            noclipConnection = RunService.Stepped:Connect(function()
+                local char = local_player.Character
+                if char then
+                    for _, part in pairs(char:GetDescendants()) do
+                        if part:IsA("BasePart") then
                             part.CanCollide = false
-                        until not settings.noclip
+                        end
                     end
                 end
             end)
+
         else
             library:Notify("NoClip Disabled")
-            -- รีเซ็ตตัวละครกลับมา Collide ปกติ
-            if local_player.Character then
-                for _, part in pairs(local_player.Character:GetDescendants()) do
+
+            -- ปิด connection
+            if noclipConnection then
+                noclipConnection:Disconnect()
+                noclipConnection = nil
+            end
+
+            -- รีเซ็ตกลับมา collide ปกติ
+            local char = local_player.Character
+            if char then
+                for _, part in pairs(char:GetDescendants()) do
                     if part:IsA("BasePart") then
                         part.CanCollide = true
                     end
@@ -588,37 +615,39 @@ player_group:AddButton({
 
 visual_group:AddDivider()
 
+-- FullBright
 visual_group:AddToggle('fb', {
     Text = 'Full Bright',
     Default = false,
     Tooltip = 'full bright like cat!',
 
     Callback = function(Value)
-        settings.full_bright = Value
+        fullbright88 = Value
         if Value then
-            lighting.ClockTime = 12
-            lighting.GlobalShadows = false
+            Lighting.ClockTime = 12
+            Lighting.GlobalShadows = false
         else
-            lighting.ClockTime = 0
-            lighting.GlobalShadows = true
-        until not settings.full_bright
+            Lighting.ClockTime = oldClockTime
+            Lighting.GlobalShadows = oldGlobalShadows
+        end
     end
 })
 
+-- NoFog
 visual_group:AddToggle('nf', {
     Text = 'No Fog',
     Default = false,
     Tooltip = 'Removes fog and makes full bright',
 
     Callback = function(Value)
-        settings.nofog = Value
+        nofog88 = Value
         if Value then
-            lighting.FogEnd = 1000000
-            lighting.FogStart = 0
+            Lighting.FogEnd = 1000000
+            Lighting.FogStart = 0
         else
-            lighting.FogEnd = 1000
-            lighting.FogStart = 0
-        until not settings.nofog
+            Lighting.FogEnd = oldFogEnd
+            Lighting.FogStart = oldFogStart
+        end
     end
 })
 
@@ -683,13 +712,8 @@ menu_group:AddButton('Unload', function()
     settings.auto_order = false
     settings.fast_npcs = false
     settings.auto_bill = false
-    settings.fps = false
-    settings.full_bright = false
-    settings.nofog = false
     settings.auto_seat = false
     settings.auto_tip = false
-    settings.noclip = false
-    settings.Retro_Radio = false
     watermark_connection:Disconnect()
     library:Unload()
 end)
