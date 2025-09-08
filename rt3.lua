@@ -1,4 +1,4 @@
--- V987
+-- V989
 
 if not game:IsLoaded() then
     game.Loaded:Wait()
@@ -187,8 +187,10 @@ end)
 
 auto_group:AddDivider()
 
-auto_group:AddLabel("Please stay close to the restaurant", true)
+auto_group:AddLabel("Stay close to restaurant", true)
 auto_group:AddLabel("for the function to work at its best", true)
+
+auto_group:AddDivider()
 
 auto_group:AddToggle('auto_order', {
     Text = 'Auto Take Customer Orders',
@@ -442,7 +444,7 @@ npc_group:AddToggle('fast_npcs', {
 
 event_group:AddDivider()
 
-event_group:AddToggle('acrr88', {
+event_group:AddToggle('acrr', {
     Text = 'Collect All Retro Radio',
     Default = false,
     Tooltip = 'Feature for Auto Collect Retro Radio',
@@ -455,12 +457,23 @@ event_group:AddToggle('acrr88', {
                 local character = player.Character or player.CharacterAdded:Wait()
                 local hrp = character:WaitForChild("HumanoidRootPart")
 
-                local radios = workspace:WaitForChild("Map"):WaitForChild("ScavengerHunt"):GetDescendants()
+                local scavengerHunt = workspace:WaitForChild("Map"):WaitForChild("ScavengerHunt")
+                local radios = {}
 
-                for _, radio in ipairs(radios) do
+                -- เก็บ RetroRadio ทั้งหมด
+                for _, child in ipairs(scavengerHunt:GetChildren()) do
+                    if child.Name == "RetroRadio" and child:IsA("Model") then
+                        table.insert(radios, child)
+                    end
+                end
+
+                for _, radioModel in ipairs(radios) do
                     if not Retro_Radio88 then break end
-                    if radio.Name == "RetroRadio" then
-                        hrp.CFrame = radio.CFrame + Vector3.new(0, 2.5, 0)
+
+                    -- ตรวจสอบว่ามี PrimaryPart
+                    local targetPart = radioModel.PrimaryPart or radioModel:FindFirstChildWhichIsA("BasePart")
+                    if targetPart then
+                        hrp.CFrame = targetPart.CFrame + Vector3.new(0, 2.5, 0)
                         task.wait(1)
                     end
                 end
