@@ -1,4 +1,4 @@
--- V912
+-- V971
 
 if not game:IsLoaded() then
     game.Loaded:Wait()
@@ -31,7 +31,7 @@ local npc_group = tabs.main:AddRightGroupbox("NPC Settings")
 local teleport_group = tabs.misc:AddLeftGroupbox("Teleport Settings")
 local player_group = tabs.misc:AddRightGroupbox("Player Settings")
 local visual_group = tabs.misc:AddLeftGroupbox("Visual Settings")
-local boost_group = tabs.misc:AddLeftGroupbox("Graphic Settings")
+local boost_group = tabs.misc:AddRightGroupbox("Graphic Settings")
 local menu_group = tabs["ui settings"]:AddLeftGroupbox("Menu Settings")
 
 local marketplace_service = game:GetService("MarketplaceService")
@@ -125,6 +125,7 @@ getgenv().settings = {
     auto_seat = false,
     fast_npcs = false,
     auto_tip = false,
+    noclip = false
     toggle_delay = 0.1,
     selected_place = "",
     selected_food = "",
@@ -462,6 +463,82 @@ teleport_group:AddButton({
 
 player_group:AddDivider()
 
+-- Player Speed Slider
+player_group:AddSlider('player_speed', {
+    Text = 'Player Speed',
+    Default = 16, -- ค่าเริ่มต้น Roblox
+    Min = 10,
+    Max = 300,
+    Rounding = 1,
+    Compact = false,
+
+    Callback = function(Value)
+        local character = local_player.Character or local_player.CharacterAdded:Wait()
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+        if humanoid then
+            humanoid.WalkSpeed = Value
+            library:Notify("Player speed set to " .. Value)
+        else
+            library:Notify("Could not find Humanoid")
+        end
+    end
+})
+
+-- Jump Power Slider
+player_group:AddSlider('player_jump', {
+    Text = 'Player Jump-Power',
+    Default = 50, -- ค่าเริ่มต้น Roblox
+    Min = 20,
+    Max = 300,
+    Rounding = 1,
+    Compact = false,
+
+    Callback = function(Value)
+        local character = local_player.Character or local_player.CharacterAdded:Wait()
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+        if humanoid then
+            humanoid.JumpPower = Value
+            library:Notify("Jump power set to " .. Value)
+        else
+            library:Notify("Could not find Humanoid")
+        end
+    end
+})
+
+player_group:AddToggle('noclip', {
+    Text = 'No Clip',
+    Default = settings.noclip,
+    Tooltip = 'Walk through walls',
+    
+    Callback = function(Value)
+        settings.noclip = Value
+        if Value then
+            library:Notify("NoClip Enabled")
+            game:GetService("RunService").Stepped:Connect(function()
+                if getgenv().noclip and local_player.Character then
+                    for _, part in pairs(local_player.Character:GetDescendants()) do
+                        if part:IsA("BasePart") and part.CanCollide then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+            end)
+        else
+            library:Notify("❌ NoClip Disabled")
+            -- รีเซ็ตตัวละครกลับมา Collide ปกติ
+            if local_player.Character then
+                for _, part in pairs(local_player.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = true
+                    end
+                end
+            end
+        end
+    end
+})
+
 player_group:AddButton({
     Text = 'Anti AFK',
     Func = function()
@@ -512,7 +589,7 @@ visual_group:AddToggle('nf', {
     end
 })
 
-player_group:AddButton({
+boost_group:AddButton({
     Text = 'Boost Fps',
     Tooltip = 'Optimize performance and boost FPS',
     DoubleClick = false,
@@ -576,6 +653,7 @@ menu_group:AddButton('Unload', function()
     settings.nofog = false
     settings.auto_seat = false
     settings.auto_tip = false
+    settings.noclip = false
     watermark_connection:Disconnect()
     library:Unload()
 end)
