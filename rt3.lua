@@ -1,16 +1,15 @@
--- uhm..............................????? (thx ! nfpw for helping me with stuff <3)
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
 
-local repo = 'https://raw.githubusercontent.com/KINGHUB01/Gui/main/'
+local KINGHUB01 = 'https://raw.githubusercontent.com/KINGHUB01/Gui/main/'
 
-local library = loadstring(game:HttpGet(repo .. 'Gui%20Lib%20%5BLibrary%5D'))()
-local theme_manager = loadstring(game:HttpGet(repo .. 'Gui%20Lib%20%5BThemeManager%5D'))()
-local save_manager = loadstring(game:HttpGet(repo .. 'Gui%20Lib%20%5BSaveManager%5D'))()
+local library = loadstring(game:HttpGet('https://raw.githubusercontent.com/dyumra/Library-DYHUB/refs/heads/main/library.lua'))()
+local theme_manager = loadstring(game:HttpGet('https://raw.githubusercontent.com/dyumra/Library-DYHUB/refs/heads/main/ThemeManager.lua'))()
+local save_manager = loadstring(game:HttpGet(KINGHUB01 .. 'Gui%20Lib%20%5BSaveManager%5D'))()
 
 local window = library:CreateWindow({
-    Title = "Astolfo Ware | Made By @kylosilly | discord.gg/SUTpER4dNc",
+    Title = "DYHUB | RT3 | dsc.gg/dyhub [Premium]",
     Center = true,
     AutoShow = true,
     TabPadding = 8,
@@ -162,7 +161,7 @@ end)
 
 auto_group:AddDivider()
 
-auto_group:AddLabel("Be near the restaurant for the features to work", true)
+auto_group:AddLabel("Stay close to restaurants to enable these features to work", true)
 
 auto_group:AddDivider()
 
@@ -232,6 +231,47 @@ auto_group:AddToggle('auto_seat', {
     end
 })
 
+auto_group:AddToggle('auto_seat', {
+    Text = 'Auto Seat Customers V2',
+    Default = settings.auto_seat,
+    Tooltip = 'Automatically seats customers',
+
+    Callback = function(Value)
+        settings.auto_seat = Value
+        if Value then
+            repeat
+                for _, v in next, local_player.PlayerGui:GetDescendants() do
+                    if v:IsA("TextLabel") 
+                        and v.Text:lower():find("table") 
+                        and v.Parent.Parent.Parent.Name == "CustomerSpeechUI" 
+                        and v.Parent.Parent.Size == UDim2.new(1, 0, 1, 0) then
+
+                        local group = v.Parent.Parent.Parent.Adornee.Parent.Parent.Name
+
+                        for _, v2 in next, surface:GetChildren() do
+                            if v2.Name:find("T") and not v2:GetAttribute("InUse") then
+                                replicated_storage
+                                    :WaitForChild("Events")
+                                    :WaitForChild("Restaurant")
+                                    :WaitForChild("TaskCompleted")
+                                    :FireServer({
+                                        GroupId = tostring(group),
+                                        Tycoon = tycoon,
+                                        Name = "SendToTable",
+                                        FurnitureModel = v2
+                                    })
+                                task.wait(0.2)
+                                break -- ส่งลูกค้าหนึ่งกลุ่มต่อหนึ่งโต๊ะ
+                            end
+                        end
+                    end
+                end
+                task.wait(settings.toggle_delay or 1)
+            until not settings.auto_seat
+        end
+    end
+})
+
 auto_group:AddToggle('auto_bill', {
     Text = 'Auto Collect Bills',
     Default = settings.auto_bill,
@@ -280,7 +320,7 @@ auto_group:AddToggle('auto_give_food', {
 })
 
 auto_group:AddToggle('auto_do_order', {
-    Text = 'Auto Do Orders',
+    Text = 'Auto Order',
     Default = settings.auto_do_order,
     Tooltip = 'Takes orders from order booths',
 
@@ -470,7 +510,7 @@ local watermark_connection = run_service.RenderStepped:Connect(function()
         frame_counter = 0;
     end;
 
-    library:SetWatermark(('Astolfo Ware | %s fps | %s ms | game: '..info.Name..''):format(
+    library:SetWatermark(('RT3 V3.1.2 | %s fps | %s ms | game: '..info.Name..''):format(
         math.floor(fps),
         math.floor(stats.Network.ServerStatsItem['Data Ping']:GetValue())
     ));
@@ -496,8 +536,8 @@ theme_manager:SetLibrary(library)
 save_manager:SetLibrary(library)
 save_manager:IgnoreThemeSettings()
 save_manager:SetIgnoreIndexes({ 'MenuKeybind' })
-theme_manager:SetFolder('Astolfo Ware')
-save_manager:SetFolder('Astolfo Ware/Restaurant Tycoon 3')
+theme_manager:SetFolder('DYHUB')
+save_manager:SetFolder('DYHUB/Restaurant Tycoon 3')
 save_manager:BuildConfigSection(tabs['ui settings'])
 theme_manager:ApplyToTab(tabs['ui settings'])
 save_manager:LoadAutoloadConfig()
