@@ -1,3 +1,5 @@
+-- V912
+
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
@@ -28,6 +30,8 @@ local food_group = tabs.main:AddRightGroupbox("Food Settings")
 local npc_group = tabs.main:AddRightGroupbox("NPC Settings")
 local teleport_group = tabs.misc:AddLeftGroupbox("Teleport Settings")
 local player_group = tabs.misc:AddRightGroupbox("Player Settings")
+local visual_group = tabs.misc:AddLeftGroupbox("Visual Settings")
+local boost_group = tabs.misc:AddLeftGroupbox("Graphic Settings")
 local menu_group = tabs["ui settings"]:AddLeftGroupbox("Menu Settings")
 
 local marketplace_service = game:GetService("MarketplaceService")
@@ -113,6 +117,9 @@ getgenv().settings = {
     auto_give_food = false,
     auto_do_order = false,
     auto_order = false,
+    fps = false,
+    nofog = false,
+    full_bright = false,
     auto_bill = false,
     auto_cook = false,
     auto_seat = false,
@@ -161,7 +168,7 @@ end)
 
 auto_group:AddDivider()
 
-auto_group:AddLabel("Stay close to restaurants to enable these features to work", true)
+auto_group:AddLabel("Stay close rt, these features to work", true)
 
 auto_group:AddDivider()
 
@@ -207,32 +214,6 @@ auto_group:AddToggle('auto_dirty_dish', {
 
 auto_group:AddToggle('auto_seat', {
     Text = 'Auto Seat Customers',
-    Default = settings.auto_seat,
-    Tooltip = 'Automatically seats customers',
-
-    Callback = function(Value)
-        settings.auto_seat = Value
-        if Value then
-            repeat
-                for _, v in next, local_player.PlayerGui:GetDescendants() do
-                    if v:IsA("TextLabel") and v.Text:find("table") and v.Parent.Parent.Parent.Name == "CustomerSpeechUI" and v.Parent.Parent.Size == UDim2.new(1, 0, 1, 0) then
-                        for _, v2 in next, surface:GetChildren() do
-                            if v2.Name:find("T") and not v2:GetAttribute("InUse") then
-                                local group = v.Parent.Parent.Parent.Adornee.Parent.Parent.Name
-                                replicated_storage:WaitForChild("Events"):WaitForChild("Restaurant"):WaitForChild("TaskCompleted"):FireServer({ GroupId = tostring(group), Tycoon = tycoon, Name = "SendToTable", FurnitureModel = v2 })
-                                task.wait()
-                            end
-                        end
-                    end
-                end
-                task.wait(settings.toggle_delay)
-            until not settings.auto_seat
-        end
-    end
-})
-
-auto_group:AddToggle('auto_seat', {
-    Text = 'Auto Seat Customers V2',
     Default = settings.auto_seat,
     Tooltip = 'Automatically seats customers',
 
@@ -482,7 +463,7 @@ teleport_group:AddButton({
 player_group:AddDivider()
 
 player_group:AddButton({
-    Text = 'Anti Afk',
+    Text = 'Anti AFK',
     Func = function()
         for _, v in next, get_gc(local_player.Idled) do
             if v["Disable"] then
@@ -495,6 +476,73 @@ player_group:AddButton({
     end,
     DoubleClick = false,
     Tooltip = 'Wont disconnect you after 20 minutes'
+})
+
+visual_group:AddToggle('fb', {
+    Text = 'Full Bright',
+    Default = settings.full_bright,
+    Tooltip = 'full bright like cat!',
+
+    Callback = function(Value)
+        settings.full_bright = Value
+        if Value then
+            lighting.ClockTime = 12
+            lighting.GlobalShadows = false
+        else
+            lighting.ClockTime = 0
+            lighting.GlobalShadows = true
+        end
+    end
+})
+
+visual_group:AddToggle('nf', {
+    Text = 'No Fog',
+    Default = settings.nofog,
+    Tooltip = 'Removes fog and makes full bright',
+
+    Callback = function(Value)
+        settings.nofog = Value
+        if Value then
+            lighting.FogEnd = 1000000
+            lighting.FogStart = 0
+        else
+            lighting.FogEnd = 1000
+            lighting.FogStart = 0
+        end
+    end
+})
+
+player_group:AddButton({
+    Text = 'Boost Fps',
+    Tooltip = 'Optimize performance and boost FPS',
+    DoubleClick = false,
+
+    Func = function()
+        local success, err = pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Nigga.lua"))()
+        end)
+
+        if success then
+            library:Notify("Boost FPS Enabled!")
+        else
+            library:Notify("Failed to load Boost FPS:\n" .. tostring(err))
+        end
+    end
+})
+
+boost_group:AddToggle('uf', {
+    Text = 'Unlock Fps',
+    Default = settings.fps,
+    Tooltip = 'just unlock fps cap 60 to 360',
+
+    Callback = function(Value)
+        settings.fps = Value
+        if Value then
+            setfpscap(99999999999)
+        else
+            setfpscap(60)
+        end
+    end
 })
 
 local frame_timer = tick()
@@ -510,7 +558,7 @@ local watermark_connection = run_service.RenderStepped:Connect(function()
         frame_counter = 0;
     end;
 
-    library:SetWatermark(('RT3 V3.1.2 | %s fps | %s ms | game: '..info.Name..''):format(
+    library:SetWatermark(('DYHUB | %s fps | %s ms | game: '..info.Name..''):format(
         math.floor(fps),
         math.floor(stats.Network.ServerStatsItem['Data Ping']:GetValue())
     ));
@@ -523,7 +571,9 @@ menu_group:AddButton('Unload', function()
     settings.auto_order = false
     settings.fast_npcs = false
     settings.auto_bill = false
-    settings.auto_cook = false
+    settings.fps = false
+    settings.full_bright = false
+    settings.nofog = false
     settings.auto_seat = false
     settings.auto_tip = false
     watermark_connection:Disconnect()
