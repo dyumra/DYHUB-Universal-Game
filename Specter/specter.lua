@@ -1,4 +1,4 @@
--- V154
+-- V158
 
 local KINGHUB01 = 'https://raw.githubusercontent.com/KINGHUB01/Gui/main/'
 
@@ -184,9 +184,6 @@ orbs.ChildAdded:Connect(function(orb)
         found_orb = true
     end
 end)
-
-local found_writing = false
-
 -- ฟังก์ชันตรวจสอบและเชื่อม RightPage
 local function connectBook(Equipment)
     local Book = Equipment:FindFirstChild("Book")
@@ -267,17 +264,28 @@ GhostInfo:GetPropertyChangedSignal("Text"):Connect(function()
     ghost_name_label:SetText("Ghost Name: " .. found_name)
 end)
 
-sanityconnection = run_service.RenderStepped:Connect(function()
-    local sanity = van.SanityBoard.SurfaceGui.Frame.Players:FindFirstChild(local_player.DisplayName).Entire.Val
+local run_service = game:GetService("RunService")
+local local_player = game:GetService("Players").LocalPlayer
 
-    if sanity then
-        local sanity_value = sanity.Text
-        sanity_label:SetText('Player Sanity: ' .. sanity_value)
+-- สร้างการเชื่อมต่อ
+local sanityconnection
+sanityconnection = run_service.RenderStepped:Connect(function()
+    -- หา Player Sanity ของผู้เล่นปัจจุบัน
+    local player_frame = workspace.Van.SanityBoard.SurfaceGui.Frame.Players:FindFirstChild(local_player.DisplayName)
+    if player_frame then
+        local sanity_val = player_frame.Entire.Val
+        if sanity_val then
+            sanity_label:SetText('Player Sanity: ' .. sanity_val.Text)
+        end
     end
 
-    if local_player.Character.Humanoid.Health < 0 then
-        sanity_label:SetText('Player Sanity: Dead')
-        sanityconnection:Disconnect()
+    -- ตรวจสอบว่าผู้เล่นตายหรือยัง
+    local character = local_player.Character
+    if character and character:FindFirstChild("Humanoid") then
+        if character.Humanoid.Health <= 0 then
+            sanity_label:SetText('Player Sanity: Dead')
+            sanityconnection:Disconnect()
+        end
     end
 end)
 
@@ -1612,6 +1620,7 @@ save_manager:BuildConfigSection(tabs['ui settings'])
 theme_manager:ApplyToTab(tabs['ui settings'])
 
 save_manager:LoadAutoloadConfig()
+
 
 
 
