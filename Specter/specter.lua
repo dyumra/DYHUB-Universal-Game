@@ -1,4 +1,4 @@
--- V125
+-- V127
 
 local KINGHUB01 = 'https://raw.githubusercontent.com/KINGHUB01/Gui/main/'
 
@@ -76,15 +76,14 @@ local bone = map:FindFirstChild('Bone')
 local fuse_box = map:FindFirstChild("Fusebox"):FindFirstChild("Fusebox")
 local closets = map.Closets
 local rooms = map.Rooms
+
 local GhostInfo = workspace.Van.Objectives.SurfaceGui.Frame.Objectives.GhostInfo
-local rightPage = workspace.Equipment.Book.RightPage
-local leftPage = workspace.Equipment.Book.LeftPage
-local bookR = workspace.Equipment.Book.RightPage
-local bookL = workspace.Equipment.Book.LeftPage
+local book = workspace.Equipment.Book.RightPage
 
 local cursed_object_highlight = false
-local found_writing_right = false
-local found_writing_left = false
+
+local found_writing = false
+
 local cursed_object_name = false
 local found_fingerprint = false
 local player_highlight = false
@@ -102,7 +101,9 @@ local inf_stamina = false
 local anti_touch = false
 local show_ghost = false
 local got_motion = false
+
 local ghost_name = false
+
 local no_motion = false
 local item_name = false
 local found_emf = false
@@ -137,6 +138,7 @@ else
     local_player:Kick('Game failed to load, please rejoin and retry... (If it keeps happening please contact @DYHUB on discord!)')
 end
 
+local ghostwriting_label = evidence_group:AddLabel('Ghost Writing: Not Found')
 local fingerprint_label = evidence_group:AddLabel('Fingerprints: Not Found')
 local freezing_label = evidence_group:AddLabel('Freezing Temp: Not Found')
 local motion_label = evidence_group:AddLabel('Para Motion: Not Found')
@@ -144,11 +146,6 @@ local orb_label = evidence_group:AddLabel('Orbs: Not Found')
 local spirit_box_label = evidence_group:AddLabel('Spirit Box: Not Found')
 local emf_label = evidence_group:AddLabel('EMF 5: Not Found')
 local last_emf_label = evidence_group:AddLabel('Last EMF: None')
-
-evidence_group:AddDivider()
-
-local ghostr_label = evidence_group:AddLabel('Ghost Writing (Right): Not Found')
-local ghostl_label = evidence_group:AddLabel('Ghost Writing (Left): Not Found')
 
 evidence_group:AddDivider()
 
@@ -189,6 +186,14 @@ orbs.ChildAdded:Connect(function(orb)
     end
 end)
 
+book.ChildAdded:Connect(function(bookwriting)
+    if bookwriting:IsA("Decal") and not found_writing then
+        ghostwriting_label:SetText('Ghost Writing: Yes')
+        library:Notify("Found Ghost Writing")
+        found_writing = true
+    end
+end)
+
 motionconnection = run_service.RenderStepped:Connect(function()
     for _, motion in pairs(motions:GetDescendants()) do
         if motion:IsA("Part") then
@@ -220,42 +225,6 @@ ghost_name_label:SetText("Ghost Name: " .. found_name)
 GhostInfo:GetPropertyChangedSignal("Text"):Connect(function()
     found_name = getGhostName(GhostInfo.Text)
     ghost_name_label:SetText("Ghost Name: " .. found_name)
-end)
-
-
--- ฟังก์ชันตรวจจับ Decal สำหรับ LeftPage
-bookL.DescendantAdded:Connect(function(descendant)
-    if descendant:IsA("Decal") and not found_writing_left then
-        ghostl_label:SetText("Ghost Writing (Left): Yes")
-        library:Notify("Found Ghost Writing on LeftPage")
-        found_writing_left = true
-    end
-end)
-
--- ฟังก์ชันตรวจจับ Decal สำหรับ RightPage
-bookR.DescendantAdded:Connect(function(descendant)
-    if descendant:IsA("Decal") and not found_writing_right then
-        ghostr_label:SetText("Ghost Writing (Right): Yes")
-        library:Notify("Found Ghost Writing on RightPage")
-        found_writing_right = true
-    end
-end)
-
--- ฟังก์ชันตรวจจับถ้า Ghost Writing ถูกลบ
-bookL.DescendantRemoving:Connect(function(descendant)
-    if descendant:IsA("Decal") and found_writing_left then
-        ghostl_label:SetText("Ghost Writing (Left): No")
-        library:Notify("Ghost Writing Removed from LeftPage")
-        found_writing_left = false
-    end
-end)
-
-bookR.DescendantRemoving:Connect(function(descendant)
-    if descendant:IsA("Decal") and found_writing_right then
-        ghostr_label:SetText("Ghost Writing (Right): No")
-        library:Notify("Ghost Writing Removed from RightPage")
-        found_writing_right = false
-    end
 end)
 
 sanityconnection = run_service.RenderStepped:Connect(function()
@@ -966,7 +935,7 @@ player_group:AddToggle('no_hold', {
 player_group:AddToggle('third_person', {
     Text = '3rd Person',
     Default = false,
-    Tooltip = 'idk why i really added it bc its uselss',
+    Tooltip = 'Change camera to 3rd person',
 
     Callback = function(Value)
         third_person = Value
@@ -1004,7 +973,7 @@ player_group:AddToggle('allow_jumping', {
 })
 
 player_group:AddToggle('inf_jump', {
-    Text = 'Inf Jump',
+    Text = 'Infinite Jump',
     Default = false,
     Tooltip = 'Lets you jump forever',
 
@@ -1032,7 +1001,7 @@ player_group:AddToggle('no_clip', {
 player_group:AddDivider()
 
 player_group:AddToggle('inf_stamina', {
-    Text = 'Inf Stamina',
+    Text = 'Infinite Stamina',
     Default = false,
     Tooltip = 'Gives you inf stamina',
 
@@ -1081,7 +1050,7 @@ if map:GetAttribute("MapName") == "Cargo" then
                 fireproximityprompt(easter_egg)
                 library:Notify("Unlocked Plunge Easeter Egg")
             else
-                library:Notify("Plunge Easter Egg Not Found?? (Report To @kylosilly On Discord)")
+                library:Notify("Plunge Easter Egg Not Found?? (Report On Discord)")
             end
         end,
         DoubleClick = false,
@@ -1102,7 +1071,7 @@ elseif map:GetAttribute("MapName") == "Luxury Home" then
                 local_player.Character.HumanoidRootPart.CFrame = last_pos
                 library:Notify("Unlocked Laptop Easeter Egg")
             else
-                library:Notify("Laptop not found?? (Report To @kylosilly On Discord)")
+                library:Notify("Laptop not found?? (Report On Discord)")
             end
         end,
         DoubleClick = false,
@@ -1601,5 +1570,6 @@ save_manager:BuildConfigSection(tabs['ui settings'])
 theme_manager:ApplyToTab(tabs['ui settings'])
 
 save_manager:LoadAutoloadConfig()
+
 
 
