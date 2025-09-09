@@ -1,4 +1,4 @@
--- V136
+-- V154
 
 local KINGHUB01 = 'https://raw.githubusercontent.com/KINGHUB01/Gui/main/'
 
@@ -78,9 +78,6 @@ local closets = map.Closets
 local rooms = map.Rooms
 
 local GhostInfo = workspace.Van.Objectives.SurfaceGui.Frame.Objectives.GhostInfo
-local Equipment = workspace:FindFirstChild("Equipment")
-local Book = Equipment and Equipment:FindFirstChild("Book")
-local Bbook = Book and Book:FindFirstChild("RightPage")
 
 local cursed_object_highlight = false
 
@@ -188,13 +185,54 @@ orbs.ChildAdded:Connect(function(orb)
     end
 end)
 
-Bbook.ChildAdded:Connect(function(bookwriting)
-    if bookwriting:IsA("Decal") and not found_writing then
-        ghostwriting_label:SetText('Ghost Writing: Yes')
-        library:Notify("Found Ghost Writing")
-        found_writing = true
+local found_writing = false
+
+-- ฟังก์ชันตรวจสอบและเชื่อม RightPage
+local function connectBook(Equipment)
+    local Book = Equipment:FindFirstChild("Book")
+    if not Book then return false end
+
+    local Bbook = Book:FindFirstChild("RightPage")
+    if not Bbook then return false end
+
+    -- ตรวจจับการเพิ่ม Decal
+    Bbook.ChildAdded:Connect(function(bookwriting)
+        if bookwriting:IsA("Decal") and not found_writing then
+            ghostwriting_label:SetText('Ghost Writing: Yes')
+            library:Notify("Found Ghost Writing")
+            found_writing = true
+        end
+    end)
+
+    return true
+end
+
+-- ฟังก์ชันตรวจสอบ workspace ว่ามี Equipment หรือยัง
+local function checkWorkspace()
+    local Equipment = workspace:FindFirstChild("Equipment")
+    if Equipment then
+        if connectBook(Equipment) then
+            return true
+        end
+    end
+    return false
+end
+
+-- Loop ตรวจสอบทุกวินาทีจนเจอ Equipment → Book → RightPage
+spawn(function()
+    while not found_writing do
+        if checkWorkspace() then break end
+        wait(1)
     end
 end)
+
+-- Optional: หาก Equipment ถูกสร้างทีหลัง
+workspace.ChildAdded:Connect(function(child)
+    if child.Name == "Equipment" then
+        connectBook(child)
+    end
+end)
+
 
 motionconnection = run_service.RenderStepped:Connect(function()
     for _, motion in pairs(motions:GetDescendants()) do
@@ -1574,6 +1612,7 @@ save_manager:BuildConfigSection(tabs['ui settings'])
 theme_manager:ApplyToTab(tabs['ui settings'])
 
 save_manager:LoadAutoloadConfig()
+
 
 
 
