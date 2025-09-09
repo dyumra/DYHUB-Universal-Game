@@ -1,3 +1,5 @@
+-- V124
+
 local KINGHUB01 = 'https://raw.githubusercontent.com/KINGHUB01/Gui/main/'
 
 local library = loadstring(game:HttpGet('https://raw.githubusercontent.com/dyumra/Library-DYHUB/refs/heads/main/library.lua'))()
@@ -21,21 +23,25 @@ local window = library:CreateWindow({
 local tabs = {
     main = window:AddTab('Main'),
     esp = window:AddTab('Esp'),
-    world = window:AddTab('World'),
-    ['ui settings'] = window:AddTab('UI Settings')
+    world = window:AddTab('Lighting'),
+    ['ui settings'] = window:AddTab('Settings')
 }
 
 
-
+local evidence_group = tabs.main:AddRightGroupbox('Evidences')
+local ghost_group = tabs.main:AddRightGroupbox('Information')
 local game_group = tabs.main:AddLeftGroupbox('Game Settings')
-local player_group = tabs.main:AddRightGroupbox('Player Settings')
+local player_group = tabs.main:AddLeftGroupbox('Player Settings')
+
 local ghost_esp_group = tabs.esp:AddLeftGroupbox('Ghost Esp Settings')
 local player_esp_group = tabs.esp:AddRightGroupbox('Player Esp Settings')
 local item_esp_group = tabs.esp:AddLeftGroupbox('Item Esp Settings')
 local cursed_esp_group = tabs.esp:AddRightGroupbox('Cursed Esp Settings')
 local evidence_esp_group = tabs.esp:AddLeftGroupbox('Evidence Esp Settings')
 local closet_esp_group = tabs.esp:AddRightGroupbox('Closet Esp Settings')
+
 local world_group = tabs.world:AddLeftGroupbox('World Settings')
+
 local menu_group = tabs['ui settings']:AddLeftGroupbox('Menu')
 local credits_group = tabs['ui settings']:AddRightGroupbox('Credits')
 local settings_group = tabs['ui settings']:AddRightGroupbox('Menu Settings')
@@ -70,6 +76,9 @@ local bone = map:FindFirstChild('Bone')
 local fuse_box = map:FindFirstChild("Fusebox"):FindFirstChild("Fusebox")
 local closets = map.Closets
 local rooms = map.Rooms
+local GhostInfo = workspace.Van.Objectives.SurfaceGui.Frame.Objectives.GhostInfo
+local rightPage = workspace.Equipment.Book.RightPage
+local leftPage = workspace.Equipment.Book.LeftPage
 
 local cursed_object_highlight = false
 local cursed_object_name = false
@@ -79,6 +88,7 @@ local closet_highlight = false
 local highlight_ghost = false
 local got_spirit_box = false
 local item_highlight = false
+local found_writing = false
 local speed_sprint = false
 local third_person = false
 local jump_enabled = false
@@ -101,6 +111,8 @@ local no_hold = false
 local nofog = false
 local fps = false
 
+local found_name = "N/A"
+
 local touch_distance = 7
 local sprint_speed = 1
 
@@ -119,22 +131,27 @@ if game:IsLoaded() then
         print("====================================================")
     end
 else
-    local_player:Kick('Game failed to load, please rejoin and retry... (If it keeps happening please contact @kylosilly on discord!)')
+    local_player:Kick('Game failed to load, please rejoin and retry... (If it keeps happening please contact @DYHUB on discord!)')
 end
 
-local emf_label = game_group:AddLabel('EMF 5: Not Found')
-local fingerprint_label = game_group:AddLabel('Fingerprints: Not Found')
-local freezing_label = game_group:AddLabel('Freezing: Not Found')
-local motion_label = game_group:AddLabel('Motion: Not Found')
-local orb_label = game_group:AddLabel('Orbs: Not Found')
-local spirit_box_label = game_group:AddLabel('Spirit Box: Not Found')
+local fingerprint_label = evidence_group:AddLabel('Fingerprints: Not Found')
+local ghost_label = evidence_group:AddLabel('Ghost Writing: Not Found')
+local freezing_label = evidence_group:AddLabel('Freezing Temp: Not Found')
+local motion_label = evidence_group:AddLabel('Para Motion: Not Found')
+local orb_label = evidence_group:AddLabel('Orbs: Not Found')
+local spirit_box_label = evidence_group:AddLabel('Spirit Box: Not Found')
+local emf_label = evidence_group:AddLabel('EMF 5: Not Found')
+local last_emf_label = evidence_group:AddLabel('Last EMF: None')
 
-game_group:AddDivider()
+evidence_group:AddDivider()
 
-local last_emf_label = game_group:AddLabel('Last EMF: None')
-local ghost_room_label = game_group:AddLabel('Ghost Room: Not Found')
-local ghost_speed_label = game_group:AddLabel('Ghost Speed: Not Found')
-local sanity_label = player_group:AddLabel('Sanity:')
+local ghost_name_label = ghost_group:AddLabel('Ghost Name: N/A')
+local ghost_room_label = ghost_group:AddLabel('Ghost Room: Not Found')
+local ghost_speed_label = ghost_group:AddLabel('Ghost Speed: Not Found')
+
+evidence_group:AddDivider()
+
+local sanity_label = ghost_group:AddLabel('Sanity:')
 
 emfs.ChildAdded:Connect(function(emf)
     if emf:IsA("Part") and emf.Name == 'EMF5' and not found_emf then
@@ -182,6 +199,48 @@ motionconnection = run_service.RenderStepped:Connect(function()
                 break
             end
         end
+    end
+end)
+
+local function getGhostName(text)
+    local name = string.match(text, "<font.-%>(.-)</font>")
+    return name or "N/A"
+end
+
+found_name = getGhostName(GhostInfo.Text)
+ghost_name_label:SetText("Ghost Name: " .. found_name)
+
+GhostInfo:GetPropertyChangedSignal("Text"):Connect(function()
+    found_name = getGhostName(GhostInfo.Text)
+    ghost_name_label:SetText("Ghost Name: " .. found_name)
+end)
+
+local function checkPage(page)
+    for _, obj in ipairs(page:GetChildren()) do
+        if obj:IsA("Part") and not found_writing then
+            ghost_label:SetText("Ghost Writing: Yes")
+            library:Notify("Found Ghost Writing")
+            found_writing = true
+        end
+    end
+end
+
+checkPage(rightPage)
+checkPage(leftPage)
+
+rightPage.ChildAdded:Connect(function(child)
+    if child:IsA("Part") and not found_writing then
+        ghost_label:SetText("Ghost Writing: Yes")
+        library:Notify("Found Ghost Writing")
+        found_writing = true
+    end
+end)
+
+leftPage.ChildAdded:Connect(function(child)
+    if child:IsA("Part") and not found_writing then
+        ghost_label:SetText("Ghost Writing: Yes")
+        library:Notify("Found Ghost Writing")
+        found_writing = true
     end
 end)
 
@@ -1528,3 +1587,4 @@ save_manager:BuildConfigSection(tabs['ui settings'])
 theme_manager:ApplyToTab(tabs['ui settings'])
 
 save_manager:LoadAutoloadConfig()
+
