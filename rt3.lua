@@ -779,7 +779,7 @@ local watermark_connection = run_service.RenderStepped:Connect(function()
         frame_counter = 0;
     end;
 
-    library:SetWatermark(('DYHUB | %s fps | %s ms | game: '..info.Name..''):format(
+    library:SetWatermark(('DYHUB | %s fps | %s ms | Game: '..info.Name..''):format(
         math.floor(fps),
         math.floor(stats.Network.ServerStatsItem['Data Ping']:GetValue())
     ));
