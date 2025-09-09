@@ -1,4 +1,4 @@
--- V124
+-- V125
 
 local KINGHUB01 = 'https://raw.githubusercontent.com/KINGHUB01/Gui/main/'
 
@@ -79,8 +79,12 @@ local rooms = map.Rooms
 local GhostInfo = workspace.Van.Objectives.SurfaceGui.Frame.Objectives.GhostInfo
 local rightPage = workspace.Equipment.Book.RightPage
 local leftPage = workspace.Equipment.Book.LeftPage
+local bookR = workspace.Equipment.Book.RightPage
+local bookL = workspace.Equipment.Book.LeftPage
 
 local cursed_object_highlight = false
+local found_writing_right = false
+local found_writing_left = false
 local cursed_object_name = false
 local found_fingerprint = false
 local player_highlight = false
@@ -88,7 +92,6 @@ local closet_highlight = false
 local highlight_ghost = false
 local got_spirit_box = false
 local item_highlight = false
-local found_writing = false
 local speed_sprint = false
 local third_person = false
 local jump_enabled = false
@@ -135,7 +138,6 @@ else
 end
 
 local fingerprint_label = evidence_group:AddLabel('Fingerprints: Not Found')
-local ghost_label = evidence_group:AddLabel('Ghost Writing: Not Found')
 local freezing_label = evidence_group:AddLabel('Freezing Temp: Not Found')
 local motion_label = evidence_group:AddLabel('Para Motion: Not Found')
 local orb_label = evidence_group:AddLabel('Orbs: Not Found')
@@ -145,13 +147,18 @@ local last_emf_label = evidence_group:AddLabel('Last EMF: None')
 
 evidence_group:AddDivider()
 
+local ghostr_label = evidence_group:AddLabel('Ghost Writing (Right): Not Found')
+local ghostl_label = evidence_group:AddLabel('Ghost Writing (Left): Not Found')
+
+evidence_group:AddDivider()
+
 local ghost_name_label = ghost_group:AddLabel('Ghost Name: N/A')
 local ghost_room_label = ghost_group:AddLabel('Ghost Room: Not Found')
 local ghost_speed_label = ghost_group:AddLabel('Ghost Speed: Not Found')
 
 evidence_group:AddDivider()
 
-local sanity_label = ghost_group:AddLabel('Sanity:')
+local sanity_label = ghost_group:AddLabel('Player Sanity:')
 
 emfs.ChildAdded:Connect(function(emf)
     if emf:IsA("Part") and emf.Name == 'EMF5' and not found_emf then
@@ -215,32 +222,39 @@ GhostInfo:GetPropertyChangedSignal("Text"):Connect(function()
     ghost_name_label:SetText("Ghost Name: " .. found_name)
 end)
 
-local function checkPage(page)
-    for _, obj in ipairs(page:GetChildren()) do
-        if obj:IsA("Part") and not found_writing then
-            ghost_label:SetText("Ghost Writing: Yes")
-            library:Notify("Found Ghost Writing")
-            found_writing = true
-        end
-    end
-end
 
-checkPage(rightPage)
-checkPage(leftPage)
-
-rightPage.ChildAdded:Connect(function(child)
-    if child:IsA("Part") and not found_writing then
-        ghost_label:SetText("Ghost Writing: Yes")
-        library:Notify("Found Ghost Writing")
-        found_writing = true
+-- ฟังก์ชันตรวจจับ Decal สำหรับ LeftPage
+bookL.DescendantAdded:Connect(function(descendant)
+    if descendant:IsA("Decal") and not found_writing_left then
+        ghostl_label:SetText("Ghost Writing (Left): Yes")
+        library:Notify("Found Ghost Writing on LeftPage")
+        found_writing_left = true
     end
 end)
 
-leftPage.ChildAdded:Connect(function(child)
-    if child:IsA("Part") and not found_writing then
-        ghost_label:SetText("Ghost Writing: Yes")
-        library:Notify("Found Ghost Writing")
-        found_writing = true
+-- ฟังก์ชันตรวจจับ Decal สำหรับ RightPage
+bookR.DescendantAdded:Connect(function(descendant)
+    if descendant:IsA("Decal") and not found_writing_right then
+        ghostr_label:SetText("Ghost Writing (Right): Yes")
+        library:Notify("Found Ghost Writing on RightPage")
+        found_writing_right = true
+    end
+end)
+
+-- ฟังก์ชันตรวจจับถ้า Ghost Writing ถูกลบ
+bookL.DescendantRemoving:Connect(function(descendant)
+    if descendant:IsA("Decal") and found_writing_left then
+        ghostl_label:SetText("Ghost Writing (Left): No")
+        library:Notify("Ghost Writing Removed from LeftPage")
+        found_writing_left = false
+    end
+end)
+
+bookR.DescendantRemoving:Connect(function(descendant)
+    if descendant:IsA("Decal") and found_writing_right then
+        ghostr_label:SetText("Ghost Writing (Right): No")
+        library:Notify("Ghost Writing Removed from RightPage")
+        found_writing_right = false
     end
 end)
 
@@ -249,11 +263,11 @@ sanityconnection = run_service.RenderStepped:Connect(function()
 
     if sanity then
         local sanity_value = sanity.Text
-        sanity_label:SetText('Sanity: ' .. sanity_value)
+        sanity_label:SetText('Player Sanity: ' .. sanity_value)
     end
 
     if local_player.Character.Humanoid.Health < 0 then
-        sanity_label:SetText('Sanity: Dead')
+        sanity_label:SetText('Player Sanity: Dead')
         sanityconnection:Disconnect()
     end
 end)
@@ -1587,4 +1601,5 @@ save_manager:BuildConfigSection(tabs['ui settings'])
 theme_manager:ApplyToTab(tabs['ui settings'])
 
 save_manager:LoadAutoloadConfig()
+
 
