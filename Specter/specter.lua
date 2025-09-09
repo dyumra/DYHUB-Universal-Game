@@ -1,4 +1,4 @@
--- V127
+-- V134
 
 local KINGHUB01 = 'https://raw.githubusercontent.com/KINGHUB01/Gui/main/'
 
@@ -78,7 +78,7 @@ local closets = map.Closets
 local rooms = map.Rooms
 
 local GhostInfo = workspace.Van.Objectives.SurfaceGui.Frame.Objectives.GhostInfo
-local book = workspace.Equipment.Book.RightPage
+local Bbook = workspace:FindFirstChild("Equipment"):FindFirstChild("Book"):FindFirstChild("RightPage") 
 
 local cursed_object_highlight = false
 
@@ -186,7 +186,7 @@ orbs.ChildAdded:Connect(function(orb)
     end
 end)
 
-book.ChildAdded:Connect(function(bookwriting)
+Bbook.ChildAdded:Connect(function(bookwriting)
     if bookwriting:IsA("Decal") and not found_writing then
         ghostwriting_label:SetText('Ghost Writing: Yes')
         library:Notify("Found Ghost Writing")
@@ -1487,6 +1487,8 @@ menu_group:AddButton('Unload', function()
     cursed_object_name = false
     orbs_name = false
     emf_name = false
+    found_writing = false
+    ghost_name = false
     closet_name = false
     closet_highlight = false
 
@@ -1570,6 +1572,7 @@ save_manager:BuildConfigSection(tabs['ui settings'])
 theme_manager:ApplyToTab(tabs['ui settings'])
 
 save_manager:LoadAutoloadConfig()
+
 
 
 
