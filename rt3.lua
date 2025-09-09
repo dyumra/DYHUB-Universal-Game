@@ -122,6 +122,7 @@ local noclipEnabled = false
 
 local nofog88 = false
 local Retro_Radio88 = false
+local Retro_Tv88 = false
 local fullbright88 = false
 
 -- เก็บค่าเดิมไว้
@@ -470,6 +471,44 @@ event_group:AddToggle('acrr', {
 
                 for _, radioModel in ipairs(radios) do
                     if not Retro_Radio88 then break end
+
+                    -- ตรวจสอบว่ามี PrimaryPart
+                    local targetPart = radioModel.PrimaryPart or radioModel:FindFirstChildWhichIsA("BasePart")
+                    if targetPart then
+                        hrp.CFrame = targetPart.CFrame + Vector3.new(0, 2.5, 0)
+                        task.wait(1)
+                    end
+                end
+            end)
+        end
+    end
+})
+
+event_group:AddToggle('acrtv', {
+    Text = 'Collect All Retro TV',
+    Default = false,
+    Tooltip = 'Feature for Auto Collect Retro TV',
+
+    Callback = function(Value)
+        Retro_Tv88 = Value
+        if Value then
+            task.spawn(function()
+                local player = game.Players.LocalPlayer
+                local character = player.Character or player.CharacterAdded:Wait()
+                local hrp = character:WaitForChild("HumanoidRootPart")
+
+                local scavengerHunt = workspace:WaitForChild("Map"):WaitForChild("ScavengerHunt")
+                local radiotv = {}
+
+                -- เก็บ RetroRadio ทั้งหมด
+                for _, child in ipairs(scavengerHunt:GetChildren()) do
+                    if child.Name == "RetroTV" and child:IsA("Model") then
+                        table.insert(radiotv, child)
+                    end
+                end
+
+                for _, radioModel in ipairs(radiotv) do
+                    if not Retro_Tv88 then break end
 
                     -- ตรวจสอบว่ามี PrimaryPart
                     local targetPart = radioModel.PrimaryPart or radioModel:FindFirstChildWhichIsA("BasePart")
