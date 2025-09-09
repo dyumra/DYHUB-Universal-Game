@@ -1,4 +1,4 @@
--- V158
+-- V159
 
 local KINGHUB01 = 'https://raw.githubusercontent.com/KINGHUB01/Gui/main/'
 
@@ -23,6 +23,7 @@ local window = library:CreateWindow({
 local tabs = {
     main = window:AddTab('Main'),
     esp = window:AddTab('Esp'),
+    player = window:AddTab('Player'),
     world = window:AddTab('Lighting'),
     ['ui settings'] = window:AddTab('Settings')
 }
@@ -31,7 +32,6 @@ local tabs = {
 local evidence_group = tabs.main:AddRightGroupbox('Evidences')
 local ghost_group = tabs.main:AddRightGroupbox('Information')
 local game_group = tabs.main:AddLeftGroupbox('Game Settings')
-local player_group = tabs.main:AddLeftGroupbox('Player Settings')
 
 local ghost_esp_group = tabs.esp:AddLeftGroupbox('Ghost Esp Settings')
 local player_esp_group = tabs.esp:AddRightGroupbox('Player Esp Settings')
@@ -40,7 +40,11 @@ local cursed_esp_group = tabs.esp:AddRightGroupbox('Cursed Esp Settings')
 local evidence_esp_group = tabs.esp:AddLeftGroupbox('Evidence Esp Settings')
 local closet_esp_group = tabs.esp:AddRightGroupbox('Closet Esp Settings')
 
-local world_group = tabs.world:AddLeftGroupbox('World Settings')
+local player_group = tabs.player:AddLeftGroupbox('Player Settings')
+local misc_group = tabs.player:AddRightGroupbox('Misc')
+
+local world_group = tabs.world:AddRightGroupbox('Visual Settings')
+local boost_group = tabs.world:AddLeftGroupbox('Graphic Settings')
 
 local menu_group = tabs['ui settings']:AddLeftGroupbox('Menu')
 local credits_group = tabs['ui settings']:AddRightGroupbox('Credits')
@@ -137,22 +141,25 @@ else
     local_player:Kick('Game failed to load, please rejoin and retry... (If it keeps happening please contact @DYHUB on discord!)')
 end
 
+local freezing_label = evidence_group:AddLabel('Freezing Temp: Not Found')
 local ghostwriting_label = evidence_group:AddLabel('Ghost Writing: Not Found')
 local fingerprint_label = evidence_group:AddLabel('Fingerprints: Not Found')
-local freezing_label = evidence_group:AddLabel('Freezing Temp: Not Found')
 local motion_label = evidence_group:AddLabel('Para Motion: Not Found')
-local orb_label = evidence_group:AddLabel('Orbs: Not Found')
 local spirit_box_label = evidence_group:AddLabel('Spirit Box: Not Found')
-local emf_label = evidence_group:AddLabel('EMF 5: Not Found')
-local last_emf_label = evidence_group:AddLabel('Last EMF: None')
+local orb_label = evidence_group:AddLabel('Orbs: Not Found')
 
 evidence_group:AddDivider()
+
+local emf_label = evidence_group:AddLabel('EMF 5: Not Found')
+local last_emf_label = evidence_group:AddLabel('Last EMF: Not Found')
+
+ghost_group:AddDivider()
 
 local ghost_name_label = ghost_group:AddLabel('Ghost Name: N/A')
 local ghost_room_label = ghost_group:AddLabel('Ghost Room: Not Found')
 local ghost_speed_label = ghost_group:AddLabel('Ghost Speed: Not Found')
 
-evidence_group:AddDivider()
+ghost_group:AddDivider()
 
 local sanity_label = ghost_group:AddLabel('Player Sanity:')
 
@@ -1462,10 +1469,28 @@ world_group:AddToggle('fb', {
     end
 })
 
+local colorCorrection = Instance.new("ColorCorrectionEffect")
+colorCorrection.Name = "DYHUB | Saturation-Boost"
+colorCorrection.Saturation = 0
+colorCorrection.Parent = game.Lighting
+
+world_group:AddToggle('saturation', {
+    Text = 'Increase Color Saturation',
+    Default = false,
+    Tooltip = 'Makes the world colors more vivid',
+    Callback = function(Value)
+        if Value then
+            colorCorrection.Saturation = 0.75
+        else
+            colorCorrection.Saturation = 0
+        end
+    end
+})
+
 world_group:AddToggle('nf', {
     Text = 'No Fog',
     Default = false,
-    Tooltip = 'Removes fog and makes full bright',
+    Tooltip = 'Removes fog',
 
     Callback = function(Value)
         nofog = Value
@@ -1479,7 +1504,64 @@ world_group:AddToggle('nf', {
     end
 })
 
-world_group:AddToggle('uf', {
+world_group:AddDivider()
+
+world_group:AddButton({
+    Text = "Day",
+    Func = function() lighting.ClockTime = 12 end
+})
+world_group:AddButton({
+    Text = "Night",
+    Func = function() lighting.ClockTime = 0 end
+})
+
+misc_group:AddButton({
+    Text = 'Anti AFK',
+    Func = function()
+        -- แบบง่ายโดยไม่ต้องใช้ exploit
+        local_player.Idled:Connect(function()
+            VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+            VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+        end)
+        library:Notify("Anti AFK Enabled!")
+    end,
+    DoubleClick = false,
+    Tooltip = 'Won\'t disconnect you after 20 minutes'
+})
+
+misc_group:AddButton({
+    Text = 'Bypass Anti Cheat',
+    Func = function()
+        -- แบบง่ายโดยไม่ต้องใช้ exploit
+        local_player.Idled:Connect(function()
+            VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+            VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+        end)
+        library:Notify("Bypass Done!")
+    end,
+    DoubleClick = false,
+    Tooltip = 'Bypass cheat for Safe now!'
+})
+
+boost_group:AddButton({
+    Text = 'Boost Fps',
+    Tooltip = 'Optimize performance and boost FPS',
+    DoubleClick = false,
+
+    Func = function()
+        local success, err = pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Nigga.lua"))()
+        end)
+
+        if success then
+            library:Notify("Boost FPS Enabled!")
+        else
+            library:Notify("Failed to load Boost FPS:\n" .. tostring(err))
+        end
+    end
+})
+
+boost_group:AddToggle('uf', {
     Text = 'Unlock Fps',
     Default = false,
     Tooltip = 'just unlock fps cap 60 to 360',
@@ -1509,7 +1591,7 @@ local watermark_connection = run_service.RenderStepped:Connect(function()
         FrameCounter = 0;
     end;
 
-    library:SetWatermark(('DYHUB | %s fps | %s ms | game: ' .. info.Name .. ''):format(
+    library:SetWatermark(('DYHUB | %s fps | %s ms | Game: ' .. info.Name .. ''):format(
         math.floor(FPS),
         math.floor(stats.Network.ServerStatsItem['Data Ping']:GetValue())
     ));
@@ -1620,6 +1702,7 @@ save_manager:BuildConfigSection(tabs['ui settings'])
 theme_manager:ApplyToTab(tabs['ui settings'])
 
 save_manager:LoadAutoloadConfig()
+
 
 
 
