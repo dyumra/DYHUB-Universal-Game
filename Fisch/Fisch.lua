@@ -737,8 +737,10 @@ FreezeCharacterGroup:AddToggle('FreezeCharacter', {
 local SettingsGroup = Tabs.Settings:AddLeftGroupbox('Settings')
 local CreditsGroup = Tabs.Settings:AddRightGroupbox('Credits')
 
-CreditsGroup:AddLabel('Made by kylosilly and netpa!')
-CreditsGroup:AddLabel('Made with love and hate :3')
+CreditsGroup:AddLabel('Made by dyumra! (DYHUB)')
+reditsGroup:AddLabel('Update: 9/9/2025')
+reditsGroup:AddLabel('Version: 5.8.2')
+reditsGroup:AddLabel('Type: Premium')
 
 local DiscordButton = CreditsGroup:AddButton({
     Text = 'Copy Fisch Discord Link',
@@ -752,13 +754,13 @@ local DiscordButton = CreditsGroup:AddButton({
 local DiscordButton2 = CreditsGroup:AddButton({
     Text = 'Copy Main Discord link',
     Func = function()
-        setclipboard('https://discord.gg/VudXCDCaBN')
+        setclipboard('https://dsc.gg/dyhub')
     end,
     DoubleClick = false,
     Tooltip = 'Join our main discord!'
 })
 
-CreditsGroup:AddLabel('البرود يا جماعه هو الحل')
+CreditsGroup:AddLabel('Settings Embled')
 
 SettingsGroup:AddButton('Unload', function() Library:Unload() end)
 
@@ -834,4 +836,5 @@ task.spawn(function()
             Library:Notify("Join our fisch discord server to get the new script.")
         end
     end
+
 end)
