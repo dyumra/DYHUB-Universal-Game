@@ -4,6 +4,9 @@ local Library = loadstring(game:HttpGet('https://raw.githubusercontent.com/dyumr
 local ThemeManager = loadstring(game:HttpGet('https://raw.githubusercontent.com/dyumra/Library-DYHUB/refs/heads/main/ThemeManager.lua'))()
 local SaveManager = loadstring(game:HttpGet(KINGHUB01 .. 'Gui%20Lib%20%5BSaveManager%5D'))()
 
+local market = game:GetService('MarketplaceService')
+local info = market:GetProductInfo(game.PlaceId)
+
 local Window = Library:CreateWindow({
     Title = 'DYHUB | Fisch | dsc.gg/dyhub [Premium]',
     Center = true,
@@ -25,7 +28,7 @@ local WatermarkConnection = game:GetService('RunService').RenderStepped:Connect(
         FrameCounter = 0;
     end;
 
-    Library:SetWatermark(('DYHUB V5.8.2 | %s fps | %s ms'):format(
+    Library:SetWatermark(('DYHUB V5.8.2 | %s fps | %s ms | Game: ' .. info.Name .. ''):format(
         math.floor(FPS),
         math.floor(game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue())
     ));
@@ -838,3 +841,4 @@ task.spawn(function()
     end
 
 end)
+
