@@ -1,4 +1,4 @@
--- V134
+-- V136
 
 local KINGHUB01 = 'https://raw.githubusercontent.com/KINGHUB01/Gui/main/'
 
@@ -78,7 +78,9 @@ local closets = map.Closets
 local rooms = map.Rooms
 
 local GhostInfo = workspace.Van.Objectives.SurfaceGui.Frame.Objectives.GhostInfo
-local Bbook = workspace:FindFirstChild("Equipment"):FindFirstChild("Book"):FindFirstChild("RightPage") 
+local Equipment = workspace:FindFirstChild("Equipment")
+local Book = Equipment and Equipment:FindFirstChild("Book")
+local Bbook = Book and Book:FindFirstChild("RightPage")
 
 local cursed_object_highlight = false
 
@@ -1572,6 +1574,7 @@ save_manager:BuildConfigSection(tabs['ui settings'])
 theme_manager:ApplyToTab(tabs['ui settings'])
 
 save_manager:LoadAutoloadConfig()
+
 
 
 
