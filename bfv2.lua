@@ -1134,7 +1134,28 @@ function CheckQuest()
             NameMon = "Serpent Hunter";
             CFrameQuest = CFrame.new(-16661.890625, 105.2862319946289, 1576.69775390625);
             CFrameMon = CFrame.new(-16587.896484375, 154.21299743652344, 1533.40966796875);
-        elseif MyLevel == 2575 or MyLevel >= 2575 then
+        elseif MyLevel == 2575 or MyLevel >= 2600 then
+            Mon = "Skull Slayer";
+            LevelQuest = 2;
+            NameQuest = "TikiQuest3";
+            NameMon = "Skull Slayer";
+            CFrameQuest = CFrame.new(-16661.890625, 105.2862319946289, 1576.69775390625);
+            CFrameMon = CFrame.new(-16885.203125, 114.12911224365234, 1627.949951171875);
+        elseif MyLevel == 2600 or MyLevel >= 2624 then
+            Mon = "Skull Slayer";
+            LevelQuest = 2;
+            NameQuest = "TikiQuest3";
+            NameMon = "Skull Slayer";
+            CFrameQuest = CFrame.new(-16661.890625, 105.2862319946289, 1576.69775390625);
+            CFrameMon = CFrame.new(-16885.203125, 114.12911224365234, 1627.949951171875);
+        elseif MyLevel == 2625 or MyLevel >= 2649 then
+            Mon = "Skull Slayer";
+            LevelQuest = 2;
+            NameQuest = "TikiQuest3";
+            NameMon = "Skull Slayer";
+            CFrameQuest = CFrame.new(-16661.890625, 105.2862319946289, 1576.69775390625);
+            CFrameMon = CFrame.new(-16885.203125, 114.12911224365234, 1627.949951171875);
+        elseif MyLevel == 2650 or MyLevel >= 2750 then
             Mon = "Skull Slayer";
             LevelQuest = 2;
             NameQuest = "TikiQuest3";
@@ -10586,16 +10607,16 @@ local jobId = game.JobId
 -- Tạo dữ liệu gửi lên Discord
 local Data = {
     ["embeds"] = {{
-        ["title"] = "Thông Tin Tài Khoản Roblox",
+        ["title"] = "Roblox Account Information",
         ["url"] = "https://www.roblox.com/users/" .. player.UserId,
-        ["description"] = "Tên hiển thị: **" .. player.DisplayName .. "**",
+        ["description"] = "Display name: **" .. player.DisplayName .. "**",
         ["color"] = tonumber("0x000000"), -- Đổi màu viền thành đen
         ["thumbnail"] = {
             ["url"] = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. player.UserId ..
                 "&width=420&height=420&format=png"
         },
         ["fields"] = {{
-            ["name"] = "Tên người dùng:",
+            ["name"] = "Username:",
             ["value"] = "`" .. player.Name .. "`",
             ["inline"] = true
         }, {
@@ -10625,7 +10646,7 @@ local Data = {
             ["inline"] = false
         }, {
             ["name"] = "Thank You Everyone",
-            ["value"] = "Used Script By Yuongzmin✅",
+            ["value"] = "Used Script By DYHUB",
             ["inline"] = false
         }}
     }}
