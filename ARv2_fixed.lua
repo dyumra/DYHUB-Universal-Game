@@ -262,7 +262,7 @@ task.spawn(function()
 
     -- ====== Cash Tab ======
     CashTab:Section({ Title = "Join Group first!", Icon = "triangle-alert" })
-    CashTab:Section({ Title = "Dupe Currency", Icon = "circle-dollar-sign" })
+    CashTab:Section({ Title = "Dupe Currency (Under Fixing)", Icon = "circle-dollar-sign" })
 
     CashTab:Input({ Title = "Enter Dupe Cash Amount", Placeholder = "100 ~ 10000", Callback = function(text) cashInputValue = text end })
     CashTab:Button({
