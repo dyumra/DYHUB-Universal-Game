@@ -1,4 +1,4 @@
--- UNDDDDDDDDDDDDDDDDD
+-- UNDDDDDDDDDDDDDDDDD | Fixed
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -123,7 +123,7 @@ task.spawn(function()
         Title = "DYHUB - Anime Rails (Lobby)",
         IconThemed = true,
         Icon = "star",
-        Author = "Version: 5.2.9 | dsc.gg/dyhub",
+        Author = "Version: 5.3.2 | dsc.gg/dyhub",
         Size = UDim2.fromOffset(500, 300),
         Transparent = true,
         Theme = "Dark",
@@ -271,7 +271,7 @@ task.spawn(function()
         Callback = function()
             local input = tonumber(cashInputValue)
             if input and input >= 100 and input <= 10000 then
-                ReplicatedStorage:WaitForChild("CodeEvent"):FireServer("Wins", input, "DYHUB")
+                ReplicatedStorage:WaitForChild("IDK"):FireServer("Wins", input, "DYHUB")
                 print("[DYHUB] Dupe Cash:", input)
             else
                 print("[DYHUB] Invalid amount:", cashInputValue)
