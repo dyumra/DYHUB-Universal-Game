@@ -1,4 +1,4 @@
--- UNDDDDDDDDDDDDDDDDD | Fixed
+-- ANIME RAILS | Fixed 
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -286,7 +286,7 @@ task.spawn(function()
         Callback = function()
             local input = tonumber(spinInputValue)
             if input and input >= 100 and input <= 500 then
-                ReplicatedStorage:WaitForChild("CodeEvent"):FireServer("Wins", input, "DYHUB")
+                ReplicatedStorage:WaitForChild("IDK"):FireServer("Wins", input, "DYHUB")
                 print("[DYHUB] Dupe Spin:", input)
             else
                 print("[DYHUB] Invalid amount:", spinInputValue)
@@ -310,7 +310,7 @@ task.spawn(function()
                     while autoInfiniteCash do
                         for _ = 1, times do
                             if not autoInfiniteCash then break end
-                            ReplicatedStorage:WaitForChild("CodeEvent"):FireServer("Wins", perFire, "DYHUB")
+                            ReplicatedStorage:WaitForChild("IDK"):FireServer("Wins", perFire, "DYHUB")
                             task.wait(0.1)
                         end
                         task.wait(0.5)
@@ -319,6 +319,7 @@ task.spawn(function()
             end
         end
     })
+		
 
     -- ====== Player ESP Tab ======
     local function updateESP()
