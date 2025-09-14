@@ -482,19 +482,45 @@ AutoCastSettings:SetupDependencies({
 local SellButton = FishUtilitiesGroup:AddButton({
     Text = 'Sell a fish',
     Func = function()
-        Workspace:WaitForChild("world"):WaitForChild("npcs"):WaitForChild("Marc Merchant"):WaitForChild("merchant"):WaitForChild("sell"):InvokeServer()
+        local world = workspace:WaitForChild("world")
+        local npcs = world:WaitForChild("npcs")
+        local merchant = npcs:WaitForChild("Merchant Matey")
+
+        local args = {{
+            voice = 12,
+            npc = merchant,
+            idle = merchant:WaitForChild("description"):WaitForChild("idle")
+        }}
+
+        local events = game:GetService("ReplicatedStorage"):WaitForChild("events")
+        local sell = events:WaitForChild("Sell")
+
+        sell:InvokeServer(unpack(args))
     end,
     DoubleClick = false,
     Tooltip = 'Sells the fish you are holding'
 })
 
 local SellAllButton = FishUtilitiesGroup:AddButton({
-    Text = 'Sell ALL fish',
+    Text = "Sell ALL fish",
     Func = function()
-        Workspace:WaitForChild("world"):WaitForChild("npcs"):WaitForChild("Marc Merchant"):WaitForChild("merchant"):WaitForChild("sellall"):InvokeServer()
+        local world = workspace:WaitForChild("world")
+        local npcs = world:WaitForChild("npcs")
+        local merchant = npcs:WaitForChild("Merchant Matey")
+
+        local args = {{
+            voice = 12,
+            npc = merchant,
+            idle = merchant:WaitForChild("description"):WaitForChild("idle")
+        }}
+
+        local events = game:GetService("ReplicatedStorage"):WaitForChild("events")
+        local sellAll = events:WaitForChild("SellAll")
+
+        sellAll:InvokeServer(unpack(args))
     end,
     DoubleClick = false,
-    Tooltip = 'Sells all your fish'
+    Tooltip = "Sells all your fish"
 })
 
 local SellAllButton = FishUtilitiesGroup:AddButton({
@@ -841,4 +867,5 @@ task.spawn(function()
     end
 
 end)
+
 
