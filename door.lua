@@ -226,7 +226,7 @@ end)
 
 pcall(function()
     Window:Tag({
-        Title = "4.0.7",
+        Title = "4.2.7",
         Color = Color3.fromHex("#30ff6a") 
     })
 end)
@@ -830,13 +830,13 @@ Esp:Toggle({
         while _G.EspDoor do
             for i, v in pairs(game.Workspace:FindFirstChild("CurrentRooms"):GetChildren()) do
                 if v:IsA("Model") and v:FindFirstChild("Door") and v.Door:FindFirstChild("Door") then
-                    -- 2Ó32Ó72Ñ82Õ22Ð82Ñ1 Highlight 2Ñ12Ô12Ö02Ò12Ô12Ó32Ò22Ô52Ö02Õ32Ò52Ö12Ò7
+                    -- à¸­à¸±à¸žà¹€à¸”à¸— Highlight à¸—à¸µà¹ˆà¸¡à¸µà¸­à¸¢à¸¹à¹ˆà¹à¸¥à¹‰à¸§
                     if v:FindFirstChild("Esp_Highlight") then
                         v:FindFirstChild("Esp_Highlight").FillColor = _G.ColorLight or Color3.fromRGB(255, 255, 255)
                         v:FindFirstChild("Esp_Highlight").OutlineColor = _G.ColorLight or Color3.fromRGB(255, 255, 255)
                     end
 
-                    -- 2Ó02Ò32Ö12Ó82Ï5 Highlight 2Ñ02Ö12Ó82Õ22Ñ52Ô02Ð8 EspHighlight
+                    -- à¸ªà¸£à¹‰à¸²à¸‡ Highlight à¸–à¹‰à¸²à¹€à¸›à¸´à¸” EspHighlight
                     if _G.EspHighlight == true and v:FindFirstChild("Esp_Highlight") == nil then
                         local Highlight = Instance.new("Highlight")
                         Highlight.Name = "Esp_Highlight"
@@ -844,13 +844,13 @@ Esp:Toggle({
                         Highlight.OutlineColor = Color3.fromRGB(255, 255, 255) 
                         Highlight.FillTransparency = 0.5
                         Highlight.OutlineTransparency = 0
-                        Highlight.Adornee = v.Door.Door -- 7¼3 MeshPart
+                        Highlight.Adornee = v.Door.Door -- âœ… MeshPart
                         Highlight.Parent = v
                     elseif _G.EspHighlight == false and v:FindFirstChild("Esp_Highlight") then
                         v:FindFirstChild("Esp_Highlight"):Destroy()
                     end
 
-                    -- 2Ó32Ó72Ñ82Õ22Ð82Ñ1 GUI 2Ñ02Ö12Ó82Ò12Ô1
+                    -- à¸­à¸±à¸žà¹€à¸”à¸— GUI à¸–à¹‰à¸²à¸¡à¸µ
                     if v:FindFirstChild("Esp_Gui") and v["Esp_Gui"]:FindFirstChild("TextLabel") then
                         v["Esp_Gui"]:FindFirstChild("TextLabel").Text = 
                             (_G.EspName == true and "Door "..((v.Door:FindFirstChild("Sign") 
@@ -865,10 +865,10 @@ Esp:Toggle({
                         v["Esp_Gui"]:FindFirstChild("TextLabel").TextColor3 = _G.EspGuiTextColor or Color3.new(255, 255, 255)
                     end
 
-                    -- 2Ó02Ò32Ö12Ó82Ï5 GUI 2Ñ02Ö12Ó82Õ22Ñ52Ô02Ð8 EspGui
+                    -- à¸ªà¸£à¹‰à¸²à¸‡ GUI à¸–à¹‰à¸²à¹€à¸›à¸´à¸” EspGui
                     if _G.EspGui == true and v:FindFirstChild("Esp_Gui") == nil then
                         local GuiEsp = Instance.new("BillboardGui", v)
-                        GuiEsp.Adornee = v.Door.Door -- 7¼3 MeshPart
+                        GuiEsp.Adornee = v.Door.Door -- âœ… MeshPart
                         GuiEsp.Name = "Esp_Gui"
                         GuiEsp.Size = UDim2.new(0, 100, 0, 150)
                         GuiEsp.AlwaysOnTop = true
@@ -1763,8 +1763,8 @@ local function LoadDiscordInfo()
     if success and result and result.guild then
         local DiscordInfo = Info:Paragraph({
             Title = result.guild.name,
-            Desc = ' <font color="#52525b">¡ñ</font> Member Count : ' .. tostring(result.approximate_member_count) ..
-                '\n <font color="#16a34a">¡ñ</font> Online Count : ' .. tostring(result.approximate_presence_count),
+            Desc = ' <font color="#52525b">â—</font> Member Count : ' .. tostring(result.approximate_member_count) ..
+                '\n <font color="#16a34a">â—</font> Online Count : ' .. tostring(result.approximate_presence_count),
             Image = "https://cdn.discordapp.com/icons/" .. result.guild.id .. "/" .. result.guild.icon .. ".png?size=1024",
             ImageSize = 42,
         })
@@ -1781,8 +1781,8 @@ local function LoadDiscordInfo()
 
                 if updated and updatedResult and updatedResult.guild then
                     DiscordInfo:SetDesc(
-                        ' <font color="#52525b">¡ñ</font> Member Count : ' .. tostring(updatedResult.approximate_member_count) ..
-                        '\n <font color="#16a34a">¡ñ</font> Online Count : ' .. tostring(updatedResult.approximate_presence_count)
+                        ' <font color="#52525b">â—</font> Member Count : ' .. tostring(updatedResult.approximate_member_count) ..
+                        '\n <font color="#16a34a">â—</font> Online Count : ' .. tostring(updatedResult.approximate_presence_count)
                     )
                     
                     WindUI:Notify({
