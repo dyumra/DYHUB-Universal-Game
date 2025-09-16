@@ -1,5 +1,5 @@
 -- =========================
-local verison = "3.8.9"
+local verison = "3.4.1"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -400,29 +400,45 @@ local spinAngle = 0
 
 local function calculatePosition(npc)
     if not npc or not npc:FindFirstChild("HumanoidRootPart") then 
-        return Vector3.new() 
+        return Vector3.new(), CFrame.new(), false
     end
 
     local hrp = npc.HumanoidRootPart
     local pos = hrp.Position
-    local dist = getgenv().DistanceValue or 1
+    local dist = getgenv().DistanceValue or 2
+
+    local targetPos
+    local lookCFrame
+    local anchored = false
 
     if setPositionMode == "Above" then
-        return pos + Vector3.new(0, dist, 0)
+        targetPos = pos + Vector3.new(0, dist, 0)
+        lookCFrame = CFrame.new(targetPos) * CFrame.Angles(-math.pi/2, 0, 0)
+        anchored = true
     elseif setPositionMode == "Under" then
-        return pos - Vector3.new(0, dist, 0)
+        targetPos = pos - Vector3.new(0, dist, 0)
+        lookCFrame = CFrame.new(targetPos) * CFrame.Angles(math.pi/2, 0, 0)
+        anchored = true
+    elseif setPositionMode == "Front" then
+        targetPos = pos + (hrp.CFrame.LookVector * dist)
+        lookCFrame = CFrame.new(targetPos, pos)
     elseif setPositionMode == "Back" then
-        return pos - (hrp.CFrame.LookVector * dist)
+        targetPos = pos - (hrp.CFrame.LookVector * dist)
+        lookCFrame = CFrame.new(targetPos, pos)
     elseif setPositionMode == "Spin" then
         spinAngle = spinAngle + math.rad(5)
-        return pos + Vector3.new(
+        targetPos = pos + Vector3.new(
             math.cos(spinAngle) * dist,
             0,
             math.sin(spinAngle) * dist
         )
+        lookCFrame = CFrame.new(targetPos, pos)
     else
-        return pos + (hrp.CFrame.LookVector * dist)
+        targetPos = pos + (hrp.CFrame.LookVector * dist)
+        lookCFrame = CFrame.new(targetPos, pos)
     end
+
+    return targetPos, lookCFrame, anchored
 end
 
 -- ฟังก์ชันต่อย NPC
@@ -1975,60 +1991,6 @@ local Discord = Info:Paragraph({
 })
 
 MainTab:Section({ Title = "Feature Farm", Icon = "tractor" }) 
-
-MainTab:Dropdown({
-    Title = "Movement",
-    Values = {"Teleport", "CFrame"},
-    Default = movementMode,
-    Multi = false,
-    Callback = function(value)
-        movementMode = value
-    end,
-})
-
-MainTab:Dropdown({
-    Title="Set Position",
-    Values={"Spin","Above","Back","Under","Front"},
-    Default=setPositionMode,
-    Multi=false,
-    Callback=function(value) setPositionMode=value end
-})
-
-MainTab:Slider({
-    Title="Set Distance to NPC",
-    Value={Min=0, Max=50, Default=getgenv().DistanceValue},
-    Step=1,
-    Callback=function(val) getgenv().DistanceValue=val end
-})
-
-MainTab:Toggle({
-    Title="Auto Farm (Upgrade)",
-    Default=false,
-    Callback=function(value) autoFarmActive=value if value then startAutoFarm() end end
-})
-
-MainTab:Toggle({
-    Title = "Flush Aura (Upgrade)",
-    Default = false,
-    Callback = function(value)
-        flushAuraActive = value
-        if flushAuraActive then
-            task.spawn(function()
-                while flushAuraActive do
-                    pcall(function()
-                        for _, obj in pairs(workspace:GetDescendants()) do
-                            if obj:IsA("ProximityPrompt") then
-                                obj.HoldDuration = 0 -- ✅ ทำให้กดไว
-                                fireproximityprompt(obj) -- ✅ กดให้เอง
-                            end
-                        end
-                    end)
-                    task.wait(0.3) -- ✅ ความถี่ Aura (ยิ่งน้อยยิ่งเร็ว)
-                end
-            end)
-        end
-    end,
-})MainTab:Section({ Title = "Feature Farm", Icon = "tractor" }) 
 
 MainTab:Dropdown({
     Title = "Movement",
