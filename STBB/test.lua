@@ -1,4 +1,4 @@
--- pre-3.6.9 fixed
+-- pre-3.7.1 fixed
 repeat task.wait() until game:IsLoaded()
 
 if setfpscap then
@@ -455,18 +455,12 @@ end
 -- AutoReady loop
 local function startAutoReady()
     task.spawn(function()
-        GetReadyRemote:FireServer(true)
         while autoReadyActive do
-            local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-            local humanoid = char:FindFirstChildOfClass("Humanoid")
-            while humanoid and humanoid.Health <= 0 do
-                task.wait(0.5)
-                char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-                humanoid = char:FindFirstChildOfClass("Humanoid")
-            end
-            task.wait(1)
+            pcall(function()
+                GetReadyRemote:FireServer()
+            end)
+            task.wait(3)
         end
-        GetReadyRemote:FireServer(false)
     end)
 end
 
