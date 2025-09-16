@@ -513,7 +513,7 @@ local Window = WindUI:CreateWindow({
 
 pcall(function()
     Window:Tag({
-        Title = "3.3.7",
+        Title = "3.4.6",
         Color = Color3.fromHex("#30ff6a") 
     })
 end)
@@ -531,8 +531,6 @@ local InfoTab = Window:Tab({ Title = "Info", Icon = "info" })
 local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
 local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
 local EspTab = Window:Tab({ Title = "Esp", Icon = "eye" })
-local VoteTab = Window:Tab({ Title="Vote", Icon="vote" })
-local SkillTab = Window:Tab({ Title="Skill", Icon="flame" })
 local CollectTab = Window:Tab({ Title="Collect", Icon="hand" })
 local HitboxTab = Window:Tab({ Title = "Hitbox", Icon = "package" })
 local QuestTab = Window:Tab({ Title = "Quest", Icon = "sword" })
@@ -550,7 +548,7 @@ CodesTab:Section({ Title = "Feature Code", Icon = "terminal" })
 
 EspTab:Section({ Title = "Feature Esp", Icon = "radar" })
 
-HitboxTab:Section({ Title = "Beta Version: Bugs or Etc", Icon = "bug" })
+HitboxTab:Section({ Title = "Beta Version: Bugs/Under Fixing", Icon = "bug" })
 HitboxTab:Section({ Title = "Feature Hitbox", Icon = "crosshair" })
 
 QuestTab:Section({ Title = "Feature Quest", Icon = "album" })
@@ -566,12 +564,6 @@ MiscTab:Section({ Title = "Feature Visual", Icon = "eye" })
 
 CollectTab:Section({ Title = "Beta Version: Bugs or Etc", Icon = "bug" }) 
 CollectTab:Section({ Title = "Feature Collect", Icon = "package" }) 
-
-SkillTab:Section({ Title = "Beta Version: Bugs or Etc", Icon = "bug" }) 
-SkillTab:Section({ Title = "Feature Skill", Icon = "sparkles" }) 
-
-VoteTab:Section({ Title = "Feature Vote", Icon = "vote" }) 
-VoteTab:Section({ Title = "Settings Difficulty mode", Icon = "book-check" }) 
 
 MainTab:Dropdown({
     Title = "Movement",
@@ -1411,6 +1403,8 @@ MiscTab:Button({
     end
 })
 
+MainTab:Section({ Title = "Feature Vote", Icon = "vote" }) 
+
 local List = {
     "Normal",
     "Hard",
@@ -1426,7 +1420,7 @@ local List = {
     "Astro",
 }
 
-VoteTab:Dropdown({ 
+MainTab:Dropdown({ 
     Title = "Set Vote", 
     Values = List, 
     Default = normal, 
@@ -1437,7 +1431,7 @@ VoteTab:Dropdown({
     end 
 })
 
-VoteTab:Toggle({
+MainTab:Toggle({
     Title = "Auto Vote",
     Default = false,
     Callback = function(enabled)
@@ -1453,12 +1447,14 @@ VoteTab:Toggle({
     end
 })
 
+MainTab:Section({ Title = "Feature Skill", Icon = "sparkles" }) 
+
 local autoSkillEnabled = false
 local Skillnormal = {"E"} -- ค่าเริ่มต้น
 local autoSkillValues = Skillnormal
 local Lists = {"Z","X","C","G","T","Y","U","E","R","F"}
 
-SkillTab:Dropdown({ 
+MainTab:Dropdown({ 
     Title = "Set Skill Auto", 
     Values = Lists, 
     Default = Skillnormal, 
@@ -1468,7 +1464,7 @@ SkillTab:Dropdown({
     end 
 })
 
-SkillTab:Toggle({
+MainTab:Toggle({
     Title = "Auto Skill",
     Default = false,
     Callback = function(enabled)
