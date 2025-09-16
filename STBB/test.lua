@@ -1,4 +1,4 @@
--- pre-3.6.8 fixed
+-- pre-3.6.9 fixed
 repeat task.wait() until game:IsLoaded()
 
 if setfpscap then
@@ -562,7 +562,6 @@ PlayerTab:Section({ Title = "Feature Player", Icon = "user" })
 
 MiscTab:Section({ Title = "Feature Visual", Icon = "eye" })
 
-CollectTab:Section({ Title = "Beta Version: Bugs or Etc", Icon = "bug" }) 
 CollectTab:Section({ Title = "Feature Collect", Icon = "package" }) 
 
 MainTab:Dropdown({
@@ -602,15 +601,17 @@ MainTab:Toggle({
     Callback = function(value)
         flushAuraActive = value
         if flushAuraActive then
-            flushAura()
             task.spawn(function()
                 while flushAuraActive do
-                    for _, obj in pairs(workspace:GetDescendants()) do
-                        if obj:IsA("ProximityPrompt") then
-                            obj.HoldDuration = 0
+                    pcall(function()
+                        for _, obj in pairs(workspace:GetDescendants()) do
+                            if obj:IsA("ProximityPrompt") then
+                                obj.HoldDuration = 0 -- ✅ ทำให้กดไว
+                                fireproximityprompt(obj) -- ✅ กดให้เอง
+                            end
                         end
-                    end
-                    task.wait(2.5)
+                    end)
+                    task.wait(0.3) -- ✅ ความถี่ Aura (ยิ่งน้อยยิ่งเร็ว)
                 end
             end)
         end
@@ -1005,20 +1006,13 @@ MasteryTab:Slider({
 })
 
 MasteryTab:Toggle({
-    Title="Auto Mastery (ATK+Flush) (Beta)",
+    Title="Auto Mastery",
     Default=false,
     Callback=function(value)
         MasteryAutoFarmActive=value
-        if value then MasteryAutoFarmTest() end
+        if value then startMasteryAutoFarm() end
     end
 })
-
-MasteryTab:Toggle({
-    Title="Auto Mastery (No Flush) (Beta)",
-    Default=false,
-    Callback=function(value) toggleMasteryAutoFarm(value) end
-})
-
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
