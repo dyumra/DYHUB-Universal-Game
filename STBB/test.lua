@@ -1,6 +1,4 @@
--- =========================
-local verison = "3.8.7"
--- =========================
+-- V312
 
 repeat task.wait() until game:IsLoaded()
 
@@ -661,7 +659,7 @@ local Window = WindUI:CreateWindow({
 
 pcall(function()
     Window:Tag({
-        Title = verison,
+        Title = "3.8.7",
         Color = Color3.fromHex("#30ff6a") 
     })
 end)
