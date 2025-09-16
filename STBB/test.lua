@@ -1,4 +1,4 @@
--- pre-3.2.5 fixed
+-- pre-3.6.8 fixed
 repeat task.wait() until game:IsLoaded()
 
 if setfpscap then
@@ -513,7 +513,7 @@ local Window = WindUI:CreateWindow({
 
 pcall(function()
     Window:Tag({
-        Title = "3.4.6",
+        Title = "3.6.8",
         Color = Color3.fromHex("#30ff6a") 
     })
 end)
@@ -1454,13 +1454,29 @@ local Skillnormal = {"E"} -- ค่าเริ่มต้น
 local autoSkillValues = Skillnormal
 local Lists = {"Z","X","C","G","T","Y","U","E","R","F"}
 
+local UserInputService = game:GetService("UserInputService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local VirtualUser = game:GetService("VirtualUser")
+
+local function pressKey(key)
+    if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled then
+        VirtualUser:SetKeyDown(key)
+        task.wait(0.05)
+        VirtualUser:SetKeyUp(key)
+    else
+        VirtualInputManager:SendKeyEvent(true, key, false, game)
+        task.wait(0.05)
+        VirtualInputManager:SendKeyEvent(false, key, false, game)
+    end
+end
+
 MainTab:Dropdown({ 
     Title = "Set Skill Auto", 
     Values = Lists, 
     Default = Skillnormal, 
-    Multi = true, -- ✅ เลือกหลายปุ่มได้
+    Multi = true, 
     Callback = function(values) 
-        autoSkillValues = values -- เก็บค่าที่เลือก (เป็นตาราง)
+        autoSkillValues = values
     end 
 })
 
@@ -1473,21 +1489,12 @@ MainTab:Toggle({
             task.spawn(function()
                 while autoSkillEnabled do
                     pcall(function()
-                        local VirtualInputManager = game:GetService("VirtualInputManager")
-
-                        -- ✅ วนตามลำดับที่เลือกไว้
                         for _, key in ipairs(autoSkillValues) do
-                            -- กด
-                            VirtualInputManager:SendKeyEvent(true, key, false, game)
-                            task.wait(0.05)
-                            -- ปล่อย
-                            VirtualInputManager:SendKeyEvent(false, key, false, game)
-
-                            -- หน่วงเวลานิดหน่อยก่อนกดปุ่มต่อไป
+                            pressKey(key)
                             task.wait(0.3)
                         end
                     end)
-                    task.wait(0.5) -- เวลาหน่วงก่อนเริ่มรอบใหม่
+                    task.wait(0.5) 
                 end
             end)
         end
