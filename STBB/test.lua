@@ -1,5 +1,4 @@
 -- pre-3.2.5 fixed
-
 repeat task.wait() until game:IsLoaded()
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
@@ -51,6 +50,7 @@ local visitedNPCs = {}
 local pressCount = {}
 local espObjects = {}
 
+-- Clear ESP
 local function clearESP()
     for _, obj in pairs(espObjects) do
         if obj and obj.Parent then
@@ -60,6 +60,7 @@ local function clearESP()
     espObjects = {}
 end
 
+-- Create Billboard ESP
 local function createBillboard(model, humanoid)
     local hrp = model:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
@@ -98,7 +99,7 @@ local function createBillboard(model, humanoid)
     updateText()
 
     local conn
-    conn = game:GetService("RunService").RenderStepped:Connect(function()
+    conn = RunService.RenderStepped:Connect(function()
         if humanoid and humanoid.Health <= 0 then
             billboard:Destroy()
             if conn then
@@ -113,6 +114,7 @@ local function createBillboard(model, humanoid)
     table.insert(espObjects, billboard)
 end
 
+-- Apply ESP to model
 local function applyESPToModel(model)
     if espMode == "Highlight" then
         local highlight = Instance.new("Highlight")
@@ -122,9 +124,7 @@ local function applyESPToModel(model)
         highlight.Parent = workspace
         table.insert(espObjects, highlight)
         local humanoid = model:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            createBillboard(model, humanoid)
-        end
+        if humanoid then createBillboard(model, humanoid) end
     elseif espMode == "BoxHandle" then
         local hrp = model:FindFirstChild("HumanoidRootPart")
         if not hrp then return end
@@ -132,44 +132,37 @@ local function applyESPToModel(model)
         box.Adornee = hrp
         box.AlwaysOnTop = true
         box.ZIndex = 10
-        box.Size = Vector3.new(4, 6, 2)
-        box.Color3 = Color3.fromRGB(255, 0, 0)
+        box.Size = Vector3.new(4,6,2)
+        box.Color3 = Color3.fromRGB(255,0,0)
         box.Transparency = 0.5
         box.Parent = workspace.Terrain
         table.insert(espObjects, box)
         local humanoid = model:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            createBillboard(model, humanoid)
-        end
+        if humanoid then createBillboard(model, humanoid) end
     end
 end
 
 local function updateESPmodel()
     clearESP()
     if not espActive then return end
-
     local char = LocalPlayer.Character
     if char and char:FindFirstChild("HumanoidRootPart") then
         applyESPToModel(char)
     end
-
     if workspace:FindFirstChild("Living") then
         for _, npc in pairs(workspace.Living:GetChildren()) do
             if npc:IsA("Model") and npc:FindFirstChild("HumanoidRootPart") then
                 local humanoid = npc:FindFirstChildOfClass("Humanoid")
-                if humanoid and humanoid.Health > 0 then
-                    applyESPToModel(npc)
-                end
+                if humanoid and humanoid.Health > 0 then applyESPToModel(npc) end
             end
         end
     end
 end
 
--- แยกฟังก์ชัน update ESP
-function updateESPPlayers()
+local function updateESPPlayers()
     clearESP()
     if not espActivePlayers then return end
-    for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+    for _, player in pairs(Players:GetPlayers()) do
         local char = player.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
             local humanoid = char:FindFirstChildOfClass("Humanoid")
@@ -178,22 +171,20 @@ function updateESPPlayers()
     end
 end
 
-function updateESPEnemies()
+local function updateESPEnemies()
     clearESP()
     if not espActiveEnemies then return end
     if workspace:FindFirstChild("Living") then
         for _, npc in pairs(workspace.Living:GetChildren()) do
             if npc:IsA("Model") and npc:FindFirstChild("HumanoidRootPart") then
                 local humanoid = npc:FindFirstChildOfClass("Humanoid")
-                if humanoid and humanoid.Health > 0 then
-                    createBillboard(npc, humanoid)
-                end
+                if humanoid and humanoid.Health > 0 then createBillboard(npc, humanoid) end
             end
         end
     end
 end
 
--- Loop อัปเดต ESP
+-- Loop ESP
 task.spawn(function()
     while true do
         if espActiveEnemies or espActivePlayers then
@@ -207,28 +198,20 @@ task.spawn(function()
     end
 end)
 
+-- Visited NPC
 local function isVisited(npc)
-    for _, v in ipairs(visitedNPCs) do
-        if v == npc then return true end
-    end
+    for _, v in ipairs(visitedNPCs) do if v == npc then return true end end
     return false
 end
-
-local function addVisited(npc)
-    table.insert(visitedNPCs, npc)
-end
-
+local function addVisited(npc) table.insert(visitedNPCs, npc) end
 local function removeVisited(npc)
-    for i, v in ipairs(visitedNPCs) do
-        if v == npc then
-            table.remove(visitedNPCs, i)
-            break
-        end
+    for i,v in ipairs(visitedNPCs) do
+        if v==npc then table.remove(visitedNPCs,i) break end
     end
     pressCount[npc] = nil
 end
 
--- ฟังก์ชันปรับ ProximityPrompt
+-- ProximityPrompt fix
 local function keepModifyProximityPrompts()
     spawn(function()
         while true do
@@ -245,19 +228,19 @@ local function keepModifyProximityPrompts()
 end
 keepModifyProximityPrompts()
 
--- ฟังก์ชันหาตัว NPC
+-- Find NPC
 local function findNextNPCWithFlushProximity(maxDistance, referencePart)
     local lastDist = maxDistance
-    local closestNPC, closestPrompt = nil, nil
+    local closestNPC, closestPrompt = nil,nil
     for _, npc in pairs(workspace:GetDescendants()) do
         if npc:IsA("Model") and npc:FindFirstChild("HumanoidRootPart") then
             if not Players:GetPlayerFromCharacter(npc) and not isVisited(npc) then
                 for _, prompt in pairs(npc:GetDescendants()) do
-                    if prompt:IsA("ProximityPrompt") and prompt.ActionText == "Flush" then
-                        if (pressCount[npc] or 0) < 3 then
+                    if prompt:IsA("ProximityPrompt") and prompt.ActionText=="Flush" then
+                        if (pressCount[npc] or 0)<3 then
                             local dist = (prompt.Parent.Position - referencePart.Position).Magnitude
-                            if dist < lastDist then
-                                closestNPC, closestPrompt = npc, prompt
+                            if dist<lastDist then
+                                closestNPC, closestPrompt = npc,prompt
                                 lastDist = dist
                             end
                         end
@@ -266,7 +249,7 @@ local function findNextNPCWithFlushProximity(maxDistance, referencePart)
             end
         end
     end
-    return closestNPC, closestPrompt
+    return closestNPC,closestPrompt
 end
 
 local function findNextNPCWithHumanoidNoProximity(maxDistance, referencePart)
@@ -277,17 +260,14 @@ local function findNextNPCWithHumanoidNoProximity(maxDistance, referencePart)
             if npc:IsA("Model") and npc:FindFirstChild("HumanoidRootPart") then
                 if not Players:GetPlayerFromCharacter(npc) and not isVisited(npc) then
                     local humanoid = npc:FindFirstChildOfClass("Humanoid")
-                    if humanoid and humanoid.Health > 0 then
+                    if humanoid and humanoid.Health>0 then
                         local hasProximity = false
                         for _, child in pairs(npc:GetDescendants()) do
-                            if child:IsA("ProximityPrompt") then
-                                hasProximity = true
-                                break
-                            end
+                            if child:IsA("ProximityPrompt") then hasProximity=true break end
                         end
                         if not hasProximity then
                             local dist = (npc.HumanoidRootPart.Position - referencePart.Position).Magnitude
-                            if dist < lastDist then
+                            if dist<lastDist then
                                 closestNPC = npc
                                 lastDist = dist
                             end
@@ -308,9 +288,9 @@ local function findNextNPCWithHumanoid(maxDistance, referencePart)
             if npc:IsA("Model") and npc:FindFirstChild("HumanoidRootPart") then
                 if not Players:GetPlayerFromCharacter(npc) and not isVisited(npc) then
                     local humanoid = npc:FindFirstChildOfClass("Humanoid")
-                    if humanoid and humanoid.Health > 0 then
+                    if humanoid and humanoid.Health>0 then
                         local dist = (npc.HumanoidRootPart.Position - referencePart.Position).Magnitude
-                        if dist < lastDist then
+                        if dist<lastDist then
                             closestNPC = npc
                             lastDist = dist
                         end
@@ -322,226 +302,71 @@ local function findNextNPCWithHumanoid(maxDistance, referencePart)
     return closestNPC
 end
 
--- ฟังก์ชันสร้าง Support Part
-local supportPart
-local partConnection
-
-local function createSupportPart(character)
-    if supportPart then supportPart:Destroy() supportPart=nil end
-    if partConnection then partConnection:Disconnect() partConnection=nil end
-    supportPart = Instance.new("Part")
-    supportPart.Size = Vector3.new(5,1,5)
-    supportPart.Anchored = true
-    supportPart.CanCollide = true
-    supportPart.Transparency = 0.9
-    supportPart.Name = "AutoFarm-Support"
-    supportPart.Parent = workspace
-    partConnection = RunService.Heartbeat:Connect(function()
-        if character and character:FindFirstChild("HumanoidRootPart") then
-            local hrp = character.HumanoidRootPart
-            supportPart.Position = hrp.Position - Vector3.new(0,(hrp.Size.Y/1 + supportPart.Size.Y/1),0)
-        end
-    end)
-end
-
-local function removeSupportPart()
-    if partConnection then partConnection:Disconnect() partConnection=nil end
-    if supportPart then supportPart:Destroy() supportPart=nil end
-end
-
-local spinAngle = 0.5
-
-local function calculatePositionAndCFrame(npc)
-    if not npc or not npc:FindFirstChild("HumanoidRootPart") then 
-        return CFrame.new() 
-    end
-
-    local hrp = npc.HumanoidRootPart
-    local pos = hrp.Position
-    local dist = getgenv().DistanceValue or 5  -- ระยะเริ่มต้น 5
-
-    local targetCFrame = CFrame.new(pos)  -- ค่าเริ่มต้น
-    local lookAt = hrp.Position           -- จุดที่เราจะให้ตัวละครมอง
-
-    if setPositionMode == "Above" then
-        targetCFrame = CFrame.new(pos + Vector3.new(0, dist, 0))
-        -- นอนหงาย: หมุนตัว 90° ตามแกน X ให้หลังแนบพื้น แล้วหันหน้ามอง NPC
-        targetCFrame = targetCFrame * CFrame.Angles(-math.pi/2, 0, 0)
-        lookAt = pos
-    elseif setPositionMode == "Under" then
-        targetCFrame = CFrame.new(pos - Vector3.new(0, dist, 0))
-        -- นอนหงายแต่หันมองเท้า npc
-        targetCFrame = targetCFrame * CFrame.Angles(-math.pi/2, 0, 0)
-        lookAt = pos - Vector3.new(0, hrp.Size.Y/2, 0)
-    elseif setPositionMode == "Back" then
-        targetCFrame = CFrame.new(pos - (hrp.CFrame.LookVector * dist))
-        targetCFrame = CFrame.new(targetCFrame.Position, pos) * CFrame.Angles(-math.pi/2,0,0)
-    elseif setPositionMode == "Spin" then
-        spinAngle = spinAngle + math.rad(5)
-        local offset = Vector3.new(math.cos(spinAngle)*dist, 0, math.sin(spinAngle)*dist)
-        targetCFrame = CFrame.new(pos + offset, pos) * CFrame.Angles(-math.pi/2,0,0)
-    else  -- default: in front
-        targetCFrame = CFrame.new(pos + (hrp.CFrame.LookVector * dist), pos) * CFrame.Angles(-math.pi/2,0,0)
-    end
-
-    return targetCFrame
-end
-
-local function smoothTeleportToCFrame(targetCFrame, duration)
+-- Smooth teleport
+local function smoothTeleportTo(targetPos, duration)
     local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     local hrp = char:WaitForChild("HumanoidRootPart")
-    
-    local startCFrame = hrp.CFrame
-    local startTime = tick()
-    duration = duration or 0.3
-
-    while tick() - startTime < duration do
-        local alpha = (tick() - startTime) / duration
-        hrp.CFrame = startCFrame:Lerp(targetCFrame, alpha)
-        RunService.RenderStepped:Wait()
-    end
-
-    hrp.CFrame = targetCFrame
+    local start = hrp.Position
+    local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear)
+    local tween = TweenService:Create(hrp, tweenInfo, {CFrame = CFrame.new(targetPos)})
+    tween:Play()
+    tween.Completed:Wait()
 end
 
-local function teleportToTarget(npc)
-    if movementMode == "CFrame" then
-        local targetCFrame = calculatePositionAndCFrame(npc)
-        smoothTeleportToCFrame(targetCFrame, 0.3)
-    else
-        local targetCFrame = calculatePositionAndCFrame(npc)
-        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-        char.HumanoidRootPart.CFrame = targetCFrame
+-- Attack NPC
+local function attackHumanoid(npc)
+    if npc and npc:FindFirstChild("HumanoidRootPart") then
+        local humanoid = npc:FindFirstChildOfClass("Humanoid")
+        if humanoid and humanoid.Health>0 then
+            LMBRemote:FireServer(npc)
+        end
     end
 end
 
-
--- ฟังก์ชันต่อย NPC
 local function attackHumanoidNoProximity(npc)
-    local humanoid = npc:FindFirstChildOfClass("Humanoid")
-    if not humanoid or humanoid.Health<=0 then return end
-    local character = LocalPlayer.Character
-    createSupportPart(character)
-    while humanoid.Health>0 and autoFarmActive do
-        teleportToTarget(calculatePosition(npc),0.5)
-        LMBRemote:FireServer()
-        task.wait(0.1)
-    end
-    removeSupportPart()
-    removeVisited(npc)
+    attackHumanoid(npc)
 end
 
-function attackHumanoid(npc)
-    local humanoid = npc:FindFirstChildOfClass("Humanoid")
-    if not humanoid or humanoid.Health<=0 then return end
-    local character = LocalPlayer.Character
-    createSupportPart(character)
-    while humanoid.Health>0 and MasteryAutoFarmActive do
-        teleportToTarget(calculatePosition(npc),0.5)
-        LMBRemote:FireServer()
-        task.wait(0.1)
-    end
-    removeSupportPart()
-    removeVisited(npc)
-end
-
--- AutoFarm
+-- AutoFarm loop
 local function startAutoFarm()
     task.spawn(function()
         while autoFarmActive do
+            local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+            local hrp = char:WaitForChild("HumanoidRootPart")
+            local humanoid = char:FindFirstChildOfClass("Humanoid")
+            while humanoid and humanoid.Health <= 0 do
+                task.wait(0.5)
+                char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                hrp = char:WaitForChild("HumanoidRootPart")
+                humanoid = char:FindFirstChildOfClass("Humanoid")
+            end
             pcall(function()
-                local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-                local hrp = char:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    local npc,prompt = findNextNPCWithFlushProximity(1000,hrp)
-                    if npc and prompt and prompt.Parent then
-                        local humanoid = npc:FindFirstChildOfClass("Humanoid")
-                        if humanoid and humanoid.Health>0 then
-                            local targetPos = calculatePosition(npc)
-                            teleportToTarget(targetPos,0.5)
-                            while (pressCount[npc] or 0)<3 do
-                                prompt:InputHoldBegin()
-                                task.wait(0.05)
-                                prompt:InputHoldEnd()
-                                pressCount[npc]=(pressCount[npc] or 0)+1
-                                task.wait(0.15)
-                            end
-                            addVisited(npc)
-                        else
-                            removeVisited(npc)
+                local npc,prompt = findNextNPCWithFlushProximity(1000,hrp)
+                if npc and prompt and prompt.Parent then
+                    local npcHumanoid = npc:FindFirstChildOfClass("Humanoid")
+                    if npcHumanoid and npcHumanoid.Health>0 then
+                        local targetPos = npc.HumanoidRootPart.Position
+                        smoothTeleportTo(targetPos,0.5)
+                        while (pressCount[npc] or 0)<3 do
+                            prompt:InputHoldBegin()
+                            task.wait(0.05)
+                            prompt:InputHoldEnd()
+                            pressCount[npc]=(pressCount[npc] or 0)+1
+                            task.wait(0.15)
                         end
+                        addVisited(npc)
                     else
-                        local npc2=findNextNPCWithHumanoidNoProximity(1000,hrp)
-                        if npc2 then
-                            if not isVisited(npc2) then addVisited(npc2) end
-                            attackHumanoidNoProximity(npc2)
-                        else
-                            visitedNPCs={}
-                            pressCount={}
-                            task.wait(1)
-                        end
+                        removeVisited(npc)
                     end
-                end
-            end)
-            task.wait(0.05)
-        end
-    end)
-end
-
-local function MasteryAutoFarmTest()
-    task.spawn(function()
-        while MasteryAutoFarmActive do
-            pcall(function()
-                local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-                local hrp = char:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    -- Flush รอบตัว
-                    local nearbyParts = workspace:GetPartBoundsInRadius(hrp.Position, 100, nil)
-                    for _, part in pairs(nearbyParts) do
-                        local prompt = part:FindFirstChildOfClass("ProximityPrompt")
-                        if prompt and prompt.ActionText == "Flush" then
-                            pcall(function()
-                                prompt:InputHoldBegin()
-                                task.wait(0.05)
-                                prompt:InputHoldEnd()
-                            end)
-                            task.wait(0.2)
-                        end
-                    end
-
-                    -- หา NPC ใกล้ที่สุด
-                    local npc = findNextNPCWithHumanoid(1000, hrp)
-                    if npc then
-                        if not isVisited(npc) then
-                            addVisited(npc)
-                        end
-                        attackHumanoid(npc)
-                    else
-                        visitedNPCs = {}
-                        task.wait(0.5)
-                    end
-                end
-            end)
-            task.wait(0.05)
-        end
-    end)
-end
-
--- Mastery AutoFarm
-local function MasteryAutoFarm()
-    task.spawn(function()
-        while MasteryAutoFarmActive do
-            pcall(function()
-                local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-                local hrp = char:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    local npc=findNextNPCWithHumanoid(1000,hrp)
-                    if npc then
-                        if not isVisited(npc) then addVisited(npc) end
-                        attackHumanoid(npc)
+                else
+                    local npc2 = findNextNPCWithHumanoidNoProximity(1000, hrp)
+                    if npc2 then
+                        if not isVisited(npc2) then addVisited(npc2) end
+                        attackHumanoidNoProximity(npc2)
                     else
                         visitedNPCs={}
-                        task.wait(0.5)
+                        pressCount={}
+                        task.wait(1)
                     end
                 end
             end)
@@ -550,56 +375,83 @@ local function MasteryAutoFarm()
     end)
 end
 
-local function toggleMasteryAutoFarm(state)
-    MasteryAutoFarmActive = state
-    if not state then removeSupportPart() else MasteryAutoFarm() end
+-- Mastery AutoFarm loop
+local function startMasteryAutoFarm()
+    task.spawn(function()
+        while MasteryAutoFarmActive do
+            local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+            local hrp = char:WaitForChild("HumanoidRootPart")
+            local humanoid = char:FindFirstChildOfClass("Humanoid")
+            while humanoid and humanoid.Health <= 0 do
+                task.wait(0.5)
+                char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                hrp = char:WaitForChild("HumanoidRootPart")
+                humanoid = char:FindFirstChildOfClass("Humanoid")
+            end
+            pcall(function()
+                local npc = findNextNPCWithHumanoid(1000, hrp)
+                if npc then
+                    if not isVisited(npc) then addVisited(npc) end
+                    attackHumanoid(npc)
+                else
+                    visitedNPCs = {}
+                    task.wait(0.5)
+                end
+            end)
+            task.wait(0.05)
+        end
+    end)
 end
 
--- Flush Aura
-local function flushAura()
+-- FlushAura loop
+local function startFlushAura()
     task.spawn(function()
         while flushAuraActive do
             local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-            local hrp = char:FindFirstChild("HumanoidRootPart")
-            if hrp then
+            local hrp = char:WaitForChild("HumanoidRootPart")
+            local humanoid = char:FindFirstChildOfClass("Humanoid")
+            while humanoid and humanoid.Health <= 0 do
+                task.wait(0.5)
+                char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                hrp = char:WaitForChild("HumanoidRootPart")
+                humanoid = char:FindFirstChildOfClass("Humanoid")
+            end
+            pcall(function()
                 local nearbyParts = workspace:GetPartBoundsInRadius(hrp.Position,100,nil)
                 for _,part in pairs(nearbyParts) do
                     local prompt = part:FindFirstChildOfClass("ProximityPrompt")
                     if prompt and prompt.ActionText=="Flush" then
-                        pcall(function()
-                            prompt:InputHoldBegin()
-                            task.wait(0.05)
-                            prompt:InputHoldEnd()
-                        end)
+                        prompt:InputHoldBegin()
+                        task.wait(0.05)
+                        prompt:InputHoldEnd()
                         task.wait(0.2)
                     end
                 end
-            end
+            end)
             task.wait(0.1)
         end
     end)
 end
 
-
-local function sendReady(value)
-    GetReadyRemote:FireServer("1", value)
-end
-
+-- AutoReady loop
 local function startAutoReady()
     task.spawn(function()
-        sendReady(true)
+        GetReadyRemote:FireServer(true)
         while autoReadyActive do
-            local char = LocalPlayer.Character
-            local humanoid = char and char:FindFirstChildOfClass("Humanoid")
-            if humanoid and humanoid.Health <= 0 then
-                sendReady(true)
+            local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+            local humanoid = char:FindFirstChildOfClass("Humanoid")
+            while humanoid and humanoid.Health <= 0 do
+                task.wait(0.5)
+                char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                humanoid = char:FindFirstChildOfClass("Humanoid")
             end
             task.wait(1)
         end
-        sendReady(false)
+        GetReadyRemote:FireServer(false)
     end)
 end
 
+-- AutoSkipHelicopter loop
 local function startAutoSkipHelicopter()
     task.spawn(function()
         while autoSkipHelicopterActive do
@@ -611,12 +463,15 @@ local function startAutoSkipHelicopter()
     end)
 end
 
+-- Reconnect on CharacterAdded
 LocalPlayer.CharacterAdded:Connect(function()
     if autoFarmActive then startAutoFarm() end
+    if MasteryAutoFarmActive then startMasteryAutoFarm() end
+    if flushAuraActive then startFlushAura() end
     if autoReadyActive then startAutoReady() end
     if autoSkipHelicopterActive then startAutoSkipHelicopter() end
-    if flushAuraActive then flushAura() end
 end)
+
 
 local Window = WindUI:CreateWindow({
     Title = "DYHUB",
@@ -639,7 +494,7 @@ local Window = WindUI:CreateWindow({
 
 pcall(function()
     Window:Tag({
-        Title = "3.2.5",
+        Title = "3.3.7",
         Color = Color3.fromHex("#30ff6a") 
     })
 end)
@@ -1703,12 +1558,21 @@ CollectTab:Toggle({
 
 ShopTab:Section({ Title = "Hourly Shop (Beta)", Icon = "shopping-cart" })
 
-local shop = {"MasterCard:NormalTitan", "MasterCard:SpecialTitan", "BSX2:30", "LuckPotion"}
+local ReplicatedFirst = game:GetService("ReplicatedFirst")
+local GearsFolder = ReplicatedFirst:WaitForChild("Gears")
+
+-- ดึงชื่อไอเท็มจาก Gears อัตโนมัติ
+local shop = {}
+for _, gear in pairs(GearsFolder:GetChildren()) do
+    table.insert(shop, gear.Name)
+end
+
 local shopValue = {}
 local shop1 = {"1", "2", "3", "4", "5"}
 local shopValue1 = {}
 local autobuyEnabled = false
 
+-- สร้าง dropdown เลือกไอเท็มจาก shop
 ShopTab:Dropdown({ 
     Title = "Set Auto Buy Items", 
     Values = shop,  
@@ -1719,6 +1583,7 @@ ShopTab:Dropdown({
     end 
 })
 
+-- สร้าง dropdown เลือกจำนวนซื้อ
 ShopTab:Dropdown({ 
     Title = "Set Amount Buy Items", 
     Values = shop1,  
@@ -1729,6 +1594,7 @@ ShopTab:Dropdown({
     end 
 })
 
+-- Toggle เปิด/ปิด Auto Buy
 ShopTab:Toggle({
     Title = "Auto Buy", 
     Default = false,
