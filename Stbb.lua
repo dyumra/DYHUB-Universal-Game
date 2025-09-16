@@ -598,27 +598,116 @@ LocalPlayer.CharacterAdded:Connect(function()
     if flushAuraActive then flushAura() end
 end)
 
-local Confirmed = false
-WindUI:Popup({
-    Title = "DYHUB Loaded! - ST : Blockade Battlefront",
-    Icon = "star",
-    IconThemed = true,
-    Content = "DYHUB TEAM - Join us at dsc.gg/dyhub",
-    Buttons = {
-        { Title = "Cancel", Variant = "Secondary", Callback = function() end },
-        { Title = "Continue", Icon = "arrow-right", Callback = function() Confirmed = true end, Variant = "Primary" }
-    }
+WindUI:AddTheme({
+    Name = "Dark",
+    Accent = "#18181b",
+    Dialog = "#18181b", 
+    Outline = "#FFFFFF",
+    Text = "#FFFFFF",
+    Placeholder = "#999999",
+    Background = "#0e0e10",
+    Button = "#52525b",
+    Icon = "#a1a1aa",
 })
-repeat task.wait() until Confirmed
+
+WindUI:AddTheme({
+    Name = "Light",
+    Accent = "#f4f4f5",
+    Dialog = "#f4f4f5",
+    Outline = "#000000", 
+    Text = "#000000",
+    Placeholder = "#666666",
+    Background = "#ffffff",
+    Button = "#e4e4e7",
+    Icon = "#52525b",
+})
+
+WindUI:AddTheme({
+    Name = "Gray",
+    Accent = "#374151",
+    Dialog = "#374151",
+    Outline = "#d1d5db", 
+    Text = "#f9fafb",
+    Placeholder = "#9ca3af",
+    Background = "#1f2937",
+    Button = "#4b5563",
+    Icon = "#d1d5db",
+})
+
+WindUI:AddTheme({
+    Name = "Blue",
+    Accent = "#1e40af",
+    Dialog = "#1e3a8a",
+    Outline = "#93c5fd", 
+    Text = "#f0f9ff",
+    Placeholder = "#60a5fa",
+    Background = "#1e293b",
+    Button = "#3b82f6",
+    Icon = "#93c5fd",
+})
+
+WindUI:AddTheme({
+    Name = "Green",
+    Accent = "#059669",
+    Dialog = "#047857",
+    Outline = "#6ee7b7", 
+    Text = "#ecfdf5",
+    Placeholder = "#34d399",
+    Background = "#064e3b",
+    Button = "#10b981",
+    Icon = "#6ee7b7",
+})
+
+WindUI:AddTheme({
+    Name = "Purple",
+    Accent = "#7c3aed",
+    Dialog = "#6d28d9",
+    Outline = "#c4b5fd", 
+    Text = "#faf5ff",
+    Placeholder = "#a78bfa",
+    Background = "#581c87",
+    Button = "#8b5cf6",
+    Icon = "#c4b5fd",
+})
+
+WindUI:SetNotificationLower(true)
+
+local themes = {"Dark", "Light", "Gray", "Blue", "Green", "Purple"}
+local currentThemeIndex = 1
 
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB - ST : Blockade Battlefront (Version: pre-2.37)",
+    Title = "DYHUB",
     IconThemed = true,
-    Icon = "star",
-    Author = "DYHUB (dsc.gg/dyhub)",
+    Icon = "rbxassetid://104487529937663",
+    Author = "ST : Blockade Battlefront | Free Version",
     Size = UDim2.fromOffset(600, 400),
     Transparent = true,
     Theme = "Dark",
+    HasOutline = false,
+    HideSearchBar = true,
+    ScrollBarEnabled = false,
+    User = {
+        Enabled = true,
+        Anonymous = false,
+        Callback = function()
+            currentThemeIndex = currentThemeIndex + 1
+            if currentThemeIndex > #themes then
+                currentThemeIndex = 1
+            end
+            
+            local newTheme = themes[currentThemeIndex]
+            WindUI:SetTheme(newTheme)
+           
+            WindUI:Notify({
+                Title = "Theme Changed",
+                Content = "Switched to " .. newTheme .. " theme!",
+                Duration = 2,
+                Icon = "palette"
+            })
+            print("Switched to " .. newTheme .. " theme")
+        end,
+    },
+    
 })
 
 Window:EditOpenButton({
@@ -643,7 +732,7 @@ local MiscTab = Window:Tab({ Title = "Misc", Icon = "file-cog" })
 
 Window:SelectTab(1)
 
-InfoTab:Section({ Title = "📌 Info", Icon = "info" })
+InfoTab:Section({ Title = "Info", Icon = "info" })
 InfoTab:Section({ Title = "This script is still under development." })
 InfoTab:Section({ Title = "If there are any bugs or issues" })
 InfoTab:Section({ Title = "you can report them to us on Discord" })
@@ -655,7 +744,7 @@ InfoTab:Button({
     end
 })
 
-InfoTab:Section({ Title = "💗 We appreciate your choice to use our script." })
+InfoTab:Section({ Title = "We appreciate your choice to use our script.", Icon = "heart" })
 
 MainTab:Section({ Title = "Feature Farm", Icon = "badge-dollar-sign" })
 
