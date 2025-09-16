@@ -1,5 +1,5 @@
 -- =========================
-local verison = "3.8.6"
+local verison = "3.8.8"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -672,6 +672,7 @@ Window:EditOpenButton({
 })
 
 local InfoTab = Window:Tab({ Title = "Information", Icon = "info" })
+local MainDivider = Window:Divider()
 local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
 local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
 local EspTab = Window:Tab({ Title = "Esp", Icon = "eye" })
