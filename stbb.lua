@@ -1,4 +1,4 @@
--- 3.1.7 beta
+-- 3.1.9 beta
 
 repeat task.wait() until game:IsLoaded()
 
@@ -605,126 +605,33 @@ LocalPlayer.CharacterAdded:Connect(function()
     if flushAuraActive then flushAura() end
 end)
 
-WindUI:AddTheme({
-    Name = "Dark",
-    Accent = "#18181b",
-    Dialog = "#18181b", 
-    Outline = "#FFFFFF",
-    Text = "#FFFFFF",
-    Placeholder = "#999999",
-    Background = "#0e0e10",
-    Button = "#52525b",
-    Icon = "#a1a1aa",
-})
-
-WindUI:AddTheme({
-    Name = "Light",
-    Accent = "#f4f4f5",
-    Dialog = "#f4f4f5",
-    Outline = "#000000", 
-    Text = "#000000",
-    Placeholder = "#666666",
-    Background = "#ffffff",
-    Button = "#e4e4e7",
-    Icon = "#52525b",
-})
-
-WindUI:AddTheme({
-    Name = "Gray",
-    Accent = "#374151",
-    Dialog = "#374151",
-    Outline = "#d1d5db", 
-    Text = "#f9fafb",
-    Placeholder = "#9ca3af",
-    Background = "#1f2937",
-    Button = "#4b5563",
-    Icon = "#d1d5db",
-})
-
-WindUI:AddTheme({
-    Name = "Blue",
-    Accent = "#1e40af",
-    Dialog = "#1e3a8a",
-    Outline = "#93c5fd", 
-    Text = "#f0f9ff",
-    Placeholder = "#60a5fa",
-    Background = "#1e293b",
-    Button = "#3b82f6",
-    Icon = "#93c5fd",
-})
-
-WindUI:AddTheme({
-    Name = "Green",
-    Accent = "#059669",
-    Dialog = "#047857",
-    Outline = "#6ee7b7", 
-    Text = "#ecfdf5",
-    Placeholder = "#34d399",
-    Background = "#064e3b",
-    Button = "#10b981",
-    Icon = "#6ee7b7",
-})
-
-WindUI:AddTheme({
-    Name = "Purple",
-    Accent = "#7c3aed",
-    Dialog = "#6d28d9",
-    Outline = "#c4b5fd", 
-    Text = "#faf5ff",
-    Placeholder = "#a78bfa",
-    Background = "#581c87",
-    Button = "#8b5cf6",
-    Icon = "#c4b5fd",
-})
-
-WindUI:SetNotificationLower(true)
-
-local themes = {"Dark", "Light", "Gray", "Blue", "Green", "Purple"}
-local currentThemeIndex = 1
-
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB",
-    Icon = "rbxassetid://104487529937663", 
-    Author = "ST : Blockade Battlefront | Free Version",
-    Folder = "DYHUB_STBB_config",
-    Size = UDim2.fromOffset(500, 350),
-    Transparent = true,
-    Theme = "Dark",
-    Resizable = true,
-    SideBarWidth = 150,
-    BackgroundImageTransparency = 0.8,
-    HasOutline = false,
-    HideSearchBar = true,
-    ScrollBarEnabled = false,
+    Title = "DYHUB",                                                    -- ชื่อ Title บน UI
+    Icon = "rbxassetid://104487529937663",                              -- ไอคอนที่จะแสดง (เช่น star)
+    Author = "ST : Blockade Battlefront | Free Version",                -- แสดงข้อมูลเวอร์ชัน/ผู้เขียน
+    Folder = "DYHUB_Stbb_config",
+    Size = UDim2.fromOffset(600, 400),           -- ขนาดหน้าต่าง
+    Transparent = true,                          -- โปร่งใส
+    Theme = "Dark",                              -- ธีมมืด
+    Resizable = true,                            -- ย่อ/ขยายได้
+    SideBarWidth = 150,                          -- ความกว้าง sidebar
+    BackgroundImageTransparency = 0.8,           -- ความโปร่งใสของ bg image
+    HasOutline = false,                          -- ไม่มีเส้นขอบ
+    HideSearchBar = true,                        -- ซ่อน search bar
+    ScrollBarEnabled = false,                    -- ปิด scroll bar
     User = {
-        Enabled = true,
-        Anonymous = false,
+        Enabled = true,                          -- เปิดใช้งาน user widget
+        Anonymous = false,                       -- ไม่ anonymous
         Callback = function()
-            currentThemeIndex = currentThemeIndex + 1
-            if currentThemeIndex > #themes then
-                currentThemeIndex = 1
-            end
-            
-            local newTheme = themes[currentThemeIndex]
-            WindUI:SetTheme(newTheme)
-           
-            WindUI:Notify({
-                Title = "Theme Changed",
-                Content = "Switched to " .. newTheme .. " theme!",
-                Duration = 2,
-                Icon = "palette"
-            })
-            print("Switched to " .. newTheme .. " theme")
+            print("It's me")                     -- callback เมื่อกด user
         end,
     },
-    
 })
 
-Window:SetToggleKey(Enum.KeyCode.V)
 
 pcall(function()
     Window:Tag({
-        Title = "3.1.7",
+        Title = "3.1.8",
         Color = Color3.fromHex("#30ff6a") 
     })
 end)
@@ -1785,6 +1692,7 @@ CollectTab:Toggle({
 })
 
 print("[DYHUB] DYHUB - Loaded! (Console Show)")
+
 
 
 
