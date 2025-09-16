@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.8.6"
+local verison = "3.8.7"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -2035,7 +2035,7 @@ local Discord = Info:Paragraph({
 
 print("[DYHUB] DYHUB - Loaded! (Console Show)")
 -- =========================
-local version = "3.8.6"
+local verison = "3.8.6"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
