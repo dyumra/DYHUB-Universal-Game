@@ -1,4 +1,4 @@
--- pre-2.67-fixed beta
+-- 3.1.2 beta
 
 repeat task.wait() until game:IsLoaded()
 
@@ -8,6 +8,8 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local workspace = game.Workspace
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
 local LocalPlayer = Players.LocalPlayer
 local GetReadyRemote = ReplicatedStorage:WaitForChild("GetReadyRemote")
@@ -17,18 +19,6 @@ local LMBRemote = ReplicatedStorage:WaitForChild("LMB")
 local normal = "Normal"
 local autoVoteValue = normal
 local autoVoteEnabled = false
-
-local autoSkillEnabled = false
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-local Skillnormal = "E"
-local autoSkillValue = Skillnormal
-local Lists = {"Z","X","C","G","T","Y","U","E","R","F"}
-
-local Items = {"Clock Spider","transmitter","flashdrive"}
-local ItemsNormal = "Clock Spider"
-local ItemsValue = {ItemsNormal} 
-local autoCollectEnabled = false
 
 local setPositionMode = "Under"
 getgenv().DistanceValue = 1
@@ -615,42 +605,129 @@ LocalPlayer.CharacterAdded:Connect(function()
     if flushAuraActive then flushAura() end
 end)
 
-local Confirmed = false
-WindUI:Popup({
-    Title = "DYHUB Loaded! - ST : Blockade Battlefront",
-    Icon = "star",
-    IconThemed = true,
-    Content = "Join us at (https://dsc.gg/dyhub)",
-    Buttons = {
-        {
-            Title = "Cancel",
-            Variant = "Secondary",
-            Callback = function()
-                game.Players.LocalPlayer:Kick("FUCK YOU NIGGA CANCEL DYHUB????")
-            end
-        },
-        {
-            Title = "Continue",
-            Icon = "arrow-right",
-            Variant = "Primary",
-            Callback = function()
-                Confirmed = true
-            end
-        }
-    }
+ui:AddTheme({
+    Name = "Dark",
+    Accent = "#18181b",
+    Dialog = "#18181b", 
+    Outline = "#FFFFFF",
+    Text = "#FFFFFF",
+    Placeholder = "#999999",
+    Background = "#0e0e10",
+    Button = "#52525b",
+    Icon = "#a1a1aa",
 })
 
-repeat task.wait() until Confirmed
+ui:AddTheme({
+    Name = "Light",
+    Accent = "#f4f4f5",
+    Dialog = "#f4f4f5",
+    Outline = "#000000", 
+    Text = "#000000",
+    Placeholder = "#666666",
+    Background = "#ffffff",
+    Button = "#e4e4e7",
+    Icon = "#52525b",
+})
+
+ui:AddTheme({
+    Name = "Gray",
+    Accent = "#374151",
+    Dialog = "#374151",
+    Outline = "#d1d5db", 
+    Text = "#f9fafb",
+    Placeholder = "#9ca3af",
+    Background = "#1f2937",
+    Button = "#4b5563",
+    Icon = "#d1d5db",
+})
+
+ui:AddTheme({
+    Name = "Blue",
+    Accent = "#1e40af",
+    Dialog = "#1e3a8a",
+    Outline = "#93c5fd", 
+    Text = "#f0f9ff",
+    Placeholder = "#60a5fa",
+    Background = "#1e293b",
+    Button = "#3b82f6",
+    Icon = "#93c5fd",
+})
+
+ui:AddTheme({
+    Name = "Green",
+    Accent = "#059669",
+    Dialog = "#047857",
+    Outline = "#6ee7b7", 
+    Text = "#ecfdf5",
+    Placeholder = "#34d399",
+    Background = "#064e3b",
+    Button = "#10b981",
+    Icon = "#6ee7b7",
+})
+
+ui:AddTheme({
+    Name = "Purple",
+    Accent = "#7c3aed",
+    Dialog = "#6d28d9",
+    Outline = "#c4b5fd", 
+    Text = "#faf5ff",
+    Placeholder = "#a78bfa",
+    Background = "#581c87",
+    Button = "#8b5cf6",
+    Icon = "#c4b5fd",
+})
+
+ui:SetNotificationLower(true)
+
+local themes = {"Dark", "Light", "Gray", "Blue", "Green", "Purple"}
+local currentThemeIndex = 1
 
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB | ST : Blockade Battlefront",
-    IconThemed = true,
-    Icon = "star",
-    Author = "Version: pre-2.78",
-    Size = UDim2.fromOffset(600, 400),
+    Title = "DYHUB",
+    Icon = "rbxassetid://104487529937663", 
+    Author = "ST : Blockade Battlefront | Free Version",
+    Folder = "DYHUB_STBB_config",
+    Size = UDim2.fromOffset(500, 350),
     Transparent = true,
     Theme = "Dark",
+    Resizable = true,
+    SideBarWidth = 150,
+    BackgroundImageTransparency = 0.8,
+    HasOutline = false,
+    HideSearchBar = true,
+    ScrollBarEnabled = false,
+    User = {
+        Enabled = true,
+        Anonymous = false,
+        Callback = function()
+            currentThemeIndex = currentThemeIndex + 1
+            if currentThemeIndex > #themes then
+                currentThemeIndex = 1
+            end
+            
+            local newTheme = themes[currentThemeIndex]
+            WindUI:SetTheme(newTheme)
+           
+            WindUI:Notify({
+                Title = "Theme Changed",
+                Content = "Switched to " .. newTheme .. " theme!",
+                Duration = 2,
+                Icon = "palette"
+            })
+            print("Switched to " .. newTheme .. " theme")
+        end,
+    },
+    
 })
+
+Window:SetToggleKey(Enum.KeyCode.V)
+
+pcall(function()
+    Window:Tag({
+        Title = "3.1.7",
+        Color = Color3.fromHex("#30ff6a") 
+    })
+end)
 
 Window:EditOpenButton({
     Title = "DYHUB - Open",
@@ -1569,6 +1646,8 @@ local List = {
     "Zombie",
     "Christmas",
     "Hell",
+    "Astro"
+    "DarkDimension"
 }
 
 VoteTab:Dropdown({ 
@@ -1598,13 +1677,18 @@ VoteTab:Toggle({
     end
 })
 
+local autoSkillEnabled = false
+local Skillnormal = {"E"} -- ค่าเริ่มต้น
+local autoSkillValues = Skillnormal
+local Lists = {"Z","X","C","G","T","Y","U","E","R","F"}
+
 SkillTab:Dropdown({ 
     Title = "Set Skill Auto", 
     Values = Lists, 
     Default = Skillnormal, 
-    Multi = true,
-    Callback = function(value) 
-        autoSkillValue = value
+    Multi = true, -- ✅ เลือกหลายปุ่มได้
+    Callback = function(values) 
+        autoSkillValues = values -- เก็บค่าที่เลือก (เป็นตาราง)
     end 
 })
 
@@ -1617,15 +1701,21 @@ SkillTab:Toggle({
             task.spawn(function()
                 while autoSkillEnabled do
                     pcall(function()
-                        local args = {
-                            Enum.UserInputType.Keyboard,
-                            Enum.KeyCode[autoSkillValue]
-                        }
-                        UserInputService.InputBegan:Fire(args[1], {KeyCode = args[2], UserInputState = Enum.UserInputState.Begin})
-                        task.wait(0.05)
-                        UserInputService.InputEnded:Fire(args[1], {KeyCode = args[2], UserInputState = Enum.UserInputState.End})
+                        local VirtualInputManager = game:GetService("VirtualInputManager")
+
+                        -- ✅ วนตามลำดับที่เลือกไว้
+                        for _, key in ipairs(autoSkillValues) do
+                            -- กด
+                            VirtualInputManager:SendKeyEvent(true, key, false, game)
+                            task.wait(0.05)
+                            -- ปล่อย
+                            VirtualInputManager:SendKeyEvent(false, key, false, game)
+
+                            -- หน่วงเวลานิดหน่อยก่อนกดปุ่มต่อไป
+                            task.wait(0.3)
+                        end
                     end)
-                    task.wait(0.5)
+                    task.wait(0.5) -- เวลาหน่วงก่อนเริ่มรอบใหม่
                 end
             end)
         end
@@ -1635,6 +1725,11 @@ SkillTab:Toggle({
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
+
+local Items = {"Clock Spider", "Transmitter", "FlashDrive", "Astro Samples"}
+local ItemsNormal = "Clock Spider"
+local ItemsValue = {ItemsNormal} 
+local autoCollectEnabled = false
 
 local function teleportToTarget(targetPos)
     local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
@@ -1690,6 +1785,7 @@ CollectTab:Toggle({
 })
 
 print("[DYHUB] DYHUB - Loaded! (Console Show)")
+
 
 
 
