@@ -1,4 +1,4 @@
--- 3.1.2 beta
+-- 3.1.7 beta
 
 repeat task.wait() until game:IsLoaded()
 
@@ -605,7 +605,7 @@ LocalPlayer.CharacterAdded:Connect(function()
     if flushAuraActive then flushAura() end
 end)
 
-ui:AddTheme({
+WindUI:AddTheme({
     Name = "Dark",
     Accent = "#18181b",
     Dialog = "#18181b", 
@@ -617,7 +617,7 @@ ui:AddTheme({
     Icon = "#a1a1aa",
 })
 
-ui:AddTheme({
+WindUI:AddTheme({
     Name = "Light",
     Accent = "#f4f4f5",
     Dialog = "#f4f4f5",
@@ -629,7 +629,7 @@ ui:AddTheme({
     Icon = "#52525b",
 })
 
-ui:AddTheme({
+WindUI:AddTheme({
     Name = "Gray",
     Accent = "#374151",
     Dialog = "#374151",
@@ -641,7 +641,7 @@ ui:AddTheme({
     Icon = "#d1d5db",
 })
 
-ui:AddTheme({
+WindUI:AddTheme({
     Name = "Blue",
     Accent = "#1e40af",
     Dialog = "#1e3a8a",
@@ -653,7 +653,7 @@ ui:AddTheme({
     Icon = "#93c5fd",
 })
 
-ui:AddTheme({
+WindUI:AddTheme({
     Name = "Green",
     Accent = "#059669",
     Dialog = "#047857",
@@ -665,7 +665,7 @@ ui:AddTheme({
     Icon = "#6ee7b7",
 })
 
-ui:AddTheme({
+WindUI:AddTheme({
     Name = "Purple",
     Accent = "#7c3aed",
     Dialog = "#6d28d9",
@@ -677,7 +677,7 @@ ui:AddTheme({
     Icon = "#c4b5fd",
 })
 
-ui:SetNotificationLower(true)
+WindUI:SetNotificationLower(true)
 
 local themes = {"Dark", "Light", "Gray", "Blue", "Green", "Purple"}
 local currentThemeIndex = 1
@@ -1785,6 +1785,7 @@ CollectTab:Toggle({
 })
 
 print("[DYHUB] DYHUB - Loaded! (Console Show)")
+
 
 
 
