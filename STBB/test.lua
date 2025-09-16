@@ -687,8 +687,6 @@ local MiscTab = Window:Tab({ Title = "Misc", Icon = "file-cog" })
 
 Window:SelectTab(1)
 
-MainTab:Section({ Title = "Feature Farm", Icon = "tractor" }) 
-
 CodesTab:Section({ Title = "Feature Code", Icon = "terminal" })
 
 EspTab:Section({ Title = "Feature Esp", Icon = "radar" })
@@ -708,60 +706,6 @@ PlayerTab:Section({ Title = "Feature Player", Icon = "user" })
 MiscTab:Section({ Title = "Feature Visual", Icon = "eye" })
 
 CollectTab:Section({ Title = "Feature Collect", Icon = "package" }) 
-
-MainTab:Dropdown({
-    Title = "Movement",
-    Values = {"Teleport", "CFrame"},
-    Default = movementMode,
-    Multi = false,
-    Callback = function(value)
-        movementMode = value
-    end,
-})
-
-MainTab:Dropdown({
-    Title="Set Position",
-    Values={"Spin","Above","Back","Under","Front"},
-    Default=setPositionMode,
-    Multi=false,
-    Callback=function(value) setPositionMode=value end
-})
-
-MainTab:Slider({
-    Title="Set Distance to NPC",
-    Value={Min=0, Max=50, Default=getgenv().DistanceValue},
-    Step=1,
-    Callback=function(val) getgenv().DistanceValue=val end
-})
-
-MainTab:Toggle({
-    Title="Auto Farm (Upgrade)",
-    Default=false,
-    Callback=function(value) autoFarmActive=value if value then startAutoFarm() end end
-})
-
-MainTab:Toggle({
-    Title = "Flush Aura (Upgrade)",
-    Default = false,
-    Callback = function(value)
-        flushAuraActive = value
-        if flushAuraActive then
-            task.spawn(function()
-                while flushAuraActive do
-                    pcall(function()
-                        for _, obj in pairs(workspace:GetDescendants()) do
-                            if obj:IsA("ProximityPrompt") then
-                                obj.HoldDuration = 0 -- ✅ ทำให้กดไว
-                                fireproximityprompt(obj) -- ✅ กดให้เอง
-                            end
-                        end
-                    end)
-                    task.wait(0.3) -- ✅ ความถี่ Aura (ยิ่งน้อยยิ่งเร็ว)
-                end
-            end)
-        end
-    end,
-})
 
 MainTab:Section({ Title = "Feature Play", Icon = "gamepad-2" })
 
@@ -2028,6 +1972,116 @@ local Discord = Info:Paragraph({
             end,
         }
     }
+})
+
+MainTab:Section({ Title = "Feature Farm", Icon = "tractor" }) 
+
+MainTab:Dropdown({
+    Title = "Movement",
+    Values = {"Teleport", "CFrame"},
+    Default = movementMode,
+    Multi = false,
+    Callback = function(value)
+        movementMode = value
+    end,
+})
+
+MainTab:Dropdown({
+    Title="Set Position",
+    Values={"Spin","Above","Back","Under","Front"},
+    Default=setPositionMode,
+    Multi=false,
+    Callback=function(value) setPositionMode=value end
+})
+
+MainTab:Slider({
+    Title="Set Distance to NPC",
+    Value={Min=0, Max=50, Default=getgenv().DistanceValue},
+    Step=1,
+    Callback=function(val) getgenv().DistanceValue=val end
+})
+
+MainTab:Toggle({
+    Title="Auto Farm (Upgrade)",
+    Default=false,
+    Callback=function(value) autoFarmActive=value if value then startAutoFarm() end end
+})
+
+MainTab:Toggle({
+    Title = "Flush Aura (Upgrade)",
+    Default = false,
+    Callback = function(value)
+        flushAuraActive = value
+        if flushAuraActive then
+            task.spawn(function()
+                while flushAuraActive do
+                    pcall(function()
+                        for _, obj in pairs(workspace:GetDescendants()) do
+                            if obj:IsA("ProximityPrompt") then
+                                obj.HoldDuration = 0 -- ✅ ทำให้กดไว
+                                fireproximityprompt(obj) -- ✅ กดให้เอง
+                            end
+                        end
+                    end)
+                    task.wait(0.3) -- ✅ ความถี่ Aura (ยิ่งน้อยยิ่งเร็ว)
+                end
+            end)
+        end
+    end,
+})MainTab:Section({ Title = "Feature Farm", Icon = "tractor" }) 
+
+MainTab:Dropdown({
+    Title = "Movement",
+    Values = {"Teleport", "CFrame"},
+    Default = movementMode,
+    Multi = false,
+    Callback = function(value)
+        movementMode = value
+    end,
+})
+
+MainTab:Dropdown({
+    Title="Set Position",
+    Values={"Spin","Above","Back","Under","Front"},
+    Default=setPositionMode,
+    Multi=false,
+    Callback=function(value) setPositionMode=value end
+})
+
+MainTab:Slider({
+    Title="Set Distance to NPC",
+    Value={Min=0, Max=50, Default=getgenv().DistanceValue},
+    Step=1,
+    Callback=function(val) getgenv().DistanceValue=val end
+})
+
+MainTab:Toggle({
+    Title="Auto Farm (Upgrade)",
+    Default=false,
+    Callback=function(value) autoFarmActive=value if value then startAutoFarm() end end
+})
+
+MainTab:Toggle({
+    Title = "Flush Aura (Upgrade)",
+    Default = false,
+    Callback = function(value)
+        flushAuraActive = value
+        if flushAuraActive then
+            task.spawn(function()
+                while flushAuraActive do
+                    pcall(function()
+                        for _, obj in pairs(workspace:GetDescendants()) do
+                            if obj:IsA("ProximityPrompt") then
+                                obj.HoldDuration = 0 -- ✅ ทำให้กดไว
+                                fireproximityprompt(obj) -- ✅ กดให้เอง
+                            end
+                        end
+                    end)
+                    task.wait(0.3) -- ✅ ความถี่ Aura (ยิ่งน้อยยิ่งเร็ว)
+                end
+            end)
+        end
+    end,
 })
 
 print("[DYHUB] DYHUB - Loaded! (Console Show)")
