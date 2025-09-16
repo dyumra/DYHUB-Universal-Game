@@ -6,7 +6,7 @@ if setfpscap then
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "dsc.gg/dyhub",
         Text = "FPS Unlocked!",
-        Duration = 5,
+        Duration = 2,
         Button1 = "Okay"
     })
     warn("FPS Unlocked!")
@@ -14,7 +14,7 @@ else
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "dsc.gg/dyhub",
         Text = "Your exploit does not support setfpscap.",
-        Duration = 5,
+        Duration = 2,
         Button1 = "Okay"
     })
     warn("Your exploit does not support setfpscap.")
@@ -527,7 +527,7 @@ Window:EditOpenButton({
     Draggable = true,
 })
 
-local InfoTab = Window:Tab({ Title = "Info", Icon = "info" })
+local InfoTab = Window:Tab({ Title = "Information", Icon = "info" })
 local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
 local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
 local EspTab = Window:Tab({ Title = "Esp", Icon = "eye" })
