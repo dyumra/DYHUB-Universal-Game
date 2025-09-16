@@ -1,5 +1,7 @@
+-- test version
+
 -- =========================
-local verison = "3.4.1"
+local verison = "3.4.2"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -1557,35 +1559,74 @@ MainTab:Toggle({
 
 MainTab:Section({ Title = "Feature Skill", Icon = "sparkles" }) 
 
+-- Improved AutoSkill script
 local autoSkillEnabled = false
-local Skillnormal = {"E"} -- ค่าเริ่มต้น
-local autoSkillValues = Skillnormal
-local Lists = {"Z","X","C","G","T","Y","U","E","R","F"}
+local Skillnormal = {"E"} -- ค่าเริ่มต้น (table)
+local autoSkillValues = { unpack(Skillnormal) } -- ให้แน่ใจว่าเป็น table copy
+local Lists = {"Z","X","C","G","T","Y","U","E","R","F","Q"}
 
 local UserInputService = game:GetService("UserInputService")
-local VirtualInputManager = game:GetService("VirtualInputManager")
-local VirtualUser = game:GetService("VirtualUser")
+-- VirtualInputManager / VirtualUser อาจไม่อยู่ใน environment ปกติ -> pcall เพื่อหลีกเลี่ยง error
+local VirtualInputManager = nil
+pcall(function() VirtualInputManager = game:GetService("VirtualInputManager") end)
+local VirtualUser = nil
+pcall(function() VirtualUser = game:GetService("VirtualUser") end)
+
+-- helper: แปลง string เป็น Enum.KeyCode (ถ้าเป็นไปได้)
+local function getKeyCode(key)
+    if typeof(key) == "EnumItem" and key.EnumType == Enum.KeyCode then
+        return key
+    end
+    if type(key) == "string" then
+        local up = key:upper()
+        local ek = Enum.KeyCode[up]
+        if ek then return ek end
+    end
+    return nil
+end
 
 local function pressKey(key)
-    if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled then
-        VirtualUser:SetKeyDown(key)
-        task.wait(0.05)
-        VirtualUser:SetKeyUp(key)
+    -- รองรับทั้งการส่ง Enum.KeyCode หรือ string เช่น "E"
+    local keyCode = getKeyCode(key)
+
+    if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled and VirtualUser then
+        if keyCode then
+            -- VirtualUser:SetKeyDown / SetKeyUp ควรใช้ Enum.KeyCode
+            pcall(function()
+                VirtualUser:SetKeyDown(keyCode)
+                task.wait(0.05)
+                VirtualUser:SetKeyUp(keyCode)
+            end)
+        else
+            warn("[AutoSkill] Invalid key for VirtualUser:", key)
+        end
+    elseif VirtualInputManager and keyCode then
+        pcall(function()
+            -- SendKeyEvent expects (isDown, key, isRepeat, gameProcessed)
+            VirtualInputManager:SendKeyEvent(true, keyCode, false, game)
+            task.wait(0.05)
+            VirtualInputManager:SendKeyEvent(false, keyCode, false, game)
+        end)
     else
-        VirtualInputManager:SendKeyEvent(true, key, false, game)
-        task.wait(0.05)
-        VirtualInputManager:SendKeyEvent(false, key, false, game)
+        -- ไม่สามารถสังเคราะห์ key event ได้ใน environment นี้
+        warn("[AutoSkill] Cannot simulate keypress: VirtualInputManager/VirtualUser not available or invalid key:", key)
     end
 end
 
-MainTab:Dropdown({ 
-    Title = "Set Skill Auto", 
-    Values = Lists, 
-    Default = Skillnormal, 
-    Multi = true, 
-    Callback = function(values) 
-        autoSkillValues = values
-    end 
+-- UI: Dropdown — บาง lib คืนค่าเป็น string ถ้า Multi = false หรือ table ถ้า Multi = true
+MainTab:Dropdown({
+    Title = "Set Auto Skill",
+    Values = Lists,
+    Default = Skillnormal, -- ถ้า UI ของคุณต้องการ string ให้เปลี่ยนเป็น "E"
+    Multi = true,
+    Callback = function(values)
+        if type(values) == "table" then
+            autoSkillValues = values
+        else
+            -- ถ้ได้ string กลับมา ให้แปลงเป็น table
+            autoSkillValues = { tostring(values) }
+        end
+    end
 })
 
 MainTab:Toggle({
@@ -1596,13 +1637,19 @@ MainTab:Toggle({
         if enabled then
             task.spawn(function()
                 while autoSkillEnabled do
-                    pcall(function()
-                        for _, key in ipairs(autoSkillValues) do
-                            pressKey(key)
-                            task.wait(0.3)
-                        end
-                    end)
-                    task.wait(0.5) 
+                    -- safety: ให้แน่ใจว่าเป็น table และไม่ว่าง
+                    if type(autoSkillValues) ~= "table" or #autoSkillValues == 0 then
+                        task.wait(0.1)
+                    else
+                        pcall(function()
+                            for _, key in ipairs(autoSkillValues) do
+                                if not autoSkillEnabled then break end
+                                pressKey(key)
+                                task.wait(0.3) -- ระยะระหว่างกดแต่ละ skill
+                            end
+                        end)
+                        task.wait(0.5) -- รอบถัดไป
+                    end
                 end
             end)
         end
