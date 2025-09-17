@@ -1,8 +1,12 @@
 -- test version
 
 -- =========================
-local verison = "3.4.2"
+local verison = "3.4.3"
 -- =========================
+
+local code1 = "dyhub.store/loader"
+local code2 = "dyhub.store/loader/script"
+local code3 = "dyhub.store/loader/main"
 
 repeat task.wait() until game:IsLoaded()
 
@@ -443,6 +447,11 @@ local function calculatePosition(npc)
     return targetPos, lookCFrame, anchored
 end
 
+if code3 ~= "dyhub.store/loader/main" then
+    game.Players.LocalPlayer:Kick("NIGGA EDIT BY SCRIPT LOL")
+    return
+end
+
 -- ฟังก์ชันต่อย NPC
 local function attackHumanoidNoProximity(npc)
     local humanoid = npc:FindFirstChildOfClass("Humanoid")
@@ -585,6 +594,11 @@ end
 local function toggleMasteryAutoFarm(state)
     MasteryAutoFarmActive = state
     if not state then removeSupportPart() else MasteryAutoFarm() end
+end
+
+if code1 ~= "dyhub.store/loader" then
+    game.Players.LocalPlayer:Kick("NIGGA EDIT BY SCRIPT LOL")
+    return
 end
 
 -- Flush Aura
@@ -937,6 +951,11 @@ local function scanNPCs()
             end
         end
     end
+end
+
+if code2 ~= "dyhub.store/loader/script" then
+    game.Players.LocalPlayer:Kick("NIGGA EDIT BY SCRIPT LOL")
+    return
 end
 
 -- 🔄 Loop update
@@ -1561,75 +1580,21 @@ MainTab:Section({ Title = "Feature Skill", Icon = "sparkles" })
 
 -- Improved AutoSkill script
 local autoSkillEnabled = false
-local Skillnormal = {"E"} -- ค่าเริ่มต้น (table)
-local autoSkillValues = { unpack(Skillnormal) } -- ให้แน่ใจว่าเป็น table copy
+local Skillnormal = {"E"} -- ค่าเริ่มต้น
+local autoSkillValues = Skillnormal
 local Lists = {"Z","X","C","G","T","Y","U","E","R","F","Q"}
 
-local UserInputService = game:GetService("UserInputService")
--- VirtualInputManager / VirtualUser อาจไม่อยู่ใน environment ปกติ -> pcall เพื่อหลีกเลี่ยง error
-local VirtualInputManager = nil
-pcall(function() VirtualInputManager = game:GetService("VirtualInputManager") end)
-local VirtualUser = nil
-pcall(function() VirtualUser = game:GetService("VirtualUser") end)
-
--- helper: แปลง string เป็น Enum.KeyCode (ถ้าเป็นไปได้)
-local function getKeyCode(key)
-    if typeof(key) == "EnumItem" and key.EnumType == Enum.KeyCode then
-        return key
-    end
-    if type(key) == "string" then
-        local up = key:upper()
-        local ek = Enum.KeyCode[up]
-        if ek then return ek end
-    end
-    return nil
-end
-
-local function pressKey(key)
-    -- รองรับทั้งการส่ง Enum.KeyCode หรือ string เช่น "E"
-    local keyCode = getKeyCode(key)
-
-    if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled and VirtualUser then
-        if keyCode then
-            -- VirtualUser:SetKeyDown / SetKeyUp ควรใช้ Enum.KeyCode
-            pcall(function()
-                VirtualUser:SetKeyDown(keyCode)
-                task.wait(0.05)
-                VirtualUser:SetKeyUp(keyCode)
-            end)
-        else
-            warn("[AutoSkill] Invalid key for VirtualUser:", key)
-        end
-    elseif VirtualInputManager and keyCode then
-        pcall(function()
-            -- SendKeyEvent expects (isDown, key, isRepeat, gameProcessed)
-            VirtualInputManager:SendKeyEvent(true, keyCode, false, game)
-            task.wait(0.05)
-            VirtualInputManager:SendKeyEvent(false, keyCode, false, game)
-        end)
-    else
-        -- ไม่สามารถสังเคราะห์ key event ได้ใน environment นี้
-        warn("[AutoSkill] Cannot simulate keypress: VirtualInputManager/VirtualUser not available or invalid key:", key)
-    end
-end
-
--- UI: Dropdown — บาง lib คืนค่าเป็น string ถ้า Multi = false หรือ table ถ้า Multi = true
-MainTab:Dropdown({
-    Title = "Set Auto Skill",
-    Values = Lists,
-    Default = Skillnormal, -- ถ้า UI ของคุณต้องการ string ให้เปลี่ยนเป็น "E"
-    Multi = true,
-    Callback = function(values)
-        if type(values) == "table" then
-            autoSkillValues = values
-        else
-            -- ถ้ได้ string กลับมา ให้แปลงเป็น table
-            autoSkillValues = { tostring(values) }
-        end
-    end
+SkillTab:Dropdown({ 
+    Title = "Set Auto Skill", 
+    Values = Lists, 
+    Default = Skillnormal, 
+    Multi = true, -- ✅ เลือกหลายปุ่มได้
+    Callback = function(values) 
+        autoSkillValues = values -- เก็บค่าที่เลือก (เป็นตาราง)
+    end 
 })
 
-MainTab:Toggle({
+SkillTab:Toggle({
     Title = "Auto Skill",
     Default = false,
     Callback = function(enabled)
@@ -1637,19 +1602,22 @@ MainTab:Toggle({
         if enabled then
             task.spawn(function()
                 while autoSkillEnabled do
-                    -- safety: ให้แน่ใจว่าเป็น table และไม่ว่าง
-                    if type(autoSkillValues) ~= "table" or #autoSkillValues == 0 then
-                        task.wait(0.1)
-                    else
-                        pcall(function()
-                            for _, key in ipairs(autoSkillValues) do
-                                if not autoSkillEnabled then break end
-                                pressKey(key)
-                                task.wait(0.3) -- ระยะระหว่างกดแต่ละ skill
-                            end
-                        end)
-                        task.wait(0.5) -- รอบถัดไป
-                    end
+                    pcall(function()
+                        local VirtualInputManager = game:GetService("VirtualInputManager")
+
+                        -- ✅ วนตามลำดับที่เลือกไว้
+                        for _, key in ipairs(autoSkillValues) do
+                            -- กด
+                            VirtualInputManager:SendKeyEvent(true, key, false, game)
+                            task.wait(0.05)
+                            -- ปล่อย
+                            VirtualInputManager:SendKeyEvent(false, key, false, game)
+
+                            -- หน่วงเวลานิดหน่อยก่อนกดปุ่มต่อไป
+                            task.wait(0.25)
+                        end
+                    end)
+                    task.wait(0.5) -- เวลาหน่วงก่อนเริ่มรอบใหม่
                 end
             end)
         end
