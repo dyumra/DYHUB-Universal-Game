@@ -1,4 +1,6 @@
-local version = "3.8.1"
+-- ======================
+local version = "4.1.2"
+-- ======================
 
 repeat task.wait() until game:IsLoaded()
 
@@ -23,12 +25,24 @@ end
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 local RunService = game:GetService("RunService")
-local LocalPlayer = game.Players.LocalPlayer
 local Workspace = game.Workspace
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 
--- 🎨 Color Variables
+local ESPSURVIVOR      = false
+local ESPMURDER        = false
+local ESPGENERATOR     = false
+local ESPGATE          = false
+local ESPPALLET        = false
+local ESPWINDOW        = false
+local ESPHOOK          = false
+
 local COLOR_SURVIVOR       = Color3.fromRGB(0,0,255)
 local COLOR_MURDERER       = Color3.fromRGB(255,0,0)
 local COLOR_GENERATOR      = Color3.fromRGB(255,255,255)
@@ -37,6 +51,7 @@ local COLOR_GATE           = Color3.fromRGB(255,255,255)
 local COLOR_PALLET         = Color3.fromRGB(255,255,0)
 local COLOR_OUTLINE        = Color3.fromRGB(0,0,0)
 local COLOR_WINDOW         = Color3.fromRGB(255,165,0)
+local COLOR_HOOK           = Color3.fromRGB(255,0,0)
 
 -- Window GUI
 local Window = WindUI:CreateWindow({
@@ -79,7 +94,8 @@ Window:EditOpenButton({
 local InfoTab = Window:Tab({ Title = "Information", Icon = "info" })
 local MainDivider = Window:Divider()
 local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
-local EspTab = Window:Tab({ Title = "ESP", Icon = "eye" })
+local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
+local EspTab = Window:Tab({ Title = "Esp", Icon = "eye" })
 
 Window:SelectTab(1)
 
@@ -232,6 +248,13 @@ local function updateESP()
                 removeESP(obj)
             end
 
+            -- Hook
+            if espHook and obj.Name == "Hook" and obj:FindFirstChild("Model") then
+                createESP(obj.Model, COLOR_HOOK)
+            elseif not espHook and obj.Name == "Hook" and obj:FindFirstChild("Model") then
+                removeESP(obj.Model)
+            end
+
             -- Pallet
             if espPallet and obj.Name == "Palletwrong" then
                 createESP(obj, COLOR_PALLET)
@@ -266,6 +289,7 @@ game.Players.PlayerRemoving:Connect(function(player)
     if player.Character then removeESP(player.Character) end
 end)
 
+EspTab:Section({ Title = "Feature Esp", Icon = "eye" })
 -- ESP Tab Toggle
 EspTab:Toggle({Title="Enable ESP", Default=false, Callback=function(v)
     espEnabled = v
@@ -279,19 +303,19 @@ EspTab:Toggle({Title="Enable ESP", Default=false, Callback=function(v)
         updateWindowESP()
     end
 end})
+EspTab:Section({ Title = "Esp Setting", Icon = "settings" })
+EspTab:Toggle({Title="ESP Survivor",  Default=ESPSURVIVOR,  Callback=function(v) espSurvivor=v end})
+EspTab:Toggle({Title="ESP Murderer",  Default=ESPMURDER,    Callback=function(v) espMurder=v end}
+    
+EspTab:Section({ Title = "Esp Engine", Icon = "biceps-flexed" })
+EspTab:Toggle({Title="ESP Generator", Default=ESPGENERATOR, Callback=function(v) espGenerator=v end})
+EspTab:Toggle({Title="ESP Gate",      Default=ESPGATE,      Callback=function(v) espGate=v end})
 
-EspTab:Toggle({Title="ESP Survivor",  Default=false, Callback=function(v) espSurvivor=v end})
-EspTab:Toggle({Title="ESP Murderer",  Default=false, Callback=function(v) espMurder=v end})
-EspTab:Toggle({Title="ESP Generator", Default=false, Callback=function(v) espGenerator=v end})
-EspTab:Toggle({Title="ESP Gate",      Default=false, Callback=function(v) espGate=v end})
-EspTab:Toggle({Title="ESP Pallet",    Default=false, Callback=function(v) espPallet=v end})
-EspTab:Toggle({Title="ESP Window",   Default=false, Callback=function(v) espWindowEnabled=v; updateWindowESP() end})
+EspTab:Section({ Title = "Esp Object", Icon = "package" })
+EspTab:Toggle({Title="ESP Pallet",    Default=ESPPALLET,    Callback=function(v) espPallet=v end})
+EspTab:Toggle({Title="ESP Hook",    Default=ESPHOOK,    Callback=function(v) espHook=v end})
+EspTab:Toggle({Title="ESP Window",    Default=ESPWINDOW,    Callback=function(v) espWindowEnabled=v; updateWindowESP() end})
 
--- Main Tab Toggles
-
--- No Flashlight Toggle
-
--- Loop ตรวจสอบ ScreenshotHudFrame
 spawn(function()
     while task.wait(5) do
         if noFlashlightEnabled then
@@ -306,7 +330,54 @@ spawn(function()
     end
 end)
 
+local bypassGateEnabled = false
 
+-- ค้นหา Gate ทั้งสองอัน
+local gates = {}
+for _, gate in pairs(workspace:WaitForChild("Map"):GetChildren()) do
+    if gate.Name == "Gate" then
+        local box = gate:FindFirstChild("Box")
+        if box then
+            table.insert(gates, box)
+        end
+    end
+end
+
+MainTab:Section({ Title = "Feature Bypass", Icon = "lock-open" })
+MainTab:Toggle({
+    Title = "Bypass Gate (Beta)",
+    Default = false,
+    Callback = function(state)
+        bypassGateEnabled = state
+        -- คืนค่า CanCollide ตอนปิด
+        if not state then
+            for _, box in pairs(gates) do
+                if box then
+                    box.CanCollide = true
+                end
+            end
+        end
+    end
+})
+
+-- ทำให้ทะลุเฉพาะเวลาชน Gate.Box
+RunService.Stepped:Connect(function()
+    if bypassGateEnabled then
+        for _, box in pairs(gates) do
+            if box then
+                local distance = (HumanoidRootPart.Position - box.Position).Magnitude
+                -- ถ้าใกล้ตัว box ให้ CanCollide = false ชั่วคราว
+                if distance <= 5 then  -- ปรับค่าตามระยะที่ต้องการ
+                    box.CanCollide = false
+                else
+                    box.CanCollide = true
+                end
+            end
+        end
+    end
+end)   
+
+MainTab:Section({ Title = "Feature Cheat", Icon = "zap" })
 local autoGeneratorEnabled = false
 MainTab:Toggle({Title="Auto Generator", Default=false, Callback=function(v)
     autoGeneratorEnabled = v
@@ -342,6 +413,7 @@ MainTab:Toggle({Title="No Flashlight", Default=false, Callback=function(v)
     noFlashlightEnabled = v
 end})
 
+MainTab:Section({ Title = "Feature Visual", Icon = "lightbulb" })
 MainTab:Toggle({Title="Full Bright", Default=false, Callback=function(v)
     Lighting.Brightness = v and 2 or 1
     Lighting.ClockTime = v and 14 or 12
@@ -352,6 +424,65 @@ MainTab:Toggle({Title="No Fog", Default=false, Callback=function(v)
     Lighting.FogEnd = v and 100000 or 1000
     Lighting.FogStart = v and 0 or 0
 end})
+
+local speedEnabled, flyNoclipSpeed = false, 50
+local speedConnection, noclipConnection
+
+PlayerTab:Section({ Title = "Feature Player", Icon = "arrow-big-up-dash" })
+PlayerTab:Slider({ Title = "Set Speed Value", Value={Min=1,Max=100,Default=10}, Step=1, Callback=function(val) flyNoclipSpeed=val end })
+PlayerTab:Toggle({ Title = "Enable Speed", Default=false, Callback=function(v)
+    speedEnabled=v
+    if speedEnabled then
+        if speedConnection then speedConnection:Disconnect() end
+        speedConnection=RunService.RenderStepped:Connect(function()
+            local char=LocalPlayer.Character
+            if char and char:FindFirstChild("HumanoidRootPart") and char.Humanoid.MoveDirection.Magnitude>0 then
+                char.HumanoidRootPart.CFrame=char.HumanoidRootPart.CFrame+char.Humanoid.MoveDirection*flyNoclipSpeed*0.016
+            end
+        end)
+    else
+        if speedConnection then speedConnection:Disconnect() speedConnection=nil end
+    end
+end })
+
+PlayerTab:Toggle({ Title = "No Clip", Default=false, Callback=function(state)
+    if state then
+        noclipConnection=RunService.Stepped:Connect(function()
+            local char=LocalPlayer.Character
+            if char then
+                for _,part in pairs(char:GetDescendants()) do
+                    if part:IsA("BasePart") then part.CanCollide=false end
+                end
+            end
+        end)
+    else
+        if noclipConnection then noclipConnection:Disconnect() noclipConnection=nil end
+        local char=LocalPlayer.Character
+        if char then
+            for _,part in pairs(char:GetDescendants()) do
+                if part:IsA("BasePart") then part.CanCollide=true end
+            end
+        end
+    end
+end })
+
+local infiniteJumpEnabled = false
+
+PlayerTab:Toggle({ 
+    Title = "Infinite Jump",  
+    Default = false, 
+    Callback = function(state)
+        infiniteJumpEnabled = state
+    end
+})
+
+UserInputService.JumpRequest:Connect(function()
+    if infiniteJumpEnabled then
+        if Humanoid then
+            Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
+    end
+end)
 
 Info = InfoTab
 
