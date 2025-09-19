@@ -313,7 +313,7 @@ EspTab:Toggle({Title="ESP Gate",      Default=ESPGATE,      Callback=function(v)
 
 EspTab:Section({ Title = "Esp Object", Icon = "package" })
 EspTab:Toggle({Title="ESP Pallet",    Default=ESPPALLET,    Callback=function(v) espPallet=v end})
-EspTab:Toggle({Title="ESP Hook",    Default=ESPHOOK,    Callback=function(v) espHook=v end})
+EspTab:Toggle({Title="ESP Hook",      Default=ESPHOOK,    Callback=function(v) espHook=v end})
 EspTab:Toggle({Title="ESP Window",    Default=ESPWINDOW,    Callback=function(v) espWindowEnabled=v; updateWindowESP() end})
 
 spawn(function()
