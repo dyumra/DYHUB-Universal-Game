@@ -18,9 +18,9 @@ uicorner.CornerRadius = UDim.new(1, 0)
 uicorner.Parent = button
 
 button.MouseButton1Click:Connect(function()
-    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.LeftControl, false, game)
+    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.RightControl, false, game)
     task.wait(0.05)
-    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.LeftControl, false, game)
+    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.RightControl, false, game)
 end)
 
 local SolarisLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/vateq/UILIBrewrites/refs/heads/main/justtestin"))()
