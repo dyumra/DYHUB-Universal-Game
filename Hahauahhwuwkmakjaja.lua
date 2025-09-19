@@ -1,5 +1,5 @@
 -- ======================
-local version = "4.2.5"
+local version = "4.2.6"
 -- ======================
 
 repeat task.wait() until game:IsLoaded()
@@ -63,7 +63,7 @@ local Window = WindUI:CreateWindow({
     Title = "DYHUB",
     IconThemed = true,
     Icon = "rbxassetid://104487529937663",
-    Author = "Violence District | Premium Version",
+    Author = "Violence District | Free Version",
     Folder = "DYHUB_VD_ESP",
     Size = UDim2.fromOffset(500, 350),
     Transparent = true,
