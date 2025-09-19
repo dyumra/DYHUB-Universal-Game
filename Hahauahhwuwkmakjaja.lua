@@ -291,7 +291,7 @@ EspTab:Toggle({Title="Enable ESP", Default=false, Callback=function(v)
     end
 end})
 
-EspTab:Section({ Title = "Esp Setting", Icon = "settings" })
+EspTab:Section({ Title = "Esp Role", Icon = "settings" })
 EspTab:Toggle({Title="ESP Survivor", Default=ESPSURVIVOR, Callback=function(v) espSurvivor=v end})
 EspTab:Toggle({Title="ESP Murderer", Default=ESPMURDER, Callback=function(v) espMurder=v end})
 
@@ -323,10 +323,48 @@ end)
 -- ====================== BYPASS GATE ======================
 local bypassGateEnabled = false
 local gates = {}
-for _, gate in pairs(Workspace:WaitForChild("Map"):GetChildren()) do
+
+for _, gate in pairs(workspace:WaitForChild("Map"):GetChildren()) do
     if gate.Name == "Gate" then
+        table.insert(gates, gate)
+    end
+end
+
+local function setGateState(enabled)
+    for _, gate in pairs(gates) do
+        local leftGate = gate:FindFirstChild("LeftGate")
+        local rightGate = gate:FindFirstChild("RightGate")
+        local leftEnd = gate:FindFirstChild("LeftGate-end")
+        local rightEnd = gate:FindFirstChild("RightGate-end")
         local box = gate:FindFirstChild("Box")
-        if box then table.insert(gates, box) end
+
+        if leftGate or rightGate or leftEnd or rightEnd then
+            if enabled then
+                if leftGate then
+                    leftGate.Transparency = 1
+                    leftGate.CanCollide = false
+                end
+                if rightGate then
+                    rightGate.Transparency = 1
+                    rightGate.CanCollide = false
+                end
+                if leftEnd then leftEnd.Transparency = 0 end
+                if rightEnd then rightEnd.Transparency = 0 end
+            else
+                if leftGate then
+                    leftGate.Transparency = 0
+                    leftGate.CanCollide = true
+                end
+                if rightGate then
+                    rightGate.Transparency = 0
+                    rightGate.CanCollide = true
+                end
+            end
+        else
+            if box then
+                box.CanCollide = not enabled
+            end
+        end
     end
 end
 
@@ -336,24 +374,9 @@ MainTab:Toggle({
     Default = false,
     Callback = function(state)
         bypassGateEnabled = state
-        if not state then
-            for _, box in pairs(gates) do
-                if box then box.CanCollide = true end
-            end
-        end
+        setGateState(state)
     end
 })
-
-RunService.Stepped:Connect(function()
-    if bypassGateEnabled then
-        for _, box in pairs(gates) do
-            if box then
-                local distance = (HumanoidRootPart.Position - box.Position).Magnitude
-                box.CanCollide = distance > 5
-            end
-        end
-    end
-end)
 
 -- ====================== AUTO GENERATOR ======================
 local autoGeneratorEnabled = false
