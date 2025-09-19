@@ -1,5 +1,5 @@
 -- ======================
-local version = "4.2.4"
+local version = "4.2.5"
 -- ======================
 
 repeat task.wait() until game:IsLoaded()
@@ -40,8 +40,8 @@ local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 -- ====================== ESP SETTINGS ======================
-local ESPSURVIVOR = false
-local ESPMURDER   = false
+local ESPSURVIVOR  = false
+local ESPMURDER    = false
 local ESPGENERATOR = false
 local ESPGATE      = false
 local ESPPALLET    = false
@@ -106,6 +106,7 @@ local espSurvivor = false
 local espMurder = false
 local espGenerator = false
 local espGate = false
+local espHook = false
 local espPallet = false
 local espObjects = {}
 local espWindowEnabled = false
@@ -175,18 +176,31 @@ local function createESP(obj, baseColor)
     espObjects[obj] = {highlight = highlight, nameLabel = nameLabel, distLabel = distLabel, color = baseColor}
 end
 
+-- Helper: คืนค่าทุกโฟลเดอร์ Map ที่มี
+local function getMapFolders()
+    local folders = {}
+    local mainMap = workspace:FindFirstChild("Map")
+    if mainMap then table.insert(folders, mainMap) end
+    if mainMap and mainMap:FindFirstChild("Rooftop") then
+        table.insert(folders, mainMap.Rooftop)
+    end
+    return folders
+end
+
 -- Update Window ESP
 local function updateWindowESP()
     if not espEnabled then return end
-    for _, windowModel in pairs(Workspace.Map:GetDescendants()) do
-        if windowModel:IsA("Model") and windowModel.Name == "Window" then
-            local bottomPart = windowModel:FindFirstChild("Bottom")
-            if bottomPart then
-                bottomPart.Transparency = espWindowEnabled and 0 or 1
-                if espWindowEnabled then
-                    createESP(windowModel, COLOR_WINDOW)
-                else
-                    removeESP(windowModel)
+    for _, folder in pairs(getMapFolders()) do
+        for _, windowModel in pairs(folder:GetDescendants()) do
+            if windowModel:IsA("Model") and windowModel.Name == "Window" then
+                local bottomPart = windowModel:FindFirstChild("Bottom")
+                if bottomPart then
+                    bottomPart.Transparency = espWindowEnabled and 0 or 1
+                    if espWindowEnabled then
+                        createESP(windowModel, COLOR_WINDOW)
+                    else
+                        removeESP(windowModel)
+                    end
                 end
             end
         end
@@ -220,34 +234,36 @@ local function updateESP()
     end
 
     -- Object ESP
-    for _, obj in pairs(Workspace.Map:GetDescendants()) do
-        if obj:IsA("Model") or obj:IsA("BasePart") then
-            -- Generator
-            if obj.Name == "Generator" then
-                if espGenerator then
-                    local hitbox = obj:FindFirstChild("HitBox")
-                    local pointLight = hitbox and hitbox:FindFirstChildOfClass("PointLight")
-                    local color = COLOR_GENERATOR
-                    if pointLight and pointLight.Color == Color3.fromRGB(126,255,126) then
-                        color = COLOR_GENERATOR_DONE
-                    end
-                    createESP(obj, color)
-                else removeESP(obj) end
-            end
+    for _, folder in pairs(getMapFolders()) do
+        for _, obj in pairs(folder:GetDescendants()) do
+            if obj:IsA("Model") or obj:IsA("BasePart") then
+                -- Generator
+                if obj.Name == "Generator" then
+                    if espGenerator then
+                        local hitbox = obj:FindFirstChild("HitBox")
+                        local pointLight = hitbox and hitbox:FindFirstChildOfClass("PointLight")
+                        local color = COLOR_GENERATOR
+                        if pointLight and pointLight.Color == Color3.fromRGB(126,255,126) then
+                            color = COLOR_GENERATOR_DONE
+                        end
+                        createESP(obj, color)
+                    else removeESP(obj) end
+                end
 
-            -- Gate
-            if obj.Name == "Gate" then
-                if espGate then createESP(obj, COLOR_GATE) else removeESP(obj) end
-            end
+                -- Gate
+                if obj.Name == "Gate" then
+                    if espGate then createESP(obj, COLOR_GATE) else removeESP(obj) end
+                end
 
-            -- Hook
-            if obj.Name == "Hook" and obj:FindFirstChild("Model") then
-                if espHook then createESP(obj.Model, COLOR_HOOK) else removeESP(obj.Model) end
-            end
+                -- Hook
+                if obj.Name == "Hook" and obj:FindFirstChild("Model") then
+                    if espHook then createESP(obj.Model, COLOR_HOOK) else removeESP(obj.Model) end
+                end
 
-            -- Pallet
-            if obj.Name == "Palletwrong" then
-                if espPallet then createESP(obj, COLOR_PALLET) else removeESP(obj) end
+                -- Pallet
+                if obj.Name == "Palletwrong" then
+                    if espPallet then createESP(obj, COLOR_PALLET) else removeESP(obj) end
+                end
             end
         end
     end
@@ -322,15 +338,21 @@ end)
 
 -- ====================== BYPASS GATE ======================
 local bypassGateEnabled = false
-local gates = {}
 
-for _, gate in pairs(workspace:WaitForChild("Map"):GetChildren()) do
-    if gate.Name == "Gate" then
-        table.insert(gates, gate)
+local function gatherGates()
+    local gates = {}
+    for _, folder in pairs(getMapFolders()) do
+        for _, gate in pairs(folder:GetChildren()) do
+            if gate.Name == "Gate" then
+                table.insert(gates, gate)
+            end
+        end
     end
+    return gates
 end
 
 local function setGateState(enabled)
+    local gates = gatherGates()
     for _, gate in pairs(gates) do
         local leftGate = gate:FindFirstChild("LeftGate")
         local rightGate = gate:FindFirstChild("RightGate")
@@ -381,7 +403,7 @@ MainTab:Toggle({
 -- ====================== AUTO GENERATOR ======================
 local autoGeneratorEnabled = false
 MainTab:Section({ Title = "Feature Cheat", Icon = "zap" })
-MainTab:Toggle({Title="Auto Generator", Default=false, Callback=function(v) autoGeneratorEnabled=v end})
+MainTab:Toggle({Title="Auto Generator (Beta)", Default=false, Callback=function(v) autoGeneratorEnabled=v end})
 
 spawn(function()
     local GeneratorPoints = {"GeneratorPoint1","GeneratorPoint2","GeneratorPoint3","GeneratorPoint4"}
