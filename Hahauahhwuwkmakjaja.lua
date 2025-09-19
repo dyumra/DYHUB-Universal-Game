@@ -1,9 +1,10 @@
 -- ======================
-local version = "4.1.2"
+local version = "4.2.0"
 -- ======================
 
 repeat task.wait() until game:IsLoaded()
 
+-- FPS Unlock
 if setfpscap then
     setfpscap(1000000)
     game:GetService("StarterGui"):SetCore("SendNotification", {
@@ -23,7 +24,7 @@ else
     warn("Your exploit does not support setfpscap.")
 end
 
-local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+-- Services
 local RunService = game:GetService("RunService")
 local Workspace = game.Workspace
 local Lighting = game:GetService("Lighting")
@@ -35,13 +36,17 @@ local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local Humanoid = Character:WaitForChild("Humanoid")
 local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 
-local ESPSURVIVOR      = false
-local ESPMURDER        = false
-local ESPGENERATOR     = false
-local ESPGATE          = false
-local ESPPALLET        = false
-local ESPWINDOW        = false
-local ESPHOOK          = false
+-- WindUI
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+-- ====================== ESP SETTINGS ======================
+local ESPSURVIVOR = false
+local ESPMURDER   = false
+local ESPGENERATOR = false
+local ESPGATE      = false
+local ESPPALLET    = false
+local ESPWINDOW    = false
+local ESPHOOK      = false
 
 local COLOR_SURVIVOR       = Color3.fromRGB(0,0,255)
 local COLOR_MURDERER       = Color3.fromRGB(255,0,0)
@@ -53,7 +58,7 @@ local COLOR_OUTLINE        = Color3.fromRGB(0,0,0)
 local COLOR_WINDOW         = Color3.fromRGB(255,165,0)
 local COLOR_HOOK           = Color3.fromRGB(255,0,0)
 
--- Window GUI
+-- ====================== WINDOW ======================
 local Window = WindUI:CreateWindow({
     Title = "DYHUB",
     IconThemed = true,
@@ -67,16 +72,13 @@ local Window = WindUI:CreateWindow({
     HasOutline = false,
     HideSearchBar = true,
     ScrollBarEnabled = false,
-    User = {
-        Enabled = true,
-        Anonymous = false
-    },
+    User = { Enabled = true, Anonymous = false },
 })
 
 pcall(function()
     Window:Tag({
-        Title = verison,
-        Color = Color3.fromHex("#30ff6a") 
+        Title = version,
+        Color = Color3.fromHex("#30ff6a")
     })
 end)
 
@@ -89,7 +91,6 @@ Window:EditOpenButton({
     Draggable = true,
 })
 
-
 -- Tabs
 local InfoTab = Window:Tab({ Title = "Information", Icon = "info" })
 local MainDivider = Window:Divider()
@@ -99,7 +100,7 @@ local EspTab = Window:Tab({ Title = "Esp", Icon = "eye" })
 
 Window:SelectTab(1)
 
--- ESP Variables
+-- ====================== ESP SYSTEM ======================
 local espEnabled = false
 local espSurvivor = false
 local espMurder = false
@@ -109,7 +110,7 @@ local espPallet = false
 local espObjects = {}
 local espWindowEnabled = false
 
--- 🔹 ลบ ESP ของ object
+-- Remove ESP
 local function removeESP(obj)
     if espObjects[obj] then
         local data = espObjects[obj]
@@ -121,13 +122,11 @@ local function removeESP(obj)
     end
 end
 
--- 🔹 สร้าง ESP
+-- Create ESP
 local function createESP(obj, baseColor)
     if not obj or obj.Name == "Lobby" or espObjects[obj] then return end
 
-    if obj:FindFirstChild("Bottom") then
-        obj.Bottom.Transparency = 0
-    end
+    if obj:FindFirstChild("Bottom") then obj.Bottom.Transparency = 0 end
 
     local highlight = Instance.new("Highlight")
     highlight.Adornee = obj
@@ -176,7 +175,7 @@ local function createESP(obj, baseColor)
     espObjects[obj] = {highlight = highlight, nameLabel = nameLabel, distLabel = distLabel, color = baseColor}
 end
 
--- 🔹 อัปเดต ESP Window ทุกอัน
+-- Update Window ESP
 local function updateWindowESP()
     if not espEnabled then return end
     for _, windowModel in pairs(Workspace.Map:GetDescendants()) do
@@ -194,15 +193,14 @@ local function updateWindowESP()
     end
 end
 
--- 🔹 อัปเดต ESP หลัก realtime
+-- Update ESP Main
 local function updateESP()
     if not espEnabled then return end
-
     local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
 
-    -- Survivor / Murderer realtime
-    for _, player in pairs(game.Players:GetPlayers()) do
+    -- Player ESP
+    for _, player in pairs(Players:GetPlayers()) do
         if player.Character and player.Character ~= LocalPlayer.Character and player.Character.Name ~= "Lobby" then
             local isMurderer = player.Character:FindFirstChild("Weapon") ~= nil
             local currentESP = espObjects[player.Character]
@@ -211,65 +209,54 @@ local function updateESP()
                 if espMurder then
                     if currentESP and currentESP.color ~= COLOR_MURDERER then removeESP(player.Character); currentESP=nil end
                     createESP(player.Character, COLOR_MURDERER)
-                else
-                    removeESP(player.Character)
-                end
+                else removeESP(player.Character) end
             else
                 if espSurvivor then
                     if currentESP and currentESP.color ~= COLOR_SURVIVOR then removeESP(player.Character); currentESP=nil end
                     createESP(player.Character, COLOR_SURVIVOR)
-                else
-                    removeESP(player.Character)
-                end
+                else removeESP(player.Character) end
             end
         end
     end
 
-    -- Generator / Gate / Pallet
+    -- Object ESP
     for _, obj in pairs(Workspace.Map:GetDescendants()) do
         if obj:IsA("Model") or obj:IsA("BasePart") then
             -- Generator
-            if espGenerator and obj.Name == "Generator" then
-                local hitbox = obj:FindFirstChild("HitBox")
-                local pointLight = hitbox and hitbox:FindFirstChildOfClass("PointLight")
-                local color = COLOR_GENERATOR
-                if pointLight and pointLight.Color == Color3.fromRGB(126,255,126) then
-                    color = COLOR_GENERATOR_DONE
-                end
-                createESP(obj, color)
-            elseif not espGenerator and obj.Name == "Generator" then
-                removeESP(obj)
+            if obj.Name == "Generator" then
+                if espGenerator then
+                    local hitbox = obj:FindFirstChild("HitBox")
+                    local pointLight = hitbox and hitbox:FindFirstChildOfClass("PointLight")
+                    local color = COLOR_GENERATOR
+                    if pointLight and pointLight.Color == Color3.fromRGB(126,255,126) then
+                        color = COLOR_GENERATOR_DONE
+                    end
+                    createESP(obj, color)
+                else removeESP(obj) end
             end
 
             -- Gate
-            if espGate and obj.Name == "Gate" then
-                createESP(obj, COLOR_GATE)
-            elseif not espGate and obj.Name == "Gate" then
-                removeESP(obj)
+            if obj.Name == "Gate" then
+                if espGate then createESP(obj, COLOR_GATE) else removeESP(obj) end
             end
 
             -- Hook
-            if espHook and obj.Name == "Hook" and obj:FindFirstChild("Model") then
-                createESP(obj.Model, COLOR_HOOK)
-            elseif not espHook and obj.Name == "Hook" and obj:FindFirstChild("Model") then
-                removeESP(obj.Model)
+            if obj.Name == "Hook" and obj:FindFirstChild("Model") then
+                if espHook then createESP(obj.Model, COLOR_HOOK) else removeESP(obj.Model) end
             end
 
             -- Pallet
-            if espPallet and obj.Name == "Palletwrong" then
-                createESP(obj, COLOR_PALLET)
-            elseif not espPallet and obj.Name == "Palletwrong" then
-                removeESP(obj)
+            if obj.Name == "Palletwrong" then
+                if espPallet then createESP(obj, COLOR_PALLET) else removeESP(obj) end
             end
         end
     end
 
-    -- ESP Window ทุกอัน
     updateWindowESP()
 
-    -- อัปเดตระยะทางทุก ESP
+    -- Update distances
     for obj,data in pairs(espObjects) do
-        if obj and obj.Parent and obj.Name~="Lobby" then
+        if obj and obj.Parent and obj.Name ~= "Lobby" then
             local targetPart = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
             if targetPart then
                 local dist = math.floor((hrp.Position - targetPart.Position).Magnitude)
@@ -281,16 +268,16 @@ end
 
 RunService.RenderStepped:Connect(updateESP)
 
--- Player respawn / leave
-game.Players.PlayerAdded:Connect(function(player)
+-- Player added/removed
+Players.PlayerAdded:Connect(function(player)
     player.CharacterAdded:Connect(function() task.wait(1) end)
 end)
-game.Players.PlayerRemoving:Connect(function(player)
+Players.PlayerRemoving:Connect(function(player)
     if player.Character then removeESP(player.Character) end
 end)
 
+-- ====================== ESP GUI ======================
 EspTab:Section({ Title = "Feature Esp", Icon = "eye" })
--- ESP Tab Toggle
 EspTab:Toggle({Title="Enable ESP", Default=false, Callback=function(v)
     espEnabled = v
     if not espEnabled then
@@ -303,19 +290,22 @@ EspTab:Toggle({Title="Enable ESP", Default=false, Callback=function(v)
         updateWindowESP()
     end
 end})
+
 EspTab:Section({ Title = "Esp Setting", Icon = "settings" })
-EspTab:Toggle({Title="ESP Survivor",  Default=ESPSURVIVOR,  Callback=function(v) espSurvivor=v end})
-EspTab:Toggle({Title="ESP Murderer",  Default=ESPMURDER,    Callback=function(v) espMurder=v end}
-    
+EspTab:Toggle({Title="ESP Survivor", Default=ESPSURVIVOR, Callback=function(v) espSurvivor=v end})
+EspTab:Toggle({Title="ESP Murderer", Default=ESPMURDER, Callback=function(v) espMurder=v end})
+
 EspTab:Section({ Title = "Esp Engine", Icon = "biceps-flexed" })
 EspTab:Toggle({Title="ESP Generator", Default=ESPGENERATOR, Callback=function(v) espGenerator=v end})
-EspTab:Toggle({Title="ESP Gate",      Default=ESPGATE,      Callback=function(v) espGate=v end})
+EspTab:Toggle({Title="ESP Gate", Default=ESPGATE, Callback=function(v) espGate=v end})
 
 EspTab:Section({ Title = "Esp Object", Icon = "package" })
-EspTab:Toggle({Title="ESP Pallet",    Default=ESPPALLET,    Callback=function(v) espPallet=v end})
-EspTab:Toggle({Title="ESP Hook",      Default=ESPHOOK,    Callback=function(v) espHook=v end})
-EspTab:Toggle({Title="ESP Window",    Default=ESPWINDOW,    Callback=function(v) espWindowEnabled=v; updateWindowESP() end})
+EspTab:Toggle({Title="ESP Pallet", Default=ESPPALLET, Callback=function(v) espPallet=v end})
+EspTab:Toggle({Title="ESP Hook", Default=ESPHOOK, Callback=function(v) espHook=v end})
+EspTab:Toggle({Title="ESP Window", Default=ESPWINDOW, Callback=function(v) espWindowEnabled=v; updateWindowESP() end})
 
+-- ====================== NO FLASHLIGHT ======================
+local noFlashlightEnabled = false
 spawn(function()
     while task.wait(5) do
         if noFlashlightEnabled then
@@ -330,16 +320,13 @@ spawn(function()
     end
 end)
 
+-- ====================== BYPASS GATE ======================
 local bypassGateEnabled = false
-
--- ค้นหา Gate ทั้งสองอัน
 local gates = {}
-for _, gate in pairs(workspace:WaitForChild("Map"):GetChildren()) do
+for _, gate in pairs(Workspace:WaitForChild("Map"):GetChildren()) do
     if gate.Name == "Gate" then
         local box = gate:FindFirstChild("Box")
-        if box then
-            table.insert(gates, box)
-        end
+        if box then table.insert(gates, box) end
     end
 end
 
@@ -349,58 +336,41 @@ MainTab:Toggle({
     Default = false,
     Callback = function(state)
         bypassGateEnabled = state
-        -- คืนค่า CanCollide ตอนปิด
         if not state then
             for _, box in pairs(gates) do
-                if box then
-                    box.CanCollide = true
-                end
+                if box then box.CanCollide = true end
             end
         end
     end
 })
 
--- ทำให้ทะลุเฉพาะเวลาชน Gate.Box
 RunService.Stepped:Connect(function()
     if bypassGateEnabled then
         for _, box in pairs(gates) do
             if box then
                 local distance = (HumanoidRootPart.Position - box.Position).Magnitude
-                -- ถ้าใกล้ตัว box ให้ CanCollide = false ชั่วคราว
-                if distance <= 5 then  -- ปรับค่าตามระยะที่ต้องการ
-                    box.CanCollide = false
-                else
-                    box.CanCollide = true
-                end
+                box.CanCollide = distance > 5
             end
         end
     end
-end)   
+end)
 
-MainTab:Section({ Title = "Feature Cheat", Icon = "zap" })
+-- ====================== AUTO GENERATOR ======================
 local autoGeneratorEnabled = false
-MainTab:Toggle({Title="Auto Generator", Default=false, Callback=function(v)
-    autoGeneratorEnabled = v
-end})
+MainTab:Section({ Title = "Feature Cheat", Icon = "zap" })
+MainTab:Toggle({Title="Auto Generator", Default=false, Callback=function(v) autoGeneratorEnabled=v end})
 
--- Auto Generator Loop
 spawn(function()
     local GeneratorPoints = {"GeneratorPoint1","GeneratorPoint2","GeneratorPoint3","GeneratorPoint4"}
     while task.wait(1) do
         if autoGeneratorEnabled then
-            for index, pointName in ipairs(GeneratorPoints) do
-                local generator = Workspace.Map:FindFirstChild("Generator")
-                if generator then
+            local generator = Workspace.Map:FindFirstChild("Generator")
+            if generator then
+                for index, pointName in ipairs(GeneratorPoints) do
                     local point = generator:FindFirstChild(pointName)
                     if point then
-                        local args = {
-                            "neutral",
-                            index,
-                            generator,
-                            point
-                        }
                         local remote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Generator"):WaitForChild("SkillCheckResultEvent")
-                        remote:FireServer(unpack(args))
+                        remote:FireServer("neutral", index, generator, point)
                     end
                 end
             end
@@ -408,11 +378,9 @@ spawn(function()
     end
 end)
 
-local noFlashlightEnabled = false
-MainTab:Toggle({Title="No Flashlight", Default=false, Callback=function(v)
-    noFlashlightEnabled = v
-end})
+MainTab:Toggle({Title="No Flashlight", Default=false, Callback=function(v) noFlashlightEnabled=v end})
 
+-- ====================== VISUAL ======================
 MainTab:Section({ Title = "Feature Visual", Icon = "lightbulb" })
 MainTab:Toggle({Title="Full Bright", Default=false, Callback=function(v)
     Lighting.Brightness = v and 2 or 1
@@ -422,14 +390,16 @@ end})
 
 MainTab:Toggle({Title="No Fog", Default=false, Callback=function(v)
     Lighting.FogEnd = v and 100000 or 1000
-    Lighting.FogStart = v and 0 or 0
+    Lighting.FogStart = 0
 end})
 
+-- ====================== PLAYER ======================
 local speedEnabled, flyNoclipSpeed = false, 50
 local speedConnection, noclipConnection
 
 PlayerTab:Section({ Title = "Feature Player", Icon = "arrow-big-up-dash" })
 PlayerTab:Slider({ Title = "Set Speed Value", Value={Min=1,Max=100,Default=10}, Step=1, Callback=function(val) flyNoclipSpeed=val end })
+
 PlayerTab:Toggle({ Title = "Enable Speed", Default=false, Callback=function(v)
     speedEnabled=v
     if speedEnabled then
@@ -466,21 +436,13 @@ PlayerTab:Toggle({ Title = "No Clip", Default=false, Callback=function(state)
     end
 end })
 
+-- ====================== INFINITE JUMP ======================
 local infiniteJumpEnabled = false
-
-PlayerTab:Toggle({ 
-    Title = "Infinite Jump",  
-    Default = false, 
-    Callback = function(state)
-        infiniteJumpEnabled = state
-    end
-})
+PlayerTab:Toggle({ Title = "Infinite Jump", Default = false, Callback = function(state) infiniteJumpEnabled = state end })
 
 UserInputService.JumpRequest:Connect(function()
-    if infiniteJumpEnabled then
-        if Humanoid then
-            Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-        end
+    if infiniteJumpEnabled and Humanoid then
+        Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
     end
 end)
 
