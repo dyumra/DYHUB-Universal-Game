@@ -1,5 +1,6 @@
--- pre-view
-
+-- =====================
+-- Version: V5.3.1
+-- =====================
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
@@ -34,30 +35,16 @@ local MiscTab      = Window:CreateTab("Misc", "settings")
 -- ===================================
 -- 🔹 MAIN
 -- ===================================
-MainTab:CreateToggle({
-   Name = "Anti-AFK",
-   CurrentValue = false,
-   Flag = "AntiAFK",
-   Callback = function(v)
-      if v then
-         local vu = game:GetService("VirtualUser")
-         game.Players.LocalPlayer.Idled:Connect(function()
-            vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-            task.wait(1)
-            vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-         end)
-      end
-   end
-})
+_G.AutoSafeEnabled = false
+_G.SafeTrigger = 50
 
 MainTab:CreateToggle({
    Name = "Auto Safe (HP Below %)",
    CurrentValue = false,
    Flag = "AutoSafe",
-   Callback = function(v)
-      _G.AutoSafeEnabled = v
-   end
+   Callback = function(v) _G.AutoSafeEnabled = v end
 })
+
 MainTab:CreateSlider({
    Name = "Safe Trigger %",
    Range = {10, 90},
@@ -67,24 +54,117 @@ MainTab:CreateSlider({
    Callback = function(v) _G.SafeTrigger = v end
 })
 
+local safeZone = Instance.new("Part")
+safeZone.Name = "SafeZone_Part_DYHUB"
+safeZone.Anchored = true
+safeZone.CanCollide = true
+safeZone.Size = Vector3.new(50, 1, 50)
+safeZone.Position = Vector3.new(0, 221.5, 0)
+safeZone.Color = Color3.fromRGB(0, 255, 0)
+safeZone.Transparency = 0.85
+safeZone.Parent = workspace
+
+task.spawn(function()
+   while task.wait(1) do
+      if _G.AutoSafeEnabled then
+         local lp = game.Players.LocalPlayer
+         if lp.Character and lp.Character:FindFirstChildOfClass("Humanoid") then
+            local hum = lp.Character:FindFirstChildOfClass("Humanoid")
+            local hp = hum.Health / hum.MaxHealth * 100
+            if hp <= _G.SafeTrigger then
+               local hrp = lp.Character:FindFirstChild("HumanoidRootPart")
+               if hrp then
+                  hrp.CFrame = CFrame.new(0, 222.5, 0)
+               end
+            end
+         end
+      end
+   end
+end)
+
 -- ===================================
--- 🔹 VISUALS
+-- 🔹 VISUALS (ESP)
 -- ===================================
-VisualsTab:CreateToggle({Name="Player ESP",CurrentValue=false,Flag="ESP",Callback=function(v) _G.ESP=v end})
-VisualsTab:CreateToggle({Name="Skeleton ESP",CurrentValue=false,Flag="SkeletonESP",Callback=function(v) _G.SkeletonESP=v end})
-VisualsTab:CreateToggle({Name="Item ESP",CurrentValue=false,Flag="ItemESP",Callback=function(v) _G.ItemESP=v end})
-VisualsTab:CreateToggle({Name="Team Color ESP",CurrentValue=false,Flag="TeamESP",Callback=function(v) _G.TeamESP=v end})
+local function createESP(obj)
+   if obj:FindFirstChild("Highlight") then return end
+   local hl = Instance.new("Highlight")
+   hl.Name = "Highlight"
+   hl.FillTransparency = 0.5
+   hl.OutlineTransparency = 0
+   hl.Parent = obj
+end
+
+local function removeESP(obj)
+   if obj:FindFirstChild("Highlight") then
+      obj.Highlight:Destroy()
+   end
+end
+
+VisualsTab:CreateToggle({
+   Name="Player ESP",
+   CurrentValue=false,
+   Flag="ESP",
+   Callback=function(v)
+      _G.ESP=v
+      task.spawn(function()
+         while _G.ESP do task.wait(1)
+            for _,plr in ipairs(game.Players:GetPlayers()) do
+               if plr~=game.Players.LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+                  createESP(plr.Character)
+               end
+            end
+         end
+         if not _G.ESP then
+            for _,plr in ipairs(game.Players:GetPlayers()) do
+               if plr.Character then removeESP(plr.Character) end
+            end
+         end
+      end)
+   end
+})
+
+VisualsTab:CreateToggle({
+   Name="Bandit ESP",
+   CurrentValue=false,
+   Flag="BESP",
+   Callback=function(v)
+      _G.BESP = v
+      task.spawn(function()
+         while _G.BESP do task.wait(1)
+            for _,npc in ipairs(workspace:GetDescendants()) do
+               if npc:IsA("Model") and npc:FindFirstChildOfClass("Humanoid") and npc:FindFirstChild("HumanoidRootPart") then
+                  if not game.Players:GetPlayerFromCharacter(npc) then
+                     createESP(npc)
+                  end
+               end
+            end
+         end
+
+         if not _G.BESP then
+            for _,npc in ipairs(workspace:GetDescendants()) do
+               if npc:IsA("Model") and npc:FindFirstChild("Highlight") then
+                  if not game.Players:GetPlayerFromCharacter(npc) then
+                     removeESP(npc)
+                  end
+               end
+            end
+         end
+      end)
+   end
+})
 
 -- ===================================
 -- 🔹 CHARACTER
 -- ===================================
 CharacterTab:CreateSlider({
    Name = "Walk Speed",
-   Range = {16, 200},
+   Range = {16, 150},
    Increment = 1,
    CurrentValue = 16,
    Flag = "WalkSpeed",
-   Callback = function(v) game.Players.LocalPlayer.Character.Humanoid.WalkSpeed=v end
+   Callback = function(v) 
+      game.Players.LocalPlayer.Character.Humanoid.WalkSpeed=v 
+   end
 })
 CharacterTab:CreateSlider({
    Name = "Jump Power",
@@ -92,31 +172,116 @@ CharacterTab:CreateSlider({
    Increment = 5,
    CurrentValue = 50,
    Flag = "JumpPower",
-   Callback = function(v) game.Players.LocalPlayer.Character.Humanoid.JumpPower=v end
+   Callback = function(v) 
+      game.Players.LocalPlayer.Character.Humanoid.JumpPower=v 
+   end
 })
-CharacterTab:CreateToggle({Name="Fly Mode",CurrentValue=false,Flag="Fly",Callback=function(v) _G.Fly=v end})
-CharacterTab:CreateSlider({Name="Fly Speed",Range={10,200},Increment=10,CurrentValue=50,Flag="FlySpeed",Callback=function(v) _G.FlySpeed=v end})
-CharacterTab:CreateToggle({Name="Infinite Jump",CurrentValue=false,Flag="InfJump",Callback=function(v) _G.InfJump=v end})
-CharacterTab:CreateToggle({Name="Noclip",CurrentValue=false,Flag="Noclip",Callback=function(v) _G.Noclip=v end})
-CharacterTab:CreateToggle({Name="No Fall Damage",CurrentValue=false,Flag="NoFall",Callback=function(v) _G.NoFall=v end})
+
+-- Infinite Jump
+local infJumpConn
+CharacterTab:CreateToggle({
+   Name="Infinite Jump",
+   CurrentValue=false,
+   Flag="InfJump",
+   Callback=function(v)
+      _G.InfJump=v
+      if v then
+         infJumpConn = game:GetService("UserInputService").JumpRequest:Connect(function()
+            if _G.InfJump and game.Players.LocalPlayer.Character then
+               game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+            end
+         end)
+      else
+         if infJumpConn then infJumpConn:Disconnect() infJumpConn=nil end
+      end
+   end
+})
+
+-- Noclip
+local noclipLoop
+CharacterTab:CreateToggle({
+   Name="No Clip",
+   CurrentValue=false,
+   Flag="Noclip",
+   Callback=function(v)
+      _G.Noclip=v
+      if v then
+         noclipLoop = game:GetService("RunService").Stepped:Connect(function()
+            if _G.Noclip and game.Players.LocalPlayer.Character then
+               for _,part in ipairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+                  if part:IsA("BasePart") and part.CanCollide then
+                     part.CanCollide = false
+                  end
+               end
+            end
+         end)
+      else
+         if noclipLoop then noclipLoop:Disconnect() noclipLoop=nil end
+      end
+   end
+})
 
 -- ===================================
 -- 🔹 WORLD
 -- ===================================
-WorldTab:CreateToggle({Name="Full Bright",CurrentValue=false,Flag="Bright",Callback=function(v) _G.FullBright=v end})
-WorldTab:CreateToggle({Name="No Fog",CurrentValue=false,Flag="NoFog",Callback=function(v) _G.NoFog=v end})
+local Lighting = game:GetService("Lighting")
+local brightLoop
+WorldTab:CreateToggle({
+   Name="Full Bright",
+   CurrentValue=false,
+   Flag="Bright",
+   Callback=function(v)
+      _G.FullBright=v
+      if v then
+         if brightLoop then brightLoop:Disconnect() end
+         brightLoop = game:GetService("RunService").RenderStepped:Connect(function()
+            Lighting.Brightness = 2
+            Lighting.ClockTime = 14
+            Lighting.FogEnd = 1e6
+            Lighting.GlobalShadows = false
+         end)
+      else
+         if brightLoop then brightLoop:Disconnect() brightLoop=nil end
+      end
+   end
+})
+WorldTab:CreateToggle({
+   Name="No Fog",
+   CurrentValue=false,
+   Flag="NoFog",
+   Callback=function(v)
+      _G.NoFog=v
+      if v then
+         Lighting.FogEnd=1e6
+      else
+         Lighting.FogEnd=1000
+      end
+   end
+})
 
 -- ===================================
 -- 🔹 TELEPORT
 -- ===================================
 local SafeZonePos = Vector3.new(0,222,0)
+
+local safeZone1 = Instance.new("Part")
+safeZone1.Name = "SafeZone_Part"
+safeZone1.Anchored = true
+safeZone1.CanCollide = true
+safeZone1.Size = Vector3.new(50, 1, 50)
+safeZone1.Position = SafeZonePos - Vector3.new(0, 0.5, 0)
+safeZone1.Color = Color3.fromRGB(0, 255, 0)
+safeZone1.Transparency = 0.85
+safeZone1.Parent = workspace
+
 TeleportTab:CreateButton({
    Name = "Teleport to Safe Zone",
    Callback = function()
-      local hrp=game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-      if hrp then hrp.CFrame=CFrame.new(SafeZonePos) end
+      local hrp = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+      if hrp then hrp.CFrame = CFrame.new(SafeZonePos) end
    end
 })
+
 TeleportTab:CreateButton({
    Name = "Save Position",
    Callback = function()
@@ -135,6 +300,22 @@ TeleportTab:CreateButton({
 -- ===================================
 -- 🔹 MISC
 -- ===================================
+MiscTab:CreateToggle({
+   Name = "Anti AFK",
+   CurrentValue = false,
+   Flag = "AntiAFK",
+   Callback = function(v)
+      if v then
+         local vu = game:GetService("VirtualUser")
+         game.Players.LocalPlayer.Idled:Connect(function()
+            vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+            task.wait(1)
+            vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+         end)
+      end
+   end
+})
+
 MiscTab:CreateButton({
    Name = "Rejoin Server",
    Callback = function()
@@ -157,4 +338,15 @@ MiscTab:CreateButton({
       end
    end
 })
-MiscTab:CreateToggle({Name="FPS Unlocker",CurrentValue=false,Flag="FPSUnlock",Callback=function(v) if v and setfpscap then setfpscap(1000) else if setfpscap then setfpscap(60) end end end})
+MiscTab:CreateToggle({
+   Name="FPS Unlocker",
+   CurrentValue=false,
+   Flag="FPSUnlock",
+   Callback=function(v) 
+      if v and setfpscap then 
+         setfpscap(1000) 
+      else 
+         if setfpscap then setfpscap(60) end 
+      end 
+   end
+})
