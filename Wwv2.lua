@@ -1,5 +1,5 @@
 -- =====================
--- Version: V5.3.1
+-- Version: V5.3.4
 -- =====================
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
@@ -37,6 +37,20 @@ local MiscTab      = Window:CreateTab("Misc", "settings")
 -- ===================================
 _G.AutoSafeEnabled = false
 _G.SafeTrigger = 50
+
+MainTab:CreateButton({
+   Name = "Aimbot (UI Sytle)",
+   Callback = function()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/Kietba/Kietba/refs/heads/main/Aimlock%20By%20YQANTG"))()
+   end
+})
+
+MainTab:CreateButton({
+   Name = "No ProximityPrompt",
+   Callback = function()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/nodelay.lua"))()
+   end
+})
 
 MainTab:CreateToggle({
    Name = "Auto Safe (HP Below %)",
@@ -86,71 +100,100 @@ end)
 -- 🔹 VISUALS (ESP)
 -- ===================================
 local function createESP(obj)
-   if obj:FindFirstChild("Highlight") then return end
-   local hl = Instance.new("Highlight")
-   hl.Name = "Highlight"
-   hl.FillTransparency = 0.5
-   hl.OutlineTransparency = 0
-   hl.Parent = obj
+    if obj:FindFirstChild("Highlight") then return end
+
+    local hl = Instance.new("Highlight")
+    hl.Name = "Highlight"
+    hl.FillTransparency = 0.5
+    hl.OutlineTransparency = 0
+    hl.Parent = obj
+
+    if not obj:FindFirstChild("ESPGui") then
+        local hrp = obj:FindFirstChild("HumanoidRootPart")
+        local hum = obj:FindFirstChildOfClass("Humanoid")
+        if hrp and hum then
+            local billboard = Instance.new("BillboardGui")
+            billboard.Name = "ESPGui"
+            billboard.Adornee = hrp
+            billboard.Size = UDim2.new(0, 80, 0, 40)
+            billboard.StudsOffset = Vector3.new(0, 2.5, 0)
+            billboard.AlwaysOnTop = true
+
+            local text = Instance.new("TextLabel")
+            text.Size = UDim2.new(1, 0, 1, 0)
+            text.BackgroundTransparency = 1
+            text.TextColor3 = Color3.fromRGB(255, 255, 255)
+            text.TextStrokeTransparency = 0
+            text.TextScaled = true
+            text.Font = Enum.Font.SourceSansBold
+            text.Parent = billboard
+
+            billboard.Parent = obj
+
+            task.spawn(function()
+                while billboard.Parent do
+                    local nameText = obj.Name or "NPC"
+                    local hpText = hum.Health and math.floor(hum.Health) or 0
+                    local distText = hrp.Position and math.floor((hrp.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude) or 0
+                    text.Text = string.format("%s\n[%d HP]\n[%d Dist]", nameText, hpText, distText)
+                    task.wait(0.1)
+                end
+            end)
+        end
+    end
 end
 
 local function removeESP(obj)
-   if obj:FindFirstChild("Highlight") then
-      obj.Highlight:Destroy()
-   end
+    if obj:FindFirstChild("Highlight") then obj.Highlight:Destroy() end
+    if obj:FindFirstChild("ESPGui") then obj.ESPGui:Destroy() end
 end
 
 VisualsTab:CreateToggle({
-   Name="Player ESP",
-   CurrentValue=false,
-   Flag="ESP",
-   Callback=function(v)
-      _G.ESP=v
-      task.spawn(function()
-         while _G.ESP do task.wait(1)
-            for _,plr in ipairs(game.Players:GetPlayers()) do
-               if plr~=game.Players.LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-                  createESP(plr.Character)
-               end
+    Name="Player ESP",
+    CurrentValue=false,
+    Flag="ESP",
+    Callback=function(v)
+        _G.ESP=v
+        task.spawn(function()
+            while _G.ESP do task.wait(1)
+                for _,plr in ipairs(game.Players:GetPlayers()) do
+                    if plr~=game.Players.LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+                        createESP(plr.Character)
+                    end
+                end
             end
-         end
-         if not _G.ESP then
-            for _,plr in ipairs(game.Players:GetPlayers()) do
-               if plr.Character then removeESP(plr.Character) end
+            if not _G.ESP then
+                for _,plr in ipairs(game.Players:GetPlayers()) do
+                    if plr.Character then removeESP(plr.Character) end
+                end
             end
-         end
-      end)
-   end
+        end)
+    end
 })
 
 VisualsTab:CreateToggle({
-   Name="Bandit ESP",
-   CurrentValue=false,
-   Flag="BESP",
-   Callback=function(v)
-      _G.BESP = v
-      task.spawn(function()
-         while _G.BESP do task.wait(1)
-            for _,npc in ipairs(workspace:GetDescendants()) do
-               if npc:IsA("Model") and npc:FindFirstChildOfClass("Humanoid") and npc:FindFirstChild("HumanoidRootPart") then
-                  if not game.Players:GetPlayerFromCharacter(npc) then
-                     createESP(npc)
-                  end
-               end
+    Name="Bandit ESP",
+    CurrentValue=false,
+    Flag="BESP",
+    Callback=function(v)
+        _G.BESP=v
+        task.spawn(function()
+            while _G.BESP do task.wait(1)
+                for _,npc in ipairs(workspace:GetDescendants()) do
+                    if npc:IsA("Model") and npc:FindFirstChildOfClass("Humanoid") and npc:FindFirstChild("HumanoidRootPart") then
+                        if not game.Players:GetPlayerFromCharacter(npc) then createESP(npc) end
+                    end
+                end
             end
-         end
-
-         if not _G.BESP then
-            for _,npc in ipairs(workspace:GetDescendants()) do
-               if npc:IsA("Model") and npc:FindFirstChild("Highlight") then
-                  if not game.Players:GetPlayerFromCharacter(npc) then
-                     removeESP(npc)
-                  end
-               end
+            if not _G.BESP then
+                for _,npc in ipairs(workspace:GetDescendants()) do
+                    if npc:IsA("Model") and npc:FindFirstChild("Highlight") then
+                        if not game.Players:GetPlayerFromCharacter(npc) then removeESP(npc) end
+                    end
+                end
             end
-         end
-      end)
-   end
+        end)
+    end
 })
 
 -- ===================================
@@ -300,21 +343,6 @@ TeleportTab:CreateButton({
 -- ===================================
 -- 🔹 MISC
 -- ===================================
-MiscTab:CreateToggle({
-   Name = "Anti AFK",
-   CurrentValue = false,
-   Flag = "AntiAFK",
-   Callback = function(v)
-      if v then
-         local vu = game:GetService("VirtualUser")
-         game.Players.LocalPlayer.Idled:Connect(function()
-            vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-            task.wait(1)
-            vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-         end)
-      end
-   end
-})
 
 MiscTab:CreateButton({
    Name = "Rejoin Server",
@@ -335,6 +363,21 @@ MiscTab:CreateButton({
             TPS:TeleportToPlaceInstance(game.PlaceId,s.id,game.Players.LocalPlayer)
             break
          end
+      end
+   end
+})
+MiscTab:CreateToggle({
+   Name = "Anti AFK",
+   CurrentValue = false,
+   Flag = "AntiAFK",
+   Callback = function(v)
+      if v then
+         local vu = game:GetService("VirtualUser")
+         game.Players.LocalPlayer.Idled:Connect(function()
+            vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+            task.wait(1)
+            vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+         end)
       end
    end
 })
