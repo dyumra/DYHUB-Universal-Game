@@ -1,10 +1,10 @@
 -- =====================
--- Development: V5.3.5
+local Development = "DYHUB | Wizard West (V3.8.1)"
 -- =====================
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "DYHUB | Wizard West",
+   Name = Development,
    LoadingTitle = "Wizard West Loaded",
    LoadingSubtitle = "Made by DYHUB™",
    ConfigurationSaving = {
