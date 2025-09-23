@@ -1,5 +1,5 @@
 -- =====================
--- Version: V5.3.4
+-- Development: V5.3.5
 -- =====================
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
@@ -41,7 +41,7 @@ _G.SafeTrigger = 50
 MainTab:CreateButton({
    Name = "Aimbot (UI Sytle)",
    Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/Kietba/Kietba/refs/heads/main/Aimlock%20By%20YQANTG"))()
+      loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-mobile-camlock-keyless-universal-47033"))()
    end
 })
 
