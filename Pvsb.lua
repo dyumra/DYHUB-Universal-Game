@@ -1,5 +1,5 @@
 -- ======================
-local version = "Pre-2.4.9"
+local version = "Pre-2.5.2"
 -- ======================
 
 repeat task.wait() until game:IsLoaded()
@@ -182,10 +182,10 @@ Shop:Toggle({
 task.spawn(function()
     while task.wait(5) do
         if SellBrainrot then
-            ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ItemSell"):FireServer("Brainrot")
+            game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("ItemSell"):FireServer()
         end
         if SellPlant then
-            ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ItemSell"):FireServer("Plants")
+            game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("ItemSell"):FireServer()
         end
     end
 end)
