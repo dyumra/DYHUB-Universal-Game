@@ -40,7 +40,7 @@ local Backpack = LocalPlayer:WaitForChild("Backpack")
 -- ====================== SETTINGS ======================
 local AutoFarm = false
 local autoClicking = false
-local ClickInterval = 0.05
+local ClickInterval = 0.95
 local HeldToolName = "Bat"
 local SellPlant = false
 local SellBrainrot = false
@@ -140,7 +140,7 @@ local Window = WindUI:CreateWindow({
     Title = "DYHUB",
     IconThemed = true,
     Icon = "rbxassetid://104487529937663",
-    Author = "Plant vs Brainrot | Free Version",
+    Author = "Plants Vs Brainrots | Free Version",
     Folder = "DYHUB_PVSB_ESP",
     Size = UDim2.fromOffset(500, 350),
     Transparent = true,
