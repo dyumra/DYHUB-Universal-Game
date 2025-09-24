@@ -1,5 +1,5 @@
 -- ======================
-local version = "Pre-2.5.2"
+local version = "Pre-2.5.6"
 -- ======================
 
 repeat task.wait() until game:IsLoaded()
@@ -33,6 +33,7 @@ local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 -- ====================== SETTINGS ======================
+local AutoFarm = false
 local SellPlant = false
 local SellBrainrot = false
 local AutoBuyGear = false
@@ -77,10 +78,21 @@ Window:EditOpenButton({
 
 local InfoTab = Window:Tab({ Title = "Information", Icon = "info" })
 local MainDivider = Window:Divider()
-local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
+local Main = Window:Tab({ Title = "Main", Icon = "rocket" })
 local Shop = Window:Tab({ Title = "Shop", Icon = "shopping-cart" })
 local Sell = Window:Tab({ Title = "Sell", Icon = "dollar-sign" })
 Window:SelectTab(1)
+
+-- ====================== MAIN ======================
+Main:Section({ Title = "Farm", Icon = "crown" })
+
+Main:Toggle({
+    Title = "Auto Farm (Not finished yet)",
+    Default = false,
+    Callback = function(state)
+        AutoFarm = state
+    end
+})
 
 -- ====================== SELL ======================
 Sell:Section({ Title = "Auto Sell", Icon = "dollar-sign" })
