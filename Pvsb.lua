@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.1.8"
+local version = "3.2.1"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -40,7 +40,7 @@ local Backpack = LocalPlayer:WaitForChild("Backpack")
 -- ====================== SETTINGS ======================
 local AutoFarm = false
 local autoClicking = false
-local ClickInterval = 0.01
+local ClickInterval = 0.05
 local HeldToolName = "Bat"
 local SellPlant = false
 local SellBrainrot = false
@@ -208,7 +208,7 @@ local StatusParagraph = Main:Paragraph({
 
 Main:Section({ Title = "Use on private servers for security", Icon = "triangle-alert" })
 Main:Toggle({
-    Title = "Auto Farm (Faster)",
+    Title = "Auto Farm (Upgrade)",
     Default = false,
     Callback = function(state)
         AutoFarm = state
@@ -223,7 +223,7 @@ Main:Toggle({
                     if Character:FindFirstChild(HeldToolName) then
                         if UserInputService.TouchEnabled then
                             VirtualUser:Button1Down(Vector2.new(0,0))
-                            task.wait(0.01)
+                            task.wait(0.05)
                             VirtualUser:Button1Up(Vector2.new(0,0))
                         else
                             UserInputService.InputBegan:Fire(Enum.UserInputType.MouseButton1, false)
@@ -239,7 +239,7 @@ Main:Toggle({
                     if not Character:FindFirstChild(HeldToolName) then
                         EquipBat()
                     end
-                    task.wait(0.05)
+                    task.wait(1)
                 end
             end)
 
@@ -287,7 +287,7 @@ Sell:Toggle({
     end
 })
 
-Sell:Section({ Title = "Sell Everything", Icon = "dollar-sign" })
+Sell:Section({ Title = "Sell Everything", Icon = "gem" })
 
 Sell:Toggle({
     Title = "Sell Both All",
