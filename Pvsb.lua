@@ -40,7 +40,7 @@ local Backpack = LocalPlayer:WaitForChild("Backpack")
 -- ====================== SETTINGS ======================
 local AutoFarm = false
 local autoClicking = false
-local ClickInterval = 0.95
+local ClickInterval = 0.5
 local HeldToolName = "Bat"
 local SellPlant = false
 local SellBrainrot = false
