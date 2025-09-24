@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.2.1"
+local version = "3.2.3"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -140,7 +140,7 @@ local Window = WindUI:CreateWindow({
     Title = "DYHUB",
     IconThemed = true,
     Icon = "rbxassetid://104487529937663",
-    Author = "Plant vs Brainrot | Premium Version",
+    Author = "Plant vs Brainrot | Free Version",
     Folder = "DYHUB_PVSB_ESP",
     Size = UDim2.fromOffset(500, 350),
     Transparent = true,
