@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.2.3"
+local version = "3.2.4"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -130,7 +130,7 @@ end
 local function InstantWarpToBrainrot(brainrot)
     local hitbox = brainrot:FindFirstChild("BrainrotHitbox")
     if hitbox then
-        local offset = Vector3.new(0, 3, 5)
+        local offset = Vector3.new(0, 1, 3)
         HumanoidRootPart.CFrame = CFrame.new(hitbox.Position + offset, hitbox.Position)
     end
 end
@@ -223,7 +223,7 @@ Main:Toggle({
                     if Character:FindFirstChild(HeldToolName) then
                         if UserInputService.TouchEnabled then
                             VirtualUser:Button1Down(Vector2.new(0,0))
-                            task.wait(0.05)
+                            task.wait(0.5)
                             VirtualUser:Button1Up(Vector2.new(0,0))
                         else
                             UserInputService.InputBegan:Fire(Enum.UserInputType.MouseButton1, false)
@@ -258,7 +258,7 @@ Main:Toggle({
                     else
                         UpdateBrainrotsCache()
                     end
-                    task.wait(0.05)
+                    task.wait(0.15)
                 end
                 autoClicking = false
             end)
