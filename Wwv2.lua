@@ -1,5 +1,5 @@
 -- =====================
-local Development = "DYHUB | Wizard West (V3.8.1)"
+local Development = "DYHUB | Wizard West (V3.8.5)"
 -- =====================
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
@@ -39,9 +39,9 @@ _G.AutoSafeEnabled = false
 _G.SafeTrigger = 50
 
 MainTab:CreateButton({
-   Name = "Aimbot (UI Sytle)",
+   Name = "Camlock (V2)",
    Callback = function()
-      loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-mobile-camlock-keyless-universal-47033"))()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Camlock.lua"))()
    end
 })
 
