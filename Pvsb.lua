@@ -1,6 +1,6 @@
--- ======================
-local version = "Pre-2.5.6"
--- ======================
+-- =========================
+local version = "3.1.8"
+-- =========================
 
 repeat task.wait() until game:IsLoaded()
 
@@ -23,17 +23,25 @@ else
     warn("Your exploit does not support setfpscap.")
 end
 
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+-- ====================== SERVICE ======================
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local VirtualUser = game:GetService("VirtualUser")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local Humanoid = Character:WaitForChild("Humanoid")
 local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
-
-local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+local Backpack = LocalPlayer:WaitForChild("Backpack")
 
 -- ====================== SETTINGS ======================
 local AutoFarm = false
+local autoClicking = false
+local ClickInterval = 0.01
+local HeldToolName = "Bat"
 local SellPlant = false
 local SellBrainrot = false
 local AutoBuyGear = false
@@ -42,6 +50,90 @@ local AutoBuyAllGear = false
 local AutoBuyAllSeed = false
 local selectedGears = {}
 local selectedSeeds = {}
+local serverStartTime = os.time()
+
+
+-- ====================== HELPER FUNCTIONS ======================
+local function GetMyPlot()
+    for _, plot in ipairs(Workspace.Plots:GetChildren()) do
+        local playerSign = plot:FindFirstChild("PlayerSign")
+        if playerSign then
+            local textLabel = playerSign:FindFirstChild("BillboardGui") and playerSign.BillboardGui:FindFirstChild("TextLabel")
+            if textLabel and (textLabel.Text == LocalPlayer.Name or textLabel.Text == LocalPlayer.DisplayName) then
+                return plot
+            end
+        end
+    end
+    return nil
+end
+
+local function GetMyPlotName()
+    local plot = GetMyPlot()
+    return plot and plot.Name or "No Plot"
+end
+
+local function GetMoney()
+    local leaderstats = LocalPlayer:FindFirstChild("leaderstats")
+    return leaderstats and leaderstats:FindFirstChild("Money") and leaderstats.Money.Value or 0
+end
+
+local function GetRebirth()
+    local gui = LocalPlayer:FindFirstChild("PlayerGui") and LocalPlayer.PlayerGui:FindFirstChild("Main")
+    if gui and gui:FindFirstChild("Rebirth") then
+        local text = gui.Rebirth.Frame.Title.Text or "Rebirth 0"
+        local n = tonumber(text:match("%d+")) or 0
+        return n - 1
+    end
+    return 0
+end
+
+local function FormatTime(sec)
+    local h = math.floor(sec / 3600)
+    local m = math.floor((sec % 3600) / 60)
+    local s = sec % 60
+    return string.format("%02d:%02d:%02d", h, m, s)
+end
+
+-- Brainrot caching
+local BrainrotsCache = {}
+local function UpdateBrainrotsCache()
+    local folder = Workspace:WaitForChild("ScriptedMap"):WaitForChild("Brainrots")
+    BrainrotsCache = {}
+    for _, b in ipairs(folder:GetChildren()) do
+        if b:FindFirstChild("BrainrotHitbox") then
+            table.insert(BrainrotsCache, b)
+        end
+    end
+end
+
+local function GetNearestBrainrot()
+    local nearest = nil
+    local minDist = math.huge
+    for _, b in ipairs(BrainrotsCache) do
+        local hitbox = b:FindFirstChild("BrainrotHitbox")
+        if hitbox then
+            local dist = (HumanoidRootPart.Position - hitbox.Position).Magnitude
+            if dist < minDist then
+                minDist = dist
+                nearest = b
+            end
+        end
+    end
+    return nearest
+end
+
+local function EquipBat()
+    local tool = Backpack:FindFirstChild(HeldToolName) or Character:FindFirstChild(HeldToolName)
+    if tool then tool.Parent = Character end
+end
+
+local function InstantWarpToBrainrot(brainrot)
+    local hitbox = brainrot:FindFirstChild("BrainrotHitbox")
+    if hitbox then
+        local offset = Vector3.new(0, 3, 5)
+        HumanoidRootPart.CFrame = CFrame.new(hitbox.Position + offset, hitbox.Position)
+    end
+end
 
 -- ====================== WINDOW ======================
 local Window = WindUI:CreateWindow({
@@ -84,13 +176,95 @@ local Sell = Window:Tab({ Title = "Sell", Icon = "dollar-sign" })
 Window:SelectTab(1)
 
 -- ====================== MAIN ======================
-Main:Section({ Title = "Farm", Icon = "crown" })
+Main:Section({ Title = "Auto Farm", Icon = "crown" })
 
+local StatusParagraph = Main:Paragraph({
+    Title = "Your Status",
+    Desc = "[+] Show Plots \n[+] Show Rebirth \n[+] Show Money \n[+] Show Playtime",
+    Image = "rbxassetid://104487529937663",
+    ImageSize = 50,
+    Locked = false,
+    Buttons = {
+        {
+            Icon = "info",
+            Title = "Show Status",
+            Callback = function()
+                local message = "Your Status\n"
+                message = message .. "Plots: " .. GetMyPlotName() .. "\n"
+                message = message .. "Rebirth: " .. GetRebirth() .. "\n"
+                message = message .. "Money: " .. GetMoney() .. "\n"
+                message = message .. "Playtime: " .. FormatTime(os.time() - serverStartTime)
+                
+                WindUI:Notify({
+                    Title = "DYHUB Status",
+                    Content = message,
+                    Duration = 5,
+                    Icon = "user-check",
+                })
+            end
+        }
+    }
+})
+
+Main:Section({ Title = "Use on private servers for security", Icon = "triangle-alert" })
 Main:Toggle({
-    Title = "Auto Farm (Not finished yet)",
+    Title = "Auto Farm (Faster)",
     Default = false,
     Callback = function(state)
         AutoFarm = state
+        autoClicking = state
+        if state then
+            EquipBat()
+            UpdateBrainrotsCache()
+
+            -- Auto Clicker
+            task.spawn(function()
+                while autoClicking do
+                    if Character:FindFirstChild(HeldToolName) then
+                        if UserInputService.TouchEnabled then
+                            VirtualUser:Button1Down(Vector2.new(0,0))
+                            task.wait(0.01)
+                            VirtualUser:Button1Up(Vector2.new(0,0))
+                        else
+                            UserInputService.InputBegan:Fire(Enum.UserInputType.MouseButton1, false)
+                        end
+                    end
+                    task.wait(ClickInterval)
+                end
+            end)
+
+            -- Auto Equip Tool
+            task.spawn(function()
+                while AutoFarm do
+                    if not Character:FindFirstChild(HeldToolName) then
+                        EquipBat()
+                    end
+                    task.wait(0.05)
+                end
+            end)
+
+            -- AutoFarm Brainrot
+            task.spawn(function()
+                while AutoFarm do
+                    local nearest = GetNearestBrainrot()
+                    if nearest then
+                        InstantWarpToBrainrot(nearest)
+                        local hitbox = nearest:FindFirstChild("BrainrotHitbox")
+                        if hitbox then
+                            pcall(function()
+                                ReplicatedStorage.Remotes.AttacksServer.WeaponAttack:FireServer({ { target = hitbox } })
+                            end)
+                        end
+                    else
+                        UpdateBrainrotsCache()
+                    end
+                    task.wait(0.05)
+                end
+                autoClicking = false
+            end)
+        else
+            autoClicking = false
+        end
     end
 })
 
@@ -110,6 +284,16 @@ Sell:Toggle({
     Default = false,
     Callback = function(state)
         SellPlant = state
+    end
+})
+
+Sell:Section({ Title = "Sell Everything", Icon = "dollar-sign" })
+
+Sell:Toggle({
+    Title = "Sell Both All",
+    Default = false,
+    Callback = function(state)
+        SellEverything = state
     end
 })
 
@@ -135,6 +319,8 @@ local seedList = {
     "Mr Carrot Seed",
     "Tomatrio Seed"
 }
+
+-- I should use the name from the seed shop & gear shop mb 😐
 
 Shop:Section({ Title = "Buy Gear", Icon = "package" })
 
@@ -192,18 +378,21 @@ Shop:Toggle({
 
 -- ====================== LOOPS ======================
 task.spawn(function()
-    while task.wait(5) do
+    while task.wait(0.69) do
         if SellBrainrot then
             game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("ItemSell"):FireServer()
         end
         if SellPlant then
             game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("ItemSell"):FireServer()
         end
+        if SellEverything then
+            game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("ItemSell"):FireServer()
+        end
     end
 end)
 
 task.spawn(function()
-    while task.wait(3) do
+    while task.wait(0.69) do
         if AutoBuyGear and #selectedGears > 0 then
             for _, gear in ipairs(selectedGears) do
                 local args = { { gear, " " } }
