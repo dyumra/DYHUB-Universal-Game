@@ -347,7 +347,7 @@ AutoShakeKeyCodeEventText:SetupDependencies({
 })
 
 AutoShakeSettings:AddSlider('AutoShakeDelay', {
-    Text = 'AutoShake Delay',
+    Text = 'Auto-Shake Delay',
     Default = 0.1,
     Min = 0,
     Max = 10,
@@ -406,7 +406,7 @@ AutoReelGroup:AddToggle('AutoReel', {
 local AutoReelSettings = AutoReelGroup:AddDependencyBox()
 
 AutoReelSettings:AddSlider('AutoReelDelay', {
-    Text = 'AutoReel Delay',
+    Text = 'Auto-Reel Delay',
     Default = 2,
     Min = 0,
     Max = 10,
@@ -453,7 +453,7 @@ AutoCastGroup:AddToggle('AutoCast', {
 local AutoCastSettings = AutoCastGroup:AddDependencyBox()
 
 AutoCastSettings:AddSlider('AutoCastDelay', {
-    Text = 'AutoCast Delay',
+    Text = 'Auto-Cast Delay',
     Default = 2,
     Min = 0,
     Max = 10,
@@ -767,9 +767,9 @@ local SettingsGroup = Tabs.Settings:AddLeftGroupbox('Settings')
 local CreditsGroup = Tabs.Settings:AddRightGroupbox('Credits')
 
 CreditsGroup:AddLabel('Made by dyumra! (DYHUB)')
-reditsGroup:AddLabel('Update: 9/9/2025')
-reditsGroup:AddLabel('Version: 5.8.2')
-reditsGroup:AddLabel('Type: Premium')
+CreditsGroup:AddLabel('Update: 9/9/2025')
+CreditsGroup:AddLabel('Version: 5.8.2')
+CreditsGroup:AddLabel('Type: Premium')
 
 local DiscordButton = CreditsGroup:AddButton({
     Text = 'Copy Fisch Discord Link',
@@ -843,7 +843,7 @@ SaveManager:SetIgnoreIndexes({ 'MenuKeybind' })
 
 ThemeManager:SetFolder('DYHUB')
 
-SaveManager:SetFolder('DYHUB/Fisch')
+SaveManager:SetFolder('DYHUB/FischV2')
 
 SaveManager:BuildConfigSection(Tabs.Settings)
 
@@ -851,7 +851,7 @@ ThemeManager:ApplyToTab(Tabs.Settings)
 
 SaveManager:LoadAutoloadConfig()
 
-local Version = "5.8.2"
+local Version = "5.9.6"
 
 task.spawn(function()
     local success, LatestVer = pcall(function()
@@ -865,7 +865,4 @@ task.spawn(function()
             Library:Notify("Join our fisch discord server to get the new script.")
         end
     end
-
 end)
-
-
