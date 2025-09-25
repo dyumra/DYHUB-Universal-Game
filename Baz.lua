@@ -1,5 +1,5 @@
 -- =========================
-local version = "2.8.3"
+local version = "2.8.7"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -32,13 +32,7 @@ local Workspace = game:GetService("Workspace")
 local player = Players.LocalPlayer
 
 -- ===================== SETTINGS =====================
-local AutoBuyEggEnabled = false
-local SelectedPriceRanges = {}
-local PriceRanges = {
-    "1-100","100-1K","1K-10K","10K-100K","100K-1M",
-    "1M-10M","10M-100M","100M-1B","1B-10B","10B-100B",
-    "100B-1T","1T-10T","10T-100T","100T-1Q"
-}
+
 
 local BuyIndex = 1
 local EquipIndex = 1
@@ -311,17 +305,74 @@ Auto:Toggle({
     end
 })
 
--- ======================
-Main:Section({ Title = "Buy Eggs", Icon = "egg" })
+-- ====================== COLLECT ALL ======================
+local AutoCollectEnabled = false
 
-Main:Dropdown({
-    Title = "Select Price Range(s)",
-    Values = PriceRanges,
-    Multi = true,
-    Callback = function(values)
-        SelectedPriceRanges = values
+Main:Toggle({
+    Title = "Auto Collect Coin",
+    Default = false,
+    Callback = function(state)
+        AutoCollectEnabled = state
+        if state then
+            spawn(function()
+                while AutoCollectEnabled do
+                    local petsFolder = workspace:WaitForChild("Pets")
+                    local args = {"Claim"}
+
+                    for _, pet in pairs(petsFolder:GetChildren()) do
+                        if pet:FindFirstChild("RootPart") and pet.RootPart:FindFirstChild("RE") then
+                            pcall(function()
+                                pet.RootPart.RE:FireServer(unpack(args))
+                            end)
+                        end
+                    end
+
+                    task.wait(0.3)
+                end
+            end)
+        end
     end
 })
+
+-- ====================== AUTO BUY EGG ======================
+Main:Section({ Title = "Buy Eggs", Icon = "egg" })
+
+local eggTypes = {
+    "BasicEgg","RareEgg","SuperRareEgg","EpicEgg","LegendEgg","HyperEgg",
+    "BowserEgg","VoidEgg","CornEgg","BoneDragonEgg","DemonEgg","PrismaticEgg","UltraEgg"
+}
+
+local buyEggList = {}
+for _, egg in ipairs(eggTypes) do
+    buyEggList[egg] = false
+end
+
+local function getEggType(eggModel)
+    local root = eggModel:FindFirstChild("RootPart")
+    local eggType = root and (root:GetAttribute("Type") or root:GetAttribute("EggType"))
+    eggType = eggType or eggModel:GetAttribute("Type") or eggModel:GetAttribute("EggType")
+    if not eggType then
+        for _, child in ipairs(eggModel:GetChildren()) do
+            if child:IsA("StringValue") and (child.Name == "Type" or child.Name == "EggType") then
+                eggType = child.Value
+                break
+            end
+        end
+    end
+    return eggType
+end
+
+Main:Dropdown({
+    Title = "Select Eggs",
+    Values = eggTypes,
+    Multi = true,
+    Callback = function(values)
+        for _, egg in ipairs(eggTypes) do buyEggList[egg] = false end
+        for _, v in ipairs(values) do buyEggList[v] = true end
+    end
+})
+
+local AutoBuyEggEnabled = false
 
 Main:Toggle({
     Title = "Auto Buy Egg",
@@ -329,67 +380,55 @@ Main:Toggle({
     Callback = function(state)
         AutoBuyEggEnabled = state
         if state then
-            task.spawn(function()
-                local notified = false
+            spawn(function()
                 while AutoBuyEggEnabled do
-                    local ArtFolder = workspace:WaitForChild("Art")
-                    for _, island in pairs(ArtFolder:GetChildren()) do
-                        if island:IsA("Model") and island:FindFirstChild("ENV") and island.ENV:FindFirstChild("HomeBoard") then
-                            local boardName = island.ENV.HomeBoard.C.SurfaceGui.Name
-                            if boardName == game.Players.LocalPlayer.Name then
-                                if not notified then
-                                    WindUI:Notify({
-                                        Title = "DYHUB Notify",
-                                        Content = "Your Island: " .. island.Name,
-                                        Duration = 5,
-                                        Icon = "user-check",
-                                    })
-                                    notified = true
-                                end
+                    task.wait(0.15 + math.random(0, 300) / 1000)
 
-                                local beltFolder = island.ENV.Conveyor.Conveyor3.Belt
-                                for _, egg in pairs(beltFolder:GetChildren()) do
-                                    if egg:IsA("Model") then
-                                        local gui = egg:FindFirstChild("RootPart") and egg.RootPart:FindFirstChild("GUI")
-                                        if gui and gui:FindFirstChild("EggGUI") and gui.EggGUI:FindFirstChild("Price") then
-                                            local priceText = gui.EggGUI.Price.Text
-                                            local eggPrice = tonumber(priceText:gsub("[^%d]", "")) or 0
-                                            for _, range in pairs(SelectedPriceRanges) do
-                                                local minStr, maxStr = range:match("([^%-]+)%-(.+)")
-                                                local function parseNum(str)
-                                                    local n = tonumber(str:gsub("[^%d]", "")) or 0
-                                                    if str:find("K") then n = n*1000 end
-                                                    if str:find("M") then n = n*1000000 end
-                                                    if str:find("B") then n = n*1000000000 end
-                                                    if str:find("T") then n = n*1000000000000 end
-                                                    if str:find("Q") then n = n*1000000000000000 end
-                                                    return n
-                                                end
-                                                local min = parseNum(minStr)
-                                                local max = parseNum(maxStr)
-                                                if eggPrice >= min and eggPrice <= max then
-                                                    local playerChar = game.Players.LocalPlayer.Character
-                                                    if playerChar and playerChar.PrimaryPart then
-                                                        playerChar:SetPrimaryPartCFrame(egg.RootPart.CFrame + Vector3.new(0,3,0))
-                                                    end
-                                                    local prompt = egg.RootPart:FindFirstChildOfClass("ProximityPrompt")
-                                                    if prompt then
-                                                        prompt.HoldDuration = 0
-                                                        prompt:InputHoldBegin()
-                                                        prompt:InputHoldEnd()
-                                                    end
-                                                    local args = {"BuyEgg", egg.Name}
-                                                    game:GetService("ReplicatedStorage").Remote.CharacterRE:FireServer(unpack(args))
-                                                    task.wait(0.5)
-                                                end
-                                            end
+                    local anyActive = false
+                    for _, v in pairs(buyEggList) do
+                        if v then anyActive = true break end
+                    end
+                    if not anyActive then task.wait(1) continue end
+
+                    local art = Workspace:FindFirstChild("Art")
+                    if not art then task.wait(1) continue end
+
+                    local okRemote, characterRE = pcall(function()
+                        return ReplicatedStorage:WaitForChild("Remote", 9e9):WaitForChild("CharacterRE", 9e9)
+                    end)
+                    if not okRemote or not characterRE then task.wait(1) continue end
+
+                    for _, island in ipairs(art:GetChildren()) do
+                        if island.Name:match("^Island_%d+$") then
+                            local env = island:FindFirstChild("ENV")
+                            if not env then continue end
+                            local conveyor = env:FindFirstChild("Conveyor")
+                            if not conveyor then continue end
+
+                            for _, conveyorX in ipairs(conveyor:GetChildren()) do
+                                if conveyorX.Name:match("^Conveyor%d+$") then
+                                    local belt = conveyorX:FindFirstChild("Belt")
+                                    if not belt then continue end
+
+                                    local eggCount = 0
+                                    local maxEggsPerCycle = 50
+                                    for _, eggModel in ipairs(belt:GetChildren()) do
+                                        if eggCount >= maxEggsPerCycle then break end
+
+                                        local eggType = getEggType(eggModel)
+                                        if eggType and buyEggList[eggType] then
+                                            local root = eggModel:FindFirstChild("RootPart")
+                                            local uidVal = (root and root:GetAttribute("UID")) or eggModel:GetAttribute("UID") or tostring(eggModel.Name)
+                                            pcall(function()
+                                                characterRE:FireServer("BuyEgg", uidVal)
+                                            end)
                                         end
+                                        eggCount = eggCount + 1
                                     end
                                 end
                             end
                         end
                     end
-                    task.wait(1)
                 end
             end)
         end
