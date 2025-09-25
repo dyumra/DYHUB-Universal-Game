@@ -1,5 +1,5 @@
 -- =========================
-local version = "2.8.7"
+local version = "2.9.8"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -32,17 +32,46 @@ local Workspace = game:GetService("Workspace")
 local player = Players.LocalPlayer
 
 -- ===================== SETTINGS =====================
+local SelectedCode = nil
+local SelectedBait = nil
+local SelectedFood = nil
+local SelectedQuest = nil
 
+local autoHatch = false
+local AutoEquip = false
+local AutoPotion = false
+local autoCollectDino = false
+local AutoBuyConveyor = false
+local AutoDinoEnabled = false
+local AutoBaitEnabled = false
+local AutoFoodEnabled = false
+local AutoFishEnabled = false
+local AutoSpinEnabled = false
+local AutoBuyEggEnabled = false
+local AutoCollectEnabled = false
 
+local SelectedPotions = {}
+local QuestList = {"All"}
+for i = 1, 20 do
+    table.insert(QuestList, "Task_"..i)
+end
 local BuyIndex = 1
 local EquipIndex = 1
-local AutoBuyConveyor = false
-local AutoEquip = false
+local SpinCounts = {1, 3, 10}
+local SelectedCount = 1
 
+local FoodList = {
+    "Strawberry","Blueberry","Watermelon","Apple","Orange",
+    "Corn","Banana","Grape","Pear","PineApple","Dargon Fruit",
+    "Gold Mango","Bloodstone Cycad","Colossal Pinecone","Volt Ginkgo",
+    "Deepsea Pearl Fruit","Durian"
+}
+local eggTypes = {
+    "BasicEgg","RareEgg","SuperRareEgg","EpicEgg","LegendEgg","HyperEgg",
+    "BowserEgg","VoidEgg","CornEgg","BoneDragonEgg","DemonEgg","PrismaticEgg","UltraEgg"
+}
 local PotionList = {"Potion_Coin","Potion_Luck","Potion_Hatch","Potion_3in1"}
-local SelectedPotions = {}
-local AutoPotion = false
-
+local BaitList = { "FishingBait1", "FishingBait2", "FishingBait3" }
 local CodeList = {
     "CFJXEH4M8K5",
     "DelayGift",
@@ -58,32 +87,6 @@ local CodeList = {
     "X2CA821BA3",
     "55PA21N8y2"
 }
-local SelectedCode = nil
-
-local BaitList = { "FishingBait1", "FishingBait2", "FishingBait3" }
-local SelectedBait = nil
-local AutoBaitEnabled = false
-
-local FoodList = {
-    "Strawberry","Blueberry","Watermelon","Apple","Orange",
-    "Corn","Banana","Grape","Pear","PineApple","Dargon Fruit",
-    "Gold Mango","Bloodstone Cycad","Colossal Pinecone","Volt Ginkgo",
-    "Deepsea Pearl Fruit","Durian"
-}
-local SelectedFood = nil
-local AutoFoodEnabled = false
-
-local AutoFishEnabled = false
-local SpinCounts = {1, 3, 10}
-local SelectedCount = 1
-local AutoSpinEnabled = false
-
-local QuestList = {"All"}
-for i = 1, 20 do
-    table.insert(QuestList, "Task_"..i)
-end
-local SelectedQuest = nil
-local AutoDinoEnabled = false
 
 -- ====================== WINDOW ======================
 local Window = WindUI:CreateWindow({
@@ -123,13 +126,15 @@ local InfoTab = Window:Tab({ Title = "Information", Icon = "info" })
 local MainDivider = Window:Divider()
 local Main = Window:Tab({ Title = "Main", Icon = "rocket" })
 local Auto = Window:Tab({ Title = "Shop", Icon = "shopping-cart" })
+local Egg = Window:Tab({ Title = "Egg", Icon = "egg" })
+local Event = Window:Tab({ Title = "Event", Icon = "party-popper" })
 local Buff = Window:Tab({ Title = "Buff", Icon = "biceps-flexed" })
 local Codes = Window:Tab({ Title = "Codes", Icon = "gift" })
 
 Window:SelectTab(1)
 
 -- ====================== AUTO FARM ======================
-Auto:Section({ Title = "Conveyor", Icon = "package" })
+Auto:Section({ Title = "Buy Conveyor", Icon = "package" })
 
 Auto:Dropdown({
     Title = "Select Conveyor to Buy (1-9)",
@@ -157,6 +162,7 @@ Auto:Toggle({
     end
 })
 
+Auto:Section({ Title = "Equip Conveyor", Icon = "layout-grid" })
 Auto:Dropdown({
     Title = "Select Conveyor to Equip (1-9)",
     Values = {"1","2","3","4","5","6","7","8","9"},
@@ -306,7 +312,7 @@ Auto:Toggle({
 })
 
 -- ====================== COLLECT ALL ======================
-local AutoCollectEnabled = false
+Main:Section({ Title = "Collect Coin", Icon = "egg" })
 
 Main:Toggle({
     Title = "Auto Collect Coin",
@@ -327,7 +333,7 @@ Main:Toggle({
                         end
                     end
 
-                    task.wait(0.3)
+                    task.wait(0.05)
                 end
             end)
         end
@@ -335,12 +341,7 @@ Main:Toggle({
 })
 
 -- ====================== AUTO BUY EGG ======================
-Main:Section({ Title = "Buy Eggs", Icon = "egg" })
-
-local eggTypes = {
-    "BasicEgg","RareEgg","SuperRareEgg","EpicEgg","LegendEgg","HyperEgg",
-    "BowserEgg","VoidEgg","CornEgg","BoneDragonEgg","DemonEgg","PrismaticEgg","UltraEgg"
-}
+Egg:Section({ Title = "Buy Eggs", Icon = "egg" })
 
 local buyEggList = {}
 for _, egg in ipairs(eggTypes) do
@@ -362,7 +363,7 @@ local function getEggType(eggModel)
     return eggType
 end
 
-Main:Dropdown({
+Egg:Dropdown({
     Title = "Select Eggs",
     Values = eggTypes,
     Multi = true,
@@ -372,10 +373,8 @@ Main:Dropdown({
     end
 })
 
-local AutoBuyEggEnabled = false
-
-Main:Toggle({
-    Title = "Auto Buy Egg",
+Egg:Toggle({
+    Title = "Auto Buy Eggs",
     Default = false,
     Callback = function(state)
         AutoBuyEggEnabled = state
@@ -435,6 +434,55 @@ Main:Toggle({
     end
 })
 
+Egg:Section({ Title = "Hatch Eggs", Icon = "clock" })
+
+Egg:Toggle({
+    Title = "Auto Hatch Eggs",
+    Default = false,
+    Callback = function(state)
+        autoHatch = state
+        if state then
+            spawn(function()
+                while autoHatch do
+                    task.wait(0.5)
+
+                    local art = workspace:FindFirstChild("Art")
+                    if not art then task.wait(1) continue end
+
+                    for _, island in ipairs(art:GetChildren()) do
+                        if island.Name:match("^Island_%d+$") then
+                            local env = island:FindFirstChild("ENV")
+                            if not env then continue end
+                            local conveyor = env:FindFirstChild("Conveyor")
+                            if not conveyor then continue end
+
+                            for _, conveyorX in ipairs(conveyor:GetChildren()) do
+                                if conveyorX.Name:match("^Conveyor%d+$") then
+                                    local belt = conveyorX:FindFirstChild("Belt")
+                                    if not belt then continue end
+
+                                    for _, eggModel in ipairs(belt:GetChildren()) do
+                                        local root = eggModel:FindFirstChild("RootPart")
+                                        if not root then continue end
+
+                                        local rf = root:FindFirstChild("RF")
+                                        if rf and rf:IsA("RemoteFunction") then
+                                            pcall(function()
+                                                rf:InvokeServer("Hatch")
+                                            end)
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+    end
+})
+
+
 Main:Section({ Title = "Fishing", Icon = "fish" })
 
 Main:Toggle({
@@ -478,9 +526,9 @@ Main:Toggle({
     end
 })
 
-Main:Section({ Title = "Event", Icon = "trophy" })
+Event:Section({ Title = "Event", Icon = "trophy" })
 
-Main:Dropdown({
+Event:Dropdown({
     Title = "Select Dino Quest",
     Values = QuestList,
     Multi = false,
@@ -489,7 +537,7 @@ Main:Dropdown({
     end
 })
 
-Main:Toggle({
+Event:Toggle({
     Title = "Auto Claim Dino Quest",
     Default = false,
     Callback = function(state)
@@ -507,19 +555,68 @@ Main:Toggle({
                         ReplicatedStorage.Remote.DinoEventRE:FireServer(unpack(args))
                     end
                 end
-                task.wait(5)
+                task.wait(3)
             end
         end)
     end
 })
 
+Event:Toggle({
+    Title = "Auto Collect Dino",
+    Default = false,
+    Callback = function(state)
+        autoCollectDino = state
+        if state then
+            spawn(function()
+                while autoCollectDino do
+                    task.wait(1)
+
+                    local ok, remote = pcall(function()
+                        return ReplicatedStorage:WaitForChild("Remote", 9e9):WaitForChild("DinoEventRE", 9e9)
+                    end)
+                    if ok and remote then
+                        local args = { { event = "onlinepack" } }
+                        pcall(function()
+                            remote:FireServer(unpack(args))
+                        end)
+                    end
+                end
+            end)
+        end
+    end
+})
+
 -- ====================== SELL ALL BUTTON ======================
-Main:Section({ Title = "Sell All", Icon = "dollar-sign" })
+Main:Section({ Title = "Feature All", Icon = "crown" })
 Main:Button({
     Title = "Sell All Everything",
     Callback = function()
         local args = {"SellAll","All","All"}
         ReplicatedStorage.Remote.PetRE:FireServer(unpack(args))
+    end
+})
+Main:Button({
+    Title = "Pickup All Everything",
+    Callback = function()
+        local function collectAllPets()
+            local petsFolder = workspace:FindFirstChild("Pets")
+            if not petsFolder then return end
+
+            local ok, remote = pcall(function()
+                return ReplicatedStorage:WaitForChild("Remote", 9e9):WaitForChild("CharacterRE", 9e9)
+            end)
+            if not ok or not remote then return end
+
+            for _, pet in ipairs(petsFolder:GetChildren()) do
+                local uid = pet.Name
+                local argsDel = { "Del", uid }
+                pcall(function()
+                    remote:FireServer(unpack(argsDel))
+                end)
+            end
+        end
+
+        collectAllPets()
     end
 })
 
