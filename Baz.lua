@@ -500,7 +500,7 @@ Main:Toggle({
     end
 })
 
-Main:Section({ Title = "Lottery", Icon = "fish" })
+Main:Section({ Title = "Lottery", Icon = "piggy-bank" })
 
 Main:Dropdown({
     Title = "Select Spin Count",
