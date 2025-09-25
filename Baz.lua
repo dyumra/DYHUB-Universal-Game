@@ -1,5 +1,5 @@
 -- =========================
-local version = "2.8.2"
+local version = "2.8.3"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -135,7 +135,7 @@ local Codes = Window:Tab({ Title = "Codes", Icon = "gift" })
 Window:SelectTab(1)
 
 -- ====================== AUTO FARM ======================
-Auto:Section({ Title = "Conveyor", Icon = "loader" })
+Auto:Section({ Title = "Conveyor", Icon = "package" })
 
 Auto:Dropdown({
     Title = "Select Conveyor to Buy (1-9)",
@@ -315,7 +315,7 @@ Auto:Toggle({
 Main:Section({ Title = "Buy Eggs", Icon = "egg" })
 
 Main:Dropdown({
-    Title = "Select Price Ranges",
+    Title = "Select Price Range(s)",
     Values = PriceRanges,
     Multi = true,
     Callback = function(values)
@@ -324,61 +324,82 @@ Main:Dropdown({
 })
 
 Main:Toggle({
-    Title = "Auto Buy Eggs",
+    Title = "Auto Buy Egg",
     Default = false,
     Callback = function(state)
         AutoBuyEggEnabled = state
-        task.spawn(function()
-            while AutoBuyEggEnabled do
-                for _, island in ipairs(workspace.Art:GetChildren()) do
-                    local surfaceGui = island:FindFirstChild("ENV") and island.ENV:FindFirstChild("HomeBoard") and island.ENV.HomeBoard:FindFirstChild("C")
-                    if surfaceGui and surfaceGui.SurfaceGui and surfaceGui.SurfaceGui.Name == player.Name then
-                        local conveyor = island.ENV.Conveyor.Conveyor3
-                        for _, eggModel in ipairs(conveyor.Belt:GetChildren()) do
-                            local priceObj = eggModel:FindFirstChild("RootPart") and eggModel.RootPart:FindFirstChild("GUI/EggGUI") and eggModel.RootPart["GUI/EggGUI"]:FindFirstChild("Pri ce")
-                            if priceObj and type(priceObj.Value) == "number" then
-                                local price = priceObj.Value
-                                for _, range in ipairs(SelectedPriceRanges) do
-                                    local min, max = range:match("([%d%.]+)[%-]([%d%.%a]+)")
-                                    min = parsePrice(min)
-                                    max = parsePrice(max)
-                                    if price >= min and price <= max then
-                                        local args = {"BuyEgg", eggModel.Name}
-                                        game:GetService("ReplicatedStorage").Remote.CharacterRE:FireServer(unpack(args))
-                                        task.wait(0.5)
-                                        break
+        if state then
+            task.spawn(function()
+                local notified = false
+                while AutoBuyEggEnabled do
+                    local ArtFolder = workspace:WaitForChild("Art")
+                    for _, island in pairs(ArtFolder:GetChildren()) do
+                        if island:IsA("Model") and island:FindFirstChild("ENV") and island.ENV:FindFirstChild("HomeBoard") then
+                            local boardName = island.ENV.HomeBoard.C.SurfaceGui.Name
+                            if boardName == game.Players.LocalPlayer.Name then
+                                if not notified then
+                                    WindUI:Notify({
+                                        Title = "DYHUB Notify",
+                                        Content = "Your Island: " .. island.Name,
+                                        Duration = 5,
+                                        Icon = "user-check",
+                                    })
+                                    notified = true
+                                end
+
+                                local beltFolder = island.ENV.Conveyor.Conveyor3.Belt
+                                for _, egg in pairs(beltFolder:GetChildren()) do
+                                    if egg:IsA("Model") then
+                                        local gui = egg:FindFirstChild("RootPart") and egg.RootPart:FindFirstChild("GUI")
+                                        if gui and gui:FindFirstChild("EggGUI") and gui.EggGUI:FindFirstChild("Price") then
+                                            local priceText = gui.EggGUI.Price.Text
+                                            local eggPrice = tonumber(priceText:gsub("[^%d]", "")) or 0
+                                            for _, range in pairs(SelectedPriceRanges) do
+                                                local minStr, maxStr = range:match("([^%-]+)%-(.+)")
+                                                local function parseNum(str)
+                                                    local n = tonumber(str:gsub("[^%d]", "")) or 0
+                                                    if str:find("K") then n = n*1000 end
+                                                    if str:find("M") then n = n*1000000 end
+                                                    if str:find("B") then n = n*1000000000 end
+                                                    if str:find("T") then n = n*1000000000000 end
+                                                    if str:find("Q") then n = n*1000000000000000 end
+                                                    return n
+                                                end
+                                                local min = parseNum(minStr)
+                                                local max = parseNum(maxStr)
+                                                if eggPrice >= min and eggPrice <= max then
+                                                    local playerChar = game.Players.LocalPlayer.Character
+                                                    if playerChar and playerChar.PrimaryPart then
+                                                        playerChar:SetPrimaryPartCFrame(egg.RootPart.CFrame + Vector3.new(0,3,0))
+                                                    end
+                                                    local prompt = egg.RootPart:FindFirstChildOfClass("ProximityPrompt")
+                                                    if prompt then
+                                                        prompt.HoldDuration = 0
+                                                        prompt:InputHoldBegin()
+                                                        prompt:InputHoldEnd()
+                                                    end
+                                                    local args = {"BuyEgg", egg.Name}
+                                                    game:GetService("ReplicatedStorage").Remote.CharacterRE:FireServer(unpack(args))
+                                                    task.wait(0.5)
+                                                end
+                                            end
+                                        end
                                     end
                                 end
                             end
                         end
                     end
+                    task.wait(1)
                 end
-                task.wait(2)
-            end
-        end)
+            end)
+        end
     end
 })
-
-function parsePrice(str)
-    local num = tonumber(str:match("%d+%.?%d*")) or 0
-    if str:find("K") then
-        num = num * 1e3
-    elseif str:find("M") then
-        num = num * 1e6
-    elseif str:find("B") then
-        num = num * 1e9
-    elseif str:find("T") then
-        num = num * 1e12
-    elseif str:find("Q") then
-        num = num * 1e15
-    end
-    return num
-end
 
 Main:Section({ Title = "Fishing", Icon = "fish" })
 
 Main:Toggle({
-    Title = "Auto Fish",
+    Title = "Auto Reel",
     Default = false,
     Callback = function(state)
         AutoFishEnabled = state
