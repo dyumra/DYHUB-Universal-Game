@@ -2,7 +2,6 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
-local StarterGui = game:GetService("StarterGui")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
@@ -11,20 +10,23 @@ local Target = nil
 local LockPart = "HumanoidRootPart"
 local CamlockEnabled = false
 local ThroughWalls = false
-local SmoothCam = true
-local SmoothSpeed = 0.25
-local SafeMode = false
 local MenuOpen = true
 local LockedTarget = nil
-local NotifyEnabled = true
+
+local Keybinds = {
+    Camlock = Enum.KeyCode.V,
+    LockPart = Enum.KeyCode.G,
+    ThroughWalls = Enum.KeyCode.H,
+    Menu = Enum.KeyCode.End
+}
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0,200,0,200)
-Frame.Position = UDim2.new(0.5,-100,0.65,0)
+Frame.Size = UDim2.new(0,200,0,180)
+Frame.Position = UDim2.new(0.5,0,0.35,0)
 Frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
 Frame.BackgroundTransparency = 0.15
 Frame.BorderSizePixel = 0
@@ -39,17 +41,17 @@ Shadow.Thickness = 1.5
 Shadow.Color = Color3.fromRGB(70,70,70)
 Shadow.Transparency = 0.5
 
-local dragging, dragInput, mousePos, framePos
+-- Drag function (คอม + มือถือ)
+local dragging, dragInput, startPos, startPosFrame
 local function update(input)
-    local delta = input.Position - mousePos
-    Frame.Position = UDim2.new(framePos.X.Scale, framePos.X.Offset + delta.X, framePos.Y.Scale, framePos.Y.Offset + delta.Y)
+    local delta = input.Position - startPos
+    Frame.Position = UDim2.new(startPosFrame.X.Scale, startPosFrame.X.Offset + delta.X, startPosFrame.Y.Scale, startPosFrame.Y.Offset + delta.Y)
 end
-
 Frame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
-        mousePos = input.Position
-        framePos = Frame.Position
+        startPos = input.Position
+        startPosFrame = Frame.Position
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
                 dragging = false
@@ -57,20 +59,14 @@ Frame.InputBegan:Connect(function(input)
         end)
     end
 end)
-
 Frame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement then
-        dragInput = input
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
+    if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and dragging then
         update(input)
     end
 end)
 
-local function createButton(text,pos)
+-- Helper function
+local function createButton(text,pos,parent)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1,-20,0,28)
     btn.Position = pos
@@ -80,24 +76,25 @@ local function createButton(text,pos)
     btn.TextColor3 = Color3.fromRGB(245,245,245)
     btn.BackgroundColor3 = Color3.fromRGB(45,45,45)
     btn.BorderSizePixel = 0
-    btn.Parent = Frame
+    btn.Parent = parent
     local corner = Instance.new("UICorner", btn)
     corner.CornerRadius = UDim.new(0,6)
     return btn
 end
 
-local ToggleBtn = createButton("Camlock: OFF", UDim2.new(0,10,0,10))
-local ModeBtn = createButton("Lock Part: HumanoidRootPart", UDim2.new(0,10,0,50))
-local WallBtn = createButton("Through Walls: OFF", UDim2.new(0,10,0,90))
-local SmoothBtn = createButton("Smooth: ON", UDim2.new(0,10,0,130))
-local SafeBtn = createButton("Safe Mode: OFF", UDim2.new(0,10,0,170))
-local NotifyBtn = createButton("Notify: ON", UDim2.new(0,10,0,210))
+local ToggleBtn = createButton("Camlock: OFF", UDim2.new(0,10,0,10), Frame)
+local ModeBtn = createButton("Lock Part: HumanoidRootPart", UDim2.new(0,10,0,50), Frame)
+local WallBtn = createButton("Through Walls: OFF", UDim2.new(0,10,0,90), Frame)
+local KeybindBtn = createButton("Keybinds", UDim2.new(0,10,0,130), Frame)
 
 local MenuIcon = Instance.new("ImageButton")
 MenuIcon.Size = UDim2.new(0,35,0,35)
 MenuIcon.Position = UDim2.new(0,10,0,10)
 MenuIcon.Image = "rbxassetid://104487529937663"
-MenuIcon.BackgroundTransparency = 1
+MenuIcon.BackgroundTransparency = 0
+MenuIcon.BackgroundColor3 = Color3.fromRGB(40,40,40)
+local iconCorner = Instance.new("UICorner", MenuIcon)
+iconCorner.CornerRadius = UDim.new(1,0)
 MenuIcon.Parent = ScreenGui
 
 MenuIcon.MouseButton1Click:Connect(function()
@@ -105,6 +102,54 @@ MenuIcon.MouseButton1Click:Connect(function()
     Frame.Visible = MenuOpen
 end)
 
+-- Keybind GUI
+local KeyGui = Instance.new("Frame")
+KeyGui.Size = UDim2.new(0,180,0,170)
+KeyGui.Position = UDim2.new(0.5,-90,0.55,0)
+KeyGui.BackgroundColor3 = Color3.fromRGB(30,30,30)
+KeyGui.Visible = false
+KeyGui.Parent = ScreenGui
+local KeyCorner = Instance.new("UICorner", KeyGui)
+KeyCorner.CornerRadius = UDim.new(0,12)
+
+local keyTexts = {}
+local function createKeyText(name, pos)
+    local txt = Instance.new("TextButton")
+    txt.Size = UDim2.new(1,-20,0,28)
+    txt.Position = pos
+    txt.Text = name..": "..Keybinds[name].Name
+    txt.Font = Enum.Font.GothamBold
+    txt.TextSize = 14
+    txt.TextColor3 = Color3.fromRGB(245,245,245)
+    txt.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    txt.BorderSizePixel = 0
+    txt.Parent = KeyGui
+    local corner = Instance.new("UICorner", txt)
+    corner.CornerRadius = UDim.new(0,6)
+    txt.MouseButton1Click:Connect(function()
+        txt.Text = name..": ...."
+        local conn
+        conn = UserInputService.InputBegan:Connect(function(input, gpe)
+            if input.UserInputType == Enum.UserInputType.Keyboard then
+                Keybinds[name] = input.KeyCode
+                txt.Text = name..": "..input.KeyCode.Name
+                conn:Disconnect()
+            end
+        end)
+    end)
+    keyTexts[name] = txt
+end
+
+createKeyText("Camlock", UDim2.new(0,10,0,10))
+createKeyText("LockPart", UDim2.new(0,10,0,50))
+createKeyText("ThroughWalls", UDim2.new(0,10,0,90))
+createKeyText("Menu", UDim2.new(0,10,0,130))
+
+KeybindBtn.MouseButton1Click:Connect(function()
+    KeyGui.Visible = not KeyGui.Visible
+end)
+
+-- Buttons callbacks
 ToggleBtn.MouseButton1Click:Connect(function()
     CamlockEnabled = not CamlockEnabled
     ToggleBtn.Text = CamlockEnabled and "Camlock: ON" or "Camlock: OFF"
@@ -120,33 +165,25 @@ WallBtn.MouseButton1Click:Connect(function()
     WallBtn.Text = ThroughWalls and "Through Walls: ON" or "Through Walls: OFF"
 end)
 
-SmoothBtn.MouseButton1Click:Connect(function()
-    SmoothCam = not SmoothCam
-    SmoothBtn.Text = SmoothCam and "Smooth: ON" or "Smooth: OFF"
-end)
-
-SafeBtn.MouseButton1Click:Connect(function()
-    SafeMode = not SafeMode
-    SafeBtn.Text = SafeMode and "Safe Mode: ON" or "Safe Mode: OFF"
-end)
-
-NotifyBtn.MouseButton1Click:Connect(function()
-    NotifyEnabled = not NotifyEnabled
-    NotifyBtn.Text = NotifyEnabled and "Notify: ON" or "Notify: OFF"
-end)
-
 UserInputService.InputBegan:Connect(function(input, gpe)
     if not gpe then
-        if input.KeyCode == Enum.KeyCode.V then
+        if input.KeyCode == Keybinds.Camlock then
             CamlockEnabled = not CamlockEnabled
             ToggleBtn.Text = CamlockEnabled and "Camlock: ON" or "Camlock: OFF"
-        elseif input.KeyCode == Enum.KeyCode.End then
+        elseif input.KeyCode == Keybinds.LockPart then
+            LockPart = (LockPart == "HumanoidRootPart") and "Head" or "HumanoidRootPart"
+            ModeBtn.Text = "Lock Part: "..LockPart
+        elseif input.KeyCode == Keybinds.ThroughWalls then
+            ThroughWalls = not ThroughWalls
+            WallBtn.Text = ThroughWalls and "Through Walls: ON" or "Through Walls: OFF"
+        elseif input.KeyCode == Keybinds.Menu then
             MenuOpen = not MenuOpen
             Frame.Visible = MenuOpen
         end
     end
 end)
 
+-- Camlock functions
 local function IsValidTarget(plr)
     if not plr or plr == LocalPlayer then return false end
     local char = plr.Character
@@ -169,46 +206,24 @@ local function IsValidTarget(plr)
 end
 
 local function FindNearestTarget()
-    local best = nil
-    local bestDist = math.huge
+    if LockedTarget and IsValidTarget(LockedTarget) then
+        return LockedTarget
+    end
     for _,plr in pairs(Players:GetPlayers()) do
         if IsValidTarget(plr) then
-            local part = plr.Character:FindFirstChild(LockPart)
-            local d = (part.Position - Camera.CFrame.Position).Magnitude
-            if d < bestDist then
-                best = plr
-                bestDist = d
-            end
-            if SafeMode and d <= 25 then
-                best = plr
-                break
-            end
+            LockedTarget = plr
+            return plr
         end
     end
-    return best
+    return nil
 end
 
 RunService.RenderStepped:Connect(function()
     if CamlockEnabled then
         Target = FindNearestTarget()
         if Target and Target.Character and Target.Character:FindFirstChild(LockPart) then
-            if LockedTarget ~= Target and NotifyEnabled then
-                LockedTarget = Target
-                local health = math.floor(Target.Character.Humanoid.Health)
-                StarterGui:SetCore("SendNotification",{
-                    Title="DYHUB Camlock",
-                    Text="Target: "..Target.Name.." | Health: "..health,
-                    Duration=2
-                })
-            end
             local part = Target.Character[LockPart]
-            local camPos = Camera.CFrame.Position
-            if SmoothCam then
-                local direction = (part.Position - camPos)
-                Camera.CFrame = CFrame.new(camPos + direction * SmoothSpeed, part.Position)
-            else
-                Camera.CFrame = CFrame.new(camPos, part.Position)
-            end
+            Camera.CFrame = CFrame.new(Camera.CFrame.Position, part.Position)
         else
             LockedTarget = nil
         end
