@@ -1,3 +1,4 @@
+-- ================= V514 ==================
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -35,13 +36,11 @@ Frame.AnchorPoint = Vector2.new(0.5,0)
 Frame.Parent = ScreenGui
 local Corner = Instance.new("UICorner", Frame)
 Corner.CornerRadius = UDim.new(0,15)
-
 local Shadow = Instance.new("UIStroke", Frame)
 Shadow.Thickness = 1.5
 Shadow.Color = Color3.fromRGB(70,70,70)
 Shadow.Transparency = 0.5
 
--- Drag function (คอม + มือถือ)
 local dragging, dragInput, startPos, startPosFrame
 local function update(input)
     local delta = input.Position - startPos
@@ -65,7 +64,6 @@ Frame.InputChanged:Connect(function(input)
     end
 end)
 
--- Helper function
 local function createButton(text,pos,parent)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1,-20,0,28)
@@ -96,13 +94,11 @@ MenuIcon.BackgroundColor3 = Color3.fromRGB(40,40,40)
 local iconCorner = Instance.new("UICorner", MenuIcon)
 iconCorner.CornerRadius = UDim.new(1,0)
 MenuIcon.Parent = ScreenGui
-
 MenuIcon.MouseButton1Click:Connect(function()
     MenuOpen = not MenuOpen
     Frame.Visible = MenuOpen
 end)
 
--- Keybind GUI
 local KeyGui = Instance.new("Frame")
 KeyGui.Size = UDim2.new(0,180,0,170)
 KeyGui.Position = UDim2.new(0.5,-90,0.55,0)
@@ -149,7 +145,6 @@ KeybindBtn.MouseButton1Click:Connect(function()
     KeyGui.Visible = not KeyGui.Visible
 end)
 
--- Buttons callbacks
 ToggleBtn.MouseButton1Click:Connect(function()
     CamlockEnabled = not CamlockEnabled
     ToggleBtn.Text = CamlockEnabled and "Camlock: ON" or "Camlock: OFF"
@@ -183,7 +178,6 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     end
 end)
 
--- Camlock functions
 local function IsValidTarget(plr)
     if not plr or plr == LocalPlayer then return false end
     local char = plr.Character
@@ -209,13 +203,21 @@ local function FindNearestTarget()
     if LockedTarget and IsValidTarget(LockedTarget) then
         return LockedTarget
     end
+    local closest = nil
+    local closestDist = math.huge
     for _,plr in pairs(Players:GetPlayers()) do
         if IsValidTarget(plr) then
-            LockedTarget = plr
-            return plr
+            local part = plr.Character[LockPart]
+            local root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart") or LocalPlayer.Character:FindFirstChild("Torso")
+            local d = (part.Position - root.Position).Magnitude
+            if d < closestDist then
+                closest = plr
+                closestDist = d
+            end
         end
     end
-    return nil
+    LockedTarget = closest
+    return closest
 end
 
 RunService.RenderStepped:Connect(function()
