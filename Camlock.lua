@@ -1,4 +1,4 @@
--- ================= V517 ==================
+-- ================= V518 ==================
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -9,7 +9,7 @@ local Camera = Workspace.CurrentCamera
 
 -- ================= CONFIG =================
 local Target = nil
-local LockPart = "HumanoidRootPart"
+local LockPart = "Torso"
 local CamlockEnabled = false
 local ThroughWalls = false
 local MenuOpen = true
@@ -179,7 +179,7 @@ ToggleBtn.MouseButton1Click:Connect(function()
 end)
 
 ModeBtn.MouseButton1Click:Connect(function()
-    LockPart = (LockPart == "HumanoidRootPart") and "Head" or "HumanoidRootPart"
+    LockPart = (LockPart == "Torso") and "Head" or "Torso"
     ModeBtn.Text = "Lock Part: "..LockPart
 end)
 
@@ -197,7 +197,7 @@ UserInputService.InputBegan:Connect(function(input, gpe)
                 CamlockEnabled = not CamlockEnabled
                 ToggleBtn.Text = CamlockEnabled and "Camlock: ON" or "Camlock: OFF"
             elseif action == "LockPart" then
-                LockPart = (LockPart == "HumanoidRootPart") and "Head" or "HumanoidRootPart"
+                LockPart = (LockPart == "Torso") and "Head" or "Torso"
                 ModeBtn.Text = "Lock Part: "..LockPart
             elseif action == "ThroughWalls" then
                 ThroughWalls = not ThroughWalls
