@@ -1,6 +1,5 @@
 -- ============================== VERSION ==============================
-local version = "3.5.4"
--- =====================================================================
+local version = "3.6.3"
 
 -- ============================== SERVICE ==============================
 local Players = game:GetService("Players")
@@ -27,6 +26,45 @@ local autoBuyCrate = false
 local blockOptions = getButtonNames(scrollingFrame)
 local selectedBlock = {}
 local autoBuyBlock = false
+
+-- ============================== DATA ==============================
+local Items = {
+    Crate = {
+        "WoodenCrate",
+        "IronCrate",
+        "GoldCrate",
+        "ElectroCrate"
+    },
+    Defense = {
+        "CrossbowTurret",
+        "Spikes",
+        "StoneSpikes",
+        "Turret",
+        "MetalSpikes",
+        "DoubleTurret",
+        "Flamethrower",
+        "MinigunTurret"
+    },
+    Block = {
+        "Block",
+        "StoneBlock",
+        "MetalBlock"
+    },
+    Decor = {
+        "Window",
+        "Wedge",
+        "Stair",
+        "LaserDoor",
+        "StoneWedge",
+        "StoneWindow",
+        "StoneStair",
+        "StoneLaserDoor",
+        "MetalStair",
+        "MetalWindow",
+        "MetalWedge",
+        "MetalLaserDoor"
+    }
+}
 
 -- ============================== WINDOW ===============================
 repeat task.wait() until game:IsLoaded()
@@ -61,6 +99,7 @@ local InfoTab = Window:Tab({ Title = "Information", Icon = "info" })
 local MainDivider = Window:Divider()
 local Main = Window:Tab({ Title = "Main", Icon = "rocket" })
 local Shop = Window:Tab({ Title = "Shop", Icon = "shopping-cart" })
+local Event = Window:Tab({ Title = "Event", Icon = "party-popper" })
 Window:SelectTab(1)
 
 -- ============================== FEATURES ============================
@@ -141,9 +180,9 @@ Main:Toggle({
     end
 })
 
-Main:Section({ Title = "Event", Icon = "moon" })
+Event:Section({ Title = "Event", Icon = "moon" })
 
-Main:Toggle({
+Event:Toggle({
     Title = "Auto Submit Lunar",
     Default = false,
     Callback = function(state)
@@ -162,7 +201,7 @@ Main:Toggle({
     end
 })
 
-Main:Toggle({
+Event:Toggle({
     Title = "Auto Collect Lunar",
     Default = false,
     Callback = function(state)
@@ -182,11 +221,13 @@ Main:Toggle({
 })
 
 -- ============================== SHOP ================================
+
+-- ===== CRATE =====
 Shop:Section({ Title = "Buy Crate", Icon = "gift" })
 
 Shop:Dropdown({
     Title = "Select Crate",
-    Values = crateOptions,
+    Values = Items.Crate,
     Multi = true,
     Callback = function(values)
         selectedCrate = values
@@ -202,24 +243,63 @@ Shop:Toggle({
             while autoBuyCrate do
                 task.wait(1)
                 if selectedCrate and #selectedCrate > 0 then
-                    local args = {"Crates", selectedCrate}
-                    pcall(function()
-                        ReplicatedStorage:WaitForChild("Remotes")
-                            :WaitForChild("Functions")
-                            :WaitForChild("BuyStock")
-                            :InvokeServer(unpack(args))
-                    end)
+                    for _, crate in ipairs(selectedCrate) do
+                        local args = {"Crates", crate}
+                        pcall(function()
+                            ReplicatedStorage:WaitForChild("Remotes")
+                                :WaitForChild("Functions")
+                                :WaitForChild("BuyStock")
+                                :InvokeServer(unpack(args))
+                        end)
+                    end
                 end
             end
         end)
     end
 })
 
+-- ===== DEFENSE =====
+Shop:Section({ Title = "Buy Defense", Icon = "shield" })
+
+Shop:Dropdown({
+    Title = "Select Defense",
+    Values = Items.Defense,
+    Multi = true,
+    Callback = function(values)
+        selectedDefense = values
+    end
+})
+
+Shop:Toggle({
+    Title = "Auto Buy Defense",
+    Default = false,
+    Callback = function(state)
+        autoBuyDefense = state
+        spawn(function()
+            while autoBuyDefense do
+                task.wait(1)
+                if selectedDefense and #selectedDefense > 0 then
+                    for _, defense in ipairs(selectedDefense) do
+                        local args = {"Blocks", defense}
+                        pcall(function()
+                            ReplicatedStorage:WaitForChild("Remotes")
+                                :WaitForChild("Functions")
+                                :WaitForChild("BuyStock")
+                                :InvokeServer(unpack(args))
+                        end)
+                    end
+                end
+            end
+        end)
+    end
+})
+
+-- ===== BLOCK =====
 Shop:Section({ Title = "Buy Block", Icon = "package" })
 
 Shop:Dropdown({
     Title = "Select Block",
-    Values = blockOptions,
+    Values = Items.Block,
     Multi = true,
     Callback = function(values)
         selectedBlock = values
@@ -235,13 +315,51 @@ Shop:Toggle({
             while autoBuyBlock do
                 task.wait(1)
                 if selectedBlock and #selectedBlock > 0 then
-                    local args = {"Blocks", selectedBlock}
-                    pcall(function()
-                        ReplicatedStorage:WaitForChild("Remotes")
-                            :WaitForChild("Functions")
-                            :WaitForChild("BuyStock")
-                            :InvokeServer(unpack(args))
-                    end)
+                    for _, block in ipairs(selectedBlock) do
+                        local args = {"Blocks", block}
+                        pcall(function()
+                            ReplicatedStorage:WaitForChild("Remotes")
+                                :WaitForChild("Functions")
+                                :WaitForChild("BuyStock")
+                                :InvokeServer(unpack(args))
+                        end)
+                    end
+                end
+            end
+        end)
+    end
+})
+
+-- ===== DECOR =====
+Shop:Section({ Title = "Buy Decor", Icon = "cuboid" })
+
+Shop:Dropdown({
+    Title = "Select Decor",
+    Values = Items.Decor,
+    Multi = true,
+    Callback = function(values)
+        selectedDecor = values
+    end
+})
+
+Shop:Toggle({
+    Title = "Auto Buy Decor",
+    Default = false,
+    Callback = function(state)
+        autoBuyDecor = state
+        spawn(function()
+            while autoBuyDecor do
+                task.wait(1)
+                if selectedDecor and #selectedDecor > 0 then
+                    for _, decor in ipairs(selectedDecor) do
+                        local args = {"Blocks", decor}
+                        pcall(function()
+                            ReplicatedStorage:WaitForChild("Remotes")
+                                :WaitForChild("Functions")
+                                :WaitForChild("BuyStock")
+                                :InvokeServer(unpack(args))
+                        end)
+                    end
                 end
             end
         end)
