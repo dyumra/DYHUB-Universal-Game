@@ -28,7 +28,7 @@ local WatermarkConnection = game:GetService('RunService').RenderStepped:Connect(
         FrameCounter = 0;
     end;
 
-    Library:SetWatermark(('DYHUB V5.8.2 | %s fps | %s ms | Game: ' .. info.Name .. ''):format(
+    Library:SetWatermark(('DYHUB V6.2.1 | %s fps | %s ms | Game: ' .. info.Name .. ''):format(
         math.floor(FPS),
         math.floor(game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue())
     ));
@@ -92,7 +92,7 @@ local Debug = function()
 end
 
 -- Varbiables
-
+local autoSell = false
 local autoShake = false
 local autoShakeDelay = 0.1
 local autoShakeMethod = "KeyCodeEvent"
@@ -307,13 +307,13 @@ end)
 
 -- Main
 
-local AutoShakeGroup = Tabs.Main:AddLeftGroupbox('AutoShake')
-local AutoReelGroup = Tabs.Main:AddLeftGroupbox('AutoReel')
-local AutoCastGroup = Tabs.Main:AddLeftGroupbox('AutoCast')
-local FishUtilitiesGroup = Tabs.Main:AddRightGroupbox('Fish (🐟) Utilities')
+local AutoShakeGroup = Tabs.Main:AddLeftGroupbox('Auto Shake')
+local AutoReelGroup = Tabs.Main:AddLeftGroupbox('Auto Reel')
+local AutoCastGroup = Tabs.Main:AddLeftGroupbox('Auto Cast')
+local FishUtilitiesGroup = Tabs.Main:AddRightGroupbox('Fish Utilities')
 --local EventGroup = Tabs.Main:AddRightGroupbox('Event')
-local ZoneCastGroup = Tabs.Main:AddRightGroupbox('ZoneCast')
-local CollarPlayerGroup = Tabs.Main:AddRightGroupbox('CollarPlayer')
+local ZoneCastGroup = Tabs.Main:AddRightGroupbox('Zone Cast')
+local CollarPlayerGroup = Tabs.Main:AddRightGroupbox('Collar Player')
 
 AutoShakeGroup:AddToggle('AutoShake', {
     Text = 'Enabled',
@@ -479,6 +479,39 @@ AutoCastSettings:SetupDependencies({
     { Toggles.AutoCast, true }
 })
 
+local Selltoggle = FishUtilitiesGroup:AddToggle('Sell ALL fish (Auto)', {
+    Text = 'Enabled',
+    Default = false,
+    Tooltip = 'Automatically Sell ALL fish',
+    Callback = function(Value)
+        autoSell = Value
+
+        task.spawn(function()
+            while autoSell do
+                local npc = workspace:WaitForChild("world"):WaitForChild("npcs"):WaitForChild("Marc Merchant")
+                local args = {
+                    {
+                        voice = 12,
+                        npc = npc,
+                        idle = npc:WaitForChild("description"):WaitForChild("idle")
+                    }
+                }
+
+                local sellAllEvent = game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("SellAll")
+
+                pcall(function()
+                    sellAllEvent:InvokeServer(unpack(args))
+                end)
+                task.wait(0.9)
+                sellAllEvent:FireServer(unpack(args))
+
+                task.wait(0.5)
+            end
+        end)
+    end
+})
+
+
 local SellButton = FishUtilitiesGroup:AddButton({
     Text = 'Sell a fish',
     Func = function()
@@ -501,8 +534,29 @@ local SellButton = FishUtilitiesGroup:AddButton({
     Tooltip = 'Sells the fish you are holding'
 })
 
+local SellAllSButton = FishUtilitiesGroup:AddButton({
+    Text = "Sell ALL fish (Starter Zone)",
+    Func = function()
+        local npc = workspace:WaitForChild("world"):WaitForChild("npcs"):WaitForChild("Marc Merchant")
+        local args = {
+            {
+                voice = 12,
+                npc = npc,
+                idle = npc:WaitForChild("description"):WaitForChild("idle")
+            }
+        }
+
+        local sellAllEvent = game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("SellAll")
+        sellAllEvent:InvokeServer(unpack(args))
+        wait(0.5)
+        sellAllEvent:FireServer(unpack(args))
+    end,
+    DoubleClick = false,
+    Tooltip = "Sells all your fish"
+})
+
 local SellAllButton = FishUtilitiesGroup:AddButton({
-    Text = "Sell ALL fish",
+    Text = "Sell ALL fish (Broken Zone)",
     Func = function()
         local world = workspace:WaitForChild("world")
         local npcs = world:WaitForChild("npcs")
@@ -524,7 +578,7 @@ local SellAllButton = FishUtilitiesGroup:AddButton({
 })
 
 local SellAllButton = FishUtilitiesGroup:AddButton({
-    Text = 'Appraise fish 🐟 (450C$)',
+    Text = 'Appraise fish (450C$)',
     Func = function()
         Workspace:WaitForChild("world"):WaitForChild("npcs"):WaitForChild("Appraiser"):WaitForChild("appraiser"):WaitForChild("appraise"):InvokeServer()
     end,
@@ -866,3 +920,4 @@ task.spawn(function()
         end
     end
 end)
+
