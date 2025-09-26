@@ -1,5 +1,5 @@
 -- =========================
-local version = "5.6.4"
+local version = "5.6.5"
 -- =========================
 
 if setfpscap then
@@ -168,7 +168,7 @@ task.spawn(function()
     local Info          = Window:Tab({ Title = "Information",  Icon = "info" })
 	local MainDivider   = Window:Divider()
     local MainTab       = Window:Tab({ Title = "Main",         Icon = "rocket" }) 
-    local CashTab       = Window:Tab({ Title = "Cash",         Icon = "dollar-sign" }) 
+    local CashTab       = Window:Tab({ Title = "Cash (Patched)",         Icon = "dollar-sign" }) 
 	local GamepassTab   = Window:Tab({ Title = "Gamepass",     Icon = "cookie" }) 
 	local MoreDivider   = Window:Divider()
     local PartyTab      = Window:Tab({ Title = "Auto Join",    Icon = "handshake" }) 
@@ -279,7 +279,7 @@ task.spawn(function()
 
     -- ====== Cash Tab ======
     CashTab:Section({ Title = "Join Group first!", Icon = "triangle-alert" })
-    CashTab:Section({ Title = "Dupe Currency (Under Fixing)", Icon = "circle-dollar-sign" })
+    CashTab:Section({ Title = "Dupe Currency (Patched)", Icon = "circle-dollar-sign" })
 
     CashTab:Input({ Title = "Enter Dupe Cash Amount", Placeholder = "100 ~ 10000", Callback = function(text) cashInputValue = text end })
     CashTab:Button({
