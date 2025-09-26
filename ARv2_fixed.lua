@@ -1,5 +1,5 @@
 -- =========================
-local version = "5.6.2"
+local version = "5.6.3"
 -- =========================
 
 if setfpscap then
@@ -165,17 +165,17 @@ task.spawn(function()
     })
 
     -- Tabs (KEEP THESE LOCALS USED BELOW)
-    local InfoTab   = Window:Tab({ Title = "Info",       Icon = "info" })
-	local MainDivider = Window:Divider()
-    local MainTab   = Window:Tab({ Title = "Main",       Icon = "rocket" }) 
-    local CashTab   = Window:Tab({ Title = "Cash",       Icon = "dollar-sign" }) 
-	local GamepassTab = Window:Tab({ Title = "Gamepass", Icon = "cookie" }) 
-	local MoreDivider = Window:Divider()
-    local PartyTab  = Window:Tab({ Title = "Auto Join",  Icon = "handshake" }) 
-    local EquipTab  = Window:Tab({ Title = "Equip",      Icon = "flame" }) 
+    local Info          = Window:Tab({ Title = "Information",  Icon = "info" })
+	local MainDivider   = Window:Divider()
+    local MainTab       = Window:Tab({ Title = "Main",         Icon = "rocket" }) 
+    local CashTab       = Window:Tab({ Title = "Cash",         Icon = "dollar-sign" }) 
+	local GamepassTab   = Window:Tab({ Title = "Gamepass",     Icon = "cookie" }) 
+	local MoreDivider   = Window:Divider()
+    local PartyTab      = Window:Tab({ Title = "Auto Join",    Icon = "handshake" }) 
+    local EquipTab      = Window:Tab({ Title = "Equip",        Icon = "flame" }) 
 	local PlayerDivider = Window:Divider()
-    local PlayerTab = Window:Tab({ Title = "Player",     Icon = "user" }) 
-    local MiscTab   = Window:Tab({ Title = "Misc",       Icon = "file-cog" }) 
+    local PlayerTab     = Window:Tab({ Title = "Player",       Icon = "user" }) 
+    local MiscTab       = Window:Tab({ Title = "Misc",         Icon = "file-cog" }) 
 
     Window:SelectTab(1)
 		
@@ -555,8 +555,6 @@ task.spawn(function()
 
     print("[DYHUB] Script loaded successfully!")
 end)
-
-Info = InfoTab
 
 if not ui then ui = {} end
 if not ui.Creator then ui.Creator = {} end
