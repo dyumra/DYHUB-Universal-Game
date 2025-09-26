@@ -1,5 +1,6 @@
 -- ============================== VERSION ==============================
-local version = "3.5.1"
+local version = "3.5.2"
+-- =====================================================================
 
 -- ============================== SERVICE ==============================
 local Players = game:GetService("Players")
@@ -7,8 +8,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 -- ============================== SETTINGS =============================
-local cratesFrame = Players.LocalPlayer.PlayerGui.Pages.Shop.Inner.Contents.ScrollingFrame
-local blockFrame = Players.LocalPlayer.PlayerGui.Pages.Shop.Inner.Contents.ScrollingFrame
+local scrollingFrame = Players.LocalPlayer.PlayerGui.Pages.Shop.Inner.Contents.ScrollingFrame
 
 local function getButtonNames(frame)
     local names = {}
@@ -20,12 +20,12 @@ local function getButtonNames(frame)
     return names
 end
 
-local crateOptions = getButtonNames(cratesFrame)
-local selectedCrate = {} -- table สำหรับหลายค่า
+local crateOptions = getButtonNames(scrollingFrame)
+local selectedCrate = {}
 local autoBuyCrate = false
 
-local blockOptions = getButtonNames(blockFrame)
-local selectedBlock = {} -- table สำหรับหลายค่า
+local blockOptions = getButtonNames(scrollingFrame)
+local selectedBlock = {}
 local autoBuyBlock = false
 
 -- ============================== WINDOW ===============================
@@ -74,7 +74,6 @@ Main:Toggle({
             while state do
                 task.wait(0.1)
                 
-                -- Auto Start
                 pcall(function()
                     ReplicatedStorage:WaitForChild("Remotes")
                         :WaitForChild("Functions")
@@ -82,7 +81,6 @@ Main:Toggle({
                         :InvokeServer()
                 end)
                 
-                -- Auto Shoot All
                 pcall(function()
                     ReplicatedStorage:WaitForChild("Remotes")
                         :WaitForChild("Events")
@@ -127,6 +125,18 @@ Main:Toggle({
                 end)
             end
         end)
+    end
+})
+
+-- =======
+Main:Toggle({
+    Title = "Show Notify",
+    Default = true,
+    Callback = function(state)
+        local hints = Players.LocalPlayer.PlayerGui:FindFirstChild("Hints")
+        if hints then
+            hints.Enabled = state
+        end
     end
 })
 
