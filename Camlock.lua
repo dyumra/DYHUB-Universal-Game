@@ -1,4 +1,4 @@
--- ================= V518 ==================
+-- ================= V520 ==================
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -9,11 +9,14 @@ local Camera = Workspace.CurrentCamera
 
 -- ================= CONFIG =================
 local Target = nil
-local LockPart = "Torso"
 local CamlockEnabled = false
 local ThroughWalls = false
 local MenuOpen = true
 local LockedTarget = nil
+
+local LockParts = {"Head","Torso","UpperTorso","LowerTorso","HumanoidRootPart"}
+local LockIndex = 5
+local LockPart = LockParts[LockIndex]
 
 local Keybinds = {
     Camlock = Enum.KeyCode.V,
@@ -37,16 +40,14 @@ Frame.Visible = MenuOpen
 Frame.AnchorPoint = Vector2.new(0.5,0)
 Frame.Parent = ScreenGui
 
-local Corner = Instance.new("UICorner", Frame)
-Corner.CornerRadius = UDim.new(0,15)
-
+Instance.new("UICorner", Frame).CornerRadius = UDim.new(0,15)
 local Shadow = Instance.new("UIStroke", Frame)
 Shadow.Thickness = 1.5
 Shadow.Color = Color3.fromRGB(70,70,70)
 Shadow.Transparency = 0.5
 
 -- ================= DRAG =================
-local dragging, dragInput, startPos, startPosFrame
+local dragging, startPos, startPosFrame
 local function update(input)
     local delta = input.Position - startPos
     Frame.Position = UDim2.new(startPosFrame.X.Scale, startPosFrame.X.Offset + delta.X, startPosFrame.Y.Scale, startPosFrame.Y.Offset + delta.Y)
@@ -81,22 +82,16 @@ local function createButton(text,pos,parent)
     btn.BackgroundColor3 = Color3.fromRGB(45,45,45)
     btn.BorderSizePixel = 0
     btn.Parent = parent
-    local corner = Instance.new("UICorner", btn)
-    corner.CornerRadius = UDim.new(0,6)
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)
 
-    -- Hover effect
-    btn.MouseEnter:Connect(function()
-        btn.BackgroundColor3 = Color3.fromRGB(65,65,65)
-    end)
-    btn.MouseLeave:Connect(function()
-        btn.BackgroundColor3 = Color3.fromRGB(45,45,45)
-    end)
+    btn.MouseEnter:Connect(function() btn.BackgroundColor3 = Color3.fromRGB(65,65,65) end)
+    btn.MouseLeave:Connect(function() btn.BackgroundColor3 = Color3.fromRGB(45,45,45) end)
     return btn
 end
 
 -- ================= MAIN BUTTONS =================
 local ToggleBtn = createButton("Camlock: OFF", UDim2.new(0,10,0,10), Frame)
-local ModeBtn = createButton("Lock Part: HumanoidRootPart", UDim2.new(0,10,0,50), Frame)
+local ModeBtn = createButton("Lock Part: "..LockPart, UDim2.new(0,10,0,50), Frame)
 local WallBtn = createButton("Through Walls: OFF", UDim2.new(0,10,0,90), Frame)
 local KeybindBtn = createButton("Keybinds", UDim2.new(0,10,0,130), Frame)
 
@@ -107,8 +102,7 @@ MenuIcon.Image = "rbxassetid://104487529937663"
 MenuIcon.BackgroundTransparency = 0
 MenuIcon.BackgroundColor3 = Color3.fromRGB(40,40,40)
 MenuIcon.Parent = ScreenGui
-local iconCorner = Instance.new("UICorner", MenuIcon)
-iconCorner.CornerRadius = UDim.new(1,0)
+Instance.new("UICorner", MenuIcon).CornerRadius = UDim.new(1,0)
 
 MenuIcon.MouseButton1Click:Connect(function()
     MenuOpen = not MenuOpen
@@ -124,24 +118,21 @@ KeyGui.BackgroundColor3 = Color3.fromRGB(30,30,30)
 KeyGui.BackgroundTransparency = 0.15
 KeyGui.Visible = false
 KeyGui.Parent = ScreenGui
-
-local KeyCorner = Instance.new("UICorner", KeyGui)
-KeyCorner.CornerRadius = UDim.new(0,12)
+Instance.new("UICorner", KeyGui).CornerRadius = UDim.new(0,12)
 
 local keyTexts = {}
 local function createKeyText(name, pos)
     local txt = Instance.new("TextButton")
     txt.Size = UDim2.new(1,-20,0,28)
     txt.Position = pos
-    txt.Text = name..": "..Keybinds[name].Name
+    txt.Text = name..": "..(Keybinds[name] and Keybinds[name].Name or "NONE")
     txt.Font = Enum.Font.GothamBold
     txt.TextSize = 14
     txt.TextColor3 = Color3.fromRGB(245,245,245)
     txt.BackgroundColor3 = Color3.fromRGB(50,50,50)
     txt.BorderSizePixel = 0
     txt.Parent = KeyGui
-    local corner = Instance.new("UICorner", txt)
-    corner.CornerRadius = UDim.new(0,6)
+    Instance.new("UICorner", txt).CornerRadius = UDim.new(0,6)
 
     txt.MouseButton1Click:Connect(function()
         txt.Text = name..": ...."
@@ -149,7 +140,6 @@ local function createKeyText(name, pos)
         conn = UserInputService.InputBegan:Connect(function(input, gpe)
             if input.UserInputType == Enum.UserInputType.Keyboard then
                 if input.KeyCode == Enum.KeyCode.Backspace then
-                    -- reset
                     Keybinds[name] = nil
                     txt.Text = name..": NONE"
                 else
@@ -179,8 +169,9 @@ ToggleBtn.MouseButton1Click:Connect(function()
 end)
 
 ModeBtn.MouseButton1Click:Connect(function()
-    LockPart = (LockPart == "Torso") and "Head" or "Torso"
-    ModeBtn.Text = "Lock Part: "..LockPart
+    LockIndex = (LockIndex % #LockParts) + 1
+    LockPart = LockParts[LockIndex]
+    ModeBtn.Text = "Lock Part: " .. LockPart
 end)
 
 WallBtn.MouseButton1Click:Connect(function()
@@ -197,8 +188,9 @@ UserInputService.InputBegan:Connect(function(input, gpe)
                 CamlockEnabled = not CamlockEnabled
                 ToggleBtn.Text = CamlockEnabled and "Camlock: ON" or "Camlock: OFF"
             elseif action == "LockPart" then
-                LockPart = (LockPart == "Torso") and "Head" or "Torso"
-                ModeBtn.Text = "Lock Part: "..LockPart
+                LockIndex = (LockIndex % #LockParts) + 1
+                LockPart = LockParts[LockIndex]
+                ModeBtn.Text = "Lock Part: " .. LockPart
             elseif action == "ThroughWalls" then
                 ThroughWalls = not ThroughWalls
                 WallBtn.Text = ThroughWalls and "Through Walls: ON" or "Through Walls: OFF"
@@ -222,9 +214,8 @@ local function IsValidTarget(plr)
     if not root then return false end
 
     local dist = (part.Position - root.Position).Magnitude
-    if dist > 1000 then return false end
+    if dist > 99999 then return false end
 
-    -- ✅ fixed logic
     if not ThroughWalls then
         local rayParams = RaycastParams.new()
         rayParams.FilterDescendantsInstances = {LocalPlayer.Character, char}
@@ -239,8 +230,7 @@ end
 local function FindNearestTarget()
     local root = LocalPlayer.Character and (LocalPlayer.Character:FindFirstChild("HumanoidRootPart") or LocalPlayer.Character:FindFirstChild("Torso"))
     if not root then return nil end
-    local closest, closestDist
-    closestDist = math.huge
+    local closest, closestDist = nil, math.huge
 
     for _, plr in ipairs(Players:GetPlayers()) do
         if IsValidTarget(plr) then
