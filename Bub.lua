@@ -1,5 +1,5 @@
 -- ============================== VERSION ==============================
-local version = "3.6.4"
+local version = "3.6.5"
 
 -- ============================== SERVICE ==============================
 local Players = game:GetService("Players")
@@ -73,7 +73,7 @@ local Window = WindUI:CreateWindow({
     Title = "DYHUB",
     IconThemed = true,
     Icon = "rbxassetid://104487529937663",
-    Author = "Build ur Base | Free Version",
+    Author = "Build ur Base | Premium Version",
     Folder = "DYHUB_BUB",
     Size = UDim2.fromOffset(500, 350),
     Transparent = true,
