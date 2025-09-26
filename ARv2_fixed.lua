@@ -1,5 +1,5 @@
 -- =========================
-local version = "5.6.3"
+local version = "5.6.4"
 -- =========================
 
 if setfpscap then
@@ -553,188 +553,155 @@ task.spawn(function()
         end,
     })
 
-    print("[DYHUB] Script loaded successfully!")
-end)
+    -- ========= Info Tab =========
+    if not ui then ui = {} end
+    if not ui.Creator then ui.Creator = {} end
 
-if not ui then ui = {} end
-if not ui.Creator then ui.Creator = {} end
-
--- Define the Request function that mimics ui.Creator.Request
-ui.Creator.Request = function(requestData)
-    local HttpService = game:GetService("HttpService")
-    
-    -- Try different HTTP methods
-    local success, result = pcall(function()
-        if HttpService.RequestAsync then
-            -- Method 1: Use RequestAsync if available
-            local response = HttpService:RequestAsync({
-                Url = requestData.Url,
-                Method = requestData.Method or "GET",
-                Headers = requestData.Headers or {}
-            })
-            return {
-                Body = response.Body,
-                StatusCode = response.StatusCode,
-                Success = response.Success
-            }
+    ui.Creator.Request = function(requestData)
+        local HttpService = game:GetService("HttpService")
+        local success, result = pcall(function()
+            if HttpService.RequestAsync then
+                local response = HttpService:RequestAsync({
+                    Url = requestData.Url,
+                    Method = requestData.Method or "GET",
+                    Headers = requestData.Headers or {}
+                })
+                return { Body = response.Body, StatusCode = response.StatusCode, Success = response.Success }
+            else
+                local body = HttpService:GetAsync(requestData.Url)
+                return { Body = body, StatusCode = 200, Success = true }
+            end
+        end)
+        if success then
+            return result
         else
-            -- Method 2: Fallback to GetAsync
-            local body = HttpService:GetAsync(requestData.Url)
-            return {
-                Body = body,
-                StatusCode = 200,
-                Success = true
-            }
+            error("HTTP Request failed: " .. tostring(result))
         end
-    end)
-    
-    if success then
-        return result
-    else
-        error("HTTP Request failed: " .. tostring(result))
     end
-end
 
--- Remove this line completely: Info = InfoTab
--- The Info variable is already correctly set above
+    local InviteCode = "jWNDPNMmyB"
+    local DiscordAPI = "https://discord.com/api/v10/invites/" .. InviteCode .. "?with_counts=true&with_expiration=true"
 
-local InviteCode = "jWNDPNMmyB"
-local DiscordAPI = "https://discord.com/api/v10/invites/" .. InviteCode .. "?with_counts=true&with_expiration=true"
+    local function LoadDiscordInfo()
+        local success, result = pcall(function()
+            return game:GetService("HttpService"):JSONDecode(ui.Creator.Request({
+                Url = DiscordAPI,
+                Method = "GET",
+                Headers = { ["User-Agent"] = "RobloxBot/1.0", ["Accept"] = "application/json" }
+            }).Body)
+        end)
 
-local function LoadDiscordInfo()
-    local success, result = pcall(function()
-        return game:GetService("HttpService"):JSONDecode(ui.Creator.Request({
-            Url = DiscordAPI,
-            Method = "GET",
-            Headers = {
-                ["User-Agent"] = "RobloxBot/1.0",
-                ["Accept"] = "application/json"
-            }
-        }).Body)
-    end)
+        if success and result and result.guild then
+            local DiscordInfo = Info:Paragraph({
+                Title = result.guild.name,
+                Desc = ' <font color="#52525b">●</font> Member Count : ' .. tostring(result.approximate_member_count) ..
+                       '\n <font color="#16a34a">●</font> Online Count : ' .. tostring(result.approximate_presence_count),
+                Image = "https://cdn.discordapp.com/icons/" .. result.guild.id .. "/" .. result.guild.icon .. ".png?size=1024",
+                ImageSize = 42,
+            })
 
-    if success and result and result.guild then
-        local DiscordInfo = Info:Paragraph({
-            Title = result.guild.name,
-            Desc = ' <font color="#52525b">●</font> Member Count : ' .. tostring(result.approximate_member_count) ..
-                '\n <font color="#16a34a">●</font> Online Count : ' .. tostring(result.approximate_presence_count),
-            Image = "https://cdn.discordapp.com/icons/" .. result.guild.id .. "/" .. result.guild.icon .. ".png?size=1024",
-            ImageSize = 42,
-        })
+            Info:Button({
+                Title = "Update Info",
+                Callback = function()
+                    local updated, updatedResult = pcall(function()
+                        return game:GetService("HttpService"):JSONDecode(ui.Creator.Request({
+                            Url = DiscordAPI,
+                            Method = "GET",
+                        }).Body)
+                    end)
+                    if updated and updatedResult and updatedResult.guild then
+                        DiscordInfo:SetDesc(
+                            ' <font color="#52525b">●</font> Member Count : ' .. tostring(updatedResult.approximate_member_count) ..
+                            '\n <font color="#16a34a">●</font> Online Count : ' .. tostring(updatedResult.approximate_presence_count)
+                        )
+                        WindUI:Notify({
+                            Title = "Discord Info Updated",
+                            Content = "Successfully refreshed Discord statistics",
+                            Duration = 2,
+                            Icon = "refresh-cw",
+                        })
+                    else
+                        WindUI:Notify({
+                            Title = "Update Failed",
+                            Content = "Could not refresh Discord info",
+                            Duration = 3,
+                            Icon = "alert-triangle",
+                        })
+                    end
+                end
+            })
 
-        Info:Button({
-            Title = "Update Info",
-            Callback = function()
-                local updated, updatedResult = pcall(function()
-                    return game:GetService("HttpService"):JSONDecode(ui.Creator.Request({
-                        Url = DiscordAPI,
-                        Method = "GET",
-                    }).Body)
-                end)
-
-                if updated and updatedResult and updatedResult.guild then
-                    DiscordInfo:SetDesc(
-                        ' <font color="#52525b">●</font> Member Count : ' .. tostring(updatedResult.approximate_member_count) ..
-                        '\n <font color="#16a34a">●</font> Online Count : ' .. tostring(updatedResult.approximate_presence_count)
-                    )
-                    
+            Info:Button({
+                Title = "Copy Discord Invite",
+                Callback = function()
+                    setclipboard("https://discord.gg/" .. InviteCode)
                     WindUI:Notify({
-                        Title = "Discord Info Updated",
-                        Content = "Successfully refreshed Discord statistics",
+                        Title = "Copied!",
+                        Content = "Discord invite copied to clipboard",
                         Duration = 2,
-                        Icon = "refresh-cw",
-                    })
-                else
-                    WindUI:Notify({
-                        Title = "Update Failed",
-                        Content = "Could not refresh Discord info",
-                        Duration = 3,
-                        Icon = "alert-triangle",
+                        Icon = "clipboard-check",
                     })
                 end
-            end
-        })
-
-        Info:Button({
-            Title = "Copy Discord Invite",
-            Callback = function()
-                setclipboard("https://discord.gg/" .. InviteCode)
-                WindUI:Notify({
-                    Title = "Copied!",
-                    Content = "Discord invite copied to clipboard",
-                    Duration = 2,
-                    Icon = "clipboard-check",
-                })
-            end
-        })
-    else
-        Info:Paragraph({
-            Title = "Error fetching Discord Info",
-            Desc = "Unable to load Discord information. Check your internet connection.",
-            Image = "triangle-alert",
-            ImageSize = 26,
-            Color = "Red",
-        })
-        print("Discord API Error:", result) -- Debug print
+            })
+        else
+            Info:Paragraph({
+                Title = "Error fetching Discord Info",
+                Desc = "Unable to load Discord information. Check your internet connection.",
+                Image = "triangle-alert",
+                ImageSize = 26,
+                Color = "Red",
+            })
+            print("Discord API Error:", result)
+        end
     end
-end
 
-LoadDiscordInfo()
+    LoadDiscordInfo()
 
-Info:Divider()
-Info:Section({ 
-    Title = "DYHUB Information",
-    TextXAlignment = "Center",
-    TextSize = 17,
-})
-Info:Divider()
+    Info:Divider()
+    Info:Section({ Title = "DYHUB Information", TextXAlignment = "Center", TextSize = 17 })
+    Info:Divider()
 
-local Owner = Info:Paragraph({
-    Title = "Main Owner",
-    Desc = "@dyumraisgoodguy#8888",
-    Image = "rbxassetid://119789418015420",
-    ImageSize = 30,
-    Thumbnail = "",
-    ThumbnailSize = 0,
-    Locked = false,
-})
+    local Owner = Info:Paragraph({
+        Title = "Main Owner",
+        Desc = "@dyumraisgoodguy#8888",
+        Image = "rbxassetid://119789418015420",
+        ImageSize = 30,
+        Thumbnail = "",
+        ThumbnailSize = 0,
+        Locked = false,
+    })
 
-local Social = Info:Paragraph({
-    Title = "Social",
-    Desc = "Copy link social media for follow!",
-    Image = "rbxassetid://104487529937663",
-    ImageSize = 30,
-    Thumbnail = "",
-    ThumbnailSize = 0,
-    Locked = false,
-    Buttons = {
-        {
-            Icon = "copy",
-            Title = "Copy Link",
-            Callback = function()
+    local Social = Info:Paragraph({
+        Title = "Social",
+        Desc = "Copy link social media for follow!",
+        Image = "rbxassetid://104487529937663",
+        ImageSize = 30,
+        Thumbnail = "",
+        ThumbnailSize = 0,
+        Locked = false,
+        Buttons = {
+            { Icon = "copy", Title = "Copy Link", Callback = function()
                 setclipboard("https://guns.lol/DYHUB")
                 print("Copied social media link to clipboard!")
-            end,
+            end }
         }
-    }
-})
+    })
 
-local Discord = Info:Paragraph({
-    Title = "Discord",
-    Desc = "Join our discord for more scripts!",
-    Image = "rbxassetid://104487529937663",
-    ImageSize = 30,
-    Thumbnail = "",
-    ThumbnailSize = 0,
-    Locked = false,
-    Buttons = {
-        {
-            Icon = "copy",
-            Title = "Copy Link",
-            Callback = function()
+    local Discord = Info:Paragraph({
+        Title = "Discord",
+        Desc = "Join our discord for more scripts!",
+        Image = "rbxassetid://104487529937663",
+        ImageSize = 30,
+        Thumbnail = "",
+        ThumbnailSize = 0,
+        Locked = false,
+        Buttons = {
+            { Icon = "copy", Title = "Copy Link", Callback = function()
                 setclipboard("https://discord.gg/jWNDPNMmyB")
                 print("Copied discord link to clipboard!")
-            end,
+            end }
         }
-    }
-})
+    })
+
+    print("[DYHUB] Script loaded successfully!")
+end)
