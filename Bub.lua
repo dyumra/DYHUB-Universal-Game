@@ -1,5 +1,5 @@
 -- ============================== VERSION ==============================
-local version = "3.6.3"
+local version = "3.6.4"
 
 -- ============================== SERVICE ==============================
 local Players = game:GetService("Players")
@@ -112,7 +112,7 @@ Main:Toggle({
         spawn(function()
             local lastLaunch = 0
             while state do
-                task.wait(0.1)
+                task.wait(0.05)
                 if tick() - lastLaunch >= 300 then
                     pcall(function()
                         ReplicatedStorage:WaitForChild("Remotes")
@@ -140,7 +140,7 @@ Main:Toggle({
     Default = false,
     Callback = function(state)
         if state then
-            task.wait(1.11)
+            task.wait(0.69)
             pcall(function()
                 ReplicatedStorage:WaitForChild("Remotes")
                     :WaitForChild("Functions")
@@ -157,7 +157,7 @@ Main:Toggle({
     Callback = function(state)
         spawn(function()
             while state do
-                task.wait(0.25)
+                task.wait(0.005)
                 pcall(function()
                     ReplicatedStorage:WaitForChild("Remotes")
                         :WaitForChild("Events")
