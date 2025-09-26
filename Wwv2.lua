@@ -1,5 +1,5 @@
 -- =====================
-local Development = "DYHUB | Wizard West (V3.8.5)"
+local Development = "DYHUB | Wizard West (V3.9.2)"
 -- =====================
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
@@ -39,7 +39,7 @@ _G.AutoSafeEnabled = false
 _G.SafeTrigger = 50
 
 MainTab:CreateButton({
-   Name = "Camlock (V2)",
+   Name = "Camlock (V3)",
    Callback = function()
       loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Camlock.lua"))()
    end
