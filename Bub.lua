@@ -1,5 +1,5 @@
 -- ============================== VERSION ==============================
-local version = "3.5.2"
+local version = "3.5.4"
 -- =====================================================================
 
 -- ============================== SERVICE ==============================
@@ -71,16 +71,18 @@ Main:Toggle({
     Default = false,
     Callback = function(state)
         spawn(function()
+            local lastLaunch = 0
             while state do
                 task.wait(0.1)
-                
-                pcall(function()
-                    ReplicatedStorage:WaitForChild("Remotes")
-                        :WaitForChild("Functions")
-                        :WaitForChild("LaunchVehicle")
-                        :InvokeServer()
-                end)
-                
+                if tick() - lastLaunch >= 300 then
+                    pcall(function()
+                        ReplicatedStorage:WaitForChild("Remotes")
+                            :WaitForChild("Functions")
+                            :WaitForChild("LaunchVehicle")
+                            :InvokeServer()
+                    end)
+                    lastLaunch = tick()
+                end
                 pcall(function()
                     ReplicatedStorage:WaitForChild("Remotes")
                         :WaitForChild("Events")
@@ -92,7 +94,7 @@ Main:Toggle({
     end
 })
 
-Main:Section({ Title = "Auto Helper", Icon = "crown" })
+Main:Section({ Title = "Feature Helper", Icon = "cross" })
 
 Main:Toggle({
     Title = "Auto Start",
@@ -128,14 +130,13 @@ Main:Toggle({
     end
 })
 
--- =======
 Main:Toggle({
-    Title = "Show Notify",
-    Default = true,
+    Title = "Disable Notify",
+    Default = false,
     Callback = function(state)
         local hints = Players.LocalPlayer.PlayerGui:FindFirstChild("Hints")
         if hints then
-            hints.Enabled = state
+            hints.Enabled = not state
         end
     end
 })
@@ -148,7 +149,26 @@ Main:Toggle({
     Callback = function(state)
         spawn(function()
             while state do
-                task.wait(2)
+                task.wait(1)
+                pcall(function()
+                    local args = {"LunarEclipse"}
+                    ReplicatedStorage:WaitForChild("Remotes")
+                        :WaitForChild("Functions")
+                        :WaitForChild("ProgressEventSubmit")
+                        :InvokeServer(unpack(args))
+                end)
+            end
+        end)
+    end
+})
+
+Main:Toggle({
+    Title = "Auto Collect Lunar",
+    Default = false,
+    Callback = function(state)
+        spawn(function()
+            while state do
+                task.wait(1)
                 pcall(function()
                     local args = {"LunarEclipse"}
                     ReplicatedStorage:WaitForChild("Remotes")
