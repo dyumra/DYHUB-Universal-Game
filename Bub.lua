@@ -11,49 +11,49 @@ local cratesFrame = Players.LocalPlayer.PlayerGui.Pages.Shop.Inner.Contents.Scro
 local blockFrame = Players.LocalPlayer.PlayerGui.Pages.Shop.Inner.Contents.ScrollingFrame
 
 local function getButtonNames(frame)
-    local names = {}
-    for _, child in ipairs(frame:GetChildren()) do
-        if child:IsA("TextButton") then
-            table.insert(names, child.Name)
-        end
-    end
-    return names
+    local names = {}
+    for _, child in ipairs(frame:GetChildren()) do
+        if child:IsA("TextButton") then
+            table.insert(names, child.Name)
+        end
+    end
+    return names
 end
 
 local crateOptions = getButtonNames(cratesFrame)
-local selectedCrate = crateOptions[1] or ""
+local selectedCrate = {} -- table สำหรับหลายค่า
 local autoBuyCrate = false
 
 local blockOptions = getButtonNames(blockFrame)
-local selectedBlock = blockOptions[1] or ""
+local selectedBlock = {} -- table สำหรับหลายค่า
 local autoBuyBlock = false
 
 -- ============================== WINDOW ===============================
 repeat task.wait() until game:IsLoaded()
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB",
-    IconThemed = true,
-    Icon = "rbxassetid://104487529937663",
-    Author = "Build ur Base | Free Version",
-    Folder = "DYHUB_BUB",
-    Size = UDim2.fromOffset(500, 350),
-    Transparent = true,
-    Theme = "Dark",
-    BackgroundImageTransparency = 0.8,
-    HasOutline = false,
-    HideSearchBar = true,
-    ScrollBarEnabled = false,
-    User = { Enabled = true, Anonymous = false },
+    Title = "DYHUB",
+    IconThemed = true,
+    Icon = "rbxassetid://104487529937663",
+    Author = "Build ur Base | Free Version",
+    Folder = "DYHUB_BUB",
+    Size = UDim2.fromOffset(500, 350),
+    Transparent = true,
+    Theme = "Dark",
+    BackgroundImageTransparency = 0.8,
+    HasOutline = false,
+    HideSearchBar = true,
+    ScrollBarEnabled = false,
+    User = { Enabled = true, Anonymous = false },
 })
 pcall(function() Window:Tag({ Title = version, Color = Color3.fromHex("#30ff6a") }) end)
 Window:EditOpenButton({
-    Title = "DYHUB - Open",
-    Icon = "monitor",
-    CornerRadius = UDim.new(0, 6),
-    StrokeThickness = 2,
-    Color = ColorSequence.new(Color3.fromRGB(30,30,30), Color3.fromRGB(255,255,255)),
-    Draggable = true
+    Title = "DYHUB - Open",
+    Icon = "monitor",
+    CornerRadius = UDim.new(0, 6),
+    StrokeThickness = 2,
+    Color = ColorSequence.new(Color3.fromRGB(30,30,30), Color3.fromRGB(255,255,255)),
+    Draggable = true
 })
 
 -- ============================== TABS =================================
@@ -97,127 +97,128 @@ Main:Toggle({
 Main:Section({ Title = "Auto Helper", Icon = "crown" })
 
 Main:Toggle({
-    Title = "Auto Start",
-    Default = false,
-    Callback = function(state)
-        if state then
+    Title = "Auto Start",
+    Default = false,
+    Callback = function(state)
+        if state then
             task.wait(1.11)
-            pcall(function()
-                ReplicatedStorage:WaitForChild("Remotes")
-                    :WaitForChild("Functions")
-                    :WaitForChild("LaunchVehicle")
-                    :InvokeServer()
-            end)
-        end
-    end
+            pcall(function()
+                ReplicatedStorage:WaitForChild("Remotes")
+                    :WaitForChild("Functions")
+                    :WaitForChild("LaunchVehicle")
+                    :InvokeServer()
+            end)
+        end
+    end
 })
 
 Main:Toggle({
-    Title = "Auto Shoot All",
-    Default = false,
-    Callback = function(state)
-        spawn(function()
-            while state do
-                task.wait(0.25)
-                pcall(function()
-                    ReplicatedStorage:WaitForChild("Remotes")
-                        :WaitForChild("Events")
-                        :WaitForChild("ToolState")
-                        :FireServer(true)
-                end)
-            end
-        end)
-    end
+    Title = "Auto Shoot All",
+    Default = false,
+    Callback = function(state)
+        spawn(function()
+            while state do
+                task.wait(0.25)
+                pcall(function()
+                    ReplicatedStorage:WaitForChild("Remotes")
+                        :WaitForChild("Events")
+                        :WaitForChild("ToolState")
+                        :FireServer(true)
+                end)
+            end
+        end)
+    end
 })
 
 Main:Section({ Title = "Event", Icon = "moon" })
 
 Main:Toggle({
-    Title = "Auto Submit Lunar",
-    Default = false,
-    Callback = function(state)
-        spawn(function()
-            while state do
-                task.wait(2)
-                pcall(function()
-                    local args = {"LunarEclipse"}
-                    ReplicatedStorage:WaitForChild("Remotes")
-                        :WaitForChild("Functions")
-                        :WaitForChild("ProgressEventSubmit")
-                        :InvokeServer(unpack(args))
-                end)
-            end
-        end)
-    end
+    Title = "Auto Submit Lunar",
+    Default = false,
+    Callback = function(state)
+        spawn(function()
+            while state do
+                task.wait(2)
+                pcall(function()
+                    local args = {"LunarEclipse"}
+                    ReplicatedStorage:WaitForChild("Remotes")
+                        :WaitForChild("Functions")
+                        :WaitForChild("ProgressEventSubmit")
+                        :InvokeServer(unpack(args))
+                end)
+            end
+        end)
+    end
 })
 
 -- ============================== SHOP ================================
 Shop:Section({ Title = "Buy Crate", Icon = "gift" })
 
-Shop:AddDropdown({
-    Text = "Select Crate",
-    Options = crateOptions,
-    Default = selectedCrate,
-    Callback = function(value)
-        selectedCrate = value
-    end
+Shop:Dropdown({
+    Title = "Select Crate",
+    Values = crateOptions,
+    Multi = true,
+    Callback = function(values)
+        selectedCrate = values
+    end
 })
 
 Shop:Toggle({
-    Title = "Auto Buy Crate",
-    Default = false,
-    Callback = function(state)
-        autoBuyCrate = state
-        spawn(function()
-            while autoBuyCrate do
-                task.wait(1)
-                if selectedCrate ~= "" then
-                    local args = {"Crates",{selectedCrate}}
-                    pcall(function()
-                        ReplicatedStorage:WaitForChild("Remotes")
-                            :WaitForChild("Functions")
-                            :WaitForChild("BuyStock")
-                            :InvokeServer(unpack(args))
-                    end)
-                end
-            end
-        end)
-    end
+    Title = "Auto Buy Crate",
+    Default = false,
+    Callback = function(state)
+        autoBuyCrate = state
+        spawn(function()
+            while autoBuyCrate do
+                task.wait(1)
+                if selectedCrate and #selectedCrate > 0 then
+                    local args = {"Crates", selectedCrate}
+                    pcall(function()
+                        ReplicatedStorage:WaitForChild("Remotes")
+                            :WaitForChild("Functions")
+                            :WaitForChild("BuyStock")
+                            :InvokeServer(unpack(args))
+                    end)
+                end
+            end
+        end)
+    end
 })
 
 Shop:Section({ Title = "Buy Block", Icon = "package" })
 
-Shop:AddDropdown({
-    Text = "Select Block",
-    Options = blockOptions,
-    Default = selectedBlock,
-    Callback = function(value)
-        selectedBlock = value
-    end
+Shop:Dropdown({
+    Title = "Select Block",
+    Values = blockOptions,
+    Multi = true,
+    Callback = function(values)
+        selectedBlock = values
+    end
 })
 
 Shop:Toggle({
-    Title = "Auto Buy Block",
-    Default = false,
-    Callback = function(state)
-        autoBuyBlock = state
-        spawn(function()
-            while autoBuyBlock do
-                task.wait(1)
-                if selectedBlock ~= "" then
-                    local args = {"Blocks",{selectedBlock}}
-                    pcall(function()
-                        ReplicatedStorage:WaitForChild("Remotes")
-                            :WaitForChild("Functions")
-                            :WaitForChild("BuyStock")
-                            :InvokeServer(unpack(args))
-                    end)
-                end
-            end
-        end)
-    end
+    Title = "Auto Buy Block",
+    Default = false,
+    Callback = function(state)
+        autoBuyBlock = state
+        spawn(function()
+            while autoBuyBlock do
+                task.wait(1)
+                if selectedBlock and #selectedBlock > 0 then
+                    local args = {"Blocks", selectedBlock}
+                    pcall(function()
+                        ReplicatedStorage:WaitForChild("Remotes")
+                            :WaitForChild("Functions")
+                            :WaitForChild("BuyStock")
+                            :InvokeServer(unpack(args))
+                    end)
+                end
+            end
+        end)
+    end
 })
 
+-- ============================== DISCORD ==============================
 Info = InfoTab
 
 if not ui then ui = {} end
