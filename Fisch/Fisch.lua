@@ -28,7 +28,7 @@ local WatermarkConnection = game:GetService('RunService').RenderStepped:Connect(
         FrameCounter = 0;
     end;
 
-    Library:SetWatermark(('DYHUB V6.2.1 | %s fps | %s ms | Game: ' .. info.Name .. ''):format(
+    Library:SetWatermark(('DYHUB V6.2.2 | %s fps | %s ms | Game: ' .. info.Name .. ''):format(
         math.floor(FPS),
         math.floor(game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue())
     ));
@@ -480,7 +480,7 @@ AutoCastSettings:SetupDependencies({
 })
 
 local Selltoggle = FishUtilitiesGroup:AddToggle('Sell ALL fish (Auto)', {
-    Text = 'Enabled',
+    Text = 'Sell ALL fish (Automatically)',
     Default = false,
     Tooltip = 'Automatically Sell ALL fish',
     Callback = function(Value)
@@ -502,10 +502,10 @@ local Selltoggle = FishUtilitiesGroup:AddToggle('Sell ALL fish (Auto)', {
                 pcall(function()
                     sellAllEvent:InvokeServer(unpack(args))
                 end)
-                task.wait(0.9)
+                task.wait(2)
                 sellAllEvent:FireServer(unpack(args))
 
-                task.wait(0.5)
+                task.wait(2)
             end
         end)
     end
@@ -920,4 +920,5 @@ task.spawn(function()
         end
     end
 end)
+
 
