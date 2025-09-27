@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.6.5"
+local version = "3.6.6"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -44,7 +44,6 @@ local AutoFarm = false
 local autoClicking = false
 local AutoCollectDelay = 60
 local ClickInterval = 0.25
-local HeldToolName = "Basic Bat"
 local SellPlant = false
 local SellBrainrot = false
 local AutoBuyGear = false
@@ -52,6 +51,14 @@ local AutoBuySeed = false
 local AutoBuyAllGear = false
 local AutoBuyAllSeed = false
 local serverStartTime = os.time()
+
+local HeldToolNames = {
+    "Basic Bat",
+    "Leather Grip Bat",
+    "Iron Plate Bat",
+    "Iron Core Bat",
+    "Aluminum Bat"
+}
 
 -- ====================== SHOP DATA (consistent names) ======================
 local seedList = {
