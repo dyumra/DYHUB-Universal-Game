@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.6.3"
+local version = "3.6.4"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -129,7 +129,6 @@ local digRunning = false
 -- Tab: Main
 Tabs.Auto:Section({ Title = "Please Turn-On All", Icon = "triangle-alert" })
 Tabs.Auto:Section({ Title = "Before used to Auto Farm", Icon = "triangle-alert" })
-Tabs.Auto:Section({ Title = "Feature Auto", Icon = "repeat" })
 
 -- Tab: Auto
 Tabs.Auto:Toggle({
@@ -910,6 +909,8 @@ Tabs.PlayerTab:Toggle({
     end
 })
 
+Tabs.PlayerTab:Section({ Title = "Feature Visual", Icon = "flame" })
+
 local noclipConnection
 
 Tabs.PlayerTab:Toggle({
@@ -974,6 +975,8 @@ Tabs.PlayerTab:Button({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/dyumrascript-/refs/heads/main/Flua"))()
     end
 })
+
+Info = Tabs.Info
 
 if not ui then ui = {} end
 if not ui.Creator then ui.Creator = {} end
