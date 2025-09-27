@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.6.4"
+local version = "3.6.5"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -59,9 +59,10 @@ local seedList = {
     "Strawberry Seed",
     "Pumpkin Seed",
     "Sunflower Seed",
-    "Dragon Seed",
+    "Dragon Fruit Seed",
     "Eggplant Seed",
     "Watermelon Seed",
+    "Grape Seed",
     "Cocotank Seed",
     "Carnivorous Plant Seed",
     "Mr Carrot Seed",
