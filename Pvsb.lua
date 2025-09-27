@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.4.8"
+local version = "3.4.9"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -239,7 +239,7 @@ end
 
 -- ====================== MAIN TOGGLE ======================
 Main:Toggle({
-    Title = "Auto Farm (Fixed)",
+    Title = "Auto Farm (Upgraded)",
     Default = false,
     Callback = function(state)
         AutoFarm = state
@@ -275,34 +275,40 @@ Main:Toggle({
                 end
             end)
 
+            -- ====================== BRAINROTS CACHE REFRESH ======================
+            task.spawn(function()
+                while AutoFarm do
+                    UpdateBrainrotsCache()
+                    task.wait(1)
+                end
+            end)
+
             -- ====================== AUTO FARM BRAINROT ======================
             task.spawn(function()
-                local currentTarget = nil
                 while AutoFarm do
-                    -- เลือก Brainrot ตัวใหม่ถ้าไม่มี target หรือ target หายไป
-                    if not currentTarget or not currentTarget.Parent then
-                        currentTarget = GetNearestBrainrot()
-                        if not currentTarget then
-                            UpdateBrainrotsCache()
-                            task.wait(0.5)
+                    local currentTarget = GetNearestBrainrot()
+                    while AutoFarm and currentTarget do
+                        local hitbox = currentTarget:FindFirstChild("BrainrotHitbox")
+
+                        -- ถ้า hitbox หรือ parent หายไป ให้เลือกตัวใหม่ทันที
+                        if not hitbox or not hitbox.Parent then
+                            currentTarget = GetNearestBrainrot()
+                            task.wait(0.1)
                             continue
                         end
-                    end
 
-                    local hitbox = currentTarget:FindFirstChild("BrainrotHitbox")
-                    if hitbox and hitbox.Parent then
+                        -- วาร์ปไปยัง Brainrot ปัจจุบัน
                         InstantWarpToBrainrot(currentTarget)
+
+                        -- ตี Brainrot
                         pcall(function()
                             ReplicatedStorage.Remotes.AttacksServer.WeaponAttack:FireServer({ { target = hitbox } })
                         end)
-                    else
-                        currentTarget = nil
-                        UpdateBrainrotsCache()
-                    end
 
+                        task.wait(ClickInterval)
+                    end
                     task.wait(0.1)
                 end
-                autoClicking = false
             end)
 
         else
