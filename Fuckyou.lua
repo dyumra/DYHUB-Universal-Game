@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.6.8"
+local version = "3.6.9"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -44,9 +44,16 @@ local AutoFarm = false
 local autoClicking = false
 local AutoCollectDelay = 60
 local ClickInterval = 0.25
-local HeldToolName = "Basic Bat"
 local SellPlant = false
 local SellBrainrot = false
+
+local HeldToolNames = {
+    "Basic Bat",
+    "Leather Grip Bat",
+    "Iron Plate Bat",
+    "Iron Core Bat",
+    "Aluminum Bat"
+}
 
 local serverStartTime = os.time()
 
@@ -60,6 +67,7 @@ local shop = {
         "Dragon Seed",
         "Eggplant Seed",
         "Watermelon Seed",
+        "Grape Seed",
         "Cocotank Seed",
         "Carnivorous Plant Seed",
         "Mr Carrot Seed",
