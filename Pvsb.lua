@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.6.4"
+local version = "3.6.7"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -47,38 +47,42 @@ local ClickInterval = 0.25
 local HeldToolName = "Basic Bat"
 local SellPlant = false
 local SellBrainrot = false
-local AutoBuyGear = false
-local AutoBuySeed = false
-local AutoBuyAllGear = false
-local AutoBuyAllSeed = false
+
 local serverStartTime = os.time()
 
--- ====================== SHOP DATA (consistent names) ======================
-local seedList = {
-    "Cactus Seed",
-    "Strawberry Seed",
-    "Pumpkin Seed",
-    "Sunflower Seed",
-    "Dragon Seed",
-    "Eggplant Seed",
-    "Watermelon Seed",
-    "Cocotank Seed",
-    "Carnivorous Plant Seed",
-    "Mr Carrot Seed",
-    "Tomatrio Seed",
-    "Shroombino Seed"
+-- ===================== SHOP ITEMS =====================
+local shop = {
+    seedList = {
+        "Cactus Seed",
+        "Strawberry Seed",
+        "Pumpkin Seed",
+        "Sunflower Seed",
+        "Dragon Seed",
+        "Eggplant Seed",
+        "Watermelon Seed",
+        "Cocotank Seed",
+        "Carnivorous Plant Seed",
+        "Mr Carrot Seed",
+        "Tomatrio Seed",
+        "Shroombino Seed"
+    },
+
+    gearList = {
+        "Water Bucket",
+        "Frost Grenade",
+        "Banana Gun",
+        "Frost Blower",
+        "Carrot Launcher"
+    }
 }
 
-local gearList = {
-    "Water Bucket",
-    "Frost Grenade",
-    "Banana Gun",
-    "Frost Blower",
-    "Carrot Launcher"
-}
-
+-- ===================== VARIABLES =====================
 local selectedSeeds = {}
 local selectedGears = {}
+local AutoBuySelectedSeed = false
+local AutoBuySelectedGear = false
+local AutoBuyAllSeed = false
+local AutoBuyAllGear = false
 
 -- ====================== HELPER FUNCTIONS ======================
 local function GetMyPlot()
@@ -412,7 +416,7 @@ Collect:Toggle({
 })
 
 Collect:Toggle({
-    Title = "Auto Collect Money V2",
+    Title = "Auto Collect Money V2 (PATCHED)",
     Description = "Automatically Collect Without Teleport",
     Default = false,
     Callback = function(state)
@@ -436,7 +440,7 @@ Collect:Toggle({
 Collect:Section({ Title = "Auto Equip", Icon = "star" })
 
 Collect:Toggle({
-    Title = "Auto Equip Brainrot",
+    Title = "Auto Equip Brainrot (PATCHED)",
     Description = "Automatically Equip Best Brainrot",
     Default = false,
     Callback = function(state)
@@ -485,29 +489,29 @@ Sell:Toggle({
     end
 })
 
--- ====================== SHOP UI ======================
+-- ===================== SHOP UI =====================
 Shop:Section({ Title = "Buy Seed", Icon = "leaf" })
 
 Shop:Dropdown({
     Title = "Select Seed",
-    Values = seedList,
+    Values = shop.seedList,
     Multi = true,
     Callback = function(values)
         selectedSeeds = values
     end
 })
 
+-- Auto Buy Selected Seed
 Shop:Toggle({
     Title = "Auto Buy Seed (Selected)",
     Default = false,
     Callback = function(state)
+        AutoBuySelectedSeed = state
         if state then
             task.spawn(function()
-                while state do
+                while AutoBuySelectedSeed do
                     for _, seed in ipairs(selectedSeeds) do
-                        local args = {
-                            { seed, "\b" }
-                        }
+                        local args = {{ seed, "\b" }}
                         game:GetService("ReplicatedStorage"):WaitForChild("BridgeNet2"):WaitForChild("dataRemoteEvent"):FireServer(unpack(args))
                         task.wait(0.5)
                     end
@@ -518,17 +522,17 @@ Shop:Toggle({
     end
 })
 
+-- Auto Buy All Seed
 Shop:Toggle({
-    Title = "Auto Buy All Seed",
+    Title = "Auto Buy Seed (All)",
     Default = false,
     Callback = function(state)
+        AutoBuyAllSeed = state
         if state then
             task.spawn(function()
-                while state do
-                    for _, seed in ipairs(seedList) do
-                        local args = {
-                            { seed, "\b" }
-                        }
+                while AutoBuyAllSeed do
+                    for _, seed in ipairs(shop.seedList) do
+                        local args = {{ seed, "\b" }}
                         game:GetService("ReplicatedStorage"):WaitForChild("BridgeNet2"):WaitForChild("dataRemoteEvent"):FireServer(unpack(args))
                         task.wait(0.5)
                     end
@@ -539,28 +543,29 @@ Shop:Toggle({
     end
 })
 
+-- ===================== GEAR =====================
 Shop:Section({ Title = "Buy Gear", Icon = "package" })
 
 Shop:Dropdown({
     Title = "Select Gear",
-    Values = gearList,
+    Values = shop.gearList,
     Multi = true,
     Callback = function(values)
         selectedGears = values
     end
 })
 
+-- Auto Buy Selected Gear
 Shop:Toggle({
     Title = "Auto Buy Gear (Selected)",
     Default = false,
     Callback = function(state)
+        AutoBuySelectedGear = state
         if state then
             task.spawn(function()
-                while state do
+                while AutoBuySelectedGear do
                     for _, gear in ipairs(selectedGears) do
-                        local args = {
-                            { gear, "\b" }
-                        }
+                        local args = {{ gear, "\b" }}
                         game:GetService("ReplicatedStorage"):WaitForChild("BridgeNet2"):WaitForChild("dataRemoteEvent"):FireServer(unpack(args))
                         task.wait(0.5)
                     end
@@ -571,17 +576,17 @@ Shop:Toggle({
     end
 })
 
+-- Auto Buy All Gear
 Shop:Toggle({
-    Title = "Auto Buy All Gear",
+    Title = "Auto Buy Gear (All)",
     Default = false,
     Callback = function(state)
+        AutoBuyAllGear = state
         if state then
             task.spawn(function()
-                while state do
-                    for _, gear in ipairs(gearList) do
-                        local args = {
-                            { gear, "\b" }
-                        }
+                while AutoBuyAllGear do
+                    for _, gear in ipairs(shop.gearList) do
+                        local args = {{ gear, "\b" }}
                         game:GetService("ReplicatedStorage"):WaitForChild("BridgeNet2"):WaitForChild("dataRemoteEvent"):FireServer(unpack(args))
                         task.wait(0.5)
                     end
