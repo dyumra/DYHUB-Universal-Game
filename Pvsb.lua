@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.3.5"
+local version = "3.4.7"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -38,8 +38,10 @@ local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 local Backpack = LocalPlayer:WaitForChild("Backpack")
 
 -- ====================== SETTINGS ======================
+local AutoCollect = false
 local AutoFarm = false
 local autoClicking = false
+local AutoCollectDelay = 60
 local ClickInterval = 0.5
 local HeldToolName = "Basic Bat"
 local SellPlant = false
@@ -52,6 +54,31 @@ local selectedGears = {}
 local selectedSeeds = {}
 local serverStartTime = os.time()
 
+-- ====================== SHOP ======================
+local Shop = {
+    Gear = {
+        "Water Bucket",
+        "Frost Grenade",
+        "Banana Gun",
+        "Frost Blower",
+        "Carrot Launcher"
+    },
+    Seed = {
+        "Cactus Seed",
+        "Strawberry Seed",
+        "Pumpkin Seed",
+        "Sunflower Seed",
+        "Dragon Seed",
+        "Eggplant Seed",
+        "Watermelon Seed",
+        "Cocotank Seed",
+        "Carnivorous Plant Seed",
+        "Mr Carrot Seed",
+        "Tomatrio Seed"
+    }
+}
+
+-- I should use the name from the seed shop & gear shop mb 😐
 
 -- ====================== HELPER FUNCTIONS ======================
 local function GetMyPlot()
@@ -248,12 +275,14 @@ Main:Toggle({
                 while AutoFarm do
                     local nearest = GetNearestBrainrot()
                     if nearest then
-                        InstantWarpToBrainrot(nearest)
                         local hitbox = nearest:FindFirstChild("BrainrotHitbox")
-                        if hitbox then
+                        if hitbox and hitbox.Parent then
+                            InstantWarpToBrainrot(nearest)
                             pcall(function()
                                 ReplicatedStorage.Remotes.AttacksServer.WeaponAttack:FireServer({ { target = hitbox } })
                             end)
+                        else
+                            UpdateBrainrotsCache()
                         end
                     else
                         UpdateBrainrotsCache()
@@ -267,10 +296,6 @@ Main:Toggle({
         end
     end
 })
-
--- ====================== SETTINGS ======================
-local AutoCollect = false
-local AutoCollectDelay = 60 -- default 60s
 
 -- ====================== AUTO COLLECT FUNCTIONS ======================
 local function GetNearestPlot()
@@ -313,7 +338,7 @@ local function CollectFromPlot(plot)
     end
 end
 
--- ====================== UI ======================
+-- ====================== Collect ======================
 Main:Slider({
     Title = "Auto Collect Delay (sec)",
     Description = "Set delay time between collections",
@@ -325,7 +350,7 @@ Main:Slider({
 })
 
 Main:Toggle({
-    Title = "Auto Collect",
+    Title = "Auto Collect Money",
     Default = false,
     Callback = function(state)
         AutoCollect = state
@@ -373,36 +398,11 @@ Sell:Toggle({
     end
 })
 
--- ====================== SHOP ======================
-local gearList = {
-    "Water Bucket",
-    "Frost Grenade",
-    "Banana Gun",
-    "Frost Blower",
-    "Carrot Launcher"
-}
-
-local seedList = {
-    "Cactus Seed",
-    "Strawberry Seed",
-    "Pumpkin Seed",
-    "Sunflower Seed",
-    "Dragon Seed",
-    "Eggplant Seed",
-    "Watermelon Seed",
-    "Cocotank Seed",
-    "Carnivorous Plant Seed",
-    "Mr Carrot Seed",
-    "Tomatrio Seed"
-}
-
--- I should use the name from the seed shop & gear shop mb 😐
-
 Shop:Section({ Title = "Buy Gear", Icon = "package" })
 
 Shop:Dropdown({
     Title = "Select Gear",
-    Values = gearList,
+    Values = Shop.Gear,
     Multi = true,
     Callback = function(values)
         selectedGears = values
@@ -429,7 +429,7 @@ Shop:Section({ Title = "Buy Seed", Icon = "leaf" })
 
 Shop:Dropdown({
     Title = "Select Seed",
-    Values = seedList,
+    Values = Shop.Seed,
     Multi = true,
     Callback = function(values)
         selectedSeeds = values
