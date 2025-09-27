@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.6.7"
+local version = "3.6.8"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -565,7 +565,7 @@ Shop:Toggle({
             task.spawn(function()
                 while AutoBuySelectedGear do
                     for _, gear in ipairs(selectedGears) do
-                        local args = {{ gear, "\b" }}
+                        local args = {{ gear, "\026" }}
                         game:GetService("ReplicatedStorage"):WaitForChild("BridgeNet2"):WaitForChild("dataRemoteEvent"):FireServer(unpack(args))
                         task.wait(0.5)
                     end
@@ -586,7 +586,7 @@ Shop:Toggle({
             task.spawn(function()
                 while AutoBuyAllGear do
                     for _, gear in ipairs(shop.gearList) do
-                        local args = {{ gear, "\b" }}
+                        local args = {{ gear, "\026" }}
                         game:GetService("ReplicatedStorage"):WaitForChild("BridgeNet2"):WaitForChild("dataRemoteEvent"):FireServer(unpack(args))
                         task.wait(0.5)
                     end
