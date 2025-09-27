@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.4.9"
+local version = "3.5.1"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -237,9 +237,8 @@ local function InstantWarpToBrainrot(brainrot)
     end
 end
 
--- ====================== MAIN TOGGLE ======================
 Main:Toggle({
-    Title = "Auto Farm (Upgraded)",
+    Title = "Auto Farm (Fixed)",
     Default = false,
     Callback = function(state)
         AutoFarm = state
@@ -287,23 +286,25 @@ Main:Toggle({
             task.spawn(function()
                 while AutoFarm do
                     local currentTarget = GetNearestBrainrot()
-                    while AutoFarm and currentTarget do
-                        local hitbox = currentTarget:FindFirstChild("BrainrotHitbox")
-
-                        -- ถ้า hitbox หรือ parent หายไป ให้เลือกตัวใหม่ทันที
-                        if not hitbox or not hitbox.Parent then
+                    while AutoFarm do
+                        if not currentTarget 
+                           or not currentTarget.Parent 
+                           or not currentTarget:FindFirstChild("BrainrotHitbox") then
                             currentTarget = GetNearestBrainrot()
                             task.wait(0.1)
-                            continue
+                            if not currentTarget then
+                                task.wait(0.5)
+                                continue
+                            end
                         end
 
-                        -- วาร์ปไปยัง Brainrot ปัจจุบัน
-                        InstantWarpToBrainrot(currentTarget)
-
-                        -- ตี Brainrot
-                        pcall(function()
-                            ReplicatedStorage.Remotes.AttacksServer.WeaponAttack:FireServer({ { target = hitbox } })
-                        end)
+                        local hitbox = currentTarget:FindFirstChild("BrainrotHitbox")
+                        if hitbox then
+                            InstantWarpToBrainrot(currentTarget)
+                            pcall(function()
+                                ReplicatedStorage.Remotes.AttacksServer.WeaponAttack:FireServer({ { target = hitbox } })
+                            end)
+                        end
 
                         task.wait(ClickInterval)
                     end
