@@ -1,4 +1,4 @@
--- ================= V520 ==================
+-- ================= V521 ==================
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -13,16 +13,19 @@ local CamlockEnabled = false
 local ThroughWalls = false
 local MenuOpen = true
 local LockedTarget = nil
+local EspEnabled = false
+local TeamCheck = true
 
 local LockParts = {"Head","Torso","UpperTorso","LowerTorso","HumanoidRootPart"}
-local LockIndex = 5
+local LockIndex = 1
 local LockPart = LockParts[LockIndex]
 
 local Keybinds = {
     Camlock = Enum.KeyCode.V,
     LockPart = Enum.KeyCode.G,
     ThroughWalls = Enum.KeyCode.H,
-    Menu = Enum.KeyCode.End
+    Menu = Enum.KeyCode.End,
+    ESP = Enum.KeyCode.T
 }
 
 -- ================= GUI =================
@@ -31,7 +34,7 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0,200,0,180)
+Frame.Size = UDim2.new(0,200,0,210)
 Frame.Position = UDim2.new(0.5,0,0.35,0)
 Frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
 Frame.BackgroundTransparency = 0.15
@@ -52,20 +55,25 @@ local function update(input)
     local delta = input.Position - startPos
     Frame.Position = UDim2.new(startPosFrame.X.Scale, startPosFrame.X.Offset + delta.X, startPosFrame.Y.Scale, startPosFrame.Y.Offset + delta.Y)
 end
+
+local function startDrag(input)
+    dragging = true
+    startPos = input.Position
+    startPosFrame = Frame.Position
+    input.Changed:Connect(function()
+        if input.UserInputState == Enum.UserInputState.End then
+            dragging = false
+        end
+    end)
+end
+
 Frame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        startPos = input.Position
-        startPosFrame = Frame.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        startDrag(input)
     end
 end)
 Frame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
+    if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and dragging then
         update(input)
     end
 end)
@@ -93,7 +101,8 @@ end
 local ToggleBtn = createButton("Camlock: OFF", UDim2.new(0,10,0,10), Frame)
 local ModeBtn = createButton("Lock Part: "..LockPart, UDim2.new(0,10,0,50), Frame)
 local WallBtn = createButton("Through Walls: OFF", UDim2.new(0,10,0,90), Frame)
-local KeybindBtn = createButton("Keybinds", UDim2.new(0,10,0,130), Frame)
+local EspBtn = createButton("ESP: OFF", UDim2.new(0,10,0,130), Frame)
+local KeybindBtn = createButton("Keybinds", UDim2.new(0,10,0,170), Frame)
 
 local MenuIcon = Instance.new("ImageButton")
 MenuIcon.Size = UDim2.new(0,35,0,35)
@@ -157,6 +166,7 @@ createKeyText("Camlock", UDim2.new(0,10,0,10))
 createKeyText("LockPart", UDim2.new(0,10,0,50))
 createKeyText("ThroughWalls", UDim2.new(0,10,0,90))
 createKeyText("Menu", UDim2.new(0,10,0,130))
+createKeyText("ESP", UDim2.new(0,10,0,150))
 
 KeybindBtn.MouseButton1Click:Connect(function()
     KeyGui.Visible = not KeyGui.Visible
@@ -179,6 +189,20 @@ WallBtn.MouseButton1Click:Connect(function()
     WallBtn.Text = ThroughWalls and "Through Walls: ON" or "Through Walls: OFF"
 end)
 
+EspBtn.MouseButton1Click:Connect(function()
+    EspEnabled = not EspEnabled
+    EspBtn.Text = EspEnabled and "ESP: ON" or "ESP: OFF"
+    if EspEnabled then
+        UpdateESP()
+    else
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr.Character and plr.Character:FindFirstChild("DYHUB_ESP") then
+                plr.Character.DYHUB_ESP:Destroy()
+            end
+        end
+    end
+end)
+
 -- ================= INPUT KEYBINDS =================
 UserInputService.InputBegan:Connect(function(input, gpe)
     if gpe then return end
@@ -198,6 +222,18 @@ UserInputService.InputBegan:Connect(function(input, gpe)
                 MenuOpen = not MenuOpen
                 Frame.Visible = MenuOpen
                 MenuIcon.BackgroundColor3 = MenuOpen and Color3.fromRGB(60,120,60) or Color3.fromRGB(40,40,40)
+            elseif action == "ESP" then
+                EspEnabled = not EspEnabled
+                EspBtn.Text = EspEnabled and "ESP: ON" or "ESP: OFF"
+                if EspEnabled then
+                    UpdateESP()
+                else
+                    for _, plr in ipairs(Players:GetPlayers()) do
+                        if plr.Character and plr.Character:FindFirstChild("DYHUB_ESP") then
+                            plr.Character.DYHUB_ESP:Destroy()
+                        end
+                    end
+                end
             end
         end
     end
@@ -206,6 +242,7 @@ end)
 -- ================= TARGET SYSTEM =================
 local function IsValidTarget(plr)
     if not plr or plr == LocalPlayer then return false end
+    if TeamCheck and plr.Team == LocalPlayer.Team then return false end
     local char = plr.Character
     if not char or not char:FindFirstChild("Humanoid") then return false end
     local part = char:FindFirstChild(LockPart)
@@ -265,3 +302,69 @@ RunService.RenderStepped:Connect(function()
         LockedTarget = nil
     end
 end)
+
+-- ================= ESP SYSTEM =================
+local function createEsp(player)
+    if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
+    if player.Character:FindFirstChild("DYHUB_ESP") then return end
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "DYHUB_ESP"
+    billboard.Adornee = player.Character:FindFirstChild("HumanoidRootPart")
+    billboard.Size = UDim2.new(0,100,0,50)
+    billboard.AlwaysOnTop = true
+    billboard.Parent = player.Character
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1,0,1,0)
+    frame.BackgroundTransparency = 1
+    frame.Parent = billboard
+
+    local text = Instance.new("TextLabel")
+    text.Size = UDim2.new(1,0,1,0)
+    text.BackgroundTransparency = 1
+    text.Font = Enum.Font.GothamBold
+    text.TextSize = 14
+    text.TextColor3 = Color3.fromRGB(255,255,255)
+    text.TextStrokeTransparency = 0
+    text.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+    text.TextScaled = true
+    text.Parent = frame
+
+    RunService.RenderStepped:Connect(function()
+        if player.Character and player.Character:FindFirstChild("Humanoid") and player.Character:FindFirstChild("HumanoidRootPart") then
+            local hp = math.floor(player.Character.Humanoid.Health)
+            local dist = math.floor((player.Character.HumanoidRootPart.Position - (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") or Vector3.new()).Position).Magnitude)
+            text.Text = player.Name.."\n["..hp.." HP]\n["..dist.." Dist]"
+            billboard.Adornee = player.Character:FindFirstChild("HumanoidRootPart")
+        else
+            billboard:Destroy()
+        end
+    end)
+end
+
+function UpdateESP()
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and (not TeamCheck or plr.Team ~= LocalPlayer.Team) then
+            createEsp(plr)
+        end
+    end
+end
+
+Players.PlayerAdded:Connect(function(plr)
+    plr.CharacterAdded:Connect(function()
+        if EspEnabled and plr ~= LocalPlayer and (not TeamCheck or plr.Team ~= LocalPlayer.Team) then
+            task.wait(0.5)
+            createEsp(plr)
+        end
+    end)
+end)
+
+for _, plr in ipairs(Players:GetPlayers()) do
+    plr.CharacterAdded:Connect(function()
+        if EspEnabled and plr ~= LocalPlayer and (not TeamCheck or plr.Team ~= LocalPlayer.Team) then
+            task.wait(0.5)
+            createEsp(plr)
+        end
+    end)
+end
