@@ -342,7 +342,7 @@ local function createESP(plr)
     label.TextStrokeColor3 = Color3.fromRGB(0,0,0)
     label.TextYAlignment = Enum.TextYAlignment.Center
     label.TextXAlignment = Enum.TextXAlignment.Center
-    label.Text = plr.Name.."\n["..(char:FindFirstChild("Humanoid") and math.floor(char.Humanoid.Health) or 0).." HP]\n["..math.floor((rootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude).." D]"
+    label.Text = plr.Name.."\n["..(char:FindFirstChild("Humanoid") and math.floor(char.Humanoid.Health) or 0).." HP]\n["..math.floor((rootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude).." MM]"
     label.Parent = billboard
 
     local highlight = Instance.new("Highlight")
