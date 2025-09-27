@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.2.4"
+local version = "3.3.5"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -41,7 +41,7 @@ local Backpack = LocalPlayer:WaitForChild("Backpack")
 local AutoFarm = false
 local autoClicking = false
 local ClickInterval = 0.5
-local HeldToolName = "Bat"
+local HeldToolName = "Basic Bat"
 local SellPlant = false
 local SellBrainrot = false
 local AutoBuyGear = false
@@ -208,7 +208,7 @@ local StatusParagraph = Main:Paragraph({
 
 Main:Section({ Title = "Use on private servers for security", Icon = "triangle-alert" })
 Main:Toggle({
-    Title = "Auto Farm (Upgrade)",
+    Title = "Auto Farm (Fixed)",
     Default = false,
     Callback = function(state)
         AutoFarm = state
@@ -223,7 +223,7 @@ Main:Toggle({
                     if Character:FindFirstChild(HeldToolName) then
                         if UserInputService.TouchEnabled then
                             VirtualUser:Button1Down(Vector2.new(0,0))
-                            task.wait(0.5)
+                            task.wait(0.1)
                             VirtualUser:Button1Up(Vector2.new(0,0))
                         else
                             UserInputService.InputBegan:Fire(Enum.UserInputType.MouseButton1, false)
@@ -239,7 +239,7 @@ Main:Toggle({
                     if not Character:FindFirstChild(HeldToolName) then
                         EquipBat()
                     end
-                    task.wait(1)
+                    task.wait(0.5)
                 end
             end)
 
@@ -258,7 +258,7 @@ Main:Toggle({
                     else
                         UpdateBrainrotsCache()
                     end
-                    task.wait(0.15)
+                    task.wait(0.1)
                 end
                 autoClicking = false
             end)
@@ -267,6 +267,82 @@ Main:Toggle({
         end
     end
 })
+
+-- ====================== SETTINGS ======================
+local AutoCollect = false
+local AutoCollectDelay = 60 -- default 60s
+
+-- ====================== AUTO COLLECT FUNCTIONS ======================
+local function GetNearestPlot()
+    local nearestPlot = nil
+    local minDist = math.huge
+    for _, plot in ipairs(Workspace.Plots:GetChildren()) do
+        if plot:IsA("Folder") then
+            local center = plot:FindFirstChild("Center") or plot:FindFirstChildWhichIsA("BasePart")
+            if center then
+                local dist = (HumanoidRootPart.Position - center.Position).Magnitude
+                if dist < minDist then
+                    minDist = dist
+                    nearestPlot = plot
+                end
+            end
+        end
+    end
+    return nearestPlot
+end
+
+local function CollectFromPlot(plot)
+    if not plot then return end
+    local brainrotsFolder = plot:FindFirstChild("Brainrots")
+    if not brainrotsFolder then return end
+
+    for i = 1, 17 do
+        local slot = brainrotsFolder:FindFirstChild(tostring(i))
+        if slot and slot:FindFirstChild("Brainrot") then
+            local brainrot = slot:FindFirstChild("Brainrot")
+            if brainrot:FindFirstChild("BrainrotHitbox") then
+                local hitbox = brainrot.BrainrotHitbox
+                local offset = Vector3.new(0, 1, 3)
+                HumanoidRootPart.CFrame = CFrame.new(hitbox.Position + offset, hitbox.Position)
+                task.wait(0.2)
+                pcall(function()
+                    ReplicatedStorage.Remotes.AttacksServer.WeaponAttack:FireServer({ { target = hitbox } })
+                end)
+            end
+        end
+    end
+end
+
+-- ====================== UI ======================
+Main:Slider({
+    Title = "Auto Collect Delay (sec)",
+    Description = "Set delay time between collections",
+    Value = {Min = 5, Max = 300, Default = 60},
+    Step = 1,
+    Callback = function(val)
+        AutoCollectDelay = val
+    end
+})
+
+Main:Toggle({
+    Title = "Auto Collect",
+    Default = false,
+    Callback = function(state)
+        AutoCollect = state
+        if state then
+            task.spawn(function()
+                while AutoCollect do
+                    local nearestPlot = GetNearestPlot()
+                    if nearestPlot then
+                        CollectFromPlot(nearestPlot)
+                    end
+                    task.wait(AutoCollectDelay)
+                end
+            end)
+        end
+    end
+})
+
 
 -- ====================== SELL ======================
 Sell:Section({ Title = "Auto Sell", Icon = "dollar-sign" })
