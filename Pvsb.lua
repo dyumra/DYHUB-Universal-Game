@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.4.7"
+local version = "3.4.8"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -25,13 +25,14 @@ end
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
--- ====================== SERVICE ======================
+-- ====================== SERVICES ======================
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local VirtualUser = game:GetService("VirtualUser")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
+
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
@@ -42,7 +43,7 @@ local AutoCollect = false
 local AutoFarm = false
 local autoClicking = false
 local AutoCollectDelay = 60
-local ClickInterval = 0.5
+local ClickInterval = 0.25
 local HeldToolName = "Basic Bat"
 local SellPlant = false
 local SellBrainrot = false
@@ -55,27 +56,26 @@ local selectedSeeds = {}
 local serverStartTime = os.time()
 
 -- ====================== SHOP ======================
-local Shop = {
-    Gear = {
-        "Water Bucket",
-        "Frost Grenade",
-        "Banana Gun",
-        "Frost Blower",
-        "Carrot Launcher"
-    },
-    Seed = {
-        "Cactus Seed",
-        "Strawberry Seed",
-        "Pumpkin Seed",
-        "Sunflower Seed",
-        "Dragon Seed",
-        "Eggplant Seed",
-        "Watermelon Seed",
-        "Cocotank Seed",
-        "Carnivorous Plant Seed",
-        "Mr Carrot Seed",
-        "Tomatrio Seed"
-    }
+local gear = {
+    "Water Bucket",
+    "Frost Grenade",
+    "Banana Gun",
+    "Frost Blower",
+    "Carrot Launcher"
+}
+
+local seed = {
+    "Cactus Seed",
+    "Strawberry Seed",
+    "Pumpkin Seed",
+    "Sunflower Seed",
+    "Dragon Seed",
+    "Eggplant Seed",
+    "Watermelon Seed",
+    "Cocotank Seed",
+    "Carnivorous Plant Seed",
+    "Mr Carrot Seed",
+    "Tomatrio Seed"
 }
 
 -- I should use the name from the seed shop & gear shop mb 😐
@@ -119,47 +119,6 @@ local function FormatTime(sec)
     local m = math.floor((sec % 3600) / 60)
     local s = sec % 60
     return string.format("%02d:%02d:%02d", h, m, s)
-end
-
--- Brainrot caching
-local BrainrotsCache = {}
-local function UpdateBrainrotsCache()
-    local folder = Workspace:WaitForChild("ScriptedMap"):WaitForChild("Brainrots")
-    BrainrotsCache = {}
-    for _, b in ipairs(folder:GetChildren()) do
-        if b:FindFirstChild("BrainrotHitbox") then
-            table.insert(BrainrotsCache, b)
-        end
-    end
-end
-
-local function GetNearestBrainrot()
-    local nearest = nil
-    local minDist = math.huge
-    for _, b in ipairs(BrainrotsCache) do
-        local hitbox = b:FindFirstChild("BrainrotHitbox")
-        if hitbox then
-            local dist = (HumanoidRootPart.Position - hitbox.Position).Magnitude
-            if dist < minDist then
-                minDist = dist
-                nearest = b
-            end
-        end
-    end
-    return nearest
-end
-
-local function EquipBat()
-    local tool = Backpack:FindFirstChild(HeldToolName) or Character:FindFirstChild(HeldToolName)
-    if tool then tool.Parent = Character end
-end
-
-local function InstantWarpToBrainrot(brainrot)
-    local hitbox = brainrot:FindFirstChild("BrainrotHitbox")
-    if hitbox then
-        local offset = Vector3.new(0, 1, 3)
-        HumanoidRootPart.CFrame = CFrame.new(hitbox.Position + offset, hitbox.Position)
-    end
 end
 
 -- ====================== WINDOW ======================
@@ -234,17 +193,63 @@ local StatusParagraph = Main:Paragraph({
 })
 
 Main:Section({ Title = "Use on private servers for security", Icon = "triangle-alert" })
+
+-- ====================== BRAINROTS CACHE ======================
+local BrainrotsCache = {}
+
+local function UpdateBrainrotsCache()
+    local folder = Workspace:WaitForChild("ScriptedMap"):WaitForChild("Brainrots")
+    BrainrotsCache = {}
+    for _, b in ipairs(folder:GetChildren()) do
+        if b:FindFirstChild("BrainrotHitbox") then
+            table.insert(BrainrotsCache, b)
+        end
+    end
+end
+
+local function GetNearestBrainrot()
+    local nearest = nil
+    local minDist = math.huge
+    for _, b in ipairs(BrainrotsCache) do
+        local hitbox = b:FindFirstChild("BrainrotHitbox")
+        if hitbox then
+            local dist = (HumanoidRootPart.Position - hitbox.Position).Magnitude
+            if dist < minDist then
+                minDist = dist
+                nearest = b
+            end
+        end
+    end
+    return nearest
+end
+
+-- ====================== UTILITY FUNCTIONS ======================
+local function EquipBat()
+    local tool = Backpack:FindFirstChild(HeldToolName) or Character:FindFirstChild(HeldToolName)
+    if tool then tool.Parent = Character end
+end
+
+local function InstantWarpToBrainrot(brainrot)
+    local hitbox = brainrot:FindFirstChild("BrainrotHitbox")
+    if hitbox then
+        local offset = Vector3.new(0, 1, 3)
+        HumanoidRootPart.CFrame = CFrame.new(hitbox.Position + offset, hitbox.Position)
+    end
+end
+
+-- ====================== MAIN TOGGLE ======================
 Main:Toggle({
     Title = "Auto Farm (Fixed)",
     Default = false,
     Callback = function(state)
         AutoFarm = state
         autoClicking = state
+
         if state then
             EquipBat()
             UpdateBrainrotsCache()
 
-            -- Auto Clicker
+            -- ====================== AUTO CLICKER ======================
             task.spawn(function()
                 while autoClicking do
                     if Character:FindFirstChild(HeldToolName) then
@@ -260,7 +265,7 @@ Main:Toggle({
                 end
             end)
 
-            -- Auto Equip Tool
+            -- ====================== AUTO EQUIP ======================
             task.spawn(function()
                 while AutoFarm do
                     if not Character:FindFirstChild(HeldToolName) then
@@ -270,27 +275,36 @@ Main:Toggle({
                 end
             end)
 
-            -- AutoFarm Brainrot
+            -- ====================== AUTO FARM BRAINROT ======================
             task.spawn(function()
+                local currentTarget = nil
                 while AutoFarm do
-                    local nearest = GetNearestBrainrot()
-                    if nearest then
-                        local hitbox = nearest:FindFirstChild("BrainrotHitbox")
-                        if hitbox and hitbox.Parent then
-                            InstantWarpToBrainrot(nearest)
-                            pcall(function()
-                                ReplicatedStorage.Remotes.AttacksServer.WeaponAttack:FireServer({ { target = hitbox } })
-                            end)
-                        else
+                    -- เลือก Brainrot ตัวใหม่ถ้าไม่มี target หรือ target หายไป
+                    if not currentTarget or not currentTarget.Parent then
+                        currentTarget = GetNearestBrainrot()
+                        if not currentTarget then
                             UpdateBrainrotsCache()
+                            task.wait(0.5)
+                            continue
                         end
+                    end
+
+                    local hitbox = currentTarget:FindFirstChild("BrainrotHitbox")
+                    if hitbox and hitbox.Parent then
+                        InstantWarpToBrainrot(currentTarget)
+                        pcall(function()
+                            ReplicatedStorage.Remotes.AttacksServer.WeaponAttack:FireServer({ { target = hitbox } })
+                        end)
                     else
+                        currentTarget = nil
                         UpdateBrainrotsCache()
                     end
+
                     task.wait(0.1)
                 end
                 autoClicking = false
             end)
+
         else
             autoClicking = false
         end
@@ -402,7 +416,7 @@ Shop:Section({ Title = "Buy Gear", Icon = "package" })
 
 Shop:Dropdown({
     Title = "Select Gear",
-    Values = Shop.Gear,
+    Values = gear,
     Multi = true,
     Callback = function(values)
         selectedGears = values
@@ -429,7 +443,7 @@ Shop:Section({ Title = "Buy Seed", Icon = "leaf" })
 
 Shop:Dropdown({
     Title = "Select Seed",
-    Values = Shop.Seed,
+    Values = seed,
     Multi = true,
     Callback = function(values)
         selectedSeeds = values
