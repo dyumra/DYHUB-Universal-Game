@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.5.1"
+local version = "3.5.2"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -75,7 +75,8 @@ local seed = {
     "Cocotank Seed",
     "Carnivorous Plant Seed",
     "Mr Carrot Seed",
-    "Tomatrio Seed"
+    "Tomatrio Seed",
+    "Shroombino Seed"
 }
 
 -- I should use the name from the seed shop & gear shop mb 😐
@@ -492,25 +493,25 @@ task.spawn(function()
     while task.wait(0.69) do
         if AutoBuyGear and #selectedGears > 0 then
             for _, gear in ipairs(selectedGears) do
-                local args = { { gear, " " } }
+                local args = { { gear, "\026" } }
                 ReplicatedStorage:WaitForChild("BridgeNet2"):WaitForChild("dataRemoteEvent"):FireServer(unpack(args))
             end
         end
         if AutoBuySeed and #selectedSeeds > 0 then
             for _, seed in ipairs(selectedSeeds) do
-                local args = { { seed, "\a" } }
+                local args = { { seed, "\b" } }
                 ReplicatedStorage:WaitForChild("BridgeNet2"):WaitForChild("dataRemoteEvent"):FireServer(unpack(args))
             end
         end
         if AutoBuyAllGear then
             for _, gear in ipairs(gearList) do
-                local args = { { gear, " " } }
+                local args = { { gear, "\026" } }
                 ReplicatedStorage:WaitForChild("BridgeNet2"):WaitForChild("dataRemoteEvent"):FireServer(unpack(args))
             end
         end
         if AutoBuyAllSeed then
             for _, seed in ipairs(seedList) do
-                local args = { { seed, "\a" } }
+                local args = { { seed, "\b" } }
                 ReplicatedStorage:WaitForChild("BridgeNet2"):WaitForChild("dataRemoteEvent"):FireServer(unpack(args))
             end
         end
