@@ -1,4 +1,4 @@
--- ================= V520 ==================
+-- ================= V521 FIXED ==================
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -24,8 +24,8 @@ local Keybinds = {
     Camlock = Enum.KeyCode.V,
     LockPart = Enum.KeyCode.G,
     ThroughWalls = Enum.KeyCode.H,
-    Menu = Enum.KeyCode.End,
-    ESP = Enum.KeyCode.T
+    ESP = Enum.KeyCode.T,
+    Menu = Enum.KeyCode.End
 }
 
 -- ================= GUI =================
@@ -51,7 +51,7 @@ Shadow.Thickness = 1.5
 Shadow.Color = Color3.fromRGB(70,70,70)
 Shadow.Transparency = 0.5
 
--- ================= DRAG (มือถือ + คอม) =================
+-- ================= DRAG =================
 local dragging, startPos, startPosFrame
 local function update(input)
     local delta = input.Position - startPos
@@ -125,7 +125,7 @@ end)
 
 -- ================= KEYBINDS GUI =================
 local KeyGui = Instance.new("Frame")
-KeyGui.Size = UDim2.new(0,180,0,170)
+KeyGui.Size = UDim2.new(0,200,0,210)
 KeyGui.Position = UDim2.new(0.5,-110,0.35,0)
 KeyGui.BackgroundColor3 = Color3.fromRGB(30,30,30)
 KeyGui.BackgroundTransparency = 0.15
@@ -171,8 +171,8 @@ end
 createKeyText("Camlock", UDim2.new(0,10,0,10))
 createKeyText("LockPart", UDim2.new(0,10,0,50))
 createKeyText("ThroughWalls", UDim2.new(0,10,0,90))
-createKeyText("Menu", UDim2.new(0,10,0,130))
-createKeyText("ESP", UDim2.new(0,10,0,150))
+createKeyText("ESP", UDim2.new(0,10,0,130))
+createKeyText("Menu", UDim2.new(0,10,0,170))
 
 KeybindBtn.MouseButton1Click:Connect(function()
     KeyGui.Visible = not KeyGui.Visible
@@ -215,13 +215,13 @@ UserInputService.InputBegan:Connect(function(input, gpe)
             elseif action == "ThroughWalls" then
                 ThroughWalls = not ThroughWalls
                 WallBtn.Text = ThroughWalls and "Through Walls: ON" or "Through Walls: OFF"
+            elseif action == "ESP" then
+                EspEnabled = not EspEnabled
+                EspBtn.Text = EspEnabled and "ESP: ON" or "ESP: OFF"
             elseif action == "Menu" then
                 MenuOpen = not MenuOpen
                 Frame.Visible = MenuOpen
                 MenuIcon.BackgroundColor3 = MenuOpen and Color3.fromRGB(60,120,60) or Color3.fromRGB(40,40,40)
-            elseif action == "ESP" then
-                EspEnabled = not EspEnabled
-                EspBtn.Text = EspEnabled and "ESP: ON" or "ESP: OFF"
             end
         end
     end
@@ -230,6 +230,9 @@ end)
 -- ================= TARGET SYSTEM =================
 local function IsValidTarget(plr)
     if not plr or plr == LocalPlayer then return false end
+    if TeamCheck and LocalPlayer.Team and plr.Team == LocalPlayer.Team then
+        return false
+    end
     local char = plr.Character
     if not char or not char:FindFirstChild("Humanoid") then return false end
     local part = char:FindFirstChild(LockPart)
@@ -294,7 +297,9 @@ end)
 local ESPs = {}
 
 local function getTeamColor(plr)
-    if plr.Team then
+    if TeamCheck and LocalPlayer.Team and plr.Team == LocalPlayer.Team then
+        return Color3.fromRGB(255,255,255) -- เพื่อนร่วมทีมสีขาว
+    elseif plr.Team then
         return plr.TeamColor.Color
     else
         return Color3.fromRGB(255,255,255)
