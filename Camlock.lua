@@ -1,4 +1,4 @@
--- ================= V521 ==================
+-- ================= V520 ==================
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -31,6 +31,7 @@ local Keybinds = {
 -- ================= GUI =================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 local Frame = Instance.new("Frame")
@@ -42,6 +43,7 @@ Frame.BorderSizePixel = 0
 Frame.Visible = MenuOpen
 Frame.AnchorPoint = Vector2.new(0.5,0)
 Frame.Parent = ScreenGui
+Frame.ZIndex = 9999
 
 Instance.new("UICorner", Frame).CornerRadius = UDim.new(0,15)
 local Shadow = Instance.new("UIStroke", Frame)
@@ -49,7 +51,7 @@ Shadow.Thickness = 1.5
 Shadow.Color = Color3.fromRGB(70,70,70)
 Shadow.Transparency = 0.5
 
--- ================= DRAG =================
+-- ================= DRAG (มือถือ + คอม) =================
 local dragging, startPos, startPosFrame
 local function update(input)
     local delta = input.Position - startPos
@@ -85,10 +87,11 @@ local function createButton(text,pos,parent)
     btn.Position = pos
     btn.Text = text
     btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 14
+    btn.TextSize = 12
     btn.TextColor3 = Color3.fromRGB(245,245,245)
     btn.BackgroundColor3 = Color3.fromRGB(45,45,45)
     btn.BorderSizePixel = 0
+    btn.ZIndex = 10000
     btn.Parent = parent
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)
 
@@ -110,6 +113,7 @@ MenuIcon.Position = UDim2.new(0,10,0,10)
 MenuIcon.Image = "rbxassetid://104487529937663"
 MenuIcon.BackgroundTransparency = 0
 MenuIcon.BackgroundColor3 = Color3.fromRGB(40,40,40)
+MenuIcon.ZIndex = 10000
 MenuIcon.Parent = ScreenGui
 Instance.new("UICorner", MenuIcon).CornerRadius = UDim.new(1,0)
 
@@ -126,6 +130,7 @@ KeyGui.Position = UDim2.new(0.5,-110,0.35,0)
 KeyGui.BackgroundColor3 = Color3.fromRGB(30,30,30)
 KeyGui.BackgroundTransparency = 0.15
 KeyGui.Visible = false
+KeyGui.ZIndex = 10000
 KeyGui.Parent = ScreenGui
 Instance.new("UICorner", KeyGui).CornerRadius = UDim.new(0,12)
 
@@ -136,10 +141,11 @@ local function createKeyText(name, pos)
     txt.Position = pos
     txt.Text = name..": "..(Keybinds[name] and Keybinds[name].Name or "NONE")
     txt.Font = Enum.Font.GothamBold
-    txt.TextSize = 14
+    txt.TextSize = 12
     txt.TextColor3 = Color3.fromRGB(245,245,245)
     txt.BackgroundColor3 = Color3.fromRGB(50,50,50)
     txt.BorderSizePixel = 0
+    txt.ZIndex = 10000
     txt.Parent = KeyGui
     Instance.new("UICorner", txt).CornerRadius = UDim.new(0,6)
 
@@ -192,15 +198,6 @@ end)
 EspBtn.MouseButton1Click:Connect(function()
     EspEnabled = not EspEnabled
     EspBtn.Text = EspEnabled and "ESP: ON" or "ESP: OFF"
-    if EspEnabled then
-        UpdateESP()
-    else
-        for _, plr in ipairs(Players:GetPlayers()) do
-            if plr.Character and plr.Character:FindFirstChild("DYHUB_ESP") then
-                plr.Character.DYHUB_ESP:Destroy()
-            end
-        end
-    end
 end)
 
 -- ================= INPUT KEYBINDS =================
@@ -225,15 +222,6 @@ UserInputService.InputBegan:Connect(function(input, gpe)
             elseif action == "ESP" then
                 EspEnabled = not EspEnabled
                 EspBtn.Text = EspEnabled and "ESP: ON" or "ESP: OFF"
-                if EspEnabled then
-                    UpdateESP()
-                else
-                    for _, plr in ipairs(Players:GetPlayers()) do
-                        if plr.Character and plr.Character:FindFirstChild("DYHUB_ESP") then
-                            plr.Character.DYHUB_ESP:Destroy()
-                        end
-                    end
-                end
             end
         end
     end
@@ -242,7 +230,6 @@ end)
 -- ================= TARGET SYSTEM =================
 local function IsValidTarget(plr)
     if not plr or plr == LocalPlayer then return false end
-    if TeamCheck and plr.Team == LocalPlayer.Team then return false end
     local char = plr.Character
     if not char or not char:FindFirstChild("Humanoid") then return false end
     local part = char:FindFirstChild(LockPart)
@@ -303,68 +290,91 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- ================= ESP SYSTEM =================
-local function createEsp(player)
-    if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
-    if player.Character:FindFirstChild("DYHUB_ESP") then return end
+-- ================= ESP =================
+local ESPs = {}
 
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name = "DYHUB_ESP"
-    billboard.Adornee = player.Character:FindFirstChild("HumanoidRootPart")
-    billboard.Size = UDim2.new(0,100,0,50)
-    billboard.AlwaysOnTop = true
-    billboard.Parent = player.Character
-
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(1,0,1,0)
-    frame.BackgroundTransparency = 1
-    frame.Parent = billboard
-
-    local text = Instance.new("TextLabel")
-    text.Size = UDim2.new(1,0,1,0)
-    text.BackgroundTransparency = 1
-    text.Font = Enum.Font.GothamBold
-    text.TextSize = 14
-    text.TextColor3 = Color3.fromRGB(255,255,255)
-    text.TextStrokeTransparency = 0
-    text.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-    text.TextScaled = true
-    text.Parent = frame
-
-    RunService.RenderStepped:Connect(function()
-        if player.Character and player.Character:FindFirstChild("Humanoid") and player.Character:FindFirstChild("HumanoidRootPart") then
-            local hp = math.floor(player.Character.Humanoid.Health)
-            local dist = math.floor((player.Character.HumanoidRootPart.Position - (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") or Vector3.new()).Position).Magnitude)
-            text.Text = player.Name.."\n["..hp.." HP]\n["..dist.." Dist]"
-            billboard.Adornee = player.Character:FindFirstChild("HumanoidRootPart")
-        else
-            billboard:Destroy()
-        end
-    end)
+local function getTeamColor(plr)
+    if plr.Team then
+        return plr.TeamColor.Color
+    else
+        return Color3.fromRGB(255,255,255)
+    end
 end
 
-function UpdateESP()
+local function createESP(plr)
+    if ESPs[plr] then return end
+    local char = plr.Character
+    if not char then return end
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "ESPGui"
+    billboard.Adornee = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso")
+    billboard.Size = UDim2.new(0,100,0,50)
+    billboard.StudsOffset = Vector3.new(0,3,0)
+    billboard.AlwaysOnTop = true
+    billboard.Parent = ScreenGui
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1,0,1,0)
+    label.BackgroundTransparency = 1
+    label.Font = Enum.Font.GothamBold
+    label.TextSize = 10
+    label.TextColor3 = getTeamColor(plr)
+    label.TextStrokeTransparency = 0
+    label.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+    label.TextYAlignment = Enum.TextYAlignment.Top
+    label.Text = plr.Name.."\n["..(char:FindFirstChild("Humanoid") and math.floor(char.Humanoid.Health) or 0).." HP]\n["..math.floor((char:FindFirstChild("HumanoidRootPart").Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude).." D]"
+    label.Parent = billboard
+
+    local highlight = Instance.new("Highlight")
+    highlight.Adornee = char
+    highlight.FillColor = getTeamColor(plr)
+    highlight.FillTransparency = 0.5
+    highlight.OutlineColor = Color3.fromRGB(0,0,0)
+    highlight.Parent = ScreenGui
+
+    ESPs[plr] = {Billboard = billboard, Highlight = highlight, Label = label}
+end
+
+local function removeESP(plr)
+    if ESPs[plr] then
+        ESPs[plr].Billboard:Destroy()
+        ESPs[plr].Highlight:Destroy()
+        ESPs[plr] = nil
+    end
+end
+
+local function updateESP()
     for _, plr in ipairs(Players:GetPlayers()) do
-        if plr ~= LocalPlayer and (not TeamCheck or plr.Team ~= LocalPlayer.Team) then
-            createEsp(plr)
+        if plr.Character then
+            if EspEnabled then
+                createESP(plr)
+                local esp = ESPs[plr]
+                local char = plr.Character
+                esp.Label.Text = plr.Name.."\n["..(char:FindFirstChild("Humanoid") and math.floor(char.Humanoid.Health) or 0).." HP]\n["..math.floor((char:FindFirstChild("HumanoidRootPart").Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude).." D]"
+                esp.Label.TextColor3 = getTeamColor(plr)
+                esp.Highlight.FillColor = getTeamColor(plr)
+            else
+                removeESP(plr)
+            end
+        else
+            removeESP(plr)
         end
     end
 end
 
 Players.PlayerAdded:Connect(function(plr)
     plr.CharacterAdded:Connect(function()
-        if EspEnabled and plr ~= LocalPlayer and (not TeamCheck or plr.Team ~= LocalPlayer.Team) then
-            task.wait(0.5)
-            createEsp(plr)
+        if EspEnabled then
+            createESP(plr)
         end
     end)
 end)
 
-for _, plr in ipairs(Players:GetPlayers()) do
-    plr.CharacterAdded:Connect(function()
-        if EspEnabled and plr ~= LocalPlayer and (not TeamCheck or plr.Team ~= LocalPlayer.Team) then
-            task.wait(0.5)
-            createEsp(plr)
-        end
-    end)
-end
+Players.PlayerRemoving:Connect(function(plr)
+    removeESP(plr)
+end)
+
+RunService.RenderStepped:Connect(function()
+    updateESP()
+end)
