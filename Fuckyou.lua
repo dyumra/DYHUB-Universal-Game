@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.6.9"
+local version = "3.7.1"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -251,8 +251,15 @@ end
 
 -- ====================== UTILITY FUNCTIONS ======================
 local function EquipBat()
-    local tool = Backpack:FindFirstChild(HeldToolName) or Character:FindFirstChild(HeldToolName)
-    if tool then tool.Parent = Character end
+    for _, toolName in ipairs(HeldToolNames) do
+        local tool = Backpack:FindFirstChild(toolName) or Character:FindFirstChild(toolName)
+        if tool then
+            tool.Parent = Character
+            HeldToolName = toolName
+            return true
+        end
+    end
+    return false
 end
 
 local function InstantWarpToBrainrot(brainrot)
