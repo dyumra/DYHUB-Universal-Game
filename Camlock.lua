@@ -25,6 +25,7 @@ local Keybinds = {
     LockPart = Enum.KeyCode.G,
     ThroughWalls = Enum.KeyCode.H,
     ESP = Enum.KeyCode.T,
+    Team = Enum.KeyCode.K,
     Menu = Enum.KeyCode.End
 }
 
@@ -35,7 +36,7 @@ ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0,200,0,210)
+Frame.Size = UDim2.new(0,200,0,280)
 Frame.Position = UDim2.new(0.5,0,0.35,0)
 Frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
 Frame.BackgroundTransparency = 0.15
@@ -105,7 +106,8 @@ local ToggleBtn = createButton("Camlock: OFF", UDim2.new(0,10,0,10), Frame)
 local ModeBtn = createButton("Lock Part: "..LockPart, UDim2.new(0,10,0,50), Frame)
 local WallBtn = createButton("Through Walls: OFF", UDim2.new(0,10,0,90), Frame)
 local EspBtn = createButton("ESP: OFF", UDim2.new(0,10,0,130), Frame)
-local KeybindBtn = createButton("Keybinds", UDim2.new(0,10,0,170), Frame)
+local TeamBtn = createButton("Team: ON", UDim2.new(0,10,0,170), Frame)
+local KeybindBtn = createButton("Keybinds", UDim2.new(0,10,0,210), Frame)
 
 local MenuIcon = Instance.new("ImageButton")
 MenuIcon.Size = UDim2.new(0,35,0,35)
@@ -125,7 +127,7 @@ end)
 
 -- ================= KEYBINDS GUI =================
 local KeyGui = Instance.new("Frame")
-KeyGui.Size = UDim2.new(0,200,0,210)
+KeyGui.Size = UDim2.new(0,200,0,280)
 KeyGui.Position = UDim2.new(0.5,-110,0.35,0)
 KeyGui.BackgroundColor3 = Color3.fromRGB(30,30,30)
 KeyGui.BackgroundTransparency = 0.15
@@ -172,7 +174,8 @@ createKeyText("Camlock", UDim2.new(0,10,0,10))
 createKeyText("LockPart", UDim2.new(0,10,0,50))
 createKeyText("ThroughWalls", UDim2.new(0,10,0,90))
 createKeyText("ESP", UDim2.new(0,10,0,130))
-createKeyText("Menu", UDim2.new(0,10,0,170))
+createKeyText("Team", UDim2.new(0,10,0,170))
+createKeyText("Menu", UDim2.new(0,10,0,210))
 
 KeybindBtn.MouseButton1Click:Connect(function()
     KeyGui.Visible = not KeyGui.Visible
@@ -200,6 +203,11 @@ EspBtn.MouseButton1Click:Connect(function()
     EspBtn.Text = EspEnabled and "ESP: ON" or "ESP: OFF"
 end)
 
+TeamBtn.MouseButton1Click:Connect(function()
+    TeamCheck = not TeamCheck
+    TeamBtn.Text = TeamCheck and "Team: ON" or "Team: OFF"
+end)
+
 -- ================= INPUT KEYBINDS =================
 UserInputService.InputBegan:Connect(function(input, gpe)
     if gpe then return end
@@ -218,6 +226,9 @@ UserInputService.InputBegan:Connect(function(input, gpe)
             elseif action == "ESP" then
                 EspEnabled = not EspEnabled
                 EspBtn.Text = EspEnabled and "ESP: ON" or "ESP: OFF"
+            elseif action == "Team" then
+                TeamCheck = not TeamCheck
+                TeamBtn.Text = TeamCheck and "Team: ON" or "Team: OFF"
             elseif action == "Menu" then
                 MenuOpen = not MenuOpen
                 Frame.Visible = MenuOpen
@@ -311,11 +322,14 @@ local function createESP(plr)
     local char = plr.Character
     if not char then return end
 
+    local rootPart = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso")
+    if not rootPart then return end
+
     local billboard = Instance.new("BillboardGui")
     billboard.Name = "ESPGui"
-    billboard.Adornee = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso")
+    billboard.Adornee = rootPart
     billboard.Size = UDim2.new(0,100,0,50)
-    billboard.StudsOffset = Vector3.new(0,3,0)
+    billboard.StudsOffset = Vector3.new(0,2,0)
     billboard.AlwaysOnTop = true
     billboard.Parent = ScreenGui
 
@@ -323,12 +337,13 @@ local function createESP(plr)
     label.Size = UDim2.new(1,0,1,0)
     label.BackgroundTransparency = 1
     label.Font = Enum.Font.GothamBold
-    label.TextSize = 10
+    label.TextSize = 12
     label.TextColor3 = getTeamColor(plr)
     label.TextStrokeTransparency = 0
     label.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-    label.TextYAlignment = Enum.TextYAlignment.Top
-    label.Text = plr.Name.."\n["..(char:FindFirstChild("Humanoid") and math.floor(char.Humanoid.Health) or 0).." HP]\n["..math.floor((char:FindFirstChild("HumanoidRootPart").Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude).." D]"
+    label.TextYAlignment = Enum.TextYAlignment.Center
+    label.TextXAlignment = Enum.TextXAlignment.Center
+    label.Text = plr.Name.."\n["..(char:FindFirstChild("Humanoid") and math.floor(char.Humanoid.Health) or 0).." HP]\n["..math.floor((rootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude).." D]"
     label.Parent = billboard
 
     local highlight = Instance.new("Highlight")
@@ -356,7 +371,8 @@ local function updateESP()
                 createESP(plr)
                 local esp = ESPs[plr]
                 local char = plr.Character
-                esp.Label.Text = plr.Name.."\n["..(char:FindFirstChild("Humanoid") and math.floor(char.Humanoid.Health) or 0).." HP]\n["..math.floor((char:FindFirstChild("HumanoidRootPart").Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude).." D]"
+                local rootPart = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso")
+                esp.Label.Text = plr.Name.."\n["..(char:FindFirstChild("Humanoid") and math.floor(char.Humanoid.Health) or 0).." HP]\n["..math.floor((rootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude).." D]"
                 esp.Label.TextColor3 = getTeamColor(plr)
                 esp.Highlight.FillColor = getTeamColor(plr)
             else
