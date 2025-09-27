@@ -1,4 +1,4 @@
--- ================= V521 FIXED ==================
+-- ================= V522 FIXED ==================
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -110,14 +110,14 @@ local TeamBtn = createButton("Team: ON", UDim2.new(0,10,0,170), Frame)
 local KeybindBtn = createButton("Keybinds", UDim2.new(0,10,0,210), Frame)
 
 local MenuIcon = Instance.new("ImageButton")
-MenuIcon.Size = UDim2.new(0,35,0,35)
+MenuIcon.Size = UDim2.new(0,50,0,50)
 MenuIcon.Position = UDim2.new(0,10,0,10)
 MenuIcon.Image = "rbxassetid://104487529937663"
 MenuIcon.BackgroundTransparency = 0
 MenuIcon.BackgroundColor3 = Color3.fromRGB(40,40,40)
 MenuIcon.ZIndex = 10000
 MenuIcon.Parent = ScreenGui
-Instance.new("UICorner", MenuIcon).CornerRadius = UDim.new(1,0)
+Instance.new("UICorner", MenuIcon).CornerRadius = UDim.new(0.5,0)
 
 MenuIcon.MouseButton1Click:Connect(function()
     MenuOpen = not MenuOpen
@@ -308,12 +308,12 @@ end)
 local ESPs = {}
 
 local function getTeamColor(plr)
-    if TeamCheck and LocalPlayer.Team and plr.Team == LocalPlayer.Team then
-        return Color3.fromRGB(255,255,255) -- เพื่อนร่วมทีมสีขาว
-    elseif plr.Team then
+    if plr.Team == LocalPlayer.Team and TeamCheck and LocalPlayer.Team then
+        return Color3.fromRGB(255,255,255)
+    elseif plr.TeamColor then
         return plr.TeamColor.Color
     else
-        return Color3.fromRGB(255,255,255)
+        return Color3.fromRGB(255,0,0)
     end
 end
 
@@ -321,7 +321,6 @@ local function createESP(plr)
     if ESPs[plr] then return end
     local char = plr.Character
     if not char then return end
-
     local rootPart = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso")
     if not rootPart then return end
 
@@ -349,8 +348,8 @@ local function createESP(plr)
     local highlight = Instance.new("Highlight")
     highlight.Adornee = char
     highlight.FillColor = getTeamColor(plr)
-    highlight.FillTransparency = 0.5
-    highlight.OutlineColor = Color3.fromRGB(0,0,0)
+    highlight.FillTransparency = 0.85
+    highlight.OutlineColor = Color3.fromRGB(255,255,255)
     highlight.Parent = ScreenGui
 
     ESPs[plr] = {Billboard = billboard, Highlight = highlight, Label = label}
