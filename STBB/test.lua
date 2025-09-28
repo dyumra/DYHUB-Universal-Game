@@ -1,5 +1,5 @@
 -- =========================
-local verison = "3.4.6"
+local verison = "3.4.7"
 -- =========================
 
 if setfpscap then
@@ -689,6 +689,7 @@ local InfoTab = Window:Tab({ Title = "Information", Icon = "info" })
 local MainDivider = Window:Divider()
 local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
 local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
+local SkillTab = Window:Tab({ Title = "Skill", Icon = "flame" })
 local EspTab = Window:Tab({ Title = "Esp", Icon = "eye" })
 local PlayerDivider = Window:Divider()
 local CollectTab = Window:Tab({ Title="Collect", Icon="hand" })
@@ -1991,6 +1992,62 @@ MainTab:Toggle({
             end)
         end
     end,
+})
+
+SkillTab:Section({ Title = "Feature Skill", Icon = "sparkles" })
+
+local VirtualInputManager = game:GetService("VirtualInputManager")
+
+local autoSkillEnabled = false
+local autoSkillValues = {}
+local skillDelay = 0.25
+local loopDelay = 0.5
+
+local skillList = {"Q","E","R","T","Y","F","G","H","Z","X","C","V","B"}
+
+-- เพิ่มตัวเลือก "All" สำหรับ Dropdown
+local dropdownValues = {"All"}
+for _, v in ipairs(skillList) do
+    table.insert(dropdownValues, v)
+end
+
+-- Dropdown สำหรับเลือกสกิลที่จะ Auto
+SkillTab:Dropdown({
+    Title = "Set Auto Skill",
+    Values = dropdownValues,
+    Multi = true,
+    Callback = function(values)
+        -- ถ้าเลือก All ให้ใช้ทุกสกิล
+        if table.find(values, "All") then
+            autoSkillValues = skillList
+        else
+            autoSkillValues = values
+        end
+    end
+})
+
+-- Toggle สำหรับเปิด/ปิด Auto Skill
+SkillTab:Toggle({
+    Title = "Auto Skill",
+    Default = false,
+    Callback = function(enabled)
+        autoSkillEnabled = enabled
+        if enabled then
+            task.spawn(function()
+                while autoSkillEnabled do
+                    pcall(function()
+                        for _, key in ipairs(autoSkillValues) do
+                            VirtualInputManager:SendKeyEvent(true, key, false, game)
+                            task.wait(0.05)
+                            VirtualInputManager:SendKeyEvent(false, key, false, game)
+                            task.wait(skillDelay)
+                        end
+                    end)
+                    task.wait(loopDelay)
+                end
+            end)
+        end
+    end
 })
 
 print("[DYHUB] DYHUB - Loaded! (Console Show)")
