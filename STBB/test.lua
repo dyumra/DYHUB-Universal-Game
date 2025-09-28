@@ -1,5 +1,5 @@
 -- =========================
-local verison = "3.4.5"
+local verison = "3.4.6"
 -- =========================
 
 if setfpscap then
@@ -1550,73 +1550,6 @@ MainTab:Toggle({
                 while autoVoteEnabled do
                     game:GetService("ReplicatedStorage"):WaitForChild("Vote"):FireServer(autoVoteValue)
                     task.wait(1)
-                end
-            end)
-        end
-    end
-})
-
-MainTab:Section({ Title = "Feature Skill", Icon = "sparkles" }) 
-
--- Improved AutoSkill script
-local autoSkillEnabled = false
-local autoSkillValues = {"E"}
-local skillDelay = 0.25
-local loopDelay = 0.5
-
-local Lists = {"Z","X","C","G","T","Y","U","E","R","F","Q"}
-
-SkillTab:Dropdown({  
-    Title = "Set Auto Skill",  
-    Values = Lists,  
-    Multi = true,  
-    Callback = function(values)  
-        if #values > 0 then
-            autoSkillValues = values
-        else
-            autoSkillValues = {"E"}
-        end
-    end  
-})
-
-SkillTab:Slider({
-    Title = "Skill Delay",
-    Min = 0.05,
-    Max = 1,
-    Default = 0.25,
-    Callback = function(value)
-        skillDelay = value
-    end
-})
-
-SkillTab:Slider({
-    Title = "Loop Delay",
-    Min = 0.1,
-    Max = 2,
-    Default = 0.5,
-    Callback = function(value)
-        loopDelay = value
-    end
-})
-
-SkillTab:Toggle({
-    Title = "Auto Skill",
-    Default = false,
-    Callback = function(enabled)
-        autoSkillEnabled = enabled
-        if enabled then
-            task.spawn(function()
-                local VirtualInputManager = game:GetService("VirtualInputManager")
-                while autoSkillEnabled do
-                    pcall(function()
-                        for _, key in ipairs(autoSkillValues) do
-                            VirtualInputManager:SendKeyEvent(true, key, false, game)
-                            task.wait(0.05)
-                            VirtualInputManager:SendKeyEvent(false, key, false, game)
-                            task.wait(skillDelay)
-                        end
-                    end)
-                    task.wait(loopDelay)
                 end
             end)
         end
