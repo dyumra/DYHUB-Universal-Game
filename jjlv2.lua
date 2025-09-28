@@ -1,5 +1,5 @@
 -- =========================
-local version = "1.2.5"
+local version = "1.2.9"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -59,15 +59,15 @@ Window:EditOpenButton({
 })
 
 local Main = Window:Tab({ Title = "Main", Icon = "rocket" })
-local Gamepass = Window:Tab({ Title = "Gamepass", Icon = "circle-star" })
+local Gamepass = Window:Tab({ Title = "Gamepass", Icon = "star" })
 Window:SelectTab(1)
 
 -- ====================== DATA ======================
 local shop = {
-    raceList = { "Human", "Cursed Spirit", "Half Human" },
-    techniqueList = { "Limitless", "Cursed Speech", "Ten Shadows" },
-    clanList = { "Gojo", "Zenin", "Kamo" },
-    traitList = { "Dragon", "Mine", "Lucky", "Strong" },
+    raceList = { "Human", "Death Paiting", "Cursed Spirit", "Angel", "Fallen Angel" },
+    techniqueList = { "Ratio", "Blood Manipulation", "Disaster Flames", "Divergent Fist", "Disaster Tides", "Cursed Speech", "Boogie Woogie", "Star Rage", "Sound Amplification", "Blast Energy", "Moon Dregs", "Straw Doll", "Jackpot", "Infinity", "Idle Transfiguration", "Deadly Sentencing", "Projection", "Ice Formation", "Comedian", "Anti Gravity", "Ten Shadows", "Heavenly Restriction", "Rika", "Curse Manipulation" },
+    clanList = { "Itadori", "Todo", "Nanami", "Geto", "Kamo", "Zenin", "Okkotsu", "Fushiguro", "Gojo", "Rejected Zenin", "Ryomen" },
+    traitList = { "Soon" },
 }
 
 local selectedRace, selectedTechnique, selectedClan, selectedTrait
@@ -76,6 +76,8 @@ local selectedGamepasses = {}
 getgenv().DYHUBGAMEPASS = false
 
 -- ====================== RACE ======================
+Main:Section({ Title = "Race", Icon = "rabbit" })
+
 Main:Dropdown({
     Title = "Select Race",
     Values = shop.raceList,
@@ -103,6 +105,7 @@ Main:Button({
 })
 
 -- ====================== TECHNIQUE ======================
+Main:Section({ Title = "Technique", Icon = "cpu" })
 Main:Dropdown({
     Title = "Select Technique",
     Values = shop.techniqueList,
@@ -130,6 +133,7 @@ Main:Button({
 })
 
 -- ====================== CLAN ======================
+Main:Section({ Title = "Clan", Icon = "shield" })
 Main:Dropdown({
     Title = "Select Clan",
     Values = shop.clanList,
@@ -157,6 +161,7 @@ Main:Button({
 })
 
 -- ====================== TRAIT ======================
+Main:Section({ Title = "Trait", Icon = "gem" })
 Main:Dropdown({
     Title = "Select Trait",
     Values = shop.traitList,
@@ -186,6 +191,7 @@ Main:Button({
 })
 
 -- ====================== GAMEPASS ======================
+Gamepass:Section({ Title = "Gamepass", Icon = "star" })
 local gamepassList = {
     "Owned+10 Technique Storage",
     "Owned2x Drop",
