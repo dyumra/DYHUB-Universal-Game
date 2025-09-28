@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.7.1"
+local version = "3.7.2"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -42,8 +42,8 @@ local Backpack = LocalPlayer:WaitForChild("Backpack")
 local AutoCollect = false
 local AutoFarm = false
 local autoClicking = false
-local AutoCollectDelay = 60
-local ClickInterval = 0.25
+local AutoCollectDelay = 5
+local ClickInterval = 0.01
 local SellPlant = false
 local SellBrainrot = false
 
@@ -265,7 +265,7 @@ end
 local function InstantWarpToBrainrot(brainrot)
     local hitbox = brainrot and brainrot:FindFirstChild("BrainrotHitbox")
     if hitbox then
-        local offset = Vector3.new(0, 1, 3)
+        local offset = Vector3.new(0, 0.69, 2.5)
         HumanoidRootPart.CFrame = CFrame.new(hitbox.Position + offset, hitbox.Position)
     end
 end
@@ -275,7 +275,7 @@ local function DoClick()
     -- simulate press & release
     pcall(function()
         VirtualUser:Button1Down(Vector2.new(0, 0))
-        task.wait(0.03)
+        task.wait(0.01)
         VirtualUser:Button1Up(Vector2.new(0, 0))
     end)
 end
@@ -308,7 +308,7 @@ Main:Toggle({
                     if Character and not Character:FindFirstChild(HeldToolName) then
                         EquipBat()
                     end
-                    task.wait(0.5)
+                    task.wait(0.25)
                 end
             end)
 
@@ -316,7 +316,7 @@ Main:Toggle({
             task.spawn(function()
                 while AutoFarm do
                     UpdateBrainrotsCache()
-                    task.wait(1)
+                    task.wait(0.25)
                 end
             end)
 
@@ -325,7 +325,7 @@ Main:Toggle({
                 while AutoFarm do
                     local currentTarget = GetNearestBrainrot()
                     if not currentTarget then
-                        task.wait(0.5)
+                        task.wait(0.25)
                         continue
                     end
                     if currentTarget and currentTarget:FindFirstChild("BrainrotHitbox") then
