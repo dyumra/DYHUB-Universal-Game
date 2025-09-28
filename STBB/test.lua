@@ -1,14 +1,6 @@
--- test version
-
 -- =========================
-local verison = "3.4.3"
+local verison = "3.4.5"
 -- =========================
-
-local code1 = "dyhub.store/loader"
-local code2 = "dyhub.store/loader/script"
-local code3 = "dyhub.store/loader/main"
-
-repeat task.wait() until game:IsLoaded()
 
 if setfpscap then
     setfpscap(1000000)
@@ -447,11 +439,6 @@ local function calculatePosition(npc)
     return targetPos, lookCFrame, anchored
 end
 
-if code3 ~= "dyhub.store/loader/main" then
-    game.Players.LocalPlayer:Kick("NIGGA EDIT BY SCRIPT LOL")
-    return
-end
-
 -- ฟังก์ชันต่อย NPC
 local function attackHumanoidNoProximity(npc)
     local humanoid = npc:FindFirstChildOfClass("Humanoid")
@@ -596,11 +583,6 @@ local function toggleMasteryAutoFarm(state)
     if not state then removeSupportPart() else MasteryAutoFarm() end
 end
 
-if code1 ~= "dyhub.store/loader" then
-    game.Players.LocalPlayer:Kick("NIGGA EDIT BY SCRIPT LOL")
-    return
-end
-
 -- Flush Aura
 local function flushAura()
     task.spawn(function()
@@ -708,13 +690,16 @@ local MainDivider = Window:Divider()
 local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
 local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
 local EspTab = Window:Tab({ Title = "Esp", Icon = "eye" })
+local PlayerDivider = Window:Divider()
 local CollectTab = Window:Tab({ Title="Collect", Icon="hand" })
 local HitboxTab = Window:Tab({ Title = "Hitbox", Icon = "package" })
 local QuestTab = Window:Tab({ Title = "Quest", Icon = "sword" })
 local MasteryTab = Window:Tab({ Title = "Mastery", Icon = "award" })
+local FixDivider = Window:Divider()
 local CodesTab = Window:Tab({ Title = "Codes", Icon = "bird" })
 local ShopTab = Window:Tab({ Title = "Shop", Icon = "shopping-cart" })
 local GameTab = Window:Tab({ Title = "Gamepass", Icon = "cookie" })
+local SettingsDivider = Window:Divider()
 local MiscTab = Window:Tab({ Title = "Misc", Icon = "file-cog" })
 
 Window:SelectTab(1)
@@ -951,11 +936,6 @@ local function scanNPCs()
             end
         end
     end
-end
-
-if code2 ~= "dyhub.store/loader/script" then
-    game.Players.LocalPlayer:Kick("NIGGA EDIT BY SCRIPT LOL")
-    return
 end
 
 -- 🔄 Loop update
@@ -1580,18 +1560,43 @@ MainTab:Section({ Title = "Feature Skill", Icon = "sparkles" })
 
 -- Improved AutoSkill script
 local autoSkillEnabled = false
-local Skillnormal = {"E"} -- ค่าเริ่มต้น
-local autoSkillValues = Skillnormal
+local autoSkillValues = {"E"}
+local skillDelay = 0.25
+local loopDelay = 0.5
+
 local Lists = {"Z","X","C","G","T","Y","U","E","R","F","Q"}
 
-SkillTab:Dropdown({ 
-    Title = "Set Auto Skill", 
-    Values = Lists, 
-    Default = Skillnormal, 
-    Multi = true, -- ✅ เลือกหลายปุ่มได้
-    Callback = function(values) 
-        autoSkillValues = values -- เก็บค่าที่เลือก (เป็นตาราง)
-    end 
+SkillTab:Dropdown({  
+    Title = "Set Auto Skill",  
+    Values = Lists,  
+    Multi = true,  
+    Callback = function(values)  
+        if #values > 0 then
+            autoSkillValues = values
+        else
+            autoSkillValues = {"E"}
+        end
+    end  
+})
+
+SkillTab:Slider({
+    Title = "Skill Delay",
+    Min = 0.05,
+    Max = 1,
+    Default = 0.25,
+    Callback = function(value)
+        skillDelay = value
+    end
+})
+
+SkillTab:Slider({
+    Title = "Loop Delay",
+    Min = 0.1,
+    Max = 2,
+    Default = 0.5,
+    Callback = function(value)
+        loopDelay = value
+    end
 })
 
 SkillTab:Toggle({
@@ -1601,23 +1606,17 @@ SkillTab:Toggle({
         autoSkillEnabled = enabled
         if enabled then
             task.spawn(function()
+                local VirtualInputManager = game:GetService("VirtualInputManager")
                 while autoSkillEnabled do
                     pcall(function()
-                        local VirtualInputManager = game:GetService("VirtualInputManager")
-
-                        -- ✅ วนตามลำดับที่เลือกไว้
                         for _, key in ipairs(autoSkillValues) do
-                            -- กด
                             VirtualInputManager:SendKeyEvent(true, key, false, game)
                             task.wait(0.05)
-                            -- ปล่อย
                             VirtualInputManager:SendKeyEvent(false, key, false, game)
-
-                            -- หน่วงเวลานิดหน่อยก่อนกดปุ่มต่อไป
-                            task.wait(0.25)
+                            task.wait(skillDelay)
                         end
                     end)
-                    task.wait(0.5) -- เวลาหน่วงก่อนเริ่มรอบใหม่
+                    task.wait(loopDelay)
                 end
             end)
         end
