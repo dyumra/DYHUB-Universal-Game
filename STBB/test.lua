@@ -1559,12 +1559,13 @@ MainTab:Toggle({
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
+local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 
 local Items = {"Clock Spider", "Transmitter", "FlashDrive", "Astro Samples"}
-local ItemsNormal = "Clock Spider"
-local ItemsValue = {ItemsNormal} 
+local ItemsValue = {"Clock Spider"}
 local autoCollectEnabled = false
+local itemNotifyEnabled = false
 
 local function teleportToTarget(targetPos)
     local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
@@ -1572,52 +1573,106 @@ local function teleportToTarget(targetPos)
     hrp.CFrame = CFrame.new(targetPos)
 end
 
-CollectTab:Dropdown({ 
-    Title = "Set Collect Items", 
-    Values = Items,  
-    Default = ItemsNormal,  
-    Multi = true, 
-    Callback = function(value) 
-        ItemsValue = value 
-    end 
+local function collectItem(obj)
+    local prompt = obj:FindFirstChildOfClass("ProximityPrompt")
+    if prompt then
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        local originalPos = hrp.Position
+        while prompt.Parent and autoCollectEnabled do
+            local targetPos = obj.PrimaryPart and obj.PrimaryPart.Position + Vector3.new(0,3,0) or obj.Position + Vector3.new(0,3,0)
+            teleportToTarget(targetPos)
+            task.wait(0.1)
+            prompt:InputHoldBegin()
+            task.wait(0.05)
+            prompt:InputHoldEnd()
+            task.wait(0.2)
+        end
+        teleportToTarget(originalPos)
+    end
+end
+
+local function itemNotify(obj)
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if hrp and obj.PrimaryPart then
+        local distance = (hrp.Position - obj.PrimaryPart.Position).Magnitude * 1000
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Item Notify";
+            Text = string.format("Name: %s\nDistance: %04d mm", obj.Name, math.floor(distance));
+            Duration = 3;
+        })
+    end
+end
+
+CollectTab:Dropdown({
+    Title = "Set Collect Items",
+    Values = Items,
+    Default = "Clock Spider",
+    Multi = true,
+    Callback = function(value)
+        ItemsValue = value
+    end
 })
 
 CollectTab:Toggle({
-    Title = "Auto Collect", 
+    Title = "Auto Collect",
     Default = false,
     Callback = function(enabled)
         autoCollectEnabled = enabled
         if enabled then
             task.spawn(function()
                 while autoCollectEnabled do
-                    pcall(function()
-                        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-                        local hrp = char:FindFirstChild("HumanoidRootPart")
-                        if hrp then
-                            for _, obj in pairs(workspace:GetDescendants()) do
-                                if (obj:IsA("Model") or obj:IsA("Part")) and table.find(ItemsValue, obj.Name) then
-                                    local prompt = obj:FindFirstChildOfClass("ProximityPrompt")
-                                    if prompt then
-                                        local originalPos = hrp.Position
-                                        teleportToTarget(prompt.Parent.Position + Vector3.new(0,3,0))
-                                        task.wait(0.1)
-                                        prompt:InputHoldBegin()
-                                        task.wait(0.05)
-                                        prompt:InputHoldEnd()
-                                        task.wait(0.2)
-                                        teleportToTarget(originalPos)
-                                        task.wait(0.1)
-                                    end
-                                end
-                            end
+                    for _, obj in pairs(Workspace:GetDescendants()) do
+                        if (obj:IsA("Model") or obj:IsA("Part")) and table.find(ItemsValue, obj.Name) then
+                            task.spawn(function()
+                                pcall(function()
+                                    collectItem(obj)
+                                end)
+                            end)
                         end
-                    end)
+                    end
                     task.wait(0.5)
                 end
             end)
         end
     end
 })
+
+CollectTab:Toggle({
+    Title = "Item Notify",
+    Default = false,
+    Callback = function(enabled)
+        itemNotifyEnabled = enabled
+        if enabled then
+            task.spawn(function()
+                while itemNotifyEnabled do
+                    for _, obj in pairs(Workspace:GetDescendants()) do
+                        if (obj:IsA("Model") or obj:IsA("Part")) and table.find(ItemsValue, obj.Name) then
+                            pcall(function()
+                                itemNotify(obj)
+                            end)
+                        end
+                    end
+                    task.wait(1)
+                end
+            end)
+        end
+    end
+})
+
+local function modifyProximityPrompts()
+    for _, obj in pairs(Workspace:GetDescendants()) do
+        if (obj:IsA("Model") or obj:IsA("Part")) and table.find(ItemsValue, obj.Name) then
+            local prompt = obj:FindFirstChildOfClass("ProximityPrompt")
+            if prompt then
+                prompt.HoldDuration = 0
+            end
+        end
+    end
+end
+
+modifyProximityPrompts()
 
 ShopTab:Section({ Title = "Hourly Shop (Beta)", Icon = "shopping-cart" })
 
