@@ -3,7 +3,7 @@ if game.PlaceId ~= 126244816328678 then
 end
 
 -- =========================
-local version = "4.6.3"
+local version = "4.6.4"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -46,7 +46,7 @@ label.Parent = screenGui
 label.Size = UDim2.new(1, 0, 0.4, 0) -- besar
 label.BackgroundTransparency = 1
 label.Text = "" -- awal kosong
-label.TextColor3 = Color3.fromRGB(255, 255, 0) -- 馃挍 kuning
+label.TextColor3 = Color3.fromRGB(255, 0, 0) -- 馃挍 kuning
 label.TextScaled = true
 label.Font = Enum.Font.GothamBold
 label.TextStrokeTransparency = 0.8
