@@ -3,7 +3,7 @@ if game.PlaceId ~= 126244816328678 then
 end
 
 -- =========================
-local version = "4.6.2"
+local version = "4.6.3"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -46,7 +46,7 @@ label.Parent = screenGui
 label.Size = UDim2.new(1, 0, 0.4, 0) -- besar
 label.BackgroundTransparency = 1
 label.Text = "" -- awal kosong
-label.TextColor3 = Color3.fromRGB(255, 221, 0) -- 馃挍 kuning
+label.TextColor3 = Color3.fromRGB(255, 255, 0) -- 馃挍 kuning
 label.TextScaled = true
 label.Font = Enum.Font.GothamBold
 label.TextStrokeTransparency = 0.8
@@ -181,7 +181,7 @@ local Tabs = {
     Teleport = Window:Tab({ Title = "Teleport", Icon = "map-pin"  }),
 }
 
-Window:SelectTab(Tabs.InfoTab)
+Window:SelectTab(1)
 
 Tabs.Main:Section({ Title = "Auto Dig" })
 
