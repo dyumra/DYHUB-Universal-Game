@@ -32,7 +32,7 @@ local playerGui = player:WaitForChild("PlayerGui")
 
 -- Bersihkan kalau sudah ada sebelumnya
 if playerGui:FindFirstChild("DYHUB") then
-    playerGui.HlemonLabel:Destroy()
+    playerGui.DYHUB:Destroy()
 end
 
 -- Buat ScreenGui
@@ -46,7 +46,7 @@ label.Parent = screenGui
 label.Size = UDim2.new(1, 0, 0.4, 0) -- besar
 label.BackgroundTransparency = 1
 label.Text = "" -- awal kosong
-label.TextColor3 = Color3.fromRGB(255, 221, 0) -- 💛 kuning
+label.TextColor3 = Color3.fromRGB(255, 221, 0) -- 馃挍 kuning
 label.TextScaled = true
 label.Font = Enum.Font.GothamBold
 label.TextStrokeTransparency = 0.8
@@ -62,7 +62,7 @@ blur.Parent = game.Lighting
 -- TweenService
 local TweenService = game:GetService("TweenService")
 
--- 🔊 Helper untuk mainkan suara
+-- 馃攰 Helper untuk mainkan suara
 local function playSound()
     local s = Instance.new("Sound")
     s.SoundId = "rbxassetid://157636218" -- ID sound terbaru
@@ -72,7 +72,7 @@ local function playSound()
     game.Debris:AddItem(s, 3) -- auto hilang
 end
 
--- Tween naik huruf H ke tengah–atas
+-- Tween naik huruf H ke tengah鈥揳tas
 label.Text = "D"
 local tweenUp = TweenService:Create(label, TweenInfo.new(
     1.2,
@@ -115,7 +115,7 @@ tweenBlurIn:Play()
 tweenUp:Play()
 
 tweenUp.Completed:Connect(function()
-    -- Setelah H sampai di atas, ketik huruf² berikut
+    -- Setelah H sampai di atas, ketik huruf虏 berikut
     local fullText = "DYHUB"
     for i = 3, #fullText do
         label.Text = string.sub(fullText, 1, i)
@@ -167,10 +167,10 @@ Window:EditOpenButton({
     Draggable = true,
 })
 
--- ✄1�7 Tab dan UI
--- 🌐 WindUI Tabs
+-- 鉁� Tab dan UI
+-- 馃寪 WindUI Tabs
 local Tabs = {
-    InfoTab = Window:Tab({ Title = "Information", Icon = "info" })
+    InfoTab = Window:Tab({ Title = "Information", Icon = "info" }),
     MainDivider = Window:Divider(),
     Main = Window:Tab({ Title = "Main", Icon = "rocket"  }),
     Cars = Window:Tab({ Title = "Cars", Icon = "car"  }),
@@ -181,11 +181,12 @@ local Tabs = {
     Teleport = Window:Tab({ Title = "Teleport", Icon = "map-pin"  }),
 }
 
+Window:SelectTab(Tabs.InfoTab)
 
 Tabs.Main:Section({ Title = "Auto Dig" })
 
 -- Auto farm
--- 📦 Roblox Services
+-- 馃摝 Roblox Services
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -196,23 +197,23 @@ local Backpack = LocalPlayer:WaitForChild("Backpack")
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
 local Holes = Workspace:WaitForChild("World"):WaitForChild("Zones"):WaitForChild("_NoDig")
 
--- 🔁 Shared State
+-- 馃攣 Shared State
 local ENABLED = false
 local digCount = 0
 local connections = {}
 
--- 🔧 Get tool
+-- 馃敡 Get tool
 local function getTool()
     return LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Tool")
 end
 
--- ❄1�7 Destroy hitbox
+-- 鉂� Destroy hitbox
 local function destroyHitbox()
     local hitbox = Holes:FindFirstChild(LocalPlayer.Name .. "_Crater_Hitbox")
     if hitbox then hitbox:Destroy() end
 end
 
--- 🪓 Activate shovel tool
+-- 馃獡 Activate shovel tool
 local function activateTool()
     local tool = getTool()
     if tool then
@@ -221,7 +222,7 @@ local function activateTool()
     end
 end
 
--- 🔁 Setup Auto Dig Events
+-- 馃攣 Setup Auto Dig Events
 local function setupEvents()
     table.insert(connections, LocalPlayer.PlayerGui.ChildAdded:Connect(function(v)
         if v.Name == "Dig" then
@@ -274,7 +275,7 @@ local function setupEvents()
     end))
 end
 
--- 🔌 Cleanup connections
+-- 馃攲 Cleanup connections
 local function cleanupEvents()
     for _, conn in ipairs(connections) do
         conn:Disconnect()
@@ -282,7 +283,7 @@ local function cleanupEvents()
     connections = {}
 end
 
--- 🧠 Auto Dig (Fast)
+-- 馃 Auto Dig (Fast)
 Tabs.Main:Toggle({
     Title = "Auto Dig (Fast)",
     Desc = "Automatically performs a digging minigame quickly",
@@ -298,23 +299,23 @@ Tabs.Main:Toggle({
     end
 })
 
--- 🧩 Services
+-- 馃З Services
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 
--- 🧩 Variables
+-- 馃З Variables
 local local_player = Players.LocalPlayer
 local holes = Workspace:WaitForChild("World"):WaitForChild("Zones"):WaitForChild("_NoDig")
 
--- 🌍 Global toggle
+-- 馃實 Global toggle
 getgenv().enabled = false
 
--- 🧰 Get tool
+-- 馃О Get tool
 local function get_tool()
     return local_player.Character and local_player.Character:FindFirstChildOfClass("Tool")
 end
 
--- 🧱 Destroy hitbox & activate
+-- 馃П Destroy hitbox & activate
 local function destroy_hitbox_and_activate()
     local hitbox = holes:FindFirstChild(local_player.Name .. "_Crater_Hitbox")
     if hitbox then hitbox:Destroy() end
@@ -322,7 +323,7 @@ local function destroy_hitbox_and_activate()
     if tool then tool:Activate() end
 end
 
--- 🧠 Listener: saat tool ditambahkan ke karakter
+-- 馃 Listener: saat tool ditambahkan ke karakter
 local_player.Character.ChildAdded:Connect(function(v)
     if getgenv().enabled and v:IsA("Tool") and v.Name:lower():find("shovel") then
         task.wait(1)
@@ -330,7 +331,7 @@ local_player.Character.ChildAdded:Connect(function(v)
     end
 end)
 
--- 🧠 Listener: saat GUI "Dig" muncul
+-- 馃 Listener: saat GUI "Dig" muncul
 local_player.PlayerGui.ChildAdded:Connect(function(v)
     if getgenv().enabled and v.Name == "Dig" then
         local safezone = v:FindFirstChild("Safezone")
@@ -354,7 +355,7 @@ local_player.PlayerGui.ChildAdded:Connect(function(v)
     end
 end)
 
--- 🧠 Listener: IsDigging attribute
+-- 馃 Listener: IsDigging attribute
 local_player:GetAttributeChangedSignal("IsDigging"):Connect(function()
     if not getgenv().enabled then return end
     if not local_player:GetAttribute("IsDigging") then
@@ -362,7 +363,7 @@ local_player:GetAttributeChangedSignal("IsDigging"):Connect(function()
     end
 end)
 
--- ✄1�7 Toggle UI (WindUI Style)
+-- 鉁� Toggle UI (WindUI Style)
 Tabs.Main:Toggle({
     Title = "Auto Dig (Slow)",
     Desc = "Automatically performs a slow digging minigame",
@@ -374,7 +375,7 @@ Tabs.Main:Toggle({
 
 Tabs.Main:Section({ Title = "Dig Setting" })
 
--- 🛠︄1�7 Shovel Names
+-- 馃洜锔� Shovel Names
 local shovelNames = {
     "Wooden Shovel", "Bejeweled Shovel", "Training Shovel", "Toy Shovel",
     "Copper Shovel", "Rock Shovel", "Lucky Shovel", "Ruby Shovel",
@@ -386,7 +387,7 @@ local shovelNames = {
     "Draconic Shovel", "Monstrous Shovel", "Starfire Shovel"
 }
 
--- 🧰 Equip shovel
+-- 馃О Equip shovel
 local function equipAnyShovel()
     for _, tool in ipairs(Backpack:GetChildren()) do
         if tool:IsA("Tool") then
@@ -400,12 +401,12 @@ local function equipAnyShovel()
     end
 end
 
--- ❄1�7 Unequip tool
+-- 鉂� Unequip tool
 local function unequip()
     Remotes:WaitForChild("Backpack_Equip"):FireServer(nil)
 end
 
--- ♻️ Auto Equip Toggle
+-- 鈾伙笍 Auto Equip Toggle
 local backpackConn
 Tabs.Main:Toggle({
     Title = "Auto Equip Shovel",
@@ -426,7 +427,7 @@ Tabs.Main:Toggle({
 
             WindUI:Notify({
                 Title = "Auto Equip",
-                Content = "✄1�7 Auto Equip Shovel Enabled",
+                Content = "鉁� Auto Equip Shovel Enabled",
                 Duration = 0
             })
         else
@@ -439,7 +440,7 @@ Tabs.Main:Toggle({
 
             WindUI:Notify({
                 Title = "Auto Equip",
-                Content = "❄1�7 Auto Equip Shovel Disabled",
+                Content = "鉂� Auto Equip Shovel Disabled",
                 Duration = 0
             })
         end
@@ -449,24 +450,24 @@ Tabs.Main:Toggle({
 Tabs.Cars:Section({ Title = "Spawn Cars" })
 
 -- Ini mechanic
--- 🟦 Service & Remote
+-- 馃煢 Service & Remote
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local workspace = game:GetService("Workspace")
 
 local VehicleSpawn = ReplicatedStorage:WaitForChild("Remotes"):FindFirstChild("Vehicle_Spawn")
 local AvaRoot = workspace:WaitForChild("World"):WaitForChild("NPCs"):WaitForChild("Ava Carter"):WaitForChild("HumanoidRootPart")
 
--- 🟦 Daftar nama mobil
+-- 馃煢 Daftar nama mobil
 local vehicleList = {
     "ATV", "Golf Cart", "Koi Truck", "Commander", "Silver",
     "Pulse", "Rumbler", "Tracer", "DMW M3", "Elite 6x6",
     "Forklift", "The Ox", "Roadster RS", "Tornado", "McBruce 700", "Monster Silver"
 }
 
--- 🟦 Variabel pilihan mobil
+-- 馃煢 Variabel pilihan mobil
 local selectedVehicle = vehicleList[1] -- default pilihan pertama
 
--- 🟦 Dropdown untuk pilih mobil
+-- 馃煢 Dropdown untuk pilih mobil
 Tabs.Cars:Dropdown({
     Title = "Select Cars",
     Values = vehicleList,
@@ -477,7 +478,7 @@ Tabs.Cars:Dropdown({
     end
 })
 
--- 🟦 Button untuk spawn
+-- 馃煢 Button untuk spawn
 Tabs.Cars:Button({
     Title = "Spawn Cars",
     Desc = "Spawn selected vehicle near Ava Carter",
@@ -486,7 +487,7 @@ Tabs.Cars:Button({
             VehicleSpawn:FireServer(selectedVehicle, AvaRoot, {})
             WindUI:Notify({
                 Title = "Spawn Vehicle",
-                Content = "✄1�7 Spawned: " .. selectedVehicle,
+                Content = "鉁� Spawned: " .. selectedVehicle,
                 Duration = 0
             })
         else
@@ -504,11 +505,11 @@ Tabs.Cars:Button({
 -- Ini Shop
 Tabs.Shop:Section({ Title = "Shovel" })
 
--- 📦 Services
+-- 馃摝 Services
 local player = game.Players.LocalPlayer
 local RunService = game:GetService("RunService")
 
--- 📦 Noclip handler
+-- 馃摝 Noclip handler
 local noclipConn
 local function setNoclip(state)
     if state then
@@ -526,7 +527,7 @@ local function setNoclip(state)
     end
 end
 
--- 📦 Teleport function with noclip
+-- 馃摝 Teleport function with noclip
 local function tpWithNoclip(x, y, z, name)
     local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then
@@ -534,7 +535,7 @@ local function tpWithNoclip(x, y, z, name)
         hrp.CFrame = CFrame.new(x, y, z)
         WindUI:Notify({
             Title = "Teleport",
-            Content = "✄1�7 Teleported to: " .. name,
+            Content = "鉁� Teleported to: " .. name,
             Duration = 0
         })
         task.delay(0.5, function()
@@ -543,7 +544,7 @@ local function tpWithNoclip(x, y, z, name)
     end
 end
 
--- 📦 Teleport locations
+-- 馃摝 Teleport locations
 local teleports = {
     {"Bejeweled Shovel", 31.2093, 3.0318, 39.8111},
     {"Training Shovel", 2121.1235, 112.5746, -298.7560},
@@ -574,10 +575,10 @@ local teleports = {
     {"Starline Shovel", -2.5368, -68.4143, 1.2173}
 }
 
--- 📦 Store selected location
+-- 馃摝 Store selected location
 local selectedTeleport = teleports[1]
 
--- 🧭 Dropdown menu
+-- 馃Л Dropdown menu
 Tabs.Shop:Dropdown({
     Title = "Select Shovel Location",
     Values = (function()
@@ -599,7 +600,7 @@ Tabs.Shop:Dropdown({
     end
 })
 
--- 🔘 Teleport Button
+-- 馃敇 Teleport Button
 Tabs.Shop:Button({
     Title = "Teleport Now",
     Desc = "Safely teleport to the selected shovel",
@@ -609,7 +610,7 @@ Tabs.Shop:Button({
         else
             WindUI:Notify({
                 Title = "Teleport Error",
-                Content = "❄1�7 No location selected!",
+                Content = "鉂� No location selected!",
                 Duration = 1
             })
         end
@@ -635,13 +636,13 @@ Tabs.Shop:Button({
             humanoidRootPart.CFrame = merchant.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
             WindUI:Notify({
                 Title = "Teleported!",
-                Content = "✄1�7 Successfully teleported to the Traveling Merchant.",
+                Content = "鉁� Successfully teleported to the Traveling Merchant.",
                 Duration = 0
             })
         else
             WindUI:Notify({
                 Title = "Teleport Failed",
-                Content = "❄1�7 Traveling Merchant not found.",
+                Content = "鉂� Traveling Merchant not found.",
                 Duration = 3
             })
         end
@@ -650,19 +651,19 @@ Tabs.Shop:Button({
 
 Tabs.Sell:Section({ Title = "Inventory" })
 
--- 📦 Services
+-- 馃摝 Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local workspace = game:GetService("Workspace")
 
--- 📦 Rocky NPC & Remote
+-- 馃摝 Rocky NPC & Remote
 local Rocky = workspace:WaitForChild("World"):WaitForChild("NPCs"):WaitForChild("Rocky")
 local SellAllItems = ReplicatedStorage:WaitForChild("DialogueRemotes"):WaitForChild("SellAllItems")
 
--- 🌍 Global Variables
+-- 馃實 Global Variables
 getgenv().autoSell = false
 getgenv().sellDelay = 3
 
--- ✄1�7 UI Elements
+-- 鉁� UI Elements
 Tabs.Sell:Toggle({
     Title = "Auto Sell",
     Desc = "Automatically sells items to Rocky",
@@ -686,7 +687,7 @@ Tabs.Sell:Slider({
     end
 })
 
--- 🔁 Looping Auto Sell
+-- 馃攣 Looping Auto Sell
 task.spawn(function()
     while task.wait(1) do
         if getgenv().autoSell then
@@ -703,17 +704,17 @@ Tabs.Setting:Section({ Title = "Staff" })
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
--- 🔒 List of Staff UserIds
+-- 馃敀 List of Staff UserIds
 local staffIds = {
     12345678,
     98765432,
 }
 
--- 🌐 Global Flags
+-- 馃寪 Global Flags
 getgenv().StaffDetectionEnabled = true
 getgenv().StaffAction = "Notify" -- default action
 
--- ✄1�7 Check if a player is staff
+-- 鉁� Check if a player is staff
 local function isStaff(player)
     for _, id in ipairs(staffIds) do
         if player.UserId == id then
@@ -723,7 +724,7 @@ local function isStaff(player)
     return false
 end
 
--- ⚠️ Handle detected staff
+-- 鈿狅笍 Handle detected staff
 local function handleStaff(player)
     if not getgenv().StaffDetectionEnabled then return end
     if not isStaff(player) then return end
@@ -732,14 +733,14 @@ local function handleStaff(player)
         LocalPlayer:Kick("Staff detected: " .. player.Name)
     elseif getgenv().StaffAction == "Notify" then
         Rayfield:Notify({
-            Title = "⚠️ Staff Detected",
+            Title = "鈿狅笍 Staff Detected",
             Content = player.Name .. " (UserId: " .. player.UserId .. ") joined!",
             Duration = 6.5
         })
     end
 end
 
--- ✄1�7 WindUI Toggle (Benar)
+-- 鉁� WindUI Toggle (Benar)
 Tabs.Setting:Toggle({
     Title = "Anti Staff",
     Desc = "Enable staff detection and take action when staff joins.",
@@ -754,7 +755,7 @@ Tabs.Setting:Toggle({
     end
 })
 
--- ✄1�7 WindUI Dropdown (Benar)
+-- 鉁� WindUI Dropdown (Benar)
 Tabs.Setting:Dropdown({
     Title = "Action On Staff Detected",
     Desc = "Choose what happens when a staff joins",
@@ -765,12 +766,12 @@ Tabs.Setting:Dropdown({
     end
 })
 
--- 🔄 Listen for new players
+-- 馃攧 Listen for new players
 Players.PlayerAdded:Connect(function(player)
     handleStaff(player)
 end)
 
--- ✄1�7 Check players already in server
+-- 鉁� Check players already in server
 for _, player in ipairs(Players:GetPlayers()) do
     handleStaff(player)
 end
@@ -785,7 +786,7 @@ local musicEnabled = true
 -- Daftar lagu
 local musicList = {
     ["One Piece Two Piece"] = "rbxassetid://1838028562",
-    ["빠른 시일 내에"] = "rbxassetid://108807600670194",
+    ["牍犽ジ 鞁滌澕 雮挫棎"] = "rbxassetid://108807600670194",
     ["Parry Gripp - Raining Tacos"] = "rbxassetid://142376088",
     ["Theme 4"] = "rbxassetid://9047132593",
     ["Theme 5"] = "rbxassetid://1838028562",
@@ -830,7 +831,7 @@ Tabs.Setting:Dropdown({
     end
 })
 
--- ✄1�7 Slider Volume (Perbaikan Versi WindUI Support)
+-- 鉁� Slider Volume (Perbaikan Versi WindUI Support)
 Tabs.Setting:Slider({
     Title = "Volume",
     Desc = "Set music volume",
@@ -905,7 +906,7 @@ local magnetList = {
 
 local selectedMagnet = magnetList[1] -- default magnet
 
--- ✄1�7 WindUI-style Dropdown
+-- 鉁� WindUI-style Dropdown
 Tabs.Magnets:Dropdown({
     Title = "Select Magnet",
     Values = magnetList,
@@ -916,7 +917,7 @@ Tabs.Magnets:Dropdown({
     end
 })
 
--- ✄1�7 WindUI-style Button
+-- 鉁� WindUI-style Button
 Tabs.Magnets:Button({
     Title = "Equip Selected Magnet",
     Desc = "Equip the selected magnet from dropdown",
@@ -965,7 +966,7 @@ local npcNames = {
 -- Default selected NPC
 local selectedNPC = npcNames[1]
 
--- ✄1�7 WindUI Dropdown (Correct)
+-- 鉁� WindUI Dropdown (Correct)
 Tabs.Teleport:Dropdown({
     Title = "Select NPC",
     Desc = "Choose an NPC to teleport to",
@@ -976,7 +977,7 @@ Tabs.Teleport:Dropdown({
     end
 })
 
--- ✄1�7 WindUI Button (Correct)
+-- 鉁� WindUI Button (Correct)
 Tabs.Teleport:Button({
     Title = "Teleport to Selected NPC",
     Desc = "Teleports you to the chosen NPC above",
@@ -987,13 +988,13 @@ Tabs.Teleport:Button({
 
 Tabs.Teleport:Section({ Title = "Island" })
 
--- 📦 Services
+-- 馃摝 Services
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RootPart = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 RootPart = RootPart:WaitForChild("HumanoidRootPart")
 
--- 🌍 Teleport Locations
+-- 馃實 Teleport Locations
 local locationCFrames = {
     ["Mount Cinder"] = CFrame.new(4532.7417, 1101.18176, -1689.43616, 0.749915659, -5.64403457e-08, -0.661533475, -3.06035659e-08, 1, -1.20009716e-07, 0.661533475, 1.10242446e-07, 0.749915659),
     ["Rooftop Woodlands"] = CFrame.new(3888.36108, 225.724136, -360.665222, 0.0672813058, -1.63528906e-08, -0.99773407, -3.44779161e-09, 1, 1.6622259e-08, 0.99773407, 4.55836435e-09, 0.0672813058),
@@ -1003,7 +1004,7 @@ local locationCFrames = {
     ["Fernhill Forest"] = CFrame.new(2543.40283, 81.9500885, 1276.43262, 0.961085558, -6.8614078e-08, -0.276250839, 7.53299148e-08, 1, 1.36991876e-08, 0.276250839, -3.39760433e-08, 0.961085558),
 }
 
--- 🧭 List of location names
+-- 馃Л List of location names
 local locationNames = {}
 for name in pairs(locationCFrames) do
     table.insert(locationNames, name)
@@ -1011,7 +1012,7 @@ end
 
 local selectedLocation = locationNames[1]
 
--- ✄1�7 WindUI Dropdown
+-- 鉁� WindUI Dropdown
 Tabs.Teleport:Dropdown({
     Title = "Select Location",
     Desc = "Choose a teleport destination",
@@ -1022,7 +1023,7 @@ Tabs.Teleport:Dropdown({
     end
 })
 
--- ✄1�7 WindUI Button
+-- 鉁� WindUI Button
 Tabs.Teleport:Button({
     Title = "Teleport!",
     Desc = "Teleport to the selected location",
@@ -1098,8 +1099,8 @@ local function LoadDiscordInfo()
     if success and result and result.guild then
         local DiscordInfo = Info:Paragraph({
             Title = result.guild.name,
-            Desc = ' <font color="#52525b">��</font> Member Count : ' .. tostring(result.approximate_member_count) ..
-                '\n <font color="#16a34a">��</font> Online Count : ' .. tostring(result.approximate_presence_count),
+            Desc = ' <font color="#52525b">●</font> Member Count : ' .. tostring(result.approximate_member_count) ..
+                '\n <font color="#16a34a">●</font> Online Count : ' .. tostring(result.approximate_presence_count),
             Image = "https://cdn.discordapp.com/icons/" .. result.guild.id .. "/" .. result.guild.icon .. ".png?size=1024",
             ImageSize = 42,
         })
@@ -1116,8 +1117,8 @@ local function LoadDiscordInfo()
 
                 if updated and updatedResult and updatedResult.guild then
                     DiscordInfo:SetDesc(
-                        ' <font color="#52525b">��</font> Member Count : ' .. tostring(updatedResult.approximate_member_count) ..
-                        '\n <font color="#16a34a">��</font> Online Count : ' .. tostring(updatedResult.approximate_presence_count)
+                        ' <font color="#52525b">●</font> Member Count : ' .. tostring(updatedResult.approximate_member_count) ..
+                        '\n <font color="#16a34a">●</font> Online Count : ' .. tostring(updatedResult.approximate_presence_count)
                     )
                     
                     WindUI:Notify({
