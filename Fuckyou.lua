@@ -1,9 +1,10 @@
 -- =========================
-local version = "3.8.1"
+local version = "3.8.2"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
 
+-- FPS Unlock
 if setfpscap then
     setfpscap(1000000)
     game:GetService("StarterGui"):SetCore("SendNotification", {
@@ -46,6 +47,7 @@ local AutoCollectDelay = 5
 local ClickInterval = 0.25
 local SellPlant = false
 local SellBrainrot = false
+local SellEverything = false
 
 local HeldToolNames = {
     "Basic Bat",
@@ -182,12 +184,13 @@ local Main = Window:Tab({ Title = "Main", Icon = "rocket" })
 local Shop = Window:Tab({ Title = "Shop", Icon = "shopping-cart" })
 local Collect = Window:Tab({ Title = "Auto", Icon = "crown" })
 local Sell = Window:Tab({ Title = "Sell", Icon = "dollar-sign" })
+local Misc = Window:Tab({ Title = "Misc", Icon = "settings" })
 Window:SelectTab(1)
 
 -- ====================== MAIN ======================
 Main:Section({ Title = "Auto Farm", Icon = "backpack" })
 
-local StatusParagraph = Main:Paragraph({
+Main:Paragraph({
     Title = "Your Status",
     Desc = "[+] Show Plots \n[+] Show Rebirth \n[+] Show Money \n[+] Show Playtime",
     Image = "rbxassetid://104487529937663",
@@ -250,6 +253,8 @@ local function GetNearestBrainrot()
 end
 
 -- ====================== UTILITY FUNCTIONS ======================
+local HeldToolName = nil
+
 local function EquipBat()
     for _, toolName in ipairs(HeldToolNames) do
         local tool = Backpack:FindFirstChild(toolName) or Character:FindFirstChild(toolName)
@@ -270,16 +275,15 @@ local function InstantWarpToBrainrot(brainrot)
     end
 end
 
--- improved auto clicker using VirtualUser for reliability
 local function DoClick()
-    -- simulate press & release
     pcall(function()
         VirtualUser:Button1Down(Vector2.new(0, 0))
-        task.wait(0.1)
+        task.wait(0.05) -- เพิ่มความเร็วให้คลิกบ่อยขึ้น
         VirtualUser:Button1Up(Vector2.new(0, 0))
     end)
 end
 
+-- ====================== AUTO FARM ======================
 Main:Toggle({
     Title = "Auto Farm (Fixed)",
     Description = "Automatically attack approaching Brainrot faster",
@@ -324,10 +328,6 @@ Main:Toggle({
             task.spawn(function()
                 while AutoFarm do
                     local currentTarget = GetNearestBrainrot()
-                    if not currentTarget then
-                        task.wait(0.25)
-                        continue
-                    end
                     if currentTarget and currentTarget:FindFirstChild("BrainrotHitbox") then
                         InstantWarpToBrainrot(currentTarget)
                         pcall(function()
@@ -335,7 +335,6 @@ Main:Toggle({
                             if remotes and remotes:FindFirstChild("AttacksServer") and remotes.AttacksServer:FindFirstChild("WeaponAttack") then
                                 remotes.AttacksServer.WeaponAttack:FireServer({ { target = currentTarget.BrainrotHitbox } })
                             else
-                                -- fallback to generic path (keeps original path from script)
                                 local ok, _ = pcall(function()
                                     ReplicatedStorage.Remotes.AttacksServer.WeaponAttack:FireServer({ { target = currentTarget.BrainrotHitbox } })
                                 end)
@@ -352,7 +351,7 @@ Main:Toggle({
     end
 })
 
--- ====================== AUTO COLLECT FUNCTIONS ======================
+-- ====================== AUTO COLLECT ======================
 local function GetNearestPlot()
     local nearestPlot = nil
     local minDist = math.huge
@@ -398,7 +397,6 @@ local function CollectFromPlot(plot)
     end
 end
 
--- ====================== Collect ======================
 Collect:Section({ Title = "Auto Collect", Icon = "hand-coins" })
 
 Collect:Slider({
@@ -447,7 +445,7 @@ Collect:Toggle({
     end
 })
 
--- ====================== Collect ======================
+-- ====================== AUTO EQUIP ======================
 Collect:Section({ Title = "Auto Equip", Icon = "star" })
 
 Collect:Toggle({
@@ -507,49 +505,22 @@ Shop:Dropdown({
     end
 })
 
--- Auto Buy Selected Seed
 Shop:Toggle({
     Title = "Auto Buy Seed (Selected)",
     Default = false,
     Callback = function(state)
         AutoBuySelectedSeed = state
-        if state then
-            task.spawn(function()
-                while AutoBuySelectedSeed do
-                    for _, seed in ipairs(selectedSeeds) do
-                        local args = {{ seed }}
-                        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyItem"):FireServer(unpack(args))
-                        task.wait(0.5)
-                    end
-                    task.wait(0.5)
-                end
-            end)
-        end
     end
 })
 
--- Auto Buy All Seed
 Shop:Toggle({
     Title = "Auto Buy Seed (All)",
     Default = false,
     Callback = function(state)
         AutoBuyAllSeed = state
-        if state then
-            task.spawn(function()
-                while AutoBuyAllSeed do
-                    for _, seed in ipairs(shop.seedList) do
-                        local args = {{ seed }}
-                        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyItem"):FireServer(unpack(args))
-                        task.wait(0.5)
-                    end
-                    task.wait(0.5
-                end
-            end)
-        end
     end
 })
 
--- ===================== GEAR =====================
 Shop:Section({ Title = "Buy Gear", Icon = "package" })
 
 Shop:Dropdown({
@@ -561,86 +532,63 @@ Shop:Dropdown({
     end
 })
 
--- Auto Buy Selected Gear
 Shop:Toggle({
     Title = "Auto Buy Gear (Selected)",
     Default = false,
     Callback = function(state)
         AutoBuySelectedGear = state
-        if state then
-            task.spawn(function()
-                while AutoBuySelectedGear do
-                    for _, gear in ipairs(selectedGears) do
-                        local args = {{ gear }}
-                        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyGear"):FireServer(unpack(args))
-                        task.wait(0.5)
-                    end
-                    task.wait(0.5)
-                end
-            end)
-        end
     end
 })
 
--- Auto Buy All Gear
 Shop:Toggle({
     Title = "Auto Buy Gear (All)",
     Default = false,
     Callback = function(state)
         AutoBuyAllGear = state
-        if state then
-            task.spawn(function()
-                while AutoBuyAllGear do
-                    for _, gear in ipairs(shop.gearList) do
-                        local args = {{ gear }}
-                        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyGear"):FireServer(unpack(args))
-                        task.wait(0.5)
-                    end
-                    task.wait(0.5)
-                end
-            end)
-        end
     end
 })
 
 -- ====================== LOOPS ======================
--- Selling loop uses safe pcall and only fires when toggled
+-- Selling loop
 task.spawn(function()
     while task.wait(0.69) do
         if SellBrainrot or SellPlant or SellEverything then
             local remotes = GetRemotesFolder()
-            if remotes and remotes:FindFirstChild("ItemSell") then
-                pcall(function() remotes.ItemSell:FireServer() end)
-            else
-                pcall(function() ReplicatedStorage.Remotes.ItemSell:FireServer() end)
-            end
+            pcall(function()
+                if remotes and remotes:FindFirstChild("ItemSell") then
+                    remotes.ItemSell:FireServer()
+                else
+                    ReplicatedStorage.Remotes.ItemSell:FireServer()
+                end
+            end)
         end
     end
 end)
 
--- Auto buy loop (fixed variable names and safer remote calls)
+-- Auto buy loop (รวมทุกแบบและใช้ shop.table ให้ถูกต้อง)
 task.spawn(function()
     while task.wait(0.95) do
-        if AutoBuyGear and #selectedGears > 0 then
+        -- Selected Gear
+        if AutoBuySelectedGear and #selectedGears > 0 then
             for _, g in ipairs(selectedGears) do
                 local args = {{g}}
                 pcall(function()
                     game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyGear"):FireServer(unpack(args))
                 end)
-                task.wait(0.1)
+                task.wait(0.12)
             end
         end
-
-        if AutoBuySeed and #selectedSeeds > 0 then
+        -- Selected Seed
+        if AutoBuySelectedSeed and #selectedSeeds > 0 then
             for _, s in ipairs(selectedSeeds) do
                 local args = {{s}}
                 pcall(function()
                     game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyItem"):FireServer(unpack(args))
                 end)
-                task.wait(0.1)
+                task.wait(0.12)
             end
         end
-
+        -- All Gear
         if AutoBuyAllGear then
             for _, g in ipairs(shop.gearList) do
                 local args = {{g}}
@@ -650,7 +598,7 @@ task.spawn(function()
                 task.wait(0.12)
             end
         end
-
+        -- All Seed
         if AutoBuyAllSeed then
             for _, s in ipairs(shop.seedList) do
                 local args = {{s}}
@@ -662,6 +610,30 @@ task.spawn(function()
         end
     end
 end)
+
+-- ====================== MISC ======================
+Misc:Section({ Title = "Anti", Icon = "shield" })
+
+Misc:Toggle({
+    Title = "Anti AFK",
+    Description = "Prevent being kicked for inactivity",
+    Default = false,
+    Callback = function(state)
+        AntiAFKEnabled = state
+        if state then
+            local conn
+            conn = Players.LocalPlayer.Idled:Connect(function()
+                if AntiAFKEnabled then
+                    VirtualUser:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+                    task.wait(0.1)
+                    VirtualUser:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+                else
+                    conn:Disconnect()
+                end
+            end)
+        end
+    end
+})
 
 Info = InfoTab
 
