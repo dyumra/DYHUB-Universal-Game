@@ -1,7 +1,7 @@
 -- Fuck you stellarnigga
 
 -- =========================
-local version = "2.1.5"
+local version = "2.1.7"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -222,7 +222,7 @@ local autoTreeAura = false
 local auraRange = 25
 
 Main:Slider({
-    Title = "Auto Cut Trees (Aura)",
+    Title = "Set Range Cut Trees (Aura)",
     Description = "Automatically damage trees around your character",
     Value = {Min = 5, Max = 300, Default = auraRange},
     Step = 1,
@@ -233,7 +233,7 @@ Main:Slider({
 
 Main:Toggle({
     Title = "Auto Cut Trees (Aura)",
-    Description = "Automatically cut trees within aura range",
+    Description = "Auto cut trees in range",
     Default = false,
     Callback = function(state)
         autoTreeAura = state
@@ -242,33 +242,37 @@ Main:Toggle({
                 local character = LocalPlayer.Character
                 local root = character and character:FindFirstChild("HumanoidRootPart")
                 if root then
-                    local trees = {}
                     local treeFolder = Workspace:FindFirstChild("TreesFolder")
                     if treeFolder then
+                        local treesInRange = {}
                         for _, tree in ipairs(treeFolder:GetChildren()) do
                             if tree:IsA("Model") then
                                 local treePos = tree:FindFirstChild("HumanoidRootPart") or tree:FindFirstChild("MainPart") or tree.PrimaryPart
                                 if treePos then
                                     local distance = (root.Position - treePos.Position).Magnitude
                                     if distance <= auraRange then
-                                        table.insert(trees, {tree = tree, dist = distance})
+                                        table.insert(treesInRange, {tree = tree, dist = distance})
                                     end
+                                else
+                                    table.insert(treesInRange, {tree = tree, dist = 0})
                                 end
                             end
                         end
 
-                        -- sort ตามระยะใกล้สุดก่อน
-                        table.sort(trees, function(a, b) return a.dist < b.dist end)
+                        table.sort(treesInRange, function(a,b) return a.dist < b.dist end)
 
-                        -- ยิงต้นไม้ทีละต้น
-                        for _, info in ipairs(trees) do
+                        for _, info in ipairs(treesInRange) do
                             if not autoTreeAura then break end
                             local treeName = info.tree.Name
-                            if ReplicatedStorage:FindFirstChild("Signal") 
-                               and ReplicatedStorage.Signal:FindFirstChild("Tree") then
-                                ReplicatedStorage.Signal.Tree:FireServer("damage", treeName)
+                            local signalTree = ReplicatedStorage:FindFirstChild("Signal") and ReplicatedStorage.Signal:FindFirstChild("Tree")
+                            if signalTree then
+                                local treePos = info.tree:FindFirstChild("HumanoidRootPart") or info.tree:FindFirstChild("MainPart") or info.tree.PrimaryPart
+                                if treePos then
+                                    root.CFrame = CFrame.new(treePos.Position + Vector3.new(0,3,0))
+                                end
+                                signalTree:FireServer("damage", treeName)
                             end
-                            task.wait(0.001) -- รอเล็กน้อยเพื่อไม่ spam server
+                            task.wait(0.001)
                         end
                     end
                 end
