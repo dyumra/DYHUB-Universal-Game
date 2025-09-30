@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.8.0"
+local version = "3.8.1"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -642,7 +642,7 @@ task.spawn(function()
         end
 
         if AutoBuyAllGear then
-            for _, g in ipairs(gearList) do
+            for _, g in ipairs(shop.gearList) do
                 local args = {{g}}
                 pcall(function()
                     game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyGear"):FireServer(unpack(args))
@@ -652,7 +652,7 @@ task.spawn(function()
         end
 
         if AutoBuyAllSeed then
-            for _, s in ipairs(seedList) do
+            for _, s in ipairs(shop.seedList) do
                 local args = {{s}}
                 pcall(function()
                     game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyItem"):FireServer(unpack(args))
