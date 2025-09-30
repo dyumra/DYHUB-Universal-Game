@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.7.9"
+local version = "3.8.0"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -164,13 +164,6 @@ pcall(function()
     Window:Tag({
         Title = version,
         Color = Color3.fromHex("#30ff6a")
-    })
-end)
-
-pcall(function()
-    Window:Tag({
-        Title = "FIXED",
-        Color = Color3.fromHex("#ff0000")
     })
 end)
 
