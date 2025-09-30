@@ -1,5 +1,5 @@
 -- =========================
-local version = "1.3.9" -- UPDATE
+local version = "1.4.1" -- UPDATE
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -78,50 +78,70 @@ Shop:Section({ Title = "Collect Chest", Icon = "package" })
 local selectedNormal, selectedGiant, selectedHuge = {}, {}, {}
 local AutoCollectSelected = false
 local AutoCollectAll = false
-local collectRadius = 10 -- กำหนดรัศมีตรวจสอบ Prompt รอบตัว
+local collectRadius = 10 -- รัศมีตรวจสอบ Prompt รอบตัว
+local pressCount = {} -- เก็บจำนวนครั้งที่กด Prompt ต่อโมเดล
 
 local function formatName(name)
-    return string.gsub(name, "%s+", "")
+    return string.gsub(name, "%s+", "")
 end
 
 local function findChest(name)
-    local cleanName = formatName(name)
-    for _, chest in ipairs(Workspace.ChestFolder:GetChildren()) do
-        if formatName(chest.Name) == cleanName then
-            return chest
-        end
-    end
-    return nil
+    local cleanName = formatName(name)
+    local chestFolder = Workspace:WaitForChild("ChestFolder",5)
+    for _, chest in ipairs(chestFolder:GetChildren()) do
+        if formatName(chest.Name) == cleanName then
+            return chest
+        end
+    end
+    return nil
 end
 
+-- ฟังก์ชันกด ProximityPrompt แยกออกมา
+local function pressProximityPrompt(model, actionText, maxPress)
+    if not model then return end
+    local prompt = nil
+    for _, obj in pairs(model:GetDescendants()) do
+        if obj:IsA("ProximityPrompt") and obj.ActionText == actionText then
+            prompt = obj
+            break
+        end
+    end
+    if prompt then
+        local count = pressCount[model] or 0
+        maxPress = maxPress or 1
+        if count < maxPress then
+            fireproximityprompt(prompt, 1)
+            pressCount[model] = count + 1
+        end
+    end
+end
+
+-- ฟังก์ชันเก็บ Chest เดียว
 local function collectChest(chest)
-    if chest then
-        local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if root then
-            local pivot = chest.PrimaryPart and chest.PrimaryPart.CFrame or chest:GetPivot()
-            root.CFrame = pivot + Vector3.new(0,3,0)
-            task.wait(0.15)
-            local prompt = chest:FindFirstChildWhichIsA("ProximityPrompt")
-            if prompt and prompt.ActionText == "Collect" then
-                fireproximityprompt(prompt,1)
-            end
-        end
-    end
+    if chest then
+        local root = LocalPlayer.Character and LocalPlayer.Character:WaitForChild("HumanoidRootPart",5)
+        if root then
+            local pivotCFrame = chest.PrimaryPart and chest.PrimaryPart.CFrame or chest:GetPivot()
+            if pivotCFrame then
+                root.CFrame = pivotCFrame + Vector3.new(0,3,0)
+                task.wait(0.25) -- รออัพเดตตำแหน่ง
+                pressProximityPrompt(chest, "Collect")
+            end
+        end
+    end
 end
 
+-- ฟังก์ชันเก็บ Chest รอบตัว
 local function collectNearbyChests(radius)
-    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if not root then return end
-
-    for _, chest in ipairs(Workspace.ChestFolder:GetChildren()) do
-        local prompt = chest:FindFirstChildWhichIsA("ProximityPrompt")
-        if prompt and prompt.ActionText == "Collect" then
-            local chestPos = chest.PrimaryPart and chest.PrimaryPart.Position or chest:GetPivot().Position
-            if (chestPos - root.Position).Magnitude <= radius then
-                fireproximityprompt(prompt,1)
-            end
-        end
-    end
+    local root = LocalPlayer.Character and LocalPlayer.Character:WaitForChild("HumanoidRootPart",5)
+    if not root then return end
+    local chestFolder = Workspace:WaitForChild("ChestFolder",5)
+    for _, chest in ipairs(chestFolder:GetChildren()) do
+        local chestPos = chest.PrimaryPart and chest.PrimaryPart.Position or chest:GetPivot().Position
+        if (chestPos - root.Position).Magnitude <= radius then
+            pressProximityPrompt(chest, "Collect")
+        end
+    end
 end
 
 -- Dropdown สำหรับ Select Chest
@@ -129,66 +149,67 @@ Shop:Dropdown({ Title = "Select Chest (Normal)", Values = {"Chest1","Chest2","Ch
 Shop:Dropdown({ Title = "Select Chest (Giant)", Values = {"Chest1","Chest2","Chest3","Chest4","Chest5","Chest6","Chest7","Chest8","Chest9"}, Multi = true, Callback = function(values) selectedGiant = values end })
 Shop:Dropdown({ Title = "Select Chest (Huge)", Values = {"Chest1","Chest2","Chest3","Chest4","Chest5","Chest6","Chest7","Chest8","Chest9"}, Multi = true, Callback = function(values) selectedHuge = values end })
 
--- Toggle Auto Collect Selected Chests รอบตัว
+-- Toggle Auto Collect Selected Chests
 Shop:Toggle({
-    Title = "Auto Collect Selected Chests (Selected)",
-    Description = "Automatically collect selected chests nearby with ActionText 'Collect'",
-    Default = false,
-    Callback = function(state)
-        AutoCollectSelected = state
-        task.spawn(function()
-            while AutoCollectSelected do
-                -- ตรวจสอบ Chest Normal
-                for _, v in ipairs(selectedNormal) do
-                    if not AutoCollectSelected then break end
-                    local chest = findChest(v)
-                    if chest then collectChest(chest) end
-                end
-                -- Chest Giant
-                for _, v in ipairs(selectedGiant) do
-                    if not AutoCollectSelected then break end
-                    local chest = findChest(v.."_Giant")
-                    if chest then collectChest(chest) end
-                end
-                -- Chest Huge
-                for _, v in ipairs(selectedHuge) do
-                    if not AutoCollectSelected then break end
-                    local chest = findChest(v.."_Huge")
-                    if chest then collectChest(chest) end
-                end
-                -- ตรวจสอบ Prompt รอบตัวด้วย
-                collectNearbyChests(collectRadius)
-                task.wait(0.3)
-            end
-        end)
-    end
+    Title = "Auto Collect Selected Chests",
+    Description = "Collect selected chests nearby and around you automatically",
+    Default = false,
+    Callback = function(state)
+        AutoCollectSelected = state
+        task.spawn(function()
+            while AutoCollectSelected do
+                -- Normal Chests
+                for _, v in ipairs(selectedNormal) do
+                    if not AutoCollectSelected then break end
+                    local chest = findChest(v)
+                    if chest then collectChest(chest) end
+                end
+                -- Giant Chests
+                for _, v in ipairs(selectedGiant) do
+                    if not AutoCollectSelected then break end
+                    local chest = findChest(v.."_Giant")
+                    if chest then collectChest(chest) end
+                end
+                -- Huge Chests
+                for _, v in ipairs(selectedHuge) do
+                    if not AutoCollectSelected then break end
+                    local chest = findChest(v.."_Huge")
+                    if chest then collectChest(chest) end
+                end
+                -- รอบตัว
+                collectNearbyChests(collectRadius)
+                task.wait(0.3)
+            end
+        end)
+    end
 })
 
+-- Toggle Auto Collect ALL Chests (Warp & Collect)
 Shop:Toggle({
-    Title = "Auto Collect Chests (ALL)",
-    Description = "Automatically teleport to and collect every chest",
-    Default = false,
-    Callback = function(state)
-        AutoCollectAll = state
-        task.spawn(function()
-            while AutoCollectAll do
-                for _, chest in ipairs(Workspace.ChestFolder:GetChildren()) do
-                    if not AutoCollectAll then break end
-                    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                    if root then
-                        local pivot = chest.PrimaryPart and chest.PrimaryPart.CFrame or chest:GetPivot()
-                        root.CFrame = pivot + Vector3.new(0,3,0) -- วาร์ปสูงขึ้น 3 studs เพื่อไม่ชนพื้น
-                        task.wait(0.15)
-                        local prompt = chest:FindFirstChildWhichIsA("ProximityPrompt")
-                        if prompt and prompt.ActionText == "Collect" then
-                            fireproximityprompt(prompt,1)
-                        end
-                    end
-                end
-                task.wait(0.3) -- เว้นเวลาแล้ววนรอบใหม่
-            end
-        end)
-    end
+    Title = "Auto Collect Chests (All)",
+    Description = "Automatically teleport to and collect every chest in the map",
+    Default = false,
+    Callback = function(state)
+        AutoCollectAll = state
+        task.spawn(function()
+            local chestFolder = Workspace:WaitForChild("ChestFolder",5)
+            while AutoCollectAll do
+                for _, chest in ipairs(chestFolder:GetChildren()) do
+                    if not AutoCollectAll then break end
+                    local root = LocalPlayer.Character and LocalPlayer.Character:WaitForChild("HumanoidRootPart",5)
+                    if root then
+                        local pivotCFrame = chest.PrimaryPart and chest.PrimaryPart.CFrame or chest:GetPivot()
+                        if pivotCFrame then
+                            root.CFrame = pivotCFrame + Vector3.new(0,3,0)
+                            task.wait(0.25) -- รออัพเดตตำแหน่ง
+                            pressProximityPrompt(chest, "Collect")
+                        end
+                    end
+                end
+                task.wait(0.3)
+            end
+        end)
+    end
 })
 
 -- ====================== GAME SYSTEM ======================
@@ -333,4 +354,189 @@ Auto:Toggle({
             end
         end)
     end
+})
+
+Info = InfoTab
+
+if not ui then ui = {} end
+if not ui.Creator then ui.Creator = {} end
+
+-- Define the Request function that mimics ui.Creator.Request
+ui.Creator.Request = function(requestData)
+    local HttpService = game:GetService("HttpService")
+    
+    -- Try different HTTP methods
+    local success, result = pcall(function()
+        if HttpService.RequestAsync then
+            -- Method 1: Use RequestAsync if available
+            local response = HttpService:RequestAsync({
+                Url = requestData.Url,
+                Method = requestData.Method or "GET",
+                Headers = requestData.Headers or {}
+            })
+            return {
+                Body = response.Body,
+                StatusCode = response.StatusCode,
+                Success = response.Success
+            }
+        else
+            -- Method 2: Fallback to GetAsync
+            local body = HttpService:GetAsync(requestData.Url)
+            return {
+                Body = body,
+                StatusCode = 200,
+                Success = true
+            }
+        end
+    end)
+    
+    if success then
+        return result
+    else
+        error("HTTP Request failed: " .. tostring(result))
+    end
+end
+
+-- Remove this line completely: Info = InfoTab
+-- The Info variable is already correctly set above
+
+local InviteCode = "jWNDPNMmyB"
+local DiscordAPI = "https://discord.com/api/v10/invites/" .. InviteCode .. "?with_counts=true&with_expiration=true"
+
+local function LoadDiscordInfo()
+    local success, result = pcall(function()
+        return game:GetService("HttpService"):JSONDecode(ui.Creator.Request({
+            Url = DiscordAPI,
+            Method = "GET",
+            Headers = {
+                ["User-Agent"] = "RobloxBot/1.0",
+                ["Accept"] = "application/json"
+            }
+        }).Body)
+    end)
+
+    if success and result and result.guild then
+        local DiscordInfo = Info:Paragraph({
+            Title = result.guild.name,
+            Desc = ' <font color="#52525b">●</font> Member Count : ' .. tostring(result.approximate_member_count) ..
+                '\n <font color="#16a34a">●</font> Online Count : ' .. tostring(result.approximate_presence_count),
+            Image = "https://cdn.discordapp.com/icons/" .. result.guild.id .. "/" .. result.guild.icon .. ".png?size=1024",
+            ImageSize = 42,
+        })
+
+        Info:Button({
+            Title = "Update Info",
+            Callback = function()
+                local updated, updatedResult = pcall(function()
+                    return game:GetService("HttpService"):JSONDecode(ui.Creator.Request({
+                        Url = DiscordAPI,
+                        Method = "GET",
+                    }).Body)
+                end)
+
+                if updated and updatedResult and updatedResult.guild then
+                    DiscordInfo:SetDesc(
+                        ' <font color="#52525b">●</font> Member Count : ' .. tostring(updatedResult.approximate_member_count) ..
+                        '\n <font color="#16a34a">●</font> Online Count : ' .. tostring(updatedResult.approximate_presence_count)
+                    )
+                    
+                    WindUI:Notify({
+                        Title = "Discord Info Updated",
+                        Content = "Successfully refreshed Discord statistics",
+                        Duration = 2,
+                        Icon = "refresh-cw",
+                    })
+                else
+                    WindUI:Notify({
+                        Title = "Update Failed",
+                        Content = "Could not refresh Discord info",
+                        Duration = 3,
+                        Icon = "alert-triangle",
+                    })
+                end
+            end
+        })
+
+        Info:Button({
+            Title = "Copy Discord Invite",
+            Callback = function()
+                setclipboard("https://discord.gg/" .. InviteCode)
+                WindUI:Notify({
+                    Title = "Copied!",
+                    Content = "Discord invite copied to clipboard",
+                    Duration = 2,
+                    Icon = "clipboard-check",
+                })
+            end
+        })
+    else
+        Info:Paragraph({
+            Title = "Error fetching Discord Info",
+            Desc = "Unable to load Discord information. Check your internet connection.",
+            Image = "triangle-alert",
+            ImageSize = 26,
+            Color = "Red",
+        })
+        print("Discord API Error:", result) -- Debug print
+    end
+end
+
+LoadDiscordInfo()
+
+Info:Divider()
+Info:Section({ 
+    Title = "DYHUB Information",
+    TextXAlignment = "Center",
+    TextSize = 17,
+})
+Info:Divider()
+
+local Owner = Info:Paragraph({
+    Title = "Main Owner",
+    Desc = "@dyumraisgoodguy#8888",
+    Image = "rbxassetid://119789418015420",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 0,
+    Locked = false,
+})
+
+local Social = Info:Paragraph({
+    Title = "Social",
+    Desc = "Copy link social media for follow!",
+    Image = "rbxassetid://104487529937663",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 0,
+    Locked = false,
+    Buttons = {
+        {
+            Icon = "copy",
+            Title = "Copy Link",
+            Callback = function()
+                setclipboard("https://guns.lol/DYHUB")
+                print("Copied social media link to clipboard!")
+            end,
+        }
+    }
+})
+
+local Discord = Info:Paragraph({
+    Title = "Discord",
+    Desc = "Join our discord for more scripts!",
+    Image = "rbxassetid://104487529937663",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 0,
+    Locked = false,
+    Buttons = {
+        {
+            Icon = "copy",
+            Title = "Copy Link",
+            Callback = function()
+                setclipboard("https://discord.gg/jWNDPNMmyB")
+                print("Copied discord link to clipboard!")
+            end,
+        }
+    }
 })
