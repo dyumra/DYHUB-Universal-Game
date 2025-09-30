@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.8.3"
+local version = "3.8.5"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -33,7 +33,7 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
 
--- Character
+-- Character functions
 local function getCharacter()
     return LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 end
@@ -48,55 +48,10 @@ local function getHumanoidRootPart()
     return character:FindFirstChild("HumanoidRootPart")
 end
 
--- UI Load
-local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
-local Window = WindUI:CreateWindow({
-    Title = "DYHUB",
-    IconThemed = true,
-    Icon = "rbxassetid://104487529937663",
-    Author = "Prospecting | Free Version",
-    Folder = "DYHUB_Prospecting",
-    Size = UDim2.fromOffset(500, 350),
-    Transparent = true,
-    Theme = "Dark",
-    BackgroundImageTransparency = 0.8,
-    HasOutline = false,
-    HideSearchBar = true,
-    ScrollBarEnabled = false,
-    User = { Enabled = true, Anonymous = false },
-})
-
-pcall(function()
-    Window:Tag({ Title = version, Color = Color3.fromHex("#30ff6a") })
-end)
-
-Window:EditOpenButton({
-    Title = "DYHUB - Open",
-    Icon = "monitor",
-    CornerRadius = UDim.new(0, 6),
-    StrokeThickness = 2,
-    Color = ColorSequence.new(Color3.fromRGB(30,30,30), Color3.fromRGB(255,255,255)),
-    Draggable = true,
-})
-
--- Tabs
-local Tabs = {}
-Tabs.Info = Window:Tab({ Title = "Information", Icon = "info", Desc = "DYHUB" })
-Tabs.MainDivider = Window:Divider()
-Tabs.Main = Window:Tab({ Title = "Main", Icon = "rocket", Desc = "DYHUB" })
-Tabs.PlayerTab = Window:Tab({ Title = "Player", Icon = "user", Desc = "DYHUB" })
-Tabs.Auto = Window:Tab({ Title = "Auto", Icon = "wrench", Desc = "DYHUB" })
-Tabs.Farm = Window:Tab({ Title = "Farm", Icon = "badge-dollar-sign", Desc = "DYHUB" })
-Tabs.MpDivider = Window:Divider()
-Tabs.Shop = Window:Tab({ Title = "Shop", Icon = "shopping-cart", Desc = "DYHUB" })
-Tabs.Code = Window:Tab({ Title = "Code", Icon = "bird", Desc = "DYHUB" })
-Window:SelectTab(1)
-
--- Player Gui
+-- Player GUI
 local playerGui = LocalPlayer:WaitForChild("PlayerGui")
 local function getStatsText()
-    local stats = playerGui:WaitForChild("ToolUI"):WaitForChild("FillingPan"):WaitForChild("FillText")
-    return stats.Text
+    return playerGui:WaitForChild("ToolUI"):WaitForChild("FillingPan"):WaitForChild("FillText").Text
 end
 
 local function getStats()
@@ -126,123 +81,53 @@ local function findPan()
     return nil
 end
 
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
-
-local shakeRunning = false
-local digRunning = false
-
--- Tab: Main
-Tabs.Auto:Section({ Title = "Feature Auto", Icon = "flame" })
-
--- Tab: Auto
-Tabs.Auto:Toggle({
-    Title = "Auto Shake",
-    Value = false,
-    Callback = function(state)
-        shakeRunning = state
-        if state then
-            task.spawn(function()
-                while shakeRunning do
-                    local rustyPan = findPan()
-                    if rustyPan then
-                        local shakeScript = rustyPan:FindFirstChild("Scripts"):FindFirstChild("Shake")
-                        local panScript = rustyPan:FindFirstChild("Scripts"):FindFirstChild("Pan")
-                        if shakeScript and panScript then
-                            local current, _ = getStatsRaw()
-                            if current > 0 then
-                                panScript:InvokeServer() -- เริ่มรอบแรก
-                                task.wait(0.5)
-                                shakeScript:FireServer() -- shake ครั้งแรก
-                            end
-                        end
-                    end
-                    task.wait(0.05)
-                end
-            end)
-        end
-    end
+-- WindUI
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+local Window = WindUI:CreateWindow({
+    Title = "DYHUB",
+    IconThemed = true,
+    Icon = "rbxassetid://104487529937663",
+    Author = "Prospecting | Free Version",
+    Folder = "DYHUB_Prospecting",
+    Size = UDim2.fromOffset(500, 350),
+    Transparent = true,
+    Theme = "Dark",
+    BackgroundImageTransparency = 0.8,
+    HasOutline = false,
+    HideSearchBar = true,
+    ScrollBarEnabled = false,
+    User = { Enabled = true, Anonymous = false },
 })
+pcall(function() Window:Tag({ Title = version, Color = Color3.fromHex("#30ff6a") }) end)
+Window:EditOpenButton({ Title = "DYHUB - Open", Icon = "monitor", CornerRadius = UDim.new(0,6), StrokeThickness = 2, Color = ColorSequence.new(Color3.fromRGB(30,30,30), Color3.fromRGB(255,255,255)), Draggable = true })
 
-Tabs.Auto:Toggle({
-    Title = "Auto Dig",
-    Value = false,
-    Callback = function(state)
-        digRunning = state
-        if state then
-            task.spawn(function()
-                while digRunning do
-                    local rustyPan = findPan()
-                    if rustyPan then
-                        local collectScript = rustyPan:FindFirstChild("Scripts"):FindFirstChild("Collect")
-                        local args = {[1] = 99}
-                        if collectScript then
-                            local current, max = getStats()
-                            if current < max then
-                                collectScript:InvokeServer(unpack(args))
-                            end
-                        end
-                    end
-                    task.wait(0.05)
-                end
-            end)
-        end
-    end
-})
+-- Tabs
+local Tabs = {}
+Tabs.Info = Window:Tab({ Title = "Information", Icon = "info", Desc = "DYHUB" })
+Tabs.MainDivider = Window:Divider()
+Tabs.Main = Window:Tab({ Title = "Main", Icon = "rocket", Desc = "DYHUB" })
+Tabs.PlayerTab = Window:Tab({ Title = "Player", Icon = "user", Desc = "DYHUB" })
+Tabs.Auto = Window:Tab({ Title = "Auto", Icon = "wrench", Desc = "DYHUB" })
+Tabs.Farm = Window:Tab({ Title = "Farm", Icon = "badge-dollar-sign", Desc = "DYHUB" })
+Tabs.MpDivider = Window:Divider()
+Tabs.Shop = Window:Tab({ Title = "Shop", Icon = "shopping-cart", Desc = "DYHUB" })
+Tabs.Code = Window:Tab({ Title = "Code", Icon = "bird", Desc = "DYHUB" })
+Window:SelectTab(1)
 
-Tabs.Main:Section({ Title = "Feature Sell", Icon = "badge-dollar-sign" })
-
-Tabs.Main:Button({
-    Title = "Sell All (Anywhere)",
-    Icon = "shopping-cart",
-    Callback = function()
-        local character = player.Character
-        if not character or not character:FindFirstChild("HumanoidRootPart") then return end
-        local hrp = character.HumanoidRootPart
-        local TweenService = game:GetService("TweenService")
-
-        -- บันทึกตำแหน่งเดิม
-        local originalCFrame = hrp.CFrame
-
-        -- CFrame จุดขาย
-        local targetCFrame = CFrame.new(
-            -36.4754753, 18.7080574, 32.6440926,
-            -0.241923511, 3.02572585e-06, -0.97029525,
-            1.24988816e-07, 0.99999994, 3.14679664e-06,
-            0.97029531, 6.25588257e-07, -0.241923496
-        )
-
-        -- Tween เดินไปยังจุดขาย
-        local tweenInfo = TweenInfo.new(2, Enum.EasingStyle.Linear)
-        local goalTo = {CFrame = targetCFrame}
-        local tweenTo = TweenService:Create(hrp, tweenInfo, goalTo)
-        tweenTo:Play()
-        tweenTo.Completed:Wait()
-
-        -- รัน SellAll Remote
-        local ReplicatedStorage = game:GetService("ReplicatedStorage")
-        local sellRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Shop"):WaitForChild("SellAll")
-        sellRemote:InvokeServer()
-
-        -- Tween เดินกลับตำแหน่งเดิม
-        local goalBack = {CFrame = originalCFrame}
-        local tweenBack = TweenService:Create(hrp, tweenInfo, goalBack)
-        tweenBack:Play()
-        tweenBack.Completed:Wait()
-    end
-})
-
--- Tween function
+-- Variables
+local shakeRunning, digRunning, AutoFarm3Running = false, false, false
+local DigInputValue, ShakeInputValue, SellInputValue
 local TweenSpeed = 2
+local selectedLegitMode = "Tween"
+
+-- Helper Tween function
 local function tweenTo(hrp, targetCF, time)
-    local goal = {CFrame = targetCF}
-    local tween = TweenService:Create(hrp, TweenInfo.new(time or TweenSpeed, Enum.EasingStyle.Linear), goal)
+    local tween = TweenService:Create(hrp, TweenInfo.new(time or TweenSpeed, Enum.EasingStyle.Linear), {CFrame=targetCF})
     tween:Play()
     tween.Completed:Wait()
 end
 
--- Walk legit function
+-- Helper Walk Legit function with jump
 local function walkToTarget(character, targetPos)
     local hrp = character:FindFirstChild("HumanoidRootPart")
     local humanoid = character:FindFirstChild("Humanoid")
@@ -253,20 +138,109 @@ local function walkToTarget(character, targetPos)
         humanoid:MoveTo(targetPos.Position)
         task.wait(0.1)
         local distance = (hrp.Position - targetPos.Position).Magnitude
-        if math.abs(distance - lastDistance) < 0.05 then
-            humanoid.Jump = true
-        end
+        if math.abs(distance - lastDistance) < 0.05 then humanoid.Jump = true end
         lastDistance = distance
         if not AutoFarm3Running then break end
     end
 end
 
--- Auto Farm Variables
-local AutoFarm3Running = false
-local DigInputValue, ShakeInputValue, SellInputValue
-local selectedLegitMode = "Tween"
+-- Auto Tab Toggles
+Tabs.Auto:Section({ Title = "Feature Auto", Icon = "flame" })
+
+Tabs.Auto:Toggle({
+    Title = "Auto Shake",
+    Value = false,
+    Callback = function(state)
+        shakeRunning = state
+        if state then
+            task.spawn(function()
+                while shakeRunning do
+                    local rustyPan = findPan()
+                    if rustyPan then
+                        local shakeScript = rustyPan:FindFirstChild("Scripts") and rustyPan.Scripts:FindFirstChild("Shake")
+                        local panScript = rustyPan:FindFirstChild("Scripts") and rustyPan.Scripts:FindFirstChild("Pan")
+                        local current,_ = getStatsRaw()
+                        if shakeScript and panScript and current>0 then
+                            panScript:InvokeServer()
+                            task.wait(0.5)
+                            shakeScript:FireServer()
+                        end
+                    end
+                    task.wait(0.05)
+                end
+            end)
+        end
+    end
+})
+
+Tabs.Auto:Toggle({
+    Title = "Auto Dig",
+    Value = false,
+    Callback = function(state)
+        digRunning = state
+        if state then
+            task.spawn(function()
+                while digRunning do
+                    local rustyPan = findPan()
+                    if rustyPan then
+                        local collectScript = rustyPan:FindFirstChild("Scripts") and rustyPan.Scripts:FindFirstChild("Collect")
+                        local args = {[1]=99}
+                        local current,max = getStats()
+                        if collectScript and current<max then collectScript:InvokeServer(unpack(args)) end
+                    end
+                    task.wait(0.05)
+                end
+            end)
+        end
+    end
+})
+
+-- Main Sell
+Tabs.Main:Section({ Title = "Feature Sell", Icon = "badge-dollar-sign" })
+
+local localSellRunning = false
+
+Tabs.Main:Toggle({
+    Title = "Sell Sell (Near NPC)",
+    Value = false,
+    Callback = function(state)
+        localSellRunning = state
+        if state then
+            task.spawn(function()
+                local sellRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Shop"):WaitForChild("SellAll")
+                while localSellRunning do
+                    pcall(function()
+                        sellRemote:InvokeServer()
+                    end)
+                    task.wait(1)
+                end
+            end)
+        end
+    end
+})
+
+Tabs.Main:Button({
+    Title = "Sell All (Anywhere)",
+    Icon = "shopping-cart",
+    Callback = function()
+        local character = getCharacter()
+        local hrp = character and character:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+
+        local originalCFrame = hrp.CFrame
+        local targetCFrame = CFrame.new(-36.475,18.708,32.644)
+        tweenTo(hrp, targetCFrame, 2)
+
+        local sellRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Shop"):WaitForChild("SellAll")
+        sellRemote:InvokeServer()
+        task.wait(0.5)
+
+        tweenTo(hrp, originalCFrame, 2)
+    end
+})
 
 -- Farm Tab
+Tabs.Farm:Section({ Title = "Warning: Use this feature on private servers", Icon = "triangle-alert" })
 Tabs.Farm:Section({ Title = "Set by you", Icon = "map-pin-plus" })
 
 Tabs.Farm:Input({
@@ -274,140 +248,111 @@ Tabs.Farm:Input({
     Placeholder = "Default = 2",
     Callback = function(text)
         local num = tonumber(text)
-        if num and num > 0 then
-            TweenSpeed = num
-            print("[Tween Speed] set to "..num)
-        else
-            warn("Invalid Tween Speed, must be a number > 0")
-        end
-    end,
+        if num and num>0 then TweenSpeed=num print("[Tween Speed] set to "..num) else warn("Invalid Tween Speed") end
+    end
 })
 
+-- Legit Mode Dropdown
 Tabs.Farm:Dropdown({
     Title = "Legit Mode",
     Multi = false,
     Values = {"Walk","Tween"},
     Callback = function(value)
-        selectedLegitMode = value
+        selectedLegitMode = value or "Tween"
         print("[Legit Mode] Selected:", selectedLegitMode)
-    end,
+    end
 })
 
-Tabs.Farm:Button({
-    Title = "Set Dig Position",
-    Icon = "pickaxe",
-    Callback = function()
-        local hrp = getHumanoidRootPart()
-        if hrp then
-            DigInputValue = hrp.CFrame
-            print("[Dig Position] Set to "..tostring(DigInputValue))
-        end
-    end,
-})
+Tabs.Farm:Button({Title="Set Dig Position",Icon="pickaxe",Callback=function()
+    local hrp = getHumanoidRootPart()
+    if hrp then DigInputValue=hrp.CFrame print("[Dig Position] Set to "..tostring(DigInputValue)) end
+end})
 
-Tabs.Farm:Button({
-    Title = "Set Shake Position",
-    Icon = "handshake",
-    Callback = function()
-        local hrp = getHumanoidRootPart()
-        if hrp then
-            ShakeInputValue = hrp.CFrame
-            print("[Shake Position] Set to "..tostring(ShakeInputValue))
-        end
-    end,
-})
+Tabs.Farm:Button({Title="Set Shake Position",Icon="handshake",Callback=function()
+    local hrp = getHumanoidRootPart()
+    if hrp then ShakeInputValue=hrp.CFrame print("[Shake Position] Set to "..tostring(ShakeInputValue)) end
+end})
 
-Tabs.Farm:Button({
-    Title = "Set Sell Position",
-    Icon = "shopping-cart",
-    Callback = function()
-        local hrp = getHumanoidRootPart()
-        if hrp then
-            SellInputValue = hrp.CFrame
-            print("[Sell Position] Set to "..tostring(SellInputValue))
-        end
-    end,
-})
+Tabs.Farm:Button({Title="Set Sell Position",Icon="shopping-cart",Callback=function()
+    local hrp = getHumanoidRootPart()
+    if hrp then SellInputValue=hrp.CFrame print("[Sell Position] Set to "..tostring(SellInputValue)) end
+end})
 
--- Auto Farm Toggle
+-- Auto Farm: Set By You Toggle
 Tabs.Farm:Toggle({
     Title = "Auto Farm: Set By You",
     Value = false,
     Callback = function(state)
-        AutoFarm3Running = state
+        AutoFarm3Running=state
         if state then
             task.spawn(function()
                 local sellRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Shop"):WaitForChild("SellAll")
                 while AutoFarm3Running do
-                    -- Hold Pan
-                    local character = getCharacter()
-                    local humanoid = getHumanoid()
-                    local hrp = getHumanoidRootPart()
                     local rustyPan = findPan()
-                    if humanoid and rustyPan then
-                        humanoid:EquipTool(rustyPan)
-                    end
+                    if rustyPan then
+                        -- Equip Pan
+                        local humanoid = getHumanoid()
+                        if humanoid then humanoid:EquipTool(rustyPan) end
 
-                    local current, max = getStats()
-                    local step = (current <= 0 and 1) or (current >= max and 2) or 1
+                        local current,max=getStats()
+                        local step = current<=0 and 1 or max<=current and 2 or 1
 
-                    -- STEP 1 : Dig
-                    if step == 1 and DigInputValue then
-                        if selectedLegitMode == "Tween" then
-                            tweenTo(hrp, DigInputValue, TweenSpeed)
-                        else
-                            walkToTarget(character, DigInputValue)
-                        end
-                        local collectScript = rustyPan and rustyPan:FindFirstChild("Scripts") and rustyPan.Scripts:FindFirstChild("Collect")
-                        local args = {[1]=99}
-                        repeat
-                            current, max = getStats()
-                            if current >= max then break end
-                            if collectScript then collectScript:InvokeServer(unpack(args)) end
-                            task.wait(0.05)
-                        until current >= max
-                        step = 2
-                    end
-
-                    -- STEP 2 : Shake
-                    if step == 2 and ShakeInputValue then
-                        if selectedLegitMode == "Tween" then
-                            tweenTo(hrp, ShakeInputValue, TweenSpeed)
-                        else
-                            walkToTarget(character, ShakeInputValue)
-                        end
-                        local shakeScript = rustyPan and rustyPan:FindFirstChild("Scripts") and rustyPan.Scripts:FindFirstChild("Shake")
-                        local panScript = rustyPan and rustyPan:FindFirstChild("Scripts") and rustyPan.Scripts:FindFirstChild("Pan")
-                        if shakeScript and panScript then
-                            if current > 0 then
-                                panScript:InvokeServer()
-                                task.wait(0.5)
-                                repeat
-                                    current, _ = getStats()
-                                    if current <= 0 then break end
-                                    panScript:InvokeServer()
-                                    task.wait(0.05)
-                                    shakeScript:FireServer()
-                                    task.wait(0.05)
-                                until current <= 0
+                        -- STEP 1: Dig
+                        if step==1 and DigInputValue then
+                            if selectedLegitMode=="Tween" then
+                                tweenTo(getHumanoidRootPart(), DigInputValue, TweenSpeed)
+                            else
+                                walkToTarget(getCharacter(), DigInputValue)
                             end
+                            repeat
+                                current,max=getStats()
+                                if current>=max then break end
+                                local collectScript = rustyPan:FindFirstChild("Scripts") and rustyPan.Scripts:FindFirstChild("Collect")
+                                if collectScript then collectScript:InvokeServer(99) end
+                                task.wait(0.05)
+                            until current>=max
+                            step=2
                         end
-                        step = 3
-                    end
 
-                    -- STEP 3 : Sell
-                    if step == 3 and SellInputValue then
-                        if selectedLegitMode == "Tween" then
-                            tweenTo(hrp, SellInputValue, TweenSpeed)
-                        else
-                            walkToTarget(character, SellInputValue)
+                        -- STEP 2: Shake
+                        if step==2 and ShakeInputValue then
+                            if selectedLegitMode=="Tween" then
+                                tweenTo(getHumanoidRootPart(), ShakeInputValue, TweenSpeed)
+                            else
+                                walkToTarget(getCharacter(), ShakeInputValue)
+                            end
+                            local shakeScript = rustyPan:FindFirstChild("Scripts") and rustyPan.Scripts:FindFirstChild("Shake")
+                            local panScript = rustyPan:FindFirstChild("Scripts") and rustyPan.Scripts:FindFirstChild("Pan")
+                            if shakeScript and panScript then
+                                current,_=getStatsRaw()
+                                if current>0 then
+                                    panScript:InvokeServer()
+                                    task.wait(0.5)
+                                    repeat
+                                        current,_=getStatsRaw()
+                                        if current<=0 then break end
+                                        panScript:InvokeServer()
+                                        shakeScript:FireServer()
+                                        task.wait(0.05)
+                                    until current<=0
+                                end
+                            end
+                            step=3
                         end
-                        task.wait(1)
-                        sellRemote:InvokeServer()
-                        task.wait(0.5)
-                        step = 1
-                    end
 
+                        -- STEP 3: Sell
+                        if step==3 and SellInputValue then
+                            if selectedLegitMode=="Tween" then
+                                tweenTo(getHumanoidRootPart(), SellInputValue, TweenSpeed)
+                            else
+                                walkToTarget(getCharacter(), SellInputValue)
+                            end
+                            task.wait(1.5)
+                            sellRemote:InvokeServer()
+                            task.wait(0.5)
+                            step=1
+                        end
+                    end
                     task.wait(0.1)
                 end
             end)
