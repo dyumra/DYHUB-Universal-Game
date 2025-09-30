@@ -1,5 +1,5 @@
 -- =========================
-local version = "1.5.0"
+local version = "1.5.1" -- FIXED + UPDATED
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -26,7 +26,6 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 -- ====================== SERVICES ======================
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
 
 -- ====================== WINDOW ======================
@@ -63,9 +62,9 @@ Window:EditOpenButton({
 local InfoTab = Window:Tab({ Title = "Information", Icon = "info" })
 local MainDivider = Window:Divider()
 local Main = Window:Tab({ Title = "Main", Icon = "rocket" })
+local TP = Window:Tab({ Title = "Teleport", Icon = "zap" })
 local Shop = Window:Tab({ Title = "Collect", Icon = "gift" })
 local Auto = Window:Tab({ Title = "Open", Icon = "gem" })
-local TP = Window:Tab({ Title = "Teleport", Icon = "zap" })
 local Misc = Window:Tab({ Title = "Misc", Icon = "settings" })
 Window:SelectTab(1)
 
@@ -94,14 +93,19 @@ end
 
 local function collectChestReal(chest)
     if not chest or not chest.Parent then return false end
-    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    local char = LocalPlayer.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
     if not root then return false end
 
     local pivotCFrame = chest.PrimaryPart and chest.PrimaryPart.CFrame or chest:GetPivot()
     if not pivotCFrame then return false end
 
+    -- วาร์ปแน่นอน ใช้ Anchored
+    local anchored = root.Anchored
+    root.Anchored = true
     root.CFrame = pivotCFrame + Vector3.new(0,3,0)
     task.wait(0.05)
+    root.Anchored = anchored
 
     local prompt
     for _, obj in pairs(chest:GetDescendants()) do
@@ -112,7 +116,6 @@ local function collectChestReal(chest)
     end
     if not prompt then return false end
 
-    -- Fire proximity prompt without blocking
     spawn(function()
         for i = 1, 10 do
             if not chest.Parent then break end
@@ -146,7 +149,7 @@ local function autoCollectChests()
     for _, v in ipairs(selectedGiant) do table.insert(allChests, findChest(v.."_Giant")) end
     for _, v in ipairs(selectedHuge) do table.insert(allChests, findChest(v.."_Huge")) end
 
-    -- เก็บ Chest ที่อยู่ใกล้ตัวด้วย
+    -- เก็บ Chest รอบตัวด้วย
     for _, chest in ipairs(chestFolder:GetChildren()) do
         local chestPos = chest.PrimaryPart and chest.PrimaryPart.Position or chest:GetPivot().Position
         if (chestPos - root.Position).Magnitude <= collectRadius then
@@ -177,21 +180,6 @@ Shop:Toggle({
         task.spawn(function()
             while AutoCollectSelected do
                 autoCollectChests()
-                task.wait(0.3)
-            end
-        end)
-    end
-})
-
-Shop:Toggle({
-    Title = "Auto Collect Chests (All)",
-    Description = "Automatically collect all chests in range without selecting",
-    Default = false,
-    Callback = function(state)
-        AutoCollectAll = state
-        task.spawn(function()
-            while AutoCollectAll do
-                collectNearbyChests(collectRadius)
                 task.wait(0.3)
             end
         end)
