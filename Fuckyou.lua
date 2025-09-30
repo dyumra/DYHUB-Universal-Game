@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.8.2"
+local version = "3.8.3"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -571,7 +571,7 @@ task.spawn(function()
         -- Selected Gear
         if AutoBuySelectedGear and #selectedGears > 0 then
             for _, g in ipairs(selectedGears) do
-                local args = {{g}}
+                local args = {g}
                 pcall(function()
                     game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyGear"):FireServer(unpack(args))
                 end)
@@ -581,7 +581,7 @@ task.spawn(function()
         -- Selected Seed
         if AutoBuySelectedSeed and #selectedSeeds > 0 then
             for _, s in ipairs(selectedSeeds) do
-                local args = {{s}}
+                local args = {s}
                 pcall(function()
                     game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyItem"):FireServer(unpack(args))
                 end)
@@ -591,7 +591,7 @@ task.spawn(function()
         -- All Gear
         if AutoBuyAllGear then
             for _, g in ipairs(shop.gearList) do
-                local args = {{g}}
+                local args = {g}
                 pcall(function()
                     game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyGear"):FireServer(unpack(args))
                 end)
@@ -601,7 +601,7 @@ task.spawn(function()
         -- All Seed
         if AutoBuyAllSeed then
             for _, s in ipairs(shop.seedList) do
-                local args = {{s}}
+                local args = {s}
                 pcall(function()
                     game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyItem"):FireServer(unpack(args))
                 end)
