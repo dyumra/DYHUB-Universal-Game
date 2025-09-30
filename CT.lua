@@ -1,5 +1,5 @@
 -- =========================
-local version = "1.3.7" -- UPDATE
+local version = "1.3.9" -- UPDATE
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -73,36 +73,55 @@ local Misc = Window:Tab({ Title = "Misc", Icon = "settings" })
 Window:SelectTab(1)
 
 -- ====================== CHEST SYSTEM ======================
-Shop:Section({ Title = "Chest System", Icon = "package" })
+Shop:Section({ Title = "Collect Chest", Icon = "package" })
+
 local selectedNormal, selectedGiant, selectedHuge = {}, {}, {}
 local AutoCollectSelected = false
 local AutoCollectAll = false
+local collectRadius = 10 -- กำหนดรัศมีตรวจสอบ Prompt รอบตัว
 
 local function formatName(name)
-    return string.gsub(name, "%s+", "")
+    return string.gsub(name, "%s+", "")
 end
 
 local function findChest(name)
-    local cleanName = formatName(name)
-    for _, chest in ipairs(Workspace.ChestFolder:GetChildren()) do
-        if formatName(chest.Name) == cleanName then
-            return chest
-        end
-    end
-    return nil
+    local cleanName = formatName(name)
+    for _, chest in ipairs(Workspace.ChestFolder:GetChildren()) do
+        if formatName(chest.Name) == cleanName then
+            return chest
+        end
+    end
+    return nil
 end
 
 local function collectChest(chest)
-    if chest then
-        local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if root then
-            local pivot = chest.PrimaryPart and chest.PrimaryPart.CFrame or chest:GetPivot()
-            root.CFrame = pivot + Vector3.new(0,3,0)
-            task.wait(0.15)
-            local prompt = chest:FindFirstChildWhichIsA("ProximityPrompt")
-            if prompt then fireproximityprompt(prompt,1) end
-        end
-    end
+    if chest then
+        local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if root then
+            local pivot = chest.PrimaryPart and chest.PrimaryPart.CFrame or chest:GetPivot()
+            root.CFrame = pivot + Vector3.new(0,3,0)
+            task.wait(0.15)
+            local prompt = chest:FindFirstChildWhichIsA("ProximityPrompt")
+            if prompt and prompt.ActionText == "Collect" then
+                fireproximityprompt(prompt,1)
+            end
+        end
+    end
+end
+
+local function collectNearbyChests(radius)
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    for _, chest in ipairs(Workspace.ChestFolder:GetChildren()) do
+        local prompt = chest:FindFirstChildWhichIsA("ProximityPrompt")
+        if prompt and prompt.ActionText == "Collect" then
+            local chestPos = chest.PrimaryPart and chest.PrimaryPart.Position or chest:GetPivot().Position
+            if (chestPos - root.Position).Magnitude <= radius then
+                fireproximityprompt(prompt,1)
+            end
+        end
+    end
 end
 
 -- Dropdown สำหรับ Select Chest
@@ -110,40 +129,66 @@ Shop:Dropdown({ Title = "Select Chest (Normal)", Values = {"Chest1","Chest2","Ch
 Shop:Dropdown({ Title = "Select Chest (Giant)", Values = {"Chest1","Chest2","Chest3","Chest4","Chest5","Chest6","Chest7","Chest8","Chest9"}, Multi = true, Callback = function(values) selectedGiant = values end })
 Shop:Dropdown({ Title = "Select Chest (Huge)", Values = {"Chest1","Chest2","Chest3","Chest4","Chest5","Chest6","Chest7","Chest8","Chest9"}, Multi = true, Callback = function(values) selectedHuge = values end })
 
--- Toggle Selected Chests
+-- Toggle Auto Collect Selected Chests รอบตัว
 Shop:Toggle({
-    Title = "Auto Collect Selected Chests",
-    Description = "Automatically teleport and collect selected chests",
-    Default = false,
-    Callback = function(state)
-        AutoCollectSelected = state
-        task.spawn(function()
-            while AutoCollectSelected do
-                for _, v in ipairs(selectedNormal) do if not AutoCollectSelected then break end collectChest(findChest(v)) end
-                for _, v in ipairs(selectedGiant) do if not AutoCollectSelected then break end collectChest(findChest(v.."_Giant")) end
-                for _, v in ipairs(selectedHuge) do if not AutoCollectSelected then break end collectChest(findChest(v.."_Huge")) end
-                task.wait(0.3)
-            end
-        end)
-    end
+    Title = "Auto Collect Selected Chests (Selected)",
+    Description = "Automatically collect selected chests nearby with ActionText 'Collect'",
+    Default = false,
+    Callback = function(state)
+        AutoCollectSelected = state
+        task.spawn(function()
+            while AutoCollectSelected do
+                -- ตรวจสอบ Chest Normal
+                for _, v in ipairs(selectedNormal) do
+                    if not AutoCollectSelected then break end
+                    local chest = findChest(v)
+                    if chest then collectChest(chest) end
+                end
+                -- Chest Giant
+                for _, v in ipairs(selectedGiant) do
+                    if not AutoCollectSelected then break end
+                    local chest = findChest(v.."_Giant")
+                    if chest then collectChest(chest) end
+                end
+                -- Chest Huge
+                for _, v in ipairs(selectedHuge) do
+                    if not AutoCollectSelected then break end
+                    local chest = findChest(v.."_Huge")
+                    if chest then collectChest(chest) end
+                end
+                -- ตรวจสอบ Prompt รอบตัวด้วย
+                collectNearbyChests(collectRadius)
+                task.wait(0.3)
+            end
+        end)
+    end
 })
 
--- Toggle All Chests
 Shop:Toggle({
-    Title = "Auto Collect All Chests",
-    Description = "Automatically teleport and collect every chest in the map",
-    Default = false,
-    Callback = function(state)
-        AutoCollectAll = state
-        task.spawn(function()
-            while AutoCollectAll do
-                for _, chest in ipairs(Workspace.ChestFolder:GetChildren()) do
-                    if not AutoCollectAll then break end collectChest(chest)
-                end
-                task.wait(0.3)
-            end
-        end)
-    end
+    Title = "Auto Collect Chests (ALL)",
+    Description = "Automatically teleport to and collect every chest",
+    Default = false,
+    Callback = function(state)
+        AutoCollectAll = state
+        task.spawn(function()
+            while AutoCollectAll do
+                for _, chest in ipairs(Workspace.ChestFolder:GetChildren()) do
+                    if not AutoCollectAll then break end
+                    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    if root then
+                        local pivot = chest.PrimaryPart and chest.PrimaryPart.CFrame or chest:GetPivot()
+                        root.CFrame = pivot + Vector3.new(0,3,0) -- วาร์ปสูงขึ้น 3 studs เพื่อไม่ชนพื้น
+                        task.wait(0.15)
+                        local prompt = chest:FindFirstChildWhichIsA("ProximityPrompt")
+                        if prompt and prompt.ActionText == "Collect" then
+                            fireproximityprompt(prompt,1)
+                        end
+                    end
+                end
+                task.wait(0.3) -- เว้นเวลาแล้ววนรอบใหม่
+            end
+        end)
+    end
 })
 
 -- ====================== GAME SYSTEM ======================
