@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.8.5"
+local version = "3.8.9"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -70,14 +70,27 @@ local function getStatsRaw()
     return current, max
 end
 
--- Find Pan
-local function findPan()
+-- Find Pan (Character + BackpackTwo)
+local function findPanAll()
     local character = getCharacter()
+    local backpack = LocalPlayer:FindFirstChild("BackpackTwo")
+    
+    -- ตรวจสอบใน Character ก่อน
     for _, tool in ipairs(character:GetChildren()) do
         if tool:IsA("Tool") and tool.Name:match("Pan$") then
             return tool
         end
     end
+
+    -- ตรวจสอบใน BackpackTwo
+    if backpack then
+        for _, tool in ipairs(backpack:GetChildren()) do
+            if tool:IsA("Tool") and tool.Name:match("Pan$") then
+                return tool
+            end
+        end
+    end
+
     return nil
 end
 
@@ -115,7 +128,7 @@ Tabs.Code = Window:Tab({ Title = "Code", Icon = "bird", Desc = "DYHUB" })
 Window:SelectTab(1)
 
 -- Variables
-local shakeRunning, digRunning, AutoFarm3Running = false, false, false
+local shakeRunning, digRunning, AutoFarm3Running, autoEquipRunning = false, false, false, false
 local DigInputValue, ShakeInputValue, SellInputValue
 local TweenSpeed = 2
 local selectedLegitMode = "Tween"
@@ -147,6 +160,7 @@ end
 -- Auto Tab Toggles
 Tabs.Auto:Section({ Title = "Feature Auto", Icon = "flame" })
 
+-- Auto Shake
 Tabs.Auto:Toggle({
     Title = "Auto Shake",
     Value = false,
@@ -155,7 +169,7 @@ Tabs.Auto:Toggle({
         if state then
             task.spawn(function()
                 while shakeRunning do
-                    local rustyPan = findPan()
+                    local rustyPan = findPanAll()
                     if rustyPan then
                         local shakeScript = rustyPan:FindFirstChild("Scripts") and rustyPan.Scripts:FindFirstChild("Shake")
                         local panScript = rustyPan:FindFirstChild("Scripts") and rustyPan.Scripts:FindFirstChild("Pan")
@@ -163,7 +177,13 @@ Tabs.Auto:Toggle({
                         if shakeScript and panScript and current>0 then
                             panScript:InvokeServer()
                             task.wait(0.5)
-                            shakeScript:FireServer()
+                            repeat
+                                current,_=getStatsRaw()
+                                if current<=0 then break end
+                                panScript:InvokeServer()
+                                shakeScript:FireServer()
+                                task.wait(0.05)
+                            until current<=0
                         end
                     end
                     task.wait(0.05)
@@ -173,6 +193,7 @@ Tabs.Auto:Toggle({
     end
 })
 
+-- Auto Dig
 Tabs.Auto:Toggle({
     Title = "Auto Dig",
     Value = false,
@@ -181,7 +202,7 @@ Tabs.Auto:Toggle({
         if state then
             task.spawn(function()
                 while digRunning do
-                    local rustyPan = findPan()
+                    local rustyPan = findPanAll()
                     if rustyPan then
                         local collectScript = rustyPan:FindFirstChild("Scripts") and rustyPan.Scripts:FindFirstChild("Collect")
                         local args = {[1]=99}
@@ -195,9 +216,34 @@ Tabs.Auto:Toggle({
     end
 })
 
+-- Auto Equip Pan
+Tabs.Auto:Toggle({
+    Title = "Auto Equip Pan",
+    Value = false,
+    Callback = function(state)
+        autoEquipRunning = state
+        if state then
+            task.spawn(function()
+                local equipRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("CustomBackpack"):WaitForChild("EquipRemote")
+                while autoEquipRunning do
+                    local rustyPan = findPanAll()
+                    if rustyPan then
+                        local character = getCharacter()
+                        local currentTool = character:FindFirstChildOfClass("Tool")
+                        if not currentTool or currentTool ~= rustyPan then
+                            local args = { character:WaitForChild(rustyPan.Name) }
+                            equipRemote:FireServer(unpack(args))
+                        end
+                    end
+                    task.wait(0.5)
+                end
+            end)
+        end
+    end
+})
+
 -- Main Sell
 Tabs.Main:Section({ Title = "Feature Sell", Icon = "badge-dollar-sign" })
-
 local localSellRunning = false
 
 Tabs.Main:Toggle({
@@ -263,6 +309,7 @@ Tabs.Farm:Dropdown({
     end
 })
 
+-- Set Positions
 Tabs.Farm:Button({Title="Set Dig Position",Icon="pickaxe",Callback=function()
     local hrp = getHumanoidRootPart()
     if hrp then DigInputValue=hrp.CFrame print("[Dig Position] Set to "..tostring(DigInputValue)) end
@@ -283,18 +330,21 @@ Tabs.Farm:Toggle({
     Title = "Auto Farm: Set By You",
     Value = false,
     Callback = function(state)
-        AutoFarm3Running=state
+        AutoFarm3Running = state
         if state then
             task.spawn(function()
                 local sellRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Shop"):WaitForChild("SellAll")
-                while AutoFarm3Running do
-                    local rustyPan = findPan()
-                    if rustyPan then
-                        -- Equip Pan
-                        local humanoid = getHumanoid()
-                        if humanoid then humanoid:EquipTool(rustyPan) end
+                local equipRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("CustomBackpack"):WaitForChild("EquipRemote")
 
-                        local current,max=getStats()
+                while AutoFarm3Running do
+                    local rustyPan = findPanAll()
+                    if rustyPan then
+                        -- Equip Pan via Remote
+                        local args = {getCharacter():WaitForChild(rustyPan.Name)}
+                        equipRemote:FireServer(unpack(args))
+                        task.wait(0.1)
+
+                        local current,max = getStats()
                         local step = current<=0 and 1 or max<=current and 2 or 1
 
                         -- STEP 1: Dig
@@ -305,13 +355,13 @@ Tabs.Farm:Toggle({
                                 walkToTarget(getCharacter(), DigInputValue)
                             end
                             repeat
-                                current,max=getStats()
+                                current,max = getStats()
                                 if current>=max then break end
                                 local collectScript = rustyPan:FindFirstChild("Scripts") and rustyPan.Scripts:FindFirstChild("Collect")
                                 if collectScript then collectScript:InvokeServer(99) end
                                 task.wait(0.05)
                             until current>=max
-                            step=2
+                            step = 2
                         end
 
                         -- STEP 2: Shake
@@ -337,7 +387,7 @@ Tabs.Farm:Toggle({
                                     until current<=0
                                 end
                             end
-                            step=3
+                            step = 3
                         end
 
                         -- STEP 3: Sell
@@ -350,7 +400,7 @@ Tabs.Farm:Toggle({
                             task.wait(1.5)
                             sellRemote:InvokeServer()
                             task.wait(0.5)
-                            step=1
+                            step = 1
                         end
                     end
                     task.wait(0.1)
