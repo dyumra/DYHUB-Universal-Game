@@ -1,24 +1,24 @@
 -- =========================
-local version = "1.4.6" -- UPDATE
+local version = "1.4.9" -- UPDATE
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
 
 if setfpscap then
-    setfpscap(1000000)
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "dsc.gg/dyhub",
-        Text = "FPS Unlocked!",
-        Duration = 2,
-        Button1 = "Okay"
-    })
+    setfpscap(1000000)
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "dsc.gg/dyhub",
+        Text = "FPS Unlocked!",
+        Duration = 2,
+        Button1 = "Okay"
+    })
 else
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "dsc.gg/dyhub",
-        Text = "Your exploit does not support setfpscap.",
-        Duration = 2,
-        Button1 = "Okay"
-    })
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "dsc.gg/dyhub",
+        Text = "Your exploit does not support setfpscap.",
+        Duration = 2,
+        Button1 = "Okay"
+    })
 end
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
@@ -31,35 +31,35 @@ local LocalPlayer = Players.LocalPlayer
 
 -- ====================== WINDOW ======================
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB",
-    IconThemed = true,
-    Icon = "rbxassetid://104487529937663",
-    Author = "Cut Trees | Premium Version",
-    Folder = "DYHUB_CT",
-    Size = UDim2.fromOffset(500, 350),
-    Transparent = true,
-    Theme = "Dark",
-    BackgroundImageTransparency = 0.8,
-    HasOutline = false,
-    HideSearchBar = true,
-    ScrollBarEnabled = false,
-    User = { Enabled = true, Anonymous = false },
+    Title = "DYHUB",
+    IconThemed = true,
+    Icon = "rbxassetid://104487529937663",
+    Author = "Cut Trees | Premium Version",
+    Folder = "DYHUB_CT",
+    Size = UDim2.fromOffset(500, 350),
+    Transparent = true,
+    Theme = "Dark",
+    BackgroundImageTransparency = 0.8,
+    HasOutline = false,
+    HideSearchBar = true,
+    ScrollBarEnabled = false,
+    User = { Enabled = true, Anonymous = false },
 })
 
 pcall(function()
-    Window:Tag({
-        Title = version,
-        Color = Color3.fromHex("#30ff6a")
-    })
+    Window:Tag({
+        Title = version,
+        Color = Color3.fromHex("#30ff6a")
+    })
 end)
 
 Window:EditOpenButton({
-    Title = "DYHUB - Open",
-    Icon = "monitor",
-    CornerRadius = UDim.new(0, 6),
-    StrokeThickness = 2,
-    Color = ColorSequence.new(Color3.fromRGB(30, 30, 30), Color3.fromRGB(255, 255, 255)),
-    Draggable = true,
+    Title = "DYHUB - Open",
+    Icon = "monitor",
+    CornerRadius = UDim.new(0, 6),
+    StrokeThickness = 2,
+    Color = ColorSequence.new(Color3.fromRGB(30, 30, 30), Color3.fromRGB(255, 255, 255)),
+    Draggable = true,
 })
 
 -- ====================== TABS ======================
@@ -79,79 +79,62 @@ local selectedNormal, selectedGiant, selectedHuge = {}, {}, {}
 local AutoCollectSelected = false
 local AutoCollectAll = false
 local collectRadius = 20
-local pressCount = {}
 
 local function formatName(name)
-    return string.gsub(name, "%s+", "")
+    return string.gsub(name, "%s+", "")
 end
 
 local function findChest(name)
-    local cleanName = formatName(name)
-    local chestFolder = Workspace:WaitForChild("ChestFolder",5)
-    for _, chest in ipairs(chestFolder:GetChildren()) do
-        if formatName(chest.Name) == cleanName then
-            return chest
-        end
-    end
-    return nil
+    local cleanName = formatName(name)
+    local chestFolder = Workspace:WaitForChild("ChestFolder",5)
+    for _, chest in ipairs(chestFolder:GetChildren()) do
+        if formatName(chest.Name) == cleanName then
+            return chest
+        end
+    end
+    return nil
 end
 
-local function pressProximityPrompt(model, actionText, maxPress)
-    if not model or not model.Parent then return false end
-    local prompt
-    for _, obj in pairs(model:GetDescendants()) do
-        if obj:IsA("ProximityPrompt") and obj.ActionText == actionText then
-            prompt = obj
-            break
-        end
-    end
-    if not prompt then return false end
+local function collectChestReal(chest)
+    if not chest or not chest.Parent then return false end
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not root then return false end
 
-    maxPress = maxPress or 1
-    local count = pressCount[model] or 0
-    if count >= maxPress then return false end
+    local pivotCFrame = chest.PrimaryPart and chest.PrimaryPart.CFrame or chest:GetPivot()
+    if not pivotCFrame then return false end
 
-    fireproximityprompt(prompt, 1)
-    pressCount[model] = count + 1
-    return true
-end
+    root.CFrame = pivotCFrame + Vector3.new(0,3,0)
+    task.wait(0.15)
 
-local function collectChest(chest)
-    if not chest or not chest.Parent then return false end
-    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if not root then return false end
+    local prompt
+    for _, obj in pairs(chest:GetDescendants()) do
+        if obj:IsA("ProximityPrompt") and obj.ActionText == "Collect" then
+            prompt = obj
+            break
+        end
+    end
+    if not prompt then return false end
 
-    local pivotCFrame = chest.PrimaryPart and chest.PrimaryPart.CFrame or chest:GetPivot()
-    if not pivotCFrame then return false end
+    local startTime = tick()
+    while tick() - startTime < 5 do
+        if not chest.Parent then return true end
+        fireproximityprompt(prompt, 1)
+        task.wait(0.1)
+    end
 
-    root.CFrame = pivotCFrame + Vector3.new(0,3,0)
-    task.wait(0.1)
-
-    local success = false
-    local timeout = 2
-    local start = tick()
-    while tick() - start < timeout do
-        if pressProximityPrompt(chest, "Collect", 1) then
-            if not chest.Parent then
-                success = true
-                break
-            end
-        end
-        task.wait(0.05)
-    end
-    return success
+    return false
 end
 
 local function collectNearbyChests(radius)
-    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if not root then return end
-    local chestFolder = Workspace:WaitForChild("ChestFolder",5)
-    for _, chest in ipairs(chestFolder:GetChildren()) do
-        local chestPos = chest.PrimaryPart and chest.PrimaryPart.Position or chest:GetPivot().Position
-        if (chestPos - root.Position).Magnitude <= radius then
-            pressProximityPrompt(chest, "Collect")
-        end
-    end
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    local chestFolder = Workspace:WaitForChild("ChestFolder",5)
+    for _, chest in ipairs(chestFolder:GetChildren()) do
+        local chestPos = chest.PrimaryPart and chest.PrimaryPart.Position or chest:GetPivot().Position
+        if (chestPos - root.Position).Magnitude <= radius then
+            collectChestReal(chest)
+        end
+    end
 end
 
 -- Dropdown Select Chest
@@ -161,56 +144,55 @@ Shop:Dropdown({ Title = "Select Chest (Huge)", Values = {"Chest1","Chest2","Ches
 
 -- Toggle Auto Collect Selected Chests
 Shop:Toggle({
-    Title = "Auto Collect Selected Chests",
-    Description = "Collect selected chests nearby and around you automatically",
-    Default = false,
-    Callback = function(state)
-        AutoCollectSelected = state
-        task.spawn(function()
-            while AutoCollectSelected do
-                for _, v in ipairs(selectedNormal) do
-                    if not AutoCollectSelected then break end
-                    local chest = findChest(v)
-                    if chest then collectChest(chest) end
-                end
-                for _, v in ipairs(selectedGiant) do
-                    if not AutoCollectSelected then break end
-                    local chest = findChest(v.."_Giant")
-                    if chest then collectChest(chest) end
-                end
-                for _, v in ipairs(selectedHuge) do
-                    if not AutoCollectSelected then break end
-                    local chest = findChest(v.."_Huge")
-                    if chest then collectChest(chest) end
-                end
-                collectNearbyChests(collectRadius)
-                task.wait(0.3)
-            end
-        end)
-    end
+    Title = "Auto Collect Selected Chests",
+    Description = "Collect selected chests nearby and around you automatically",
+    Default = false,
+    Callback = function(state)
+        AutoCollectSelected = state
+        task.spawn(function()
+            while AutoCollectSelected do
+                for _, v in ipairs(selectedNormal) do
+                    if not AutoCollectSelected then break end
+                    local chest = findChest(v)
+                    if chest then collectChestReal(chest) end
+                end
+                for _, v in ipairs(selectedGiant) do
+                    if not AutoCollectSelected then break end
+                    local chest = findChest(v.."_Giant")
+                    if chest then collectChestReal(chest) end
+                end
+                for _, v in ipairs(selectedHuge) do
+                    if not AutoCollectSelected then break end
+                    local chest = findChest(v.."_Huge")
+                    if chest then collectChestReal(chest) end
+                end
+                collectNearbyChests(collectRadius)
+                task.wait(0.3)
+            end
+        end)
+    end
 })
 
 -- Toggle Auto Collect ALL Chests
 Shop:Toggle({
-    Title = "Auto Collect Chests (All)",
-    Description = "Automatically teleport to and collect every chest in the map",
-    Default = false,
-    Callback = function(state)
-        AutoCollectAll = state
-        task.spawn(function()
-            while AutoCollectAll do
-                local chestFolder = Workspace:WaitForChild("ChestFolder",5)
-                for _, chest in ipairs(chestFolder:GetChildren()) do
-                    if not AutoCollectAll then break end
-                    collectChest(chest)
-                    task.wait(0.2)
-                end
-                task.wait(0.5)
-            end
-        end)
-    end
+    Title = "Auto Collect Chests (All)",
+    Description = "Automatically teleport to and collect every chest in the map",
+    Default = false,
+    Callback = function(state)
+        AutoCollectAll = state
+        task.spawn(function()
+            while AutoCollectAll do
+                local chestFolder = Workspace:WaitForChild("ChestFolder",5)
+                for _, chest in ipairs(chestFolder:GetChildren()) do
+                    if not AutoCollectAll then break end
+                    collectChestReal(chest)
+                    task.wait(0.2)
+                end
+                task.wait(1)
+            end
+        end)
+    end
 })
-
 
 -- ====================== GAME SYSTEM ======================
 Main:Section({ Title = "Game System", Icon = "gamepad-2" })
@@ -232,29 +214,50 @@ Main:Toggle({
 
 -- ====================== TREE SYSTEM ======================
 Main:Section({ Title = "Tree System", Icon = "tree-deciduous" })
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+
 local autoTreeAura = false
 local auraRange = 25
-Main:Slider({ Title = "Auto Cut Trees (Aura)", Description = "Automatically damage trees around your character", Value = {Min = 5, Max = 100, Default = auraRange}, Step = 1, Callback = function(val) auraRange = val end })
-Main:Toggle({ Title = "Auto Cut Trees (Aura)", Description = "Automatically cut trees within aura range", Default = false, Callback = function(state)
-    autoTreeAura = state
-    task.spawn(function()
-        while autoTreeAura do
-            local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if root then
-                for _, tree in ipairs(Workspace:WaitForChild("TreesFolder"):GetChildren()) do
-                    if tree:IsA("Model") and tree.PrimaryPart then
-                        local distance = (root.Position - tree.PrimaryPart.Position).Magnitude
-                        if distance <= auraRange then
-                            ReplicatedStorage:WaitForChild("Signal"):WaitForChild("Tree"):FireServer("damage", tree.Name)
-                            task.wait(0.01)
+
+Main:Slider({
+    Title = "Auto Cut Trees (Aura)",
+    Description = "Automatically damage trees around your character",
+    Value = {Min = 5, Max = 100, Default = auraRange},
+    Step = 1,
+    Callback = function(val)
+        auraRange = val
+    end
+})
+
+Main:Toggle({
+    Title = "Auto Cut Trees (Aura)",
+    Description = "Automatically cut trees within aura range",
+    Default = false,
+    Callback = function(state)
+        autoTreeAura = state
+        task.spawn(function()
+            while autoTreeAura do
+                local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if root then
+                    for _, tree in ipairs(Workspace:WaitForChild("TreesFolder"):GetChildren()) do
+                        if tree:IsA("Model") and tree.PrimaryPart then
+                            local distance = (root.Position - tree.PrimaryPart.Position).Magnitude
+                            if distance <= auraRange then
+                                ReplicatedStorage:WaitForChild("Signal"):WaitForChild("Tree"):FireServer("damage", tree.Name)
+                                task.wait(0.1)
+                            end
                         end
                     end
                 end
+                task.wait(0.1)
             end
-            task.wait(0.01)
-        end
-    end)
-end})
+        end)
+    end
+})
+
 local autoTreeAll = false
 Main:Toggle({ Title = "Auto Cut Trees (All)", Description = "Automatically cut all trees in the map", Default = false, Callback = function(state)
     autoTreeAll = state
