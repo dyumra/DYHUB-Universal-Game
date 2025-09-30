@@ -1,5 +1,7 @@
+-- Fuck you stellarnigga
+
 -- =========================
-local version = "1.5.1" -- FIXED + UPDATED
+local version = "2.1.3"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -25,6 +27,7 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 
 -- ====================== SERVICES ======================
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
 
@@ -62,9 +65,9 @@ Window:EditOpenButton({
 local InfoTab = Window:Tab({ Title = "Information", Icon = "info" })
 local MainDivider = Window:Divider()
 local Main = Window:Tab({ Title = "Main", Icon = "rocket" })
-local TP = Window:Tab({ Title = "Teleport", Icon = "zap" })
 local Shop = Window:Tab({ Title = "Collect", Icon = "gift" })
 local Auto = Window:Tab({ Title = "Open", Icon = "gem" })
+local TP = Window:Tab({ Title = "Teleport", Icon = "zap" })
 local Misc = Window:Tab({ Title = "Misc", Icon = "settings" })
 Window:SelectTab(1)
 
@@ -73,117 +76,120 @@ Shop:Section({ Title = "Collect Chest", Icon = "package" })
 
 local selectedNormal, selectedGiant, selectedHuge = {}, {}, {}
 local AutoCollectSelected = false
-local AutoCollectAll = false
-local collectRadius = 20
 
+-- ลบช่องว่างจากชื่อ Chest
 local function formatName(name)
-    return string.gsub(name, "%s+", "")
+    return string.gsub(name, "%s+", "")
 end
 
+-- หา Chest ตามชื่อ
 local function findChest(name)
-    local cleanName = formatName(name)
-    local chestFolder = Workspace:WaitForChild("ChestFolder",5)
-    for _, chest in ipairs(chestFolder:GetChildren()) do
-        if formatName(chest.Name) == cleanName then
-            return chest
-        end
-    end
-    return nil
+    local cleanName = formatName(name)
+    local chestFolder = Workspace:WaitForChild("ChestFolder", 5)
+    for _, chest in ipairs(chestFolder:GetChildren()) do
+        if formatName(chest.Name) == cleanName then
+            return chest
+        end
+    end
+    return nil
 end
 
-local function collectChestReal(chest)
-    if not chest or not chest.Parent then return false end
-    local char = LocalPlayer.Character
-    local root = char and char:FindFirstChild("HumanoidRootPart")
-    if not root then return false end
+-- วาร์ปไป Chest + กด ProximityPrompt
+local function collectChest(chest)
+    if not chest or not chest.Parent then return false end
+    local char = LocalPlayer.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    if not root then return false end
 
-    local pivotCFrame = chest.PrimaryPart and chest.PrimaryPart.CFrame or chest:GetPivot()
-    if not pivotCFrame then return false end
+    local pivotCFrame = chest.PrimaryPart and chest.PrimaryPart.CFrame or chest:GetPivot()
+    if not pivotCFrame then return false end
 
-    -- วาร์ปแน่นอน ใช้ Anchored
-    local anchored = root.Anchored
-    root.Anchored = true
-    root.CFrame = pivotCFrame + Vector3.new(0,3,0)
-    task.wait(0.05)
-    root.Anchored = anchored
+    -- วาร์ปไป Chest
+    local anchored = root.Anchored
+    root.Anchored = true
+    root.CFrame = pivotCFrame + Vector3.new(0,3,0)
+    task.wait(0.05)
+    root.Anchored = anchored
 
-    local prompt
-    for _, obj in pairs(chest:GetDescendants()) do
-        if obj:IsA("ProximityPrompt") and obj.ActionText == "Collect" then
-            prompt = obj
-            break
-        end
-    end
-    if not prompt then return false end
+    -- หา ProximityPrompt
+    local prompt
+    for _, obj in pairs(chest:GetDescendants()) do
+        if obj:IsA("ProximityPrompt") and obj.ActionText == "Collect" then
+            prompt = obj
+            break
+        end
+    end
+    if not prompt then return false end
 
-    spawn(function()
-        for i = 1, 10 do
-            if not chest.Parent then break end
-            fireproximityprompt(prompt, 1)
-            task.wait(0.05)
-        end
-    end)
+    -- กด Prompt หลายรอบให้แน่นอน
+    for i = 1, 15 do
+        if not chest.Parent then break end
+        pcall(function()
+            fireproximityprompt(prompt, 1)
+        end)
+        task.wait(0.03)
+    end
 
-    return true
+    return true
 end
 
-local function collectNearbyChests(radius)
-    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if not root then return end
-    local chestFolder = Workspace:WaitForChild("ChestFolder",5)
-    for _, chest in ipairs(chestFolder:GetChildren()) do
-        local chestPos = chest.PrimaryPart and chest.PrimaryPart.Position or chest:GetPivot().Position
-        if (chestPos - root.Position).Magnitude <= radius then
-            collectChestReal(chest)
-        end
-    end
+-- สร้าง list ของ Chest ทีละใบ (ตามที่เลือก)
+local function getSelectedChestList()
+    local chestList = {}
+    for _, v in ipairs(selectedNormal) do
+        local chest = findChest(v)
+        if chest then table.insert(chestList, chest) end
+    end
+    for _, v in ipairs(selectedGiant) do
+        local chest = findChest(v.."_Giant")
+        if chest then table.insert(chestList, chest) end
+    end
+    for _, v in ipairs(selectedHuge) do
+        local chest = findChest(v.."_Huge")
+        if chest then table.insert(chestList, chest) end
+    end
+    return chestList
 end
 
-local function autoCollectChests()
-    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if not root then return end
-    local chestFolder = Workspace:WaitForChild("ChestFolder",5)
-
-    local allChests = {}
-    for _, v in ipairs(selectedNormal) do table.insert(allChests, findChest(v)) end
-    for _, v in ipairs(selectedGiant) do table.insert(allChests, findChest(v.."_Giant")) end
-    for _, v in ipairs(selectedHuge) do table.insert(allChests, findChest(v.."_Huge")) end
-
-    -- เก็บ Chest รอบตัวด้วย
-    for _, chest in ipairs(chestFolder:GetChildren()) do
-        local chestPos = chest.PrimaryPart and chest.PrimaryPart.Position or chest:GetPivot().Position
-        if (chestPos - root.Position).Magnitude <= collectRadius then
-            table.insert(allChests, chest)
-        end
-    end
-
-    for _, chest in ipairs(allChests) do
-        if chest then
-            collectChestReal(chest)
-            task.wait(0.1)
-        end
-    end
-end
-
--- ====================== DROPDOWNS ======================
-Shop:Dropdown({ Title = "Select Chest (Normal)", Values = {"Chest1","Chest2","Chest3","Chest4","Chest5","Chest6","Chest7","Chest8","Chest9"}, Multi = true, Callback = function(values) selectedNormal = values end })
-Shop:Dropdown({ Title = "Select Chest (Giant)", Values = {"Chest1","Chest2","Chest3","Chest4","Chest5","Chest6","Chest7","Chest8","Chest9"}, Multi = true, Callback = function(values) selectedGiant = values end })
-Shop:Dropdown({ Title = "Select Chest (Huge)", Values = {"Chest1","Chest2","Chest3","Chest4","Chest5","Chest6","Chest7","Chest8","Chest9"}, Multi = true, Callback = function(values) selectedHuge = values end })
-
--- ====================== TOGGLES ======================
+-- ====================== TOGGLE ======================
 Shop:Toggle({
-    Title = "Auto Collect Chests (Selected)",
-    Description = "Collect selected chests nearby and around you automatically",
-    Default = false,
-    Callback = function(state)
-        AutoCollectSelected = state
-        task.spawn(function()
-            while AutoCollectSelected do
-                autoCollectChests()
-                task.wait(0.3)
-            end
-        end)
-    end
+    Title = "Auto Collect Chests (Selected)",
+    Description = "",
+    Default = false,
+    Callback = function(state)
+        AutoCollectSelected = state
+        task.spawn(function()
+            while AutoCollectSelected do
+                local chestList = getSelectedChestList()
+                for _, chest in ipairs(chestList) do
+                    if not AutoCollectSelected then break end
+                    collectChest(chest)
+                    task.wait(0.1) -- รอเล็กน้อยก่อนไป Chest ถัดไป
+                end
+                task.wait(0.5) -- รอบ loop ถัดไป
+            end
+        end)
+    end
+})
+
+-- ====================== DROPDOWN ======================
+Shop:Dropdown({
+    Title = "Select Chest (Normal)",
+    Values = {"Chest1","Chest2","Chest3","Chest4","Chest5","Chest6","Chest7","Chest8","Chest9"},
+    Multi = true,
+    Callback = function(values) selectedNormal = values end
+})
+Shop:Dropdown({
+    Title = "Select Chest (Giant)",
+    Values = {"Chest1","Chest2","Chest3","Chest4","Chest5","Chest6","Chest7","Chest8","Chest9"},
+    Multi = true,
+    Callback = function(values) selectedGiant = values end
+})
+Shop:Dropdown({
+    Title = "Select Chest (Huge)",
+    Values = {"Chest1","Chest2","Chest3","Chest4","Chest5","Chest6","Chest7","Chest8","Chest9"},
+    Multi = true,
+    Callback = function(values) selectedHuge = values end
 })
 
 -- ====================== GAME SYSTEM ======================
@@ -206,18 +212,14 @@ Main:Toggle({
 
 -- ====================== TREE SYSTEM ======================
 Main:Section({ Title = "Tree System", Icon = "tree-deciduous" })
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Workspace = game:GetService("Workspace")
-local LocalPlayer = Players.LocalPlayer
 
 local autoTreeAura = false
-local auraRange = 25
+local auraRange1 = 25
 
 Main:Slider({
     Title = "Auto Cut Trees (Aura)",
     Description = "Automatically damage trees around your character",
-    Value = {Min = 5, Max = 100, Default = auraRange},
+    Value = {Min = 5, Max = 300, Default = auraRange1},
     Step = 1,
     Callback = function(val)
         auraRange = val
@@ -232,15 +234,31 @@ Main:Toggle({
         autoTreeAura = state
         task.spawn(function()
             while autoTreeAura do
-                local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local character = LocalPlayer.Character
+                local root = character and character:FindFirstChild("HumanoidRootPart")
                 if root then
+                    local trees = {}
                     for _, tree in ipairs(Workspace:WaitForChild("TreesFolder"):GetChildren()) do
-                        if tree:IsA("Model") and tree.PrimaryPart then
-                            local distance = (root.Position - tree.PrimaryPart.Position).Magnitude
-                            if distance <= auraRange then
-                                ReplicatedStorage:WaitForChild("Signal"):WaitForChild("Tree"):FireServer("damage", tree.Name)
-                                task.wait(0.1)
+                        if tree:IsA("Model") then
+                            local treePos = tree:FindFirstChild("HumanoidRootPart") or tree:FindFirstChild("MainPart") or tree.PrimaryPart
+                            if treePos then
+                                local distance = (root.Position - treePos.Position).Magnitude
+                                if distance <= auraRange then
+                                    table.insert(trees, {tree = tree, dist = distance})
+                                end
                             end
+                        end
+                    end
+
+                    -- sort ตามระยะใกล้สุดก่อน
+                    table.sort(trees, function(a, b) return a.dist < b.dist end)
+
+                    -- ยิงต้นไม้ทีละต้น
+                    for _, info in ipairs(trees) do
+                        if autoTreeAura then
+                            local treeName = info.tree.Name
+                            ReplicatedStorage:WaitForChild("Signal"):WaitForChild("Tree"):FireServer("damage", treeName)
+                            task.wait(0.01) -- รอเล็กน้อยเพื่อไม่ spam server
                         end
                     end
                 end
