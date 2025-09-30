@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.7.2"
+local version = "3.7.9"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -43,7 +43,7 @@ local AutoCollect = false
 local AutoFarm = false
 local autoClicking = false
 local AutoCollectDelay = 5
-local ClickInterval = 0.01
+local ClickInterval = 0.25
 local SellPlant = false
 local SellBrainrot = false
 
@@ -167,6 +167,13 @@ pcall(function()
     })
 end)
 
+pcall(function()
+    Window:Tag({
+        Title = "FIXED",
+        Color = Color3.fromHex("#ff0000")
+    })
+end)
+
 Window:EditOpenButton({
     Title = "DYHUB - Open",
     Icon = "monitor",
@@ -275,7 +282,7 @@ local function DoClick()
     -- simulate press & release
     pcall(function()
         VirtualUser:Button1Down(Vector2.new(0, 0))
-        task.wait(0.01)
+        task.wait(0.1)
         VirtualUser:Button1Up(Vector2.new(0, 0))
     end)
 end
@@ -413,6 +420,7 @@ Collect:Slider({
 
 Collect:Toggle({
     Title = "Auto Collect Money",
+    Description = "Automatically Teleport to Collect",
     Default = false,
     Callback = function(state)
         AutoCollect = state
@@ -431,20 +439,15 @@ Collect:Toggle({
 })
 
 Collect:Toggle({
-    Title = "Auto Collect Money V2 (PATCHED)",
+    Title = "Auto Collect Money V2",
     Description = "Automatically Collect Without Teleport",
     Default = false,
     Callback = function(state)
         if state then
             task.spawn(function()
                 while state do
-                    local args = {
-                        {
-                            [2] = "\004"
-                        }
-                    }
-                    game:GetService("ReplicatedStorage"):WaitForChild("BridgeNet2"):WaitForChild("dataRemoteEvent"):FireServer(unpack(args))
-                    task.wait(1)
+                    game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("EquipBestBrainrots"):FireServer()
+                    task.wait(AutoCollectDelay)
                 end
             end)
         end
@@ -455,20 +458,15 @@ Collect:Toggle({
 Collect:Section({ Title = "Auto Equip", Icon = "star" })
 
 Collect:Toggle({
-    Title = "Auto Equip Brainrot (PATCHED)",
+    Title = "Auto Equip Brainrot",
     Description = "Automatically Equip Best Brainrot",
     Default = false,
     Callback = function(state)
         if state then
             task.spawn(function()
                 while state do
-                    local args = {
-                        {
-                            [2] = "\004"
-                        }
-                    }
-                    game:GetService("ReplicatedStorage"):WaitForChild("BridgeNet2"):WaitForChild("dataRemoteEvent"):FireServer(unpack(args))
-                    task.wait(1)
+                    game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("EquipBestBrainrots"):FireServer()
+                    task.wait(2)
                 end
             end)
         end
@@ -526,11 +524,11 @@ Shop:Toggle({
             task.spawn(function()
                 while AutoBuySelectedSeed do
                     for _, seed in ipairs(selectedSeeds) do
-                        local args = {{ seed, "\b" }}
-                        game:GetService("ReplicatedStorage"):WaitForChild("BridgeNet2"):WaitForChild("dataRemoteEvent"):FireServer(unpack(args))
+                        local args = {{ seed }}
+                        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyItem"):FireServer(unpack(args))
                         task.wait(0.5)
                     end
-                    task.wait(1)
+                    task.wait(0.5)
                 end
             end)
         end
@@ -547,11 +545,11 @@ Shop:Toggle({
             task.spawn(function()
                 while AutoBuyAllSeed do
                     for _, seed in ipairs(shop.seedList) do
-                        local args = {{ seed, "\b" }}
-                        game:GetService("ReplicatedStorage"):WaitForChild("BridgeNet2"):WaitForChild("dataRemoteEvent"):FireServer(unpack(args))
+                        local args = {{ seed }}
+                        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyItem"):FireServer(unpack(args))
                         task.wait(0.5)
                     end
-                    task.wait(1)
+                    task.wait(0.5
                 end
             end)
         end
@@ -580,11 +578,11 @@ Shop:Toggle({
             task.spawn(function()
                 while AutoBuySelectedGear do
                     for _, gear in ipairs(selectedGears) do
-                        local args = {{ gear, "\026" }}
-                        game:GetService("ReplicatedStorage"):WaitForChild("BridgeNet2"):WaitForChild("dataRemoteEvent"):FireServer(unpack(args))
+                        local args = {{ gear }}
+                        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyGear"):FireServer(unpack(args))
                         task.wait(0.5)
                     end
-                    task.wait(1)
+                    task.wait(0.5)
                 end
             end)
         end
@@ -601,11 +599,11 @@ Shop:Toggle({
             task.spawn(function()
                 while AutoBuyAllGear do
                     for _, gear in ipairs(shop.gearList) do
-                        local args = {{ gear, "\026" }}
-                        game:GetService("ReplicatedStorage"):WaitForChild("BridgeNet2"):WaitForChild("dataRemoteEvent"):FireServer(unpack(args))
+                        local args = {{ gear }}
+                        game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyGear"):FireServer(unpack(args))
                         task.wait(0.5)
                     end
-                    task.wait(1)
+                    task.wait(0.5)
                 end
             end)
         end
@@ -631,53 +629,41 @@ end)
 task.spawn(function()
     while task.wait(0.95) do
         if AutoBuyGear and #selectedGears > 0 then
-            local bn = GetBridgeNet2()
             for _, g in ipairs(selectedGears) do
-                local args = {{g, "\026"}}
-                if bn and bn:FindFirstChild("dataRemoteEvent") then
-                    pcall(function() bn.dataRemoteEvent:FireServer(unpack(args)) end)
-                else
-                    pcall(function() ReplicatedStorage:WaitForChild("BridgeNet2"):WaitForChild("dataRemoteEvent"):FireServer(unpack(args)) end)
-                end
+                local args = {{g}}
+                pcall(function()
+                    game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyGear"):FireServer(unpack(args))
+                end)
                 task.wait(0.1)
             end
         end
 
         if AutoBuySeed and #selectedSeeds > 0 then
-            local bn = GetBridgeNet2()
             for _, s in ipairs(selectedSeeds) do
-                local args = {{s, "\b"}}
-                if bn and bn:FindFirstChild("dataRemoteEvent") then
-                    pcall(function() bn.dataRemoteEvent:FireServer(unpack(args)) end)
-                else
-                    pcall(function() ReplicatedStorage:WaitForChild("BridgeNet2"):WaitForChild("dataRemoteEvent"):FireServer(unpack(args)) end)
-                end
+                local args = {{s}}
+                pcall(function()
+                    game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyItem"):FireServer(unpack(args))
+                end)
                 task.wait(0.1)
             end
         end
 
         if AutoBuyAllGear then
-            local bn = GetBridgeNet2()
             for _, g in ipairs(gearList) do
-                local args = {{g, "\026"}}
-                if bn and bn:FindFirstChild("dataRemoteEvent") then
-                    pcall(function() bn.dataRemoteEvent:FireServer(unpack(args)) end)
-                else
-                    pcall(function() ReplicatedStorage:WaitForChild("BridgeNet2"):WaitForChild("dataRemoteEvent"):FireServer(unpack(args)) end)
-                end
+                local args = {{g}}
+                pcall(function()
+                    game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyGear"):FireServer(unpack(args))
+                end)
                 task.wait(0.12)
             end
         end
 
         if AutoBuyAllSeed then
-            local bn = GetBridgeNet2()
             for _, s in ipairs(seedList) do
-                local args = {{s, "\b"}}
-                if bn and bn:FindFirstChild("dataRemoteEvent") then
-                    pcall(function() bn.dataRemoteEvent:FireServer(unpack(args)) end)
-                else
-                    pcall(function() ReplicatedStorage:WaitForChild("BridgeNet2"):WaitForChild("dataRemoteEvent"):FireServer(unpack(args)) end)
-                end
+                local args = {{s}}
+                pcall(function()
+                    game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyItem"):FireServer(unpack(args))
+                end)
                 task.wait(0.12)
             end
         end
