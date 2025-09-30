@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.6.4"
+local version = "3.7.4"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -37,7 +37,7 @@ local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local Humanoid = Character:FindFirstChildOfClass("Humanoid")
 local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
 
-local premversion = 0.05
+local premversion = 0.01
 local freeversion = 0.5
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
@@ -237,6 +237,170 @@ Tabs.Main:Button({
     end
 })
 
+Tabs.Farm:Section({ Title = "Set by you", Icon = "map-pin-plus" })
+
+local AutoFarm3Running = false
+local DigInputValue, ShakeInputValue, SellInputValue
+local TweenSpeed = 2 -- default
+
+-- Button Set Dig Position
+Tabs.Farm:Button({
+    Title = "Set Dig Position",
+    Icon = "pickaxe",
+    Callback = function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            DigInputValue = hrp.CFrame
+            print("[Dig Position] Set to "..tostring(DigInputValue))
+        else
+            warn("HumanoidRootPart not found!")
+        end
+    end,
+})
+
+-- Button Set Shake Position
+Tabs.Farm:Button({
+    Title = "Set Shake Position",
+    Icon = "hand-wave",
+    Callback = function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            ShakeInputValue = hrp.CFrame
+            print("[Shake Position] Set to "..tostring(ShakeInputValue))
+        else
+            warn("HumanoidRootPart not found!")
+        end
+    end,
+})
+
+-- Button Set Sell Position
+Tabs.Farm:Button({
+    Title = "Set Sell Position",
+    Icon = "shopping-cart",
+    Callback = function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            SellInputValue = hrp.CFrame
+            print("[Sell Position] Set to "..tostring(SellInputValue))
+        else
+            warn("HumanoidRootPart not found!")
+        end
+    end,
+})
+
+-- Input Tween Speed
+Tabs.Farm:Input({
+    Title = "Tween Speed",
+    Placeholder = "Default = 2",
+    Callback = function(text)
+        local num = tonumber(text)
+        if num and num > 0 then
+            TweenSpeed = num
+            print("[Tween Speed] set to "..num)
+        else
+            warn("Invalid Tween Speed, must be a number > 0")
+        end
+    end,
+})
+
+-- ฟังก์ชัน Tween Smooth
+local TweenService = game:GetService("TweenService")
+local function tweenTo(hrp, targetCF, time)
+    local goal = {CFrame = targetCF}
+    local tween = TweenService:Create(hrp, TweenInfo.new(time or TweenSpeed, Enum.EasingStyle.Linear), goal)
+    tween:Play()
+    tween.Completed:Wait()
+end
+
+-- Auto Farm Toggle
+Tabs.Farm:Toggle({
+    Title = "Auto Farm: Set By You",
+    Value = false,
+    Callback = function(state)
+        AutoFarm3Running = state
+        if state then
+            task.spawn(function()
+                local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                local sellRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Shop"):WaitForChild("SellAll")
+
+                local function findPan()
+                    local character = player.Character
+                    if not character then return nil end
+                    for _, tool in ipairs(character:GetChildren()) do
+                        if tool:IsA("Tool") and tool.Name:match("Pan$") then
+                            return tool
+                        end
+                    end
+                    return nil
+                end
+
+                local stats = playerGui:WaitForChild("ToolUI"):WaitForChild("FillingPan"):WaitForChild("FillText")
+                local function getStats()
+                    local text = stats.Text
+                    local current, max = text:match("([%d%.]+)/([%d%.]+)")
+                    current = tonumber(current) or 0
+                    max = tonumber(max) or 0
+                    return current, max
+                end
+
+                while AutoFarm3Running do
+                    local character = player.Character
+                    if not character or not character:FindFirstChild("HumanoidRootPart") then break end
+                    local hrp = character.HumanoidRootPart
+                    local rustyPan = findPan()
+                    if not rustyPan then break end
+                    local collectScript = rustyPan:FindFirstChild("Scripts") and rustyPan.Scripts:FindFirstChild("Collect")
+                    local args = {[1]=99}
+
+                    local current, max = getStats()
+                    local step
+                    if current <= 0 then
+                        step = 1
+                    elseif current >= max then
+                        step = 2
+                    else
+                        step = 1
+                    end
+
+                    -- STEP 1 : Dig
+                    if step == 1 and DigInputValue then
+                        tweenTo(hrp, DigInputValue, TweenSpeed)
+                        repeat
+                            current, max = getStats()
+                            if current >= max then break end
+                            if collectScript then collectScript:InvokeServer(unpack(args)) end
+                            task.wait(0.05)
+                        until current >= max
+                        step = 2
+                    end
+
+                    -- STEP 2 : Shake
+                    if step == 2 and ShakeInputValue then
+                        tweenTo(hrp, ShakeInputValue, TweenSpeed)
+                        repeat
+                            current, max = getStats()
+                            if current <= 0 then break end
+                            if collectScript then collectScript:InvokeServer(unpack(args)) end
+                            task.wait(0.05)
+                        until current <= 0
+                        step = 3
+                    end
+
+                    -- STEP 3 : Sell
+                    if step == 3 and SellInputValue then
+                        tweenTo(hrp, SellInputValue, TweenSpeed)
+                        task.wait(1.5)
+                        sellRemote:InvokeServer()
+                        task.wait(0.5)
+                        step = 1
+                    end
+
+                    task.wait(0.1)
+                end
+            end)
+        end
+    end
+})
 
 Tabs.Farm:Section({ Title = "Warning: Use this feature on private servers", Icon = "triangle-alert" })
 Tabs.Farm:Section({ Title = "Island (1)", Icon = "earth" })
@@ -441,211 +605,22 @@ Tabs.Farm:Toggle({
     end
 })
 
-Tabs.Farm:Section({ Title = "Set by you", Icon = "map-pin-plus" })
-
-local AutoFarm3Running = false
-local DigInputValue, ShakeInputValue, SellInputValue
-local TweenSpeed = 2 -- default
-
--- Copy Position (ปัดเศษเป็นจำนวนเต็ม)
-Tabs.Farm:Button({
-    Title = "Copy Position",
-    Icon = "atom",
-    Callback = function()
-        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            local pos = hrp.Position
-            local cfString = string.format("%d,%d,%d", math.floor(pos.X + 0.5), math.floor(pos.Y + 0.5), math.floor(pos.Z + 0.5))
-            setclipboard(cfString)
-            print("[Copied] "..cfString)
-        else
-            warn("HumanoidRootPart not found!")
-        end
-    end,
-})
-
--- Input Dig
-Tabs.Farm:Input({
-    Title = "Dig Position",
-    Placeholder = "Put your CFrame here",
-    Callback = function(text)
-        DigInputValue = text
-    end,
-})
-
--- Input Shake
-Tabs.Farm:Input({
-    Title = "Shake Position",
-    Placeholder = "Put your CFrame here",
-    Callback = function(text)
-        ShakeInputValue = text
-    end,
-})
-
--- Input Sell
-Tabs.Farm:Input({
-    Title = "Sell Position",
-    Placeholder = "Put your CFrame here",
-    Callback = function(text)
-        SellInputValue = text
-    end,
-})
-
--- Input Tween Speed
-Tabs.Farm:Input({
-    Title = "Tween Speed",
-    Placeholder = "Default = 2",
-    Callback = function(text)
-        local num = tonumber(text)
-        if num and num > 0 then
-            TweenSpeed = num
-            print("[Tween Speed] set to "..num)
-        else
-            warn("Invalid Tween Speed, must be a number > 0")
-        end
-    end,
-})
-
--- ✅ parseCFrame รองรับ x,y,z / x,y,z,rx,ry,rz / x,y,z,r00,...,r22
-local function parseCFrame(str)
-    if not str or str == "" then return nil end
-    str = str:gsub("%s+", "")
-    local parts = {}
-    for num in str:gmatch("[%-%.%d]+") do
-        table.insert(parts, tonumber(num))
-    end
-
-    if #parts == 3 then
-        return CFrame.new(parts[1], parts[2], parts[3])
-    elseif #parts == 6 then
-        return CFrame.new(parts[1], parts[2], parts[3], parts[4], parts[5], parts[6])
-    elseif #parts == 12 then
-        return CFrame.new(parts[1], parts[2], parts[3],
-                         parts[4], parts[5], parts[6],
-                         parts[7], parts[8], parts[9],
-                         parts[10], parts[11], parts[12])
-    else
-        warn("[parseCFrame] Invalid format! Use 'x,y,z' or 'x,y,z,rx,ry,rz' or 'x,y,z,r00,...,r22'")
-        return nil
-    end
-end
-
--- ฟังก์ชัน Tween Smooth
-local TweenService = game:GetService("TweenService")
-local function tweenTo(hrp, targetCF, time)
-    local goal = {CFrame = targetCF}
-    local tween = TweenService:Create(hrp, TweenInfo.new(time or TweenSpeed, Enum.EasingStyle.Linear), goal)
-    tween:Play()
-    tween.Completed:Wait()
-end
-
--- Auto Farm Toggle
-Tabs.Farm:Toggle({
-    Title = "Auto Farm: Set By You",
-    Value = false,
-    Callback = function(state)
-        AutoFarm3Running = state
-        if state then
-            task.spawn(function()
-                local ReplicatedStorage = game:GetService("ReplicatedStorage")
-                local sellRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Shop"):WaitForChild("SellAll")
-
-                local function findPan()
-                    local character = player.Character
-                    if not character then return nil end
-                    for _, tool in ipairs(character:GetChildren()) do
-                        if tool:IsA("Tool") and tool.Name:match("Pan$") then
-                            return tool
-                        end
-                    end
-                    return nil
-                end
-
-                local stats = playerGui:WaitForChild("ToolUI"):WaitForChild("FillingPan"):WaitForChild("FillText")
-                local function getStats()
-                    local text = stats.Text
-                    local current, max = text:match("([%d%.]+)/([%d%.]+)")
-                    current = tonumber(current) or 0
-                    max = tonumber(max) or 0
-                    return current, max
-                end
-
-                while AutoFarm3Running do
-                    local DigPoint1 = parseCFrame(DigInputValue)
-                    local ShakePoint2 = parseCFrame(ShakeInputValue)
-                    local sellPoint = parseCFrame(SellInputValue)
-
-                    local character = player.Character
-                    if not character or not character:FindFirstChild("HumanoidRootPart") then break end
-                    local hrp = character.HumanoidRootPart
-                    local rustyPan = findPan()
-                    if not rustyPan then break end
-                    local collectScript = rustyPan:FindFirstChild("Scripts") and rustyPan.Scripts:FindFirstChild("Collect")
-                    local args = {[1]=99}
-
-                    local current, max = getStats()
-                    local step
-                    if current <= 0 then
-                        step = 1
-                    elseif current >= max then
-                        step = 2
-                    else
-                        step = 1
-                    end
-
-                    -- STEP 1 : Dig
-                    if step == 1 and DigPoint1 then
-                        tweenTo(hrp, DigPoint1, TweenSpeed)
-                        repeat
-                            current, max = getStats()
-                            if current >= max then break end
-                            if collectScript then collectScript:InvokeServer(unpack(args)) end
-                            task.wait(0.05)
-                        until current >= max
-                        step = 2
-                    end
-
-                    -- STEP 2 : Shake
-                    if step == 2 and ShakePoint2 then
-                        tweenTo(hrp, ShakePoint2, TweenSpeed)
-                        repeat
-                            current, max = getStats()
-                            if current <= 0 then break end
-                            if collectScript then collectScript:InvokeServer(unpack(args)) end
-                            task.wait(0.05)
-                        until current <= 0
-                        step = 3
-                    end
-
-                    -- STEP 3 : Sell
-                    if step == 3 and sellPoint then
-                        tweenTo(hrp, sellPoint, TweenSpeed)
-                        task.wait(1.5)
-                        sellRemote:InvokeServer()
-                        task.wait(0.5)
-                        step = 1
-                    end
-
-                    task.wait(0.1)
-                end
-            end)
-        end
-    end
-})
-
 -- ประกาศ Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- สร้าง Section ใน GUI
 Tabs.Code:Section({ Title = "Feature Code", Icon = "bird" })
 
--- รายการโค้ดที่สามารถ redeem
 local redeemCodes = {
+    "plants",
+    "200KLIKES",
+    "collection",
+    "coolupdate",
+    "hundredmillion",
     "traveler",
     "fossilized",
-    "sorrytwo",
     "millions",
-    "updateone",
+    "updateone"
 }
 
 -- เก็บโค้ดที่ผู้เล่นเลือก
@@ -701,6 +676,48 @@ Tabs.Code:Button({
             task.wait(0.5)
         end
     end,
+})
+
+Tabs.Shop:Section({ Title = "Feature Buy: Totem", Icon = "heart" })
+
+Tabs.Farm:Toggle({
+    Title = "Auto Buy: Strength Totem",
+    Value = false,
+    Callback = function(state)
+        local autoBuyStrength = state
+        task.spawn(function()
+            while autoBuyStrength do
+                local args = {
+                    workspace:WaitForChild("Purchasable"):WaitForChild("RiverTown"):WaitForChild("Strength Totem"):WaitForChild("ShopItem"),
+                    1
+                }
+                pcall(function()
+                    game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Shop"):WaitForChild("BuyItem"):InvokeServer(unpack(args))
+                end)
+                task.wait(1)
+            end
+        end)
+    end
+})
+
+Tabs.Farm:Toggle({
+    Title = "Auto Buy: Luck Totem",
+    Value = false,
+    Callback = function(state)
+        local autoBuyLuck = state
+        task.spawn(function()
+            while autoBuyLuck do
+                local args = {
+                    workspace:WaitForChild("Purchasable"):WaitForChild("RiverTown"):WaitForChild("Luck Totem"):WaitForChild("ShopItem"),
+                    1
+                }
+                pcall(function()
+                    game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("Shop"):WaitForChild("BuyItem"):InvokeServer(unpack(args))
+                end)
+                task.wait(1)
+            end
+        end)
+    end
 })
 
 Tabs.Shop:Section({ Title = "Feature Buy: Pan", Icon = "circle" })
