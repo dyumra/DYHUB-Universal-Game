@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.8.0"
+local version = "3.8.1"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -381,7 +381,10 @@ Tabs.Code:Button({
 
 Tabs.Shop:Section({ Title = "Feature Buy: Totem", Icon = "heart" })
 
-Tabs.Farm:Toggle({
+local autoBuyStrength = false
+local autoBuyLuck = false
+
+Tabs.Shop:Toggle({
     Title = "Auto Buy: Strength Totem",
     Value = false,
     Callback = function(state)
@@ -401,7 +404,7 @@ Tabs.Farm:Toggle({
     end
 })
 
-Tabs.Farm:Toggle({
+Tabs.Shop:Toggle({
     Title = "Auto Buy: Luck Totem",
     Value = false,
     Callback = function(state)
