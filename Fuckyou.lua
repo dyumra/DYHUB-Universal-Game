@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.8.3"
+local version = "3.8.6"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -434,6 +434,7 @@ Collect:Toggle({
     Description = "Automatically Collect Without Teleport",
     Default = false,
     Callback = function(state)
+        AutoCollectV2 = state
         if state then
             task.spawn(function()
                 while state do
@@ -453,11 +454,12 @@ Collect:Toggle({
     Description = "Automatically Equip Best Brainrot",
     Default = false,
     Callback = function(state)
+        AutoEB = state
         if state then
             task.spawn(function()
                 while state do
                     game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("EquipBestBrainrots"):FireServer()
-                    task.wait(2)
+                    task.wait(5)
                 end
             end)
         end
