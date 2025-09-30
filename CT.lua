@@ -1,7 +1,7 @@
 -- Fuck you stellarnigga
 
 -- =========================
-local version = "2.1.3"
+local version = "2.1.5"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -213,13 +213,18 @@ Main:Toggle({
 -- ====================== TREE SYSTEM ======================
 Main:Section({ Title = "Tree System", Icon = "tree-deciduous" })
 
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+
 local autoTreeAura = false
-local auraRange1 = 25
+local auraRange = 25
 
 Main:Slider({
     Title = "Auto Cut Trees (Aura)",
     Description = "Automatically damage trees around your character",
-    Value = {Min = 5, Max = 300, Default = auraRange1},
+    Value = {Min = 5, Max = 300, Default = auraRange},
     Step = 1,
     Callback = function(val)
         auraRange = val
@@ -238,31 +243,36 @@ Main:Toggle({
                 local root = character and character:FindFirstChild("HumanoidRootPart")
                 if root then
                     local trees = {}
-                    for _, tree in ipairs(Workspace:WaitForChild("TreesFolder"):GetChildren()) do
-                        if tree:IsA("Model") then
-                            local treePos = tree:FindFirstChild("HumanoidRootPart") or tree:FindFirstChild("MainPart") or tree.PrimaryPart
-                            if treePos then
-                                local distance = (root.Position - treePos.Position).Magnitude
-                                if distance <= auraRange then
-                                    table.insert(trees, {tree = tree, dist = distance})
+                    local treeFolder = Workspace:FindFirstChild("TreesFolder")
+                    if treeFolder then
+                        for _, tree in ipairs(treeFolder:GetChildren()) do
+                            if tree:IsA("Model") then
+                                local treePos = tree:FindFirstChild("HumanoidRootPart") or tree:FindFirstChild("MainPart") or tree.PrimaryPart
+                                if treePos then
+                                    local distance = (root.Position - treePos.Position).Magnitude
+                                    if distance <= auraRange then
+                                        table.insert(trees, {tree = tree, dist = distance})
+                                    end
                                 end
                             end
                         end
-                    end
 
-                    -- sort ตามระยะใกล้สุดก่อน
-                    table.sort(trees, function(a, b) return a.dist < b.dist end)
+                        -- sort ตามระยะใกล้สุดก่อน
+                        table.sort(trees, function(a, b) return a.dist < b.dist end)
 
-                    -- ยิงต้นไม้ทีละต้น
-                    for _, info in ipairs(trees) do
-                        if autoTreeAura then
+                        -- ยิงต้นไม้ทีละต้น
+                        for _, info in ipairs(trees) do
+                            if not autoTreeAura then break end
                             local treeName = info.tree.Name
-                            ReplicatedStorage:WaitForChild("Signal"):WaitForChild("Tree"):FireServer("damage", treeName)
-                            task.wait(0.01) -- รอเล็กน้อยเพื่อไม่ spam server
+                            if ReplicatedStorage:FindFirstChild("Signal") 
+                               and ReplicatedStorage.Signal:FindFirstChild("Tree") then
+                                ReplicatedStorage.Signal.Tree:FireServer("damage", treeName)
+                            end
+                            task.wait(0.001) -- รอเล็กน้อยเพื่อไม่ spam server
                         end
                     end
                 end
-                task.wait(0.1)
+                task.wait(0.001)
             end
         end)
     end
@@ -276,10 +286,10 @@ Main:Toggle({ Title = "Auto Cut Trees (All)", Description = "Automatically cut a
             for _, tree in ipairs(Workspace:WaitForChild("TreesFolder"):GetChildren()) do
                 if tree:IsA("Model") then
                     ReplicatedStorage:WaitForChild("Signal"):WaitForChild("Tree"):FireServer("damage", tree.Name)
-                    task.wait(0.01)
+                    task.wait(0.001)
                 end
             end
-            task.wait(0.01)
+            task.wait(0.001)
         end
     end)
 end})
