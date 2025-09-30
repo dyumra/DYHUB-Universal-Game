@@ -1,7 +1,7 @@
 -- Fuck you stellarnigga
 
 -- =========================
-local version = "2.1.7"
+local version = "2.1.8"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -207,6 +207,51 @@ Main:Toggle({
                 task.wait(0.8)
             end
         end)
+    end
+})
+-- ======================= GP SYSTEM =======================
+Main:Section({ Title = "Gamepass System", Icon = "star" })
+
+Main:Toggle({
+    Title = "Unlocked Gamepass",
+    Default = false,
+    Callback = function(state)
+        local Players = game:GetService("Players")
+        local player = Players.LocalPlayer
+        local gamepasses = {"X2WOOD", "X2POWER", "X2LOOT", "ULTRALUCKY", "XRAY"}
+        local defaultSpeed = 16
+        local speedwalk = 50
+
+        local function unlockGamepasses()
+            for _, gpName in ipairs(gamepasses) do
+                local gp = player.GamepassFolder:FindFirstChild(gpName)
+                if gp then
+                    if gp:IsA("BoolValue") then
+                        gp.Value = true
+                    elseif gp:IsA("StringValue") then
+                        gp.Value = "true"
+                    else
+                        pcall(function() gp.Value = true end)
+                    end
+                end
+            end
+        end
+
+        local function setSpeed(char)
+            local humanoid = char:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.WalkSpeed = state and speedwalk or defaultSpeed
+            end
+        end
+
+        unlockGamepasses()
+        setSpeed(player.Character or player.CharacterAdded:Wait())
+
+        if state then
+            player.CharacterAdded:Connect(function(char)
+                setSpeed(char)
+            end)
+        end
     end
 })
 
