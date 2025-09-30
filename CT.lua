@@ -1,5 +1,5 @@
 -- =========================
-local version = "1.4.9" -- UPDATE
+local version = "1.5.0"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -47,10 +47,7 @@ local Window = WindUI:CreateWindow({
 })
 
 pcall(function()
-    Window:Tag({
-        Title = version,
-        Color = Color3.fromHex("#30ff6a")
-    })
+    Window:Tag({ Title = version, Color = Color3.fromHex("#30ff6a") })
 end)
 
 Window:EditOpenButton({
@@ -66,9 +63,9 @@ Window:EditOpenButton({
 local InfoTab = Window:Tab({ Title = "Information", Icon = "info" })
 local MainDivider = Window:Divider()
 local Main = Window:Tab({ Title = "Main", Icon = "rocket" })
-local TP = Window:Tab({ Title = "Teleport", Icon = "zap" })
 local Shop = Window:Tab({ Title = "Collect", Icon = "gift" })
 local Auto = Window:Tab({ Title = "Open", Icon = "gem" })
+local TP = Window:Tab({ Title = "Teleport", Icon = "zap" })
 local Misc = Window:Tab({ Title = "Misc", Icon = "settings" })
 Window:SelectTab(1)
 
@@ -104,7 +101,7 @@ local function collectChestReal(chest)
     if not pivotCFrame then return false end
 
     root.CFrame = pivotCFrame + Vector3.new(0,3,0)
-    task.wait(0.15)
+    task.wait(0.05)
 
     local prompt
     for _, obj in pairs(chest:GetDescendants()) do
@@ -115,14 +112,16 @@ local function collectChestReal(chest)
     end
     if not prompt then return false end
 
-    local startTime = tick()
-    while tick() - startTime < 5 do
-        if not chest.Parent then return true end
-        fireproximityprompt(prompt, 1)
-        task.wait(0.1)
-    end
+    -- Fire proximity prompt without blocking
+    spawn(function()
+        for i = 1, 10 do
+            if not chest.Parent then break end
+            fireproximityprompt(prompt, 1)
+            task.wait(0.05)
+        end
+    end)
 
-    return false
+    return true
 end
 
 local function collectNearbyChests(radius)
@@ -137,58 +136,63 @@ local function collectNearbyChests(radius)
     end
 end
 
--- Dropdown Select Chest
+local function autoCollectChests()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    local chestFolder = Workspace:WaitForChild("ChestFolder",5)
+
+    local allChests = {}
+    for _, v in ipairs(selectedNormal) do table.insert(allChests, findChest(v)) end
+    for _, v in ipairs(selectedGiant) do table.insert(allChests, findChest(v.."_Giant")) end
+    for _, v in ipairs(selectedHuge) do table.insert(allChests, findChest(v.."_Huge")) end
+
+    -- เก็บ Chest ที่อยู่ใกล้ตัวด้วย
+    for _, chest in ipairs(chestFolder:GetChildren()) do
+        local chestPos = chest.PrimaryPart and chest.PrimaryPart.Position or chest:GetPivot().Position
+        if (chestPos - root.Position).Magnitude <= collectRadius then
+            table.insert(allChests, chest)
+        end
+    end
+
+    for _, chest in ipairs(allChests) do
+        if chest then
+            collectChestReal(chest)
+            task.wait(0.1)
+        end
+    end
+end
+
+-- ====================== DROPDOWNS ======================
 Shop:Dropdown({ Title = "Select Chest (Normal)", Values = {"Chest1","Chest2","Chest3","Chest4","Chest5","Chest6","Chest7","Chest8","Chest9"}, Multi = true, Callback = function(values) selectedNormal = values end })
 Shop:Dropdown({ Title = "Select Chest (Giant)", Values = {"Chest1","Chest2","Chest3","Chest4","Chest5","Chest6","Chest7","Chest8","Chest9"}, Multi = true, Callback = function(values) selectedGiant = values end })
 Shop:Dropdown({ Title = "Select Chest (Huge)", Values = {"Chest1","Chest2","Chest3","Chest4","Chest5","Chest6","Chest7","Chest8","Chest9"}, Multi = true, Callback = function(values) selectedHuge = values end })
 
--- Toggle Auto Collect Selected Chests
+-- ====================== TOGGLES ======================
 Shop:Toggle({
-    Title = "Auto Collect Selected Chests",
+    Title = "Auto Collect Chests (Selected)",
     Description = "Collect selected chests nearby and around you automatically",
     Default = false,
     Callback = function(state)
         AutoCollectSelected = state
         task.spawn(function()
             while AutoCollectSelected do
-                for _, v in ipairs(selectedNormal) do
-                    if not AutoCollectSelected then break end
-                    local chest = findChest(v)
-                    if chest then collectChestReal(chest) end
-                end
-                for _, v in ipairs(selectedGiant) do
-                    if not AutoCollectSelected then break end
-                    local chest = findChest(v.."_Giant")
-                    if chest then collectChestReal(chest) end
-                end
-                for _, v in ipairs(selectedHuge) do
-                    if not AutoCollectSelected then break end
-                    local chest = findChest(v.."_Huge")
-                    if chest then collectChestReal(chest) end
-                end
-                collectNearbyChests(collectRadius)
+                autoCollectChests()
                 task.wait(0.3)
             end
         end)
     end
 })
 
--- Toggle Auto Collect ALL Chests
 Shop:Toggle({
     Title = "Auto Collect Chests (All)",
-    Description = "Automatically teleport to and collect every chest in the map",
+    Description = "Automatically collect all chests in range without selecting",
     Default = false,
     Callback = function(state)
         AutoCollectAll = state
         task.spawn(function()
             while AutoCollectAll do
-                local chestFolder = Workspace:WaitForChild("ChestFolder",5)
-                for _, chest in ipairs(chestFolder:GetChildren()) do
-                    if not AutoCollectAll then break end
-                    collectChestReal(chest)
-                    task.wait(0.2)
-                end
-                task.wait(1)
+                collectNearbyChests(collectRadius)
+                task.wait(0.3)
             end
         end)
     end
