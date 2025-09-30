@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.8.9"
+local version = "3.9.2"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -224,18 +224,28 @@ Tabs.Auto:Toggle({
         autoEquipRunning = state
         if state then
             task.spawn(function()
-                local equipRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("CustomBackpack"):WaitForChild("EquipRemote")
                 while autoEquipRunning do
-                    local rustyPan = findPanAll()
-                    if rustyPan then
-                        local character = getCharacter()
-                        local currentTool = character:FindFirstChildOfClass("Tool")
-                        if not currentTool or currentTool ~= rustyPan then
-                            local args = { character:WaitForChild(rustyPan.Name) }
-                            equipRemote:FireServer(unpack(args))
+                    local player = game:GetService("Players").LocalPlayer
+                    local backpackTwo = player:WaitForChild("BackpackTwo")
+                    
+                    local panTool
+                    for _, tool in ipairs(backpackTwo:GetChildren()) do
+                        if tool:IsA("Tool") and tool.Name:find("Pan") then
+                            panTool = tool
+                            break
                         end
                     end
-                    task.wait(0.5)
+                    
+                    if panTool then
+                        local args = { panTool }
+                        local equipRemote = game:GetService("ReplicatedStorage")
+                                            :WaitForChild("Remotes")
+                                            :WaitForChild("CustomBackpack")
+                                            :WaitForChild("EquipRemote")
+                        equipRemote:FireServer(unpack(args))
+                    end
+
+                    task.wait(1.5)
                 end
             end)
         end
@@ -337,72 +347,78 @@ Tabs.Farm:Toggle({
                 local equipRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("CustomBackpack"):WaitForChild("EquipRemote")
 
                 while AutoFarm3Running do
+                    local player = game:GetService("Players").LocalPlayer
+                    local backpackTwo = player:WaitForChild("BackpackTwo")
                     local rustyPan = findPanAll()
-                    if rustyPan then
-                        -- Equip Pan via Remote
-                        local args = {getCharacter():WaitForChild(rustyPan.Name)}
-                        equipRemote:FireServer(unpack(args))
-                        task.wait(0.1)
-
-                        local current,max = getStats()
-                        local step = current<=0 and 1 or max<=current and 2 or 1
-
-                        -- STEP 1: Dig
-                        if step==1 and DigInputValue then
-                            if selectedLegitMode=="Tween" then
-                                tweenTo(getHumanoidRootPart(), DigInputValue, TweenSpeed)
-                            else
-                                walkToTarget(getCharacter(), DigInputValue)
-                            end
-                            repeat
-                                current,max = getStats()
-                                if current>=max then break end
-                                local collectScript = rustyPan:FindFirstChild("Scripts") and rustyPan.Scripts:FindFirstChild("Collect")
-                                if collectScript then collectScript:InvokeServer(99) end
-                                task.wait(0.05)
-                            until current>=max
-                            step = 2
-                        end
-
-                        -- STEP 2: Shake
-                        if step==2 and ShakeInputValue then
-                            if selectedLegitMode=="Tween" then
-                                tweenTo(getHumanoidRootPart(), ShakeInputValue, TweenSpeed)
-                            else
-                                walkToTarget(getCharacter(), ShakeInputValue)
-                            end
-                            local shakeScript = rustyPan:FindFirstChild("Scripts") and rustyPan.Scripts:FindFirstChild("Shake")
-                            local panScript = rustyPan:FindFirstChild("Scripts") and rustyPan.Scripts:FindFirstChild("Pan")
-                            if shakeScript and panScript then
-                                current,_=getStatsRaw()
-                                if current>0 then
-                                    panScript:InvokeServer()
-                                    task.wait(0.5)
-                                    repeat
-                                        current,_=getStatsRaw()
-                                        if current<=0 then break end
-                                        panScript:InvokeServer()
-                                        shakeScript:FireServer()
-                                        task.wait(0.05)
-                                    until current<=0
-                                end
-                            end
-                            step = 3
-                        end
-
-                        -- STEP 3: Sell
-                        if step==3 and SellInputValue then
-                            if selectedLegitMode=="Tween" then
-                                tweenTo(getHumanoidRootPart(), SellInputValue, TweenSpeed)
-                            else
-                                walkToTarget(getCharacter(), SellInputValue)
-                            end
-                            task.wait(1.5)
-                            sellRemote:InvokeServer()
-                            task.wait(0.5)
-                            step = 1
+                    
+                    local panTool
+                    for _, tool in ipairs(backpackTwo:GetChildren()) do
+                        if tool:IsA("Tool") and tool.Name:find("Pan") then
+                            panTool = tool
+                            break
                         end
                     end
+                    
+                    if panTool then
+                        local args = { panTool }
+                        equipRemote:FireServer(unpack(args))
+                    end
+
+                    local current,max = getStats()
+                    local step = current<=0 and 1 or max<=current and 2 or 1
+
+                    if step==1 and DigInputValue then
+                        if selectedLegitMode=="Tween" then
+                            tweenTo(getHumanoidRootPart(), DigInputValue, TweenSpeed)
+                        else
+                            walkToTarget(getCharacter(), DigInputValue)
+                        end
+                        repeat
+                            current,max = getStats()
+                            local collectScript = rustyPan:FindFirstChild("Scripts") and rustyPan.Scripts:FindFirstChild("Collect")
+                            if collectScript then collectScript:InvokeServer(99) end
+                            task.wait(0.05)
+                        until current>=max
+                        step = 2
+                    end
+
+                    if step==2 and ShakeInputValue then
+                        if selectedLegitMode=="Tween" then
+                            tweenTo(getHumanoidRootPart(), ShakeInputValue, TweenSpeed)
+                        else
+                            walkToTarget(getCharacter(), ShakeInputValue)
+                        end
+                        local shakeScript = rustyPan:FindFirstChild("Scripts") and rustyPan.Scripts:FindFirstChild("Shake")
+                        local panScript = rustyPan:FindFirstChild("Scripts") and rustyPan.Scripts:FindFirstChild("Pan")
+                        if shakeScript and panScript then
+                            current,_=getStatsRaw()
+                            if current>0 then
+                                panScript:InvokeServer()
+                                task.wait(0.5)
+                                repeat
+                                    current,_=getStatsRaw()
+                                    if current<=0 then break end
+                                    panScript:InvokeServer()
+                                    shakeScript:FireServer()
+                                    task.wait(0.05)
+                                until current<=0
+                            end
+                        end
+                        step = 3
+                    end
+
+                    if step==3 and SellInputValue then
+                        if selectedLegitMode=="Tween" then
+                            tweenTo(getHumanoidRootPart(), SellInputValue, TweenSpeed)
+                        else
+                            walkToTarget(getCharacter(), SellInputValue)
+                        end
+                        task.wait(1.5)
+                        sellRemote:InvokeServer()
+                        task.wait(0.5)
+                        step = 1
+                    end
+
                     task.wait(0.1)
                 end
             end)
