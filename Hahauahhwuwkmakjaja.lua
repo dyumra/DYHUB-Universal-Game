@@ -1,5 +1,5 @@
 -- ======================
-local version = "4.2.6"
+local version = "4.2.8"
 -- ======================
 
 repeat task.wait() until game:IsLoaded()
@@ -111,7 +111,6 @@ local espPallet = false
 local espObjects = {}
 local espWindowEnabled = false
 
--- Remove ESP
 local function removeESP(obj)
     if espObjects[obj] then
         local data = espObjects[obj]
@@ -123,9 +122,14 @@ local function removeESP(obj)
     end
 end
 
--- Create ESP
 local function createESP(obj, baseColor)
-    if not obj or obj.Name == "Lobby" or espObjects[obj] then return end
+    if not obj or obj.Name == "Lobby" then return end
+    if espObjects[obj] then
+        local data = espObjects[obj]
+        if data.highlight then data.highlight.FillColor = baseColor; data.highlight.OutlineColor = baseColor end
+        if data.nameLabel then data.nameLabel.TextColor3 = baseColor end
+        return
+    end
 
     if obj:FindFirstChild("Bottom") then obj.Bottom.Transparency = 0 end
 
@@ -176,7 +180,6 @@ local function createESP(obj, baseColor)
     espObjects[obj] = {highlight = highlight, nameLabel = nameLabel, distLabel = distLabel, color = baseColor}
 end
 
--- Helper: คืนค่าทุกโฟลเดอร์ Map ที่มี
 local function getMapFolders()
     local folders = {}
     local mainMap = workspace:FindFirstChild("Map")
@@ -187,7 +190,6 @@ local function getMapFolders()
     return folders
 end
 
--- Update Window ESP
 local function updateWindowESP()
     if not espEnabled then return end
     for _, folder in pairs(getMapFolders()) do
@@ -207,13 +209,14 @@ local function updateWindowESP()
     end
 end
 
--- Update ESP Main
-local function updateESP()
+local lastUpdate = 0
+local updateInterval = 0.3
+
+local function updateESP(dt)
     if not espEnabled then return end
     local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
 
-    -- Player ESP
     for _, player in pairs(Players:GetPlayers()) do
         if player.Character and player.Character ~= LocalPlayer.Character and player.Character.Name ~= "Lobby" then
             local isMurderer = player.Character:FindFirstChild("Weapon") ~= nil
@@ -233,11 +236,9 @@ local function updateESP()
         end
     end
 
-    -- Object ESP
     for _, folder in pairs(getMapFolders()) do
         for _, obj in pairs(folder:GetDescendants()) do
             if obj:IsA("Model") or obj:IsA("BasePart") then
-                -- Generator
                 if obj.Name == "Generator" then
                     if espGenerator then
                         local hitbox = obj:FindFirstChild("HitBox")
@@ -249,18 +250,12 @@ local function updateESP()
                         createESP(obj, color)
                     else removeESP(obj) end
                 end
-
-                -- Gate
                 if obj.Name == "Gate" then
                     if espGate then createESP(obj, COLOR_GATE) else removeESP(obj) end
                 end
-
-                -- Hook
                 if obj.Name == "Hook" and obj:FindFirstChild("Model") then
                     if espHook then createESP(obj.Model, COLOR_HOOK) else removeESP(obj.Model) end
                 end
-
-                -- Pallet
                 if obj.Name == "Palletwrong" then
                     if espPallet then createESP(obj, COLOR_PALLET) else removeESP(obj) end
                 end
@@ -270,7 +265,6 @@ local function updateESP()
 
     updateWindowESP()
 
-    -- Update distances
     for obj,data in pairs(espObjects) do
         if obj and obj.Parent and obj.Name ~= "Lobby" then
             local targetPart = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
@@ -282,17 +276,22 @@ local function updateESP()
     end
 end
 
-RunService.RenderStepped:Connect(updateESP)
+RunService.RenderStepped:Connect(function(dt)
+    lastUpdate = lastUpdate + dt
+    if lastUpdate >= updateInterval then
+        lastUpdate = 0
+        updateESP(dt)
+    end
+end)
 
--- Player added/removed
 Players.PlayerAdded:Connect(function(player)
     player.CharacterAdded:Connect(function() task.wait(1) end)
 end)
+
 Players.PlayerRemoving:Connect(function(player)
     if player.Character then removeESP(player.Character) end
 end)
 
--- ====================== ESP GUI ======================
 EspTab:Section({ Title = "Feature Esp", Icon = "eye" })
 EspTab:Toggle({Title="Enable ESP", Default=false, Callback=function(v)
     espEnabled = v
@@ -302,7 +301,7 @@ EspTab:Toggle({Title="Enable ESP", Default=false, Callback=function(v)
             removeESP(obj)
         end
     else
-        updateESP()
+        updateESP(0)
         updateWindowESP()
     end
 end})
@@ -319,6 +318,7 @@ EspTab:Section({ Title = "Esp Object", Icon = "package" })
 EspTab:Toggle({Title="ESP Pallet", Default=ESPPALLET, Callback=function(v) espPallet=v end})
 EspTab:Toggle({Title="ESP Hook", Default=ESPHOOK, Callback=function(v) espHook=v end})
 EspTab:Toggle({Title="ESP Window", Default=ESPWINDOW, Callback=function(v) espWindowEnabled=v; updateWindowESP() end})
+
 
 -- ====================== NO FLASHLIGHT ======================
 local noFlashlightEnabled = false
@@ -402,11 +402,20 @@ MainTab:Toggle({
 
 -- ====================== AUTO GENERATOR ======================
 local autoGeneratorEnabled = false
+
 MainTab:Section({ Title = "Feature Cheat", Icon = "zap" })
-MainTab:Toggle({Title="Auto Generator (Beta)", Default=false, Callback=function(v) autoGeneratorEnabled=v end})
+MainTab:Toggle({
+    Title = "Auto Generator (Beta)",
+    Default = false,
+    Callback = function(v)
+        autoGeneratorEnabled = v
+    end
+})
 
 spawn(function()
     local GeneratorPoints = {"GeneratorPoint1","GeneratorPoint2","GeneratorPoint3","GeneratorPoint4"}
+    local remote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Generator"):WaitForChild("SkillCheckResultEvent")
+    
     while task.wait(1) do
         if autoGeneratorEnabled then
             local generator = Workspace.Map:FindFirstChild("Generator")
@@ -414,7 +423,6 @@ spawn(function()
                 for index, pointName in ipairs(GeneratorPoints) do
                     local point = generator:FindFirstChild(pointName)
                     if point then
-                        local remote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Generator"):WaitForChild("SkillCheckResultEvent")
                         remote:FireServer("neutral", index, generator, point)
                     end
                 end
