@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.8.1"
+local version = "3.8.3"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -125,6 +125,113 @@ local function findPan()
     end
     return nil
 end
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local shakeRunning = false
+local digRunning = false
+
+-- Tab: Main
+Tabs.Auto:Section({ Title = "Feature Auto", Icon = "flame" })
+
+-- Tab: Auto
+Tabs.Auto:Toggle({
+    Title = "Auto Shake",
+    Value = false,
+    Callback = function(state)
+        shakeRunning = state
+        if state then
+            task.spawn(function()
+                while shakeRunning do
+                    local rustyPan = findPan()
+                    if rustyPan then
+                        local shakeScript = rustyPan:FindFirstChild("Scripts"):FindFirstChild("Shake")
+                        local panScript = rustyPan:FindFirstChild("Scripts"):FindFirstChild("Pan")
+                        if shakeScript and panScript then
+                            local current, _ = getStatsRaw()
+                            if current > 0 then
+                                panScript:InvokeServer() -- เริ่มรอบแรก
+                                task.wait(0.5)
+                                shakeScript:FireServer() -- shake ครั้งแรก
+                            end
+                        end
+                    end
+                    task.wait(0.05)
+                end
+            end)
+        end
+    end
+})
+
+Tabs.Auto:Toggle({
+    Title = "Auto Dig",
+    Value = false,
+    Callback = function(state)
+        digRunning = state
+        if state then
+            task.spawn(function()
+                while digRunning do
+                    local rustyPan = findPan()
+                    if rustyPan then
+                        local collectScript = rustyPan:FindFirstChild("Scripts"):FindFirstChild("Collect")
+                        local args = {[1] = 99}
+                        if collectScript then
+                            local current, max = getStats()
+                            if current < max then
+                                collectScript:InvokeServer(unpack(args))
+                            end
+                        end
+                    end
+                    task.wait(0.05)
+                end
+            end)
+        end
+    end
+})
+
+Tabs.Main:Section({ Title = "Feature Sell", Icon = "badge-dollar-sign" })
+
+Tabs.Main:Button({
+    Title = "Sell All (Anywhere)",
+    Icon = "shopping-cart",
+    Callback = function()
+        local character = player.Character
+        if not character or not character:FindFirstChild("HumanoidRootPart") then return end
+        local hrp = character.HumanoidRootPart
+        local TweenService = game:GetService("TweenService")
+
+        -- บันทึกตำแหน่งเดิม
+        local originalCFrame = hrp.CFrame
+
+        -- CFrame จุดขาย
+        local targetCFrame = CFrame.new(
+            -36.4754753, 18.7080574, 32.6440926,
+            -0.241923511, 3.02572585e-06, -0.97029525,
+            1.24988816e-07, 0.99999994, 3.14679664e-06,
+            0.97029531, 6.25588257e-07, -0.241923496
+        )
+
+        -- Tween เดินไปยังจุดขาย
+        local tweenInfo = TweenInfo.new(2, Enum.EasingStyle.Linear)
+        local goalTo = {CFrame = targetCFrame}
+        local tweenTo = TweenService:Create(hrp, tweenInfo, goalTo)
+        tweenTo:Play()
+        tweenTo.Completed:Wait()
+
+        -- รัน SellAll Remote
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local sellRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Shop"):WaitForChild("SellAll")
+        sellRemote:InvokeServer()
+
+        -- Tween เดินกลับตำแหน่งเดิม
+        local goalBack = {CFrame = originalCFrame}
+        local tweenBack = TweenService:Create(hrp, tweenInfo, goalBack)
+        tweenBack:Play()
+        tweenBack.Completed:Wait()
+    end
+})
 
 -- Tween function
 local TweenSpeed = 2
