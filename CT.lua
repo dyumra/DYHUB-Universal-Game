@@ -1,5 +1,5 @@
 -- =========================
-local version = "1.4.1" -- UPDATE
+local version = "1.4.6" -- UPDATE
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -78,8 +78,8 @@ Shop:Section({ Title = "Collect Chest", Icon = "package" })
 local selectedNormal, selectedGiant, selectedHuge = {}, {}, {}
 local AutoCollectSelected = false
 local AutoCollectAll = false
-local collectRadius = 10 -- รัศมีตรวจสอบ Prompt รอบตัว
-local pressCount = {} -- เก็บจำนวนครั้งที่กด Prompt ต่อโมเดล
+local collectRadius = 20
+local pressCount = {}
 
 local function formatName(name)
     return string.gsub(name, "%s+", "")
@@ -96,44 +96,54 @@ local function findChest(name)
     return nil
 end
 
--- ฟังก์ชันกด ProximityPrompt แยกออกมา
 local function pressProximityPrompt(model, actionText, maxPress)
-    if not model then return end
-    local prompt = nil
+    if not model or not model.Parent then return false end
+    local prompt
     for _, obj in pairs(model:GetDescendants()) do
         if obj:IsA("ProximityPrompt") and obj.ActionText == actionText then
             prompt = obj
             break
         end
     end
-    if prompt then
-        local count = pressCount[model] or 0
-        maxPress = maxPress or 1
-        if count < maxPress then
-            fireproximityprompt(prompt, 1)
-            pressCount[model] = count + 1
-        end
-    end
+    if not prompt then return false end
+
+    maxPress = maxPress or 1
+    local count = pressCount[model] or 0
+    if count >= maxPress then return false end
+
+    fireproximityprompt(prompt, 1)
+    pressCount[model] = count + 1
+    return true
 end
 
--- ฟังก์ชันเก็บ Chest เดียว
 local function collectChest(chest)
-    if chest then
-        local root = LocalPlayer.Character and LocalPlayer.Character:WaitForChild("HumanoidRootPart",5)
-        if root then
-            local pivotCFrame = chest.PrimaryPart and chest.PrimaryPart.CFrame or chest:GetPivot()
-            if pivotCFrame then
-                root.CFrame = pivotCFrame + Vector3.new(0,3,0)
-                task.wait(0.25) -- รออัพเดตตำแหน่ง
-                pressProximityPrompt(chest, "Collect")
+    if not chest or not chest.Parent then return false end
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not root then return false end
+
+    local pivotCFrame = chest.PrimaryPart and chest.PrimaryPart.CFrame or chest:GetPivot()
+    if not pivotCFrame then return false end
+
+    root.CFrame = pivotCFrame + Vector3.new(0,3,0)
+    task.wait(0.1)
+
+    local success = false
+    local timeout = 2
+    local start = tick()
+    while tick() - start < timeout do
+        if pressProximityPrompt(chest, "Collect", 1) then
+            if not chest.Parent then
+                success = true
+                break
             end
         end
+        task.wait(0.05)
     end
+    return success
 end
 
--- ฟังก์ชันเก็บ Chest รอบตัว
 local function collectNearbyChests(radius)
-    local root = LocalPlayer.Character and LocalPlayer.Character:WaitForChild("HumanoidRootPart",5)
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if not root then return end
     local chestFolder = Workspace:WaitForChild("ChestFolder",5)
     for _, chest in ipairs(chestFolder:GetChildren()) do
@@ -144,7 +154,7 @@ local function collectNearbyChests(radius)
     end
 end
 
--- Dropdown สำหรับ Select Chest
+-- Dropdown Select Chest
 Shop:Dropdown({ Title = "Select Chest (Normal)", Values = {"Chest1","Chest2","Chest3","Chest4","Chest5","Chest6","Chest7","Chest8","Chest9"}, Multi = true, Callback = function(values) selectedNormal = values end })
 Shop:Dropdown({ Title = "Select Chest (Giant)", Values = {"Chest1","Chest2","Chest3","Chest4","Chest5","Chest6","Chest7","Chest8","Chest9"}, Multi = true, Callback = function(values) selectedGiant = values end })
 Shop:Dropdown({ Title = "Select Chest (Huge)", Values = {"Chest1","Chest2","Chest3","Chest4","Chest5","Chest6","Chest7","Chest8","Chest9"}, Multi = true, Callback = function(values) selectedHuge = values end })
@@ -158,25 +168,21 @@ Shop:Toggle({
         AutoCollectSelected = state
         task.spawn(function()
             while AutoCollectSelected do
-                -- Normal Chests
                 for _, v in ipairs(selectedNormal) do
                     if not AutoCollectSelected then break end
                     local chest = findChest(v)
                     if chest then collectChest(chest) end
                 end
-                -- Giant Chests
                 for _, v in ipairs(selectedGiant) do
                     if not AutoCollectSelected then break end
                     local chest = findChest(v.."_Giant")
                     if chest then collectChest(chest) end
                 end
-                -- Huge Chests
                 for _, v in ipairs(selectedHuge) do
                     if not AutoCollectSelected then break end
                     local chest = findChest(v.."_Huge")
                     if chest then collectChest(chest) end
                 end
-                -- รอบตัว
                 collectNearbyChests(collectRadius)
                 task.wait(0.3)
             end
@@ -184,7 +190,7 @@ Shop:Toggle({
     end
 })
 
--- Toggle Auto Collect ALL Chests (Warp & Collect)
+-- Toggle Auto Collect ALL Chests
 Shop:Toggle({
     Title = "Auto Collect Chests (All)",
     Description = "Automatically teleport to and collect every chest in the map",
@@ -192,25 +198,19 @@ Shop:Toggle({
     Callback = function(state)
         AutoCollectAll = state
         task.spawn(function()
-            local chestFolder = Workspace:WaitForChild("ChestFolder",5)
             while AutoCollectAll do
+                local chestFolder = Workspace:WaitForChild("ChestFolder",5)
                 for _, chest in ipairs(chestFolder:GetChildren()) do
                     if not AutoCollectAll then break end
-                    local root = LocalPlayer.Character and LocalPlayer.Character:WaitForChild("HumanoidRootPart",5)
-                    if root then
-                        local pivotCFrame = chest.PrimaryPart and chest.PrimaryPart.CFrame or chest:GetPivot()
-                        if pivotCFrame then
-                            root.CFrame = pivotCFrame + Vector3.new(0,3,0)
-                            task.wait(0.25) -- รออัพเดตตำแหน่ง
-                            pressProximityPrompt(chest, "Collect")
-                        end
-                    end
+                    collectChest(chest)
+                    task.wait(0.2)
                 end
-                task.wait(0.3)
+                task.wait(0.5)
             end
         end)
     end
 })
+
 
 -- ====================== GAME SYSTEM ======================
 Main:Section({ Title = "Game System", Icon = "gamepad-2" })
