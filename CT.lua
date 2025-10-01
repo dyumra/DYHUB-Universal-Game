@@ -1,5 +1,5 @@
 -- =========================
-local version = "2.3.8"
+local version = "2.4.2"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -260,64 +260,58 @@ local LocalPlayer = Players.LocalPlayer
 local autoTreeAura = false
 local auraRange = 25
 
-Main:Slider({
+Main:Input({
     Title = "Set Range Cut Trees (Aura)",
-    Description = "Automatically damage trees around your character",
-    Value = {Min = 5, Max = 300, Default = auraRange},
-    Step = 1,
-    Callback = function(val)
-        auraRange = val
+    Default = tostring(auraRange),
+    Placeholder = "Enter the Range (Ex: 25)",
+    Callback = function(text)
+        local num = tonumber(text)
+        if num then
+            auraRange = num
+        else
+            warn("Entered an incorrect number!")
+        end
     end
 })
 
 Main:Toggle({
     Title = "Auto Cut Trees (Aura)",
-    Description = "Automatic cutting trees in range",
     Default = false,
     Callback = function(state)
         autoTreeAura = state
-        task.spawn(function()
-            while autoTreeAura do
-                local character = LocalPlayer.Character
-                local root = character and character:FindFirstChild("HumanoidRootPart")
-                if root then
-                    local treeFolder = Workspace:FindFirstChild("TreesFolder")
-                    if treeFolder then
-                        local treesInRange = {}
-                        for _, tree in ipairs(treeFolder:GetChildren()) do
-                            if tree:IsA("Model") then
-                                local treePos = tree:FindFirstChild("HumanoidRootPart") or tree:FindFirstChild("MainPart") or tree.PrimaryPart
-                                if treePos then
-                                    local distance = (root.Position - treePos.Position).Magnitude
-                                    if distance <= auraRange then
-                                        table.insert(treesInRange, {tree = tree, dist = distance})
-                                    end
-                                end
-                            end
-                        end
+    end
+})
 
-                        table.sort(treesInRange, function(a,b) return a.dist < b.dist end)
+task.spawn(function()
+    while true do
+        task.wait(0.05)
 
-                        for _, info in ipairs(treesInRange) do
-                            if not autoTreeAura then break end
-                            local treeName = info.tree.Name
-                            local signalTree = ReplicatedStorage:FindFirstChild("Signal") and ReplicatedStorage.Signal:FindFirstChild("Tree")
-                            if signalTree then
-                                local treePos = info.tree:FindFirstChild("HumanoidRootPart") or info.tree:FindFirstChild("MainPart") or info.tree.PrimaryPart
-                                if treePos then
-                                    root.CFrame = CFrame.new(treePos.Position + Vector3.new(0,3,0))
-                                end
-                                signalTree:FireServer("damage", treeName)
+        if autoTreeAura then
+            local character = LocalPlayer.Character
+            local root = character and character:FindFirstChild("HumanoidRootPart")
+            local treeFolder = Workspace:FindFirstChild("TreesFolder")
+            local signalTree = ReplicatedStorage:FindFirstChild("Signal") and ReplicatedStorage.Signal:FindFirstChild("Tree")
+
+            if root and treeFolder and signalTree then
+                for _, tree in ipairs(treeFolder:GetChildren()) do
+                    if tree:IsA("Model") then
+                        local treePos = tree:FindFirstChild("HumanoidRootPart") 
+                                       or tree:FindFirstChild("MainPart") 
+                                       or tree.PrimaryPart
+                                       or tree:FindFirstChildWhichIsA("BasePart")
+                        if treePos then
+                            local dist = (root.Position - treePos.Position).Magnitude
+                            if dist <= auraRange then
+                                local args = {"damage", tree.Name}
+                                signalTree:FireServer(unpack(args))
                             end
-                            task.wait(0.001)
                         end
                     end
                 end
-                task.wait(0.001)
             end
-        end)
+        end
     end
-})
+end)
 
 local autoTreeAll = false
 Main:Toggle({
