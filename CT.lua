@@ -1,26 +1,24 @@
--- Fuck you stellarnigga
-
 -- =========================
-local version = "2.1.8"
+local version = "2.3.4"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
 
 if setfpscap then
-    setfpscap(1000000)
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "dsc.gg/dyhub",
-        Text = "FPS Unlocked!",
-        Duration = 2,
-        Button1 = "Okay"
-    })
+    setfpscap(1000000)
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "dsc.gg/dyhub",
+        Text = "FPS Unlocked!",
+        Duration = 2,
+        Button1 = "Okay"
+    })
 else
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "dsc.gg/dyhub",
-        Text = "Your exploit does not support setfpscap.",
-        Duration = 2,
-        Button1 = "Okay"
-    })
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "dsc.gg/dyhub",
+        Text = "Your exploit does not support setfpscap.",
+        Duration = 2,
+        Button1 = "Okay"
+    })
 end
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
@@ -29,36 +27,37 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
 -- ====================== WINDOW ======================
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB",
-    IconThemed = true,
-    Icon = "rbxassetid://104487529937663",
-    Author = "Cut Trees | Premium Version",
-    Folder = "DYHUB_CT",
-    Size = UDim2.fromOffset(500, 350),
-    Transparent = true,
-    Theme = "Dark",
-    BackgroundImageTransparency = 0.8,
-    HasOutline = false,
-    HideSearchBar = true,
-    ScrollBarEnabled = false,
-    User = { Enabled = true, Anonymous = false },
+    Title = "DYHUB",
+    IconThemed = true,
+    Icon = "rbxassetid://104487529937663",
+    Author = "Cut Trees | Premium Version",
+    Folder = "DYHUB_CT",
+    Size = UDim2.fromOffset(500, 350),
+    Transparent = true,
+    Theme = "Dark",
+    BackgroundImageTransparency = 0.8,
+    HasOutline = false,
+    HideSearchBar = true,
+    ScrollBarEnabled = false,
+    User = { Enabled = true, Anonymous = false },
 })
 
 pcall(function()
-    Window:Tag({ Title = version, Color = Color3.fromHex("#30ff6a") })
+    Window:Tag({ Title = version, Color = Color3.fromHex("#30ff6a") })
 end)
 
 Window:EditOpenButton({
-    Title = "DYHUB - Open",
-    Icon = "monitor",
-    CornerRadius = UDim.new(0, 6),
-    StrokeThickness = 2,
-    Color = ColorSequence.new(Color3.fromRGB(30, 30, 30), Color3.fromRGB(255, 255, 255)),
-    Draggable = true,
+    Title = "DYHUB - Open",
+    Icon = "monitor",
+    CornerRadius = UDim.new(0, 6),
+    StrokeThickness = 2,
+    Color = ColorSequence.new(Color3.fromRGB(30, 30, 30), Color3.fromRGB(255, 255, 255)),
+    Draggable = true,
 })
 
 -- ====================== TABS ======================
@@ -77,15 +76,16 @@ Shop:Section({ Title = "Collect Chest", Icon = "package" })
 local selectedNormal, selectedGiant, selectedHuge = {}, {}, {}
 local AutoCollectSelected = false
 
--- ลบช่องว่างจากชื่อ Chest
+-- formatName
 local function formatName(name)
     return string.gsub(name, "%s+", "")
 end
 
--- หา Chest ตามชื่อ
+-- findChest
 local function findChest(name)
+    local chestFolder = Workspace:FindFirstChild("ChestFolder")
+    if not chestFolder then return nil end
     local cleanName = formatName(name)
-    local chestFolder = Workspace:WaitForChild("ChestFolder", 5)
     for _, chest in ipairs(chestFolder:GetChildren()) do
         if formatName(chest.Name) == cleanName then
             return chest
@@ -94,24 +94,23 @@ local function findChest(name)
     return nil
 end
 
--- วาร์ปไป Chest + กด ProximityPrompt
+-- collectChest
 local function collectChest(chest)
-    if not chest or not chest.Parent then return false end
+    if not (chest and chest.Parent) then return false end
     local char = LocalPlayer.Character
     local root = char and char:FindFirstChild("HumanoidRootPart")
     if not root then return false end
 
-    local pivotCFrame = chest.PrimaryPart and chest.PrimaryPart.CFrame or chest:GetPivot()
+    local pivotCFrame = (chest.PrimaryPart and chest.PrimaryPart.CFrame) or (chest:GetPivot())
     if not pivotCFrame then return false end
 
-    -- วาร์ปไป Chest
     local anchored = root.Anchored
     root.Anchored = true
     root.CFrame = pivotCFrame + Vector3.new(0,3,0)
     task.wait(0.05)
     root.Anchored = anchored
 
-    -- หา ProximityPrompt
+    -- find ProximityPrompt
     local prompt
     for _, obj in pairs(chest:GetDescendants()) do
         if obj:IsA("ProximityPrompt") and obj.ActionText == "Collect" then
@@ -121,19 +120,16 @@ local function collectChest(chest)
     end
     if not prompt then return false end
 
-    -- กด Prompt หลายรอบให้แน่นอน
-    for i = 1, 15 do
+    -- fire proximity
+    for i = 1, 10 do
         if not chest.Parent then break end
-        pcall(function()
-            fireproximityprompt(prompt, 1)
-        end)
-        task.wait(0.03)
+        pcall(function() fireproximityprompt(prompt, 1) end)
+        task.wait(0.02)
     end
-
     return true
 end
 
--- สร้าง list ของ Chest ทีละใบ (ตามที่เลือก)
+-- getSelectedChestList
 local function getSelectedChestList()
     local chestList = {}
     for _, v in ipairs(selectedNormal) do
@@ -151,10 +147,9 @@ local function getSelectedChestList()
     return chestList
 end
 
--- ====================== TOGGLE ======================
+-- Auto Collect
 Shop:Toggle({
     Title = "Auto Collect Chests (Selected)",
-    Description = "",
     Default = false,
     Callback = function(state)
         AutoCollectSelected = state
@@ -164,15 +159,15 @@ Shop:Toggle({
                 for _, chest in ipairs(chestList) do
                     if not AutoCollectSelected then break end
                     collectChest(chest)
-                    task.wait(0.1) -- รอเล็กน้อยก่อนไป Chest ถัดไป
+                    task.wait(0.1)
                 end
-                task.wait(0.5) -- รอบ loop ถัดไป
+                task.wait(0.5)
             end
         end)
     end
 })
 
--- ====================== DROPDOWN ======================
+-- Dropdowns
 Shop:Dropdown({
     Title = "Select Chest (Normal)",
     Values = {"Chest1","Chest2","Chest3","Chest4","Chest5","Chest6","Chest7","Chest8","Chest9"},
@@ -197,18 +192,20 @@ Main:Section({ Title = "Game System", Icon = "gamepad-2" })
 local autoPlay = false
 Main:Toggle({
     Title = "Auto Play",
-    Description = "Automatically play the game continuously",
     Default = false,
     Callback = function(state)
         autoPlay = state
         task.spawn(function()
             while autoPlay do
-                ReplicatedStorage:WaitForChild("Signal"):WaitForChild("Game"):FireServer("play")
+                pcall(function()
+                    ReplicatedStorage.Signal.Game:FireServer("play")
+                end)
                 task.wait(0.8)
             end
         end)
     end
 })
+
 -- ======================= GP SYSTEM =======================
 Main:Section({ Title = "Gamepass System", Icon = "star" })
 
@@ -216,23 +213,19 @@ Main:Toggle({
     Title = "Unlocked Gamepass",
     Default = false,
     Callback = function(state)
-        local Players = game:GetService("Players")
         local player = Players.LocalPlayer
         local gamepasses = {"X2WOOD", "X2POWER", "X2LOOT", "ULTRALUCKY", "XRAY"}
-        local defaultSpeed = 16
-        local speedwalk = 50
+        local defaultSpeed, speedwalk = 16, 50
 
         local function unlockGamepasses()
             for _, gpName in ipairs(gamepasses) do
                 local gp = player.GamepassFolder:FindFirstChild(gpName)
                 if gp then
-                    if gp:IsA("BoolValue") then
-                        gp.Value = true
-                    elseif gp:IsA("StringValue") then
-                        gp.Value = "true"
-                    else
-                        pcall(function() gp.Value = true end)
-                    end
+                    pcall(function()
+                        if gp:IsA("BoolValue") then gp.Value = true
+                        elseif gp:IsA("StringValue") then gp.Value = "true"
+                        else gp.Value = true end
+                    end)
                 end
             end
         end
@@ -246,9 +239,10 @@ Main:Toggle({
 
         unlockGamepasses()
         setSpeed(player.Character or player.CharacterAdded:Wait())
-
         if state then
             player.CharacterAdded:Connect(function(char)
+                task.wait(0.1)
+                unlockGamepasses()
                 setSpeed(char)
             end)
         end
@@ -258,27 +252,18 @@ Main:Toggle({
 -- ====================== TREE SYSTEM ======================
 Main:Section({ Title = "Tree System", Icon = "tree-deciduous" })
 
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Workspace = game:GetService("Workspace")
-local LocalPlayer = Players.LocalPlayer
-
 local autoTreeAura = false
 local auraRange = 25
 
 Main:Slider({
     Title = "Set Range Cut Trees (Aura)",
-    Description = "Automatically damage trees around your character",
     Value = {Min = 5, Max = 300, Default = auraRange},
     Step = 1,
-    Callback = function(val)
-        auraRange = val
-    end
+    Callback = function(val) auraRange = val end
 })
 
 Main:Toggle({
     Title = "Auto Cut Trees (Aura)",
-    Description = "Auto cut trees in range",
     Default = false,
     Callback = function(state)
         autoTreeAura = state
@@ -286,106 +271,105 @@ Main:Toggle({
             while autoTreeAura do
                 local character = LocalPlayer.Character
                 local root = character and character:FindFirstChild("HumanoidRootPart")
-                if root then
-                    local treeFolder = Workspace:FindFirstChild("TreesFolder")
-                    if treeFolder then
-                        local treesInRange = {}
-                        for _, tree in ipairs(treeFolder:GetChildren()) do
-                            if tree:IsA("Model") then
-                                local treePos = tree:FindFirstChild("HumanoidRootPart") or tree:FindFirstChild("MainPart") or tree.PrimaryPart
-                                if treePos then
-                                    local distance = (root.Position - treePos.Position).Magnitude
-                                    if distance <= auraRange then
-                                        table.insert(treesInRange, {tree = tree, dist = distance})
-                                    end
-                                else
-                                    table.insert(treesInRange, {tree = tree, dist = 0})
+                local treeFolder = Workspace:FindFirstChild("TreesFolder")
+                if root and treeFolder then
+                    local treesInRange = {}
+                    for _, tree in ipairs(treeFolder:GetChildren()) do
+                        if tree:IsA("Model") then
+                            local treePos = tree.PrimaryPart or tree:FindFirstChild("HumanoidRootPart") or tree:FindFirstChild("MainPart")
+                            if treePos then
+                                local distance = (root.Position - treePos.Position).Magnitude
+                                if distance <= auraRange then
+                                    table.insert(treesInRange, {tree = tree, dist = distance})
                                 end
                             end
-                        end
-
-                        table.sort(treesInRange, function(a,b) return a.dist < b.dist end)
-
-                        for _, info in ipairs(treesInRange) do
-                            if not autoTreeAura then break end
-                            local treeName = info.tree.Name
-                            local signalTree = ReplicatedStorage:FindFirstChild("Signal") and ReplicatedStorage.Signal:FindFirstChild("Tree")
-                            if signalTree then
-                                local treePos = info.tree:FindFirstChild("HumanoidRootPart") or info.tree:FindFirstChild("MainPart") or info.tree.PrimaryPart
-                                if treePos then
-                                    root.CFrame = CFrame.new(treePos.Position + Vector3.new(0,3,0))
-                                end
-                                signalTree:FireServer("damage", treeName)
-                            end
-                            task.wait(0.001)
                         end
                     end
+                    table.sort(treesInRange, function(a,b) return a.dist < b.dist end)
+                    for _, info in ipairs(treesInRange) do
+                        if not autoTreeAura then break end
+                        local treeName = info.tree.Name
+                        local signalTree = ReplicatedStorage.Signal:FindFirstChild("Tree")
+                        if signalTree then
+                            pcall(function()
+                                signalTree:FireServer("damage", treeName)
+                            end)
+                        end
+                        task.wait(0.01)
+                    end
                 end
-                task.wait(0.001)
+                task.wait(0.05)
             end
         end)
     end
 })
 
 local autoTreeAll = false
-Main:Toggle({ Title = "Auto Cut Trees (All)", Description = "Automatically cut all trees in the map", Default = false, Callback = function(state)
-    autoTreeAll = state
-    task.spawn(function()
-        while autoTreeAll do
-            for _, tree in ipairs(Workspace:WaitForChild("TreesFolder"):GetChildren()) do
-                if tree:IsA("Model") then
-                    ReplicatedStorage:WaitForChild("Signal"):WaitForChild("Tree"):FireServer("damage", tree.Name)
-                    task.wait(0.001)
+Main:Toggle({
+    Title = "Auto Cut Trees (All)",
+    Default = false,
+    Callback = function(state)
+        autoTreeAll = state
+        task.spawn(function()
+            while autoTreeAll do
+                local treeFolder = Workspace:FindFirstChild("TreesFolder")
+                local signalTree = ReplicatedStorage.Signal:FindFirstChild("Tree")
+                if treeFolder and signalTree then
+                    for _, tree in ipairs(treeFolder:GetChildren()) do
+                        if not autoTreeAll then break end
+                        pcall(function()
+                            signalTree:FireServer("damage", tree.Name)
+                        end)
+                        task.wait(0.01)
+                    end
                 end
+                task.wait(0.05)
             end
-            task.wait(0.001)
-        end
-    end)
-end})
+        end)
+    end
+})
 
 -- ====================== WORLD TELEPORT ======================
 TP:Section({ Title = "World Teleport", Icon = "map" })
-TP:Button({ Title = "Teleport to World 1", Description = "Instantly teleport to World 1", Callback = function() LocalPlayer.Character:PivotTo(CFrame.new(-115, 3.5, -120)) end })
-TP:Button({ Title = "Teleport to World 2", Description = "Instantly teleport to World 2", Callback = function() LocalPlayer.Character:PivotTo(CFrame.new(-1000, 3.5, -125)) end })
+TP:Button({ Title = "Teleport to World 1", Callback = function() LocalPlayer.Character:PivotTo(CFrame.new(-115, 3.5, -120)) end })
+TP:Button({ Title = "Teleport to World 2", Callback = function() LocalPlayer.Character:PivotTo(CFrame.new(-1000, 3.5, -125)) end })
 
 -- ====================== MISC TAB ======================
 Misc:Section({ Title = "Misc", Icon = "settings" })
 local AntiAFK = false
-Misc:Toggle({ Title = "Anti-AFK", Description = "Prevents you from being kicked for idle", Default = false, Callback = function(state)
-    AntiAFK = state
-    task.spawn(function()
-        local vu = game:GetService("VirtualUser")
-        while AntiAFK do
-            vu:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-            task.wait(60)
-            vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-            task.wait(60)
-        end
-    end)
-end})
+Misc:Toggle({
+    Title = "Anti-AFK",
+    Default = false,
+    Callback = function(state)
+        AntiAFK = state
+        task.spawn(function()
+            local vu = game:GetService("VirtualUser")
+            while AntiAFK do
+                vu:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+                task.wait(math.random(50,70))
+                vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+                task.wait(math.random(50,70))
+            end
+        end)
+    end
+})
 
 -- ====================== AUTO TAB ======================
 Auto:Section({ Title = "Auto Open Chests", Icon = "package" })
 
 local AutoOpenChests = false
-local OpenChestType = {"Normal"} -- Normal / Giant / Huge
-local OpenChestLevel = {1,2,3,4,5,6,7,8,9} -- Levels
+local OpenChestType = {"Normal"}
+local OpenChestLevel = {1,2,3,4,5,6,7,8,9}
 
--- Dropdown เลือก Type
 Auto:Dropdown({
     Title = "Select Chest Type",
-    Description = "Choose chest type to auto open",
     Values = {"Normal","Giant","Huge"},
     Multi = true,
-    Callback = function(values)
-        OpenChestType = values
-    end
+    Callback = function(values) OpenChestType = values end
 })
 
--- Dropdown เลือก Level
 Auto:Dropdown({
     Title = "Select Chest Level",
-    Description = "Choose chest level to auto open",
     Values = {"1","2","3","4","5","6","7","8","9"},
     Multi = true,
     Callback = function(values)
@@ -396,10 +380,8 @@ Auto:Dropdown({
     end
 })
 
--- Toggle Auto Open
 Auto:Toggle({
     Title = "Auto Open Selected Chests",
-    Description = "Automatically open selected chest types and levels",
     Default = false,
     Callback = function(state)
         AutoOpenChests = state
@@ -408,17 +390,19 @@ Auto:Toggle({
                 local chestList = {}
                 for _, t in ipairs(OpenChestType) do
                     for _, l in ipairs(OpenChestLevel) do
-                        if t == "Normal" then table.insert(chestList, "Chest"..l)
-                        elseif t == "Giant" then table.insert(chestList, "Chest"..l.."_Giant")
-                        elseif t == "Huge" then table.insert(chestList, "Chest"..l.."_Huge") end
+                        if t == "Normal" then
+                            table.insert(chestList, "Chest"..l)
+                        elseif t == "Giant" then
+                            table.insert(chestList, "Chest"..l.."_Giant")
+                        elseif t == "Huge" then
+                            table.insert(chestList, "Chest"..l.."_Huge")
+                        end
                     end
                 end
-
                 for _, chestName in ipairs(chestList) do
                     if not AutoOpenChests then break end
-                    local args = {"Open", chestName}
                     pcall(function()
-                        ReplicatedStorage:WaitForChild("Signal"):WaitForChild("ChestFunction"):InvokeServer(unpack(args))
+                        ReplicatedStorage.Signal.ChestFunction:InvokeServer("Open", chestName)
                     end)
                     task.wait(0.2)
                 end
