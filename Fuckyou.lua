@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.8.7"
+local version = "3.8.9"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -41,11 +41,13 @@ local Backpack = LocalPlayer:WaitForChild("Backpack")
 
 -- ====================== SETTINGS ======================
 local AutoCollect = false
-local AutoCollectV2 = false
 local AutoEB = false
+local AutoEBRunning = false
+local AutoCollectV2 = false
+local AutoCollectV2Running = false
 local AutoFarm = false
 local autoClicking = false
-local AutoCollectDelay = 5
+local AutoCollectDelay = 20
 local ClickInterval = 0.25
 local AntiAFKEnabled = false
 local SellPlant = false
@@ -405,7 +407,7 @@ Collect:Section({ Title = "Auto Collect", Icon = "hand-coins" })
 Collect:Slider({
     Title = "Auto Collect Delay (sec)",
     Description = "Set delay time between collections",
-    Value = {Min = 1, Max = 60, Default = 5},
+    Value = {Min = 1, Max = 60, Default = 20},
     Step = 1,
     Callback = function(val)
         AutoCollectDelay = val
@@ -438,32 +440,34 @@ Collect:Toggle({
     Default = false,
     Callback = function(state)
         AutoCollectV2 = state
-        if state then
+        if state and not AutoCollectV2Running then
+            AutoCollectV2Running = true
             task.spawn(function()
-                while state do
+                while AutoCollectV2 do
                     game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("EquipBestBrainrots"):FireServer()
                     task.wait(AutoCollectDelay)
                 end
+                AutoCollectV2Running = false
             end)
         end
     end
 })
 
 -- ====================== AUTO EQUIP ======================
-Collect:Section({ Title = "Auto Equip", Icon = "star" })
-
 Collect:Toggle({
     Title = "Auto Equip Brainrot",
     Description = "Automatically Equip Best Brainrot",
     Default = false,
     Callback = function(state)
         AutoEB = state
-        if state then
+        if state and not AutoEBRunning then
+            AutoEBRunning = true
             task.spawn(function()
-                while state do
+                while AutoEB do
                     game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("EquipBestBrainrots"):FireServer()
                     task.wait(5)
                 end
+                AutoEBRunning = false
             end)
         end
     end
