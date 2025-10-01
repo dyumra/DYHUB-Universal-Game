@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.8.9"
+local version = "3.4.0"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -454,6 +454,8 @@ Collect:Toggle({
 })
 
 -- ====================== AUTO EQUIP ======================
+Collect:Section({ Title = "Auto Equip", Icon = "star" })
+
 Collect:Toggle({
     Title = "Auto Equip Brainrot",
     Description = "Automatically Equip Best Brainrot",
