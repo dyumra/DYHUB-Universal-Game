@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.5.8"
+local version = "1.2.9"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -102,13 +102,13 @@ Tabs.GameTab:Toggle({
                     :WaitForChild("Collect")
 
                 while _G.AutoCollectMoney do
-                    for i = 1, 25 do
+                    for i = 1, 20 do
                         local args = {i}  -- ยิงทีละเลข
                         local success, err = pcall(function()
                             collectRemote:FireServer(unpack(args))
                         end)
                         if not success then warn("AutoCollect Error:", err) end
-                        task.wait(0.05) -- รอเล็กน้อยก่อนยิงเลขถัดไป
+                        task.wait(0.001) -- รอเล็กน้อยก่อนยิงเลขถัดไป
                     end
                     task.wait(0.5) -- รอระหว่างรอบ
                 end
@@ -157,7 +157,7 @@ local function LockBase(tycoon)
                     :FireServer(unpack(args))
             end)
             if not success then warn("LockBase Error:", err) end
-            task.wait(1)
+            task.wait(0.1)
         end
     end)
 end
