@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.8.6"
+local version = "3.8.7"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -41,10 +41,13 @@ local Backpack = LocalPlayer:WaitForChild("Backpack")
 
 -- ====================== SETTINGS ======================
 local AutoCollect = false
+local AutoCollectV2 = false
+local AutoEB = false
 local AutoFarm = false
 local autoClicking = false
 local AutoCollectDelay = 5
 local ClickInterval = 0.25
+local AntiAFKEnabled = false
 local SellPlant = false
 local SellBrainrot = false
 local SellEverything = false
@@ -614,7 +617,7 @@ task.spawn(function()
 end)
 
 -- ====================== MISC ======================
-Misc:Section({ Title = "Anti", Icon = "shield" })
+Misc:Section({ Title = "Misc", Icon = "settings" })
 
 Misc:Toggle({
     Title = "Anti AFK",
