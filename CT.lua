@@ -1,5 +1,5 @@
 -- =========================
-local version = "2.3.4"
+local version = "2.3.6"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -259,7 +259,9 @@ Main:Slider({
     Title = "Set Range Cut Trees (Aura)",
     Value = {Min = 5, Max = 300, Default = auraRange},
     Step = 1,
-    Callback = function(val) auraRange = val end
+    Callback = function(val)
+        auraRange = val
+    end
 })
 
 Main:Toggle({
@@ -272,33 +274,22 @@ Main:Toggle({
                 local character = LocalPlayer.Character
                 local root = character and character:FindFirstChild("HumanoidRootPart")
                 local treeFolder = Workspace:FindFirstChild("TreesFolder")
-                if root and treeFolder then
-                    local treesInRange = {}
+                local signalTree = ReplicatedStorage:FindFirstChild("Signal") and ReplicatedStorage.Signal:FindFirstChild("Tree")
+
+                if root and treeFolder and signalTree then
                     for _, tree in ipairs(treeFolder:GetChildren()) do
-                        if tree:IsA("Model") then
-                            local treePos = tree.PrimaryPart or tree:FindFirstChild("HumanoidRootPart") or tree:FindFirstChild("MainPart")
-                            if treePos then
-                                local distance = (root.Position - treePos.Position).Magnitude
-                                if distance <= auraRange then
-                                    table.insert(treesInRange, {tree = tree, dist = distance})
-                                end
+                        if not autoTreeAura then break end
+                        if tree:IsA("Model") and tree.PrimaryPart then
+                            local distance = (root.Position - tree.PrimaryPart.Position).Magnitude
+                            if distance <= auraRange then
+                                signalTree:FireServer("damage", tree.Name)
+                                task.wait(0.005)
                             end
                         end
                     end
-                    table.sort(treesInRange, function(a,b) return a.dist < b.dist end)
-                    for _, info in ipairs(treesInRange) do
-                        if not autoTreeAura then break end
-                        local treeName = info.tree.Name
-                        local signalTree = ReplicatedStorage.Signal:FindFirstChild("Tree")
-                        if signalTree then
-                            pcall(function()
-                                signalTree:FireServer("damage", treeName)
-                            end)
-                        end
-                        task.wait(0.01)
-                    end
                 end
-                task.wait(0.05)
+
+                task.wait(0.001)
             end
         end)
     end
@@ -320,10 +311,10 @@ Main:Toggle({
                         pcall(function()
                             signalTree:FireServer("damage", tree.Name)
                         end)
-                        task.wait(0.01)
+                        task.wait(0.001)
                     end
                 end
-                task.wait(0.05)
+                task.wait(0.001)
             end
         end)
     end
