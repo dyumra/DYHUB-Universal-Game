@@ -1,5 +1,5 @@
 -- =========================
-local version = "2.4.2"
+local version = "2.4.3"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -263,7 +263,7 @@ local auraRange = 25
 Main:Input({
     Title = "Set Range Cut Trees (Aura)",
     Default = tostring(auraRange),
-    Placeholder = "Enter the Range (Ex: 25)",
+    Placeholder = "Range (Ex: 25)",
     Callback = function(text)
         local num = tonumber(text)
         if num then
