@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.5.7"
+local version = "3.5.8"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -74,8 +74,8 @@ Window:EditOpenButton({
 
 -- ====================== Tabs ======================
 local Tabs = {
-    InfoTab = Window:Tab({ Title = "Information", Icon = "info" })
-    MainDivider = Window:Divider()
+    InfoTab = Window:Tab({ Title = "Information", Icon = "info" }),
+    MainDivider = Window:Divider(),
     GameTab = Window:Tab({ Title = "Main", Icon = "rocket" }),
     PlayerTab = Window:Tab({ Title = "Player", Icon = "user" }),
     ESPTab = Window:Tab({ Title = "ESP", Icon = "eye" }),
@@ -85,6 +85,7 @@ Window:SelectTab(1)
 
 -- ====================== GameTab ======================
 Tabs.GameTab:Section({ Title = "Collect", Icon = "dollar-sign" })
+
 Tabs.GameTab:Toggle({
     Title = "Auto Collect (Money)",
     Default = false,
@@ -92,28 +93,29 @@ Tabs.GameTab:Toggle({
         _G.AutoCollectMoney = state
         if state then
             task.spawn(function()
-                local collectRemote = ReplicatedStorage:WaitForChild("voidSky")
+                local collectRemote = game:GetService("ReplicatedStorage")
+                    :WaitForChild("voidSky")
                     :WaitForChild("Remotes")
                     :WaitForChild("Server")
                     :WaitForChild("Objects")
                     :WaitForChild("Trash")
                     :WaitForChild("Collect")
+
                 while _G.AutoCollectMoney do
-                    local success, err = pcall(function()
-                        local args = {}
-                        for i = 1, 30 do
-                            table.insert(args, i)
-                        end
-                        collectRemote:FireServer(unpack(args))
-                    end)
-                    if not success then warn("AutoCollect Error:", err) end
-                    task.wait(0.5)
+                    for i = 1, 25 do
+                        local args = {i}  -- ยิงทีละเลข
+                        local success, err = pcall(function()
+                            collectRemote:FireServer(unpack(args))
+                        end)
+                        if not success then warn("AutoCollect Error:", err) end
+                        task.wait(0.05) -- รอเล็กน้อยก่อนยิงเลขถัดไป
+                    end
+                    task.wait(0.5) -- รอระหว่างรอบ
                 end
             end)
         end
     end
 })
-
 
 -- ====================== Auto Lock Base ======================
 local function GetNearestTycoon()
@@ -155,7 +157,7 @@ local function LockBase(tycoon)
                     :FireServer(unpack(args))
             end)
             if not success then warn("LockBase Error:", err) end
-            task.wait(1.7)
+            task.wait(1)
         end
     end)
 end
