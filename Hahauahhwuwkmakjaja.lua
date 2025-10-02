@@ -1,5 +1,5 @@
 -- ======================
-local version = "4.3.1"
+local version = "4.3.3"
 -- ======================
 
 repeat task.wait() until game:IsLoaded()
@@ -59,12 +59,47 @@ local COLOR_WINDOW         = Color3.fromRGB(255,165,0)
 local COLOR_HOOK           = Color3.fromRGB(255,0,0)
 
 -- ====================== WINDOW ======================
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+
+local FreeVersion = "Free Version"
+local PremiumVersion = "Premium Version"
+
+local function checkVersion(playerName)
+    local url = "https://raw.githubusercontent.com/dyumra/Whitelist/refs/heads/main/DYHUB-PREMIUM.lua"
+
+    local success, response = pcall(function()
+        return game:HttpGet(url)
+    end)
+
+    if not success then
+        return FreeVersion
+    end
+
+    local premiumData
+    local func, err = loadstring(response)
+    if func then
+        premiumData = func()
+    else
+        return FreeVersion
+    end
+
+    if premiumData[playerName] then
+        return PremiumVersion
+    else
+        return FreeVersion
+    end
+end
+
+local player = Players.LocalPlayer
+local version = checkVersion(player.Name)
+
 local Window = WindUI:CreateWindow({
     Title = "DYHUB",
     IconThemed = true,
     Icon = "rbxassetid://104487529937663",
-    Author = "Violence District | Free Version",
-    Folder = "DYHUB_VD_ESP",
+    Author = "Violence District | " .. version,
+    Folder = "DYHUB_VD",
     Size = UDim2.fromOffset(500, 350),
     Transparent = true,
     Theme = "Dark",
@@ -498,7 +533,7 @@ end})
 local speedEnabled, flyNoclipSpeed = false, 50
 local speedConnection, noclipConnection
 
-PlayerTab:Section({ Title = "Feature Player", Icon = "arrow-big-up-dash" })
+PlayerTab:Section({ Title = "Feature Player", Icon = "rabbit" })
 PlayerTab:Slider({ Title = "Set Speed Value", Value={Min=1,Max=30,Default=3}, Step=1, Callback=function(val) flyNoclipSpeed=val end })
 
 PlayerTab:Toggle({ Title = "Enable Speed", Default=false, Callback=function(v)
@@ -516,6 +551,7 @@ PlayerTab:Toggle({ Title = "Enable Speed", Default=false, Callback=function(v)
     end
 end })
 
+PlayerTab:Section({ Title = "Feature Power", Icon = "flame" })
 PlayerTab:Toggle({ Title = "No Clip", Default=false, Callback=function(state)
     if state then
         noclipConnection=RunService.Stepped:Connect(function()
