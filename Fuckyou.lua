@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.4.0"
+local version = "3.4.2"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -151,11 +151,46 @@ local function GetRemotesFolder()
 end
 
 -- ====================== WINDOW ======================
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+
+local FreeVersion = "Free Version"
+local PremiumVersion = "Premium Version"
+
+local function checkVersion(playerName)
+    local url = "https://raw.githubusercontent.com/dyumra/Whitelist/refs/heads/main/DYHUB-PREMIUM.lua"
+
+    local success, response = pcall(function()
+        return game:HttpGet(url)
+    end)
+
+    if not success then
+        return FreeVersion
+    end
+
+    local premiumData
+    local func, err = loadstring(response)
+    if func then
+        premiumData = func()
+    else
+        return FreeVersion
+    end
+
+    if premiumData[playerName] then
+        return PremiumVersion
+    else
+        return FreeVersion
+    end
+end
+
+local player = Players.LocalPlayer
+local userversion = checkVersion(player.Name)
+
 local Window = WindUI:CreateWindow({
     Title = "DYHUB",
     IconThemed = true,
     Icon = "rbxassetid://104487529937663",
-    Author = "Plants Vs Brainrots | Free Version",
+    Author = "Plants Vs Brainrots | " .. userversion,
     Folder = "DYHUB_PVSB",
     Size = UDim2.fromOffset(500, 350),
     Transparent = true,
