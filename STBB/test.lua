@@ -1,5 +1,5 @@
 -- =========================
-local verison = "3.4.7"
+local verison = "3.4.8"
 -- =========================
 
 if setfpscap then
@@ -649,12 +649,46 @@ LocalPlayer.CharacterAdded:Connect(function()
     if autoSkipHelicopterActive then startAutoSkipHelicopter() end
 end)
 
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+
+local FreeVersion = "Free Version"
+local PremiumVersion = "Premium Version"
+
+local function checkVersion(playerName)
+    local url = "https://raw.githubusercontent.com/dyumra/Whitelist/refs/heads/main/DYHUB-PREMIUM.lua"
+
+    local success, response = pcall(function()
+        return game:HttpGet(url)
+    end)
+
+    if not success then
+        return FreeVersion
+    end
+
+    local premiumData
+    local func, err = loadstring(response)
+    if func then
+        premiumData = func()
+    else
+        return FreeVersion
+    end
+
+    if premiumData[playerName] then
+        return PremiumVersion
+    else
+        return FreeVersion
+    end
+end
+
+local player = Players.LocalPlayer
+local userversion = checkVersion(player.Name)
 
 local Window = WindUI:CreateWindow({
     Title = "DYHUB",
     IconThemed = true,
     Icon = "rbxassetid://104487529937663",
-    Author = "ST : Blockade Battlefront | Free Version",
+    Author = "ST : Blockade Battlefront | " .. version,
     Folder = "DYHUB_Stbb_config",
     Size = UDim2.fromOffset(500, 350),
     Transparent = true,
