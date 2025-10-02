@@ -1,5 +1,5 @@
 -- ======================
-local version = "5.2.1"
+local version = "5.2.5"
 -- ======================
 
 repeat task.wait() until game:IsLoaded()
@@ -328,17 +328,40 @@ MiscTab:Toggle({
     Title = "FPS Boost",
     Default = false,
     Callback = function(state)
+        -- เก็บค่าของเดิม
+        local originalValues = {}
+
         if state then
             for _, v in pairs(game:GetDescendants()) do
                 if v:IsA("BasePart") then
+                    originalValues[v] = {
+                        Material = v.Material,
+                        Reflectance = v.Reflectance
+                    }
                     v.Material = Enum.Material.SmoothPlastic
                     v.Reflectance = 0
                 elseif v:IsA("Decal") then
+                    originalValues[v] = {
+                        Transparency = v.Transparency
+                    }
                     v.Transparency = 1
                 end
             end
+            -- ลดคุณภาพการเรนเดอร์
             settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+            print("[DYHUB] FPS Boost enabled!")
         else
+            -- คืนค่าของเดิม
+            for v, vals in pairs(originalValues) do
+                if v:IsA("BasePart") then
+                    v.Material = vals.Material
+                    v.Reflectance = vals.Reflectance
+                elseif v:IsA("Decal") then
+                    v.Transparency = vals.Transparency
+                end
+            end
+            -- คืนค่า QualityLevel กลับเป็น Automatic
+            settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic
             print("[DYHUB] FPS Boost disabled. (by rhy)")
         end
     end
