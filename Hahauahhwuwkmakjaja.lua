@@ -1,5 +1,5 @@
 -- ======================
-local version = "4.3.3"
+local version = "4.3.4"
 -- ======================
 
 repeat task.wait() until game:IsLoaded()
@@ -92,13 +92,13 @@ local function checkVersion(playerName)
 end
 
 local player = Players.LocalPlayer
-local version = checkVersion(player.Name)
+local userversion = checkVersion(player.Name)
 
 local Window = WindUI:CreateWindow({
     Title = "DYHUB",
     IconThemed = true,
     Icon = "rbxassetid://104487529937663",
-    Author = "Violence District | " .. version,
+    Author = "Violence District | " .. userversion,
     Folder = "DYHUB_VD",
     Size = UDim2.fromOffset(500, 350),
     Transparent = true,
