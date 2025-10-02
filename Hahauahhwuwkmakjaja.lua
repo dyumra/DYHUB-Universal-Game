@@ -1,5 +1,5 @@
 -- ======================
-local version = "4.3.4"
+local version = "4.3.6"
 -- ======================
 
 repeat task.wait() until game:IsLoaded()
@@ -530,11 +530,11 @@ MainTab:Toggle({Title="No Fog", Default=false, Callback=function(v)
 end})
 
 -- ====================== PLAYER ======================
-local speedEnabled, flyNoclipSpeed = false, 50
+local speedEnabled, flyNoclipSpeed = false, 5
 local speedConnection, noclipConnection
 
 PlayerTab:Section({ Title = "Feature Player", Icon = "rabbit" })
-PlayerTab:Slider({ Title = "Set Speed Value", Value={Min=1,Max=30,Default=3}, Step=1, Callback=function(val) flyNoclipSpeed=val end })
+PlayerTab:Slider({ Title = "Set Speed Value", Value={Min=1,Max=50,Default=5}, Step=1, Callback=function(val) flyNoclipSpeed=val end })
 
 PlayerTab:Toggle({ Title = "Enable Speed", Default=false, Callback=function(v)
     speedEnabled=v
