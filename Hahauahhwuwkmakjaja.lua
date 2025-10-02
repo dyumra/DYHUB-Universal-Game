@@ -1,5 +1,5 @@
 -- ======================
-local version = "4.2.8"
+local version = "4.3.1"
 -- ======================
 
 repeat task.wait() until game:IsLoaded()
@@ -339,6 +339,7 @@ end)
 -- ====================== BYPASS GATE ======================
 local bypassGateEnabled = false
 
+-- ฟังก์ชันรวบรวมเกตทั้งหมด
 local function gatherGates()
     local gates = {}
     for _, folder in pairs(getMapFolders()) do
@@ -351,6 +352,7 @@ local function gatherGates()
     return gates
 end
 
+-- ฟังก์ชันตั้งค่าเกต
 local function setGateState(enabled)
     local gates = gatherGates()
     for _, gate in pairs(gates) do
@@ -360,36 +362,57 @@ local function setGateState(enabled)
         local rightEnd = gate:FindFirstChild("RightGate-end")
         local box = gate:FindFirstChild("Box")
 
-        if leftGate or rightGate or leftEnd or rightEnd then
-            if enabled then
-                if leftGate then
-                    leftGate.Transparency = 1
-                    leftGate.CanCollide = false
-                end
-                if rightGate then
-                    rightGate.Transparency = 1
-                    rightGate.CanCollide = false
-                end
-                if leftEnd then leftEnd.Transparency = 0 end
-                if rightEnd then rightEnd.Transparency = 0 end
-            else
-                if leftGate then
-                    leftGate.Transparency = 0
-                    leftGate.CanCollide = true
-                end
-                if rightGate then
-                    rightGate.Transparency = 0
-                    rightGate.CanCollide = true
-                end
+        if enabled then
+            -- เปิดฟีเจอร์: Left/Right Gate โปร่งใส + ทะลุได้
+            if leftGate then
+                leftGate.Transparency = 1
+                leftGate.CanCollide = false
+            end
+            if rightGate then
+                rightGate.Transparency = 1
+                rightGate.CanCollide = false
+            end
+
+            -- Left/Right End ไม่โปร่งใส + ชนได้
+            if leftEnd then
+                leftEnd.Transparency = 0
+                leftEnd.CanCollide = true
+            end
+            if rightEnd then
+                rightEnd.Transparency = 0
+                rightEnd.CanCollide = true
+            end
+
+            -- Box สามารถทะลุได้
+            if box then
+                box.CanCollide = false
             end
         else
+            -- ปิดฟีเจอร์: คืนค่าเดิม
+            if leftGate then
+                leftGate.Transparency = 0
+                leftGate.CanCollide = true
+            end
+            if rightGate then
+                rightGate.Transparency = 0
+                rightGate.CanCollide = true
+            end
+            if leftEnd then
+                leftEnd.Transparency = 1
+                leftEnd.CanCollide = true
+            end
+            if rightEnd then
+                rightEnd.Transparency = 1
+                rightEnd.CanCollide = true
+            end
             if box then
-                box.CanCollide = not enabled
+                box.CanCollide = true
             end
         end
     end
 end
 
+-- UI Toggle
 MainTab:Section({ Title = "Feature Bypass", Icon = "lock-open" })
 MainTab:Toggle({
     Title = "Bypass Gate (Beta)",
@@ -409,27 +432,52 @@ MainTab:Toggle({
     Default = false,
     Callback = function(v)
         autoGeneratorEnabled = v
-    end
-})
 
-spawn(function()
-    local GeneratorPoints = {"GeneratorPoint1","GeneratorPoint2","GeneratorPoint3","GeneratorPoint4"}
-    local remote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Generator"):WaitForChild("SkillCheckResultEvent")
-    
-    while task.wait(1) do
         if autoGeneratorEnabled then
-            local generator = Workspace.Map:FindFirstChild("Generator")
-            if generator then
-                for index, pointName in ipairs(GeneratorPoints) do
-                    local point = generator:FindFirstChild(pointName)
-                    if point then
-                        remote:FireServer("neutral", index, generator, point)
+            task.spawn(function()
+                local Players = game:GetService("Players")
+                local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                local remote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Generator"):WaitForChild("SkillCheckResultEvent")
+                local player = Players.LocalPlayer
+
+                while autoGeneratorEnabled do
+                    local char = player.Character
+                    local root = char and char:FindFirstChild("HumanoidRootPart")
+                    if root then
+                        local generators = workspace:WaitForChild("Map"):GetChildren()
+                        local closestGen = nil
+                        local closestDist = 20
+
+                        for _, gen in ipairs(generators) do
+                            if gen.Name == "Generator" and gen:IsA("Model") then
+                                local primary = gen:FindFirstChild("PrimaryPart") or gen:FindFirstChildWhichIsA("BasePart")
+                                if primary then
+                                    local dist = (root.Position - primary.Position).Magnitude
+                                    if dist <= closestDist then
+                                        closestDist = dist
+                                        closestGen = gen
+                                    end
+                                end
+                            end
+                        end
+
+                        if closestGen then
+                            -- ยิงทุกจุดพร้อมกัน
+                            for i = 1, 4 do
+                                local point = closestGen:FindFirstChild("GeneratorPoint" .. i)
+                                if point then
+                                    local args = {"success", 1, closestGen, point}
+                                    remote:FireServer(unpack(args))
+                                end
+                            end
+                        end
                     end
+                    task.wait(1) -- สแกนทุก 1 วิ
                 end
-            end
+            end)
         end
     end
-end)
+})
 
 MainTab:Toggle({Title="No Flashlight", Default=false, Callback=function(v) noFlashlightEnabled=v end})
 
@@ -442,7 +490,7 @@ MainTab:Toggle({Title="Full Bright", Default=false, Callback=function(v)
 end})
 
 MainTab:Toggle({Title="No Fog", Default=false, Callback=function(v)
-    Lighting.FogEnd = v and 100000 or 1000
+    Lighting.FogEnd = v and 999999999 or 1000
     Lighting.FogStart = 0
 end})
 
@@ -451,7 +499,7 @@ local speedEnabled, flyNoclipSpeed = false, 50
 local speedConnection, noclipConnection
 
 PlayerTab:Section({ Title = "Feature Player", Icon = "arrow-big-up-dash" })
-PlayerTab:Slider({ Title = "Set Speed Value", Value={Min=1,Max=100,Default=10}, Step=1, Callback=function(val) flyNoclipSpeed=val end })
+PlayerTab:Slider({ Title = "Set Speed Value", Value={Min=1,Max=30,Default=3}, Step=1, Callback=function(val) flyNoclipSpeed=val end })
 
 PlayerTab:Toggle({ Title = "Enable Speed", Default=false, Callback=function(v)
     speedEnabled=v
