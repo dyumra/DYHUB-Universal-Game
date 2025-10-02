@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.4.2"
+local version = "3.4.6"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -88,6 +88,13 @@ local shop = {
         "Banana Gun",
         "Frost Blower",
         "Carrot Launcher"
+    },
+    PlatformList = {
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
     }
 }
 
@@ -594,10 +601,59 @@ Shop:Toggle({
     end
 })
 
+Shop:Section({ Title = "Buy Platform", Icon = "house" })
+
+local shop = {
+    PlatformList = {
+        "1","2","3","4","5","6","7","8","9","10",
+        "11","12","13","14","15","16","17"
+    }
+}
+
+local selectedPlatform = {}
+
+Shop:Dropdown({
+    Title = "Select Platform",
+    Values = shop.PlatformList,
+    Multi = true,
+    Callback = function(values)
+        selectedPlatform = values
+    end
+})
+
+Shop:Toggle({
+    Title = "Auto Buy Platform (Selected)",
+    Default = false,
+    Callback = function(state)
+        if state then
+            if #selectedPlatform == 0 then
+                return
+            end
+
+            local BuyPlatformRemote = game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyPlatform")
+            for _, platform in ipairs(selectedPlatform) do
+                BuyPlatformRemote:FireServer(platform)
+                task.wait(0.1)
+            end
+        end
+    end
+})
+
+Shop:Button({
+    Title = "Buy Platforms (All)",
+    Callback = function()
+        local BuyPlatformRemote = game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyPlatform")
+        for _, platform in ipairs(shop.PlatformList) do
+            BuyPlatformRemote:FireServer(platform)
+            task.wait(0.1)
+        end
+    end
+})
+
 -- ====================== LOOPS ======================
 -- Selling loop
 task.spawn(function()
-    while task.wait(0.69) do
+    while task.wait(0.15) do
         if SellBrainrot or SellPlant or SellEverything then
             local remotes = GetRemotesFolder()
             pcall(function()
@@ -613,7 +669,7 @@ end)
 
 -- Auto buy loop (รวมทุกแบบและใช้ shop.table ให้ถูกต้อง)
 task.spawn(function()
-    while task.wait(0.95) do
+    while task.wait(0.1) do
         -- Selected Gear
         if AutoBuySelectedGear and #selectedGears > 0 then
             for _, g in ipairs(selectedGears) do
@@ -621,7 +677,7 @@ task.spawn(function()
                 pcall(function()
                     game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyGear"):FireServer(unpack(args))
                 end)
-                task.wait(0.12)
+                task.wait(0.1)
             end
         end
         -- Selected Seed
@@ -631,7 +687,7 @@ task.spawn(function()
                 pcall(function()
                     game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyItem"):FireServer(unpack(args))
                 end)
-                task.wait(0.12)
+                task.wait(0.1)
             end
         end
         -- All Gear
@@ -641,7 +697,7 @@ task.spawn(function()
                 pcall(function()
                     game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyGear"):FireServer(unpack(args))
                 end)
-                task.wait(0.12)
+                task.wait(0.1)
             end
         end
         -- All Seed
@@ -651,7 +707,7 @@ task.spawn(function()
                 pcall(function()
                     game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyItem"):FireServer(unpack(args))
                 end)
-                task.wait(0.12)
+                task.wait(0.1)
             end
         end
     end
