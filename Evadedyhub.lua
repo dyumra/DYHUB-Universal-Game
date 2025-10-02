@@ -1,4 +1,28 @@
+-- ======================
+local version = "5.2.1"
+-- ======================
+
 repeat task.wait() until game:IsLoaded()
+
+-- FPS Unlock
+if setfpscap then
+    setfpscap(1000000)
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "dsc.gg/dyhub",
+        Text = "FPS Unlocked!",
+        Duration = 2,
+        Button1 = "Okay"
+    })
+    warn("FPS Unlocked!")
+else
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "dsc.gg/dyhub",
+        Text = "Your exploit does not support setfpscap.",
+        Duration = 2,
+        Button1 = "Okay"
+    })
+    warn("Your exploit does not support setfpscap.")
+end
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -10,50 +34,65 @@ local Workspace = game:GetService("Workspace")
 local InsertService = game:GetService("InsertService") -- Make sure InsertService is defined
 local StarterGui = game:GetService("StarterGui")
 
-local WindUI = nil
-local success, errorMessage = pcall(function()
-    local scriptContent = game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua")
-    if scriptContent and scriptContent ~= "" then
-        WindUI = loadstring(scriptContent)()
-    else
-        error("Failed to retrieve WindUI script content.")
-    end
-end)
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
-if not success or not WindUI then
-    warn("Failed to load WindUI: " .. (errorMessage or "Unknown error"))
-    game.StarterGui:SetCore("SendNotification", {
-        Title = "DYHUB Error",
-        Text = "The script does not support your executor!",
-        Duration = 10,
-        Button1 = "OK"
-    })
-    return
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+
+local FreeVersion = "Free Version"
+local PremiumVersion = "Premium Version"
+
+local function checkVersion(playerName)
+    local url = "https://raw.githubusercontent.com/dyumra/Whitelist/refs/heads/main/DYHUB-PREMIUM.lua"
+
+    local success, response = pcall(function()
+        return game:HttpGet(url)
+    end)
+
+    if not success then
+        return FreeVersion
+    end
+
+    local premiumData
+    local func, err = loadstring(response)
+    if func then
+        premiumData = func()
+    else
+        return FreeVersion
+    end
+
+    if premiumData[playerName] then
+        return PremiumVersion
+    else
+        return FreeVersion
+    end
 end
 
-local Confirmed = false
-WindUI:Popup({
-    Title = "DYHUB Loaded! - Evade",
-    Icon = "star",
-    IconThemed = true,
-    Content = "DYHUB'S TEAM | Join our (dsc.gg/dyhub)",
-    Buttons = {
-        { Title = "Cancel", Variant = "Secondary", Callback = function() end },
-        { Title = "Continue", Icon = "arrow-right", Callback = function() Confirmed = true end, Variant = "Primary" }
-    }
-})
-
-repeat task.wait() until Confirmed
+local player = Players.LocalPlayer
+local userversion = checkVersion(player.Name)
 
 local Window = WindUI:CreateWindow({
-    Title = "DYHUB - Evade @ Premium (Version: 3.12)",
+    Title = "DYHUB",
     IconThemed = true,
-    Icon = "star",
-    Author = "DYHUB (dsc.gg/dyhub)",
-    Size = UDim2.fromOffset(600, 400),
+    Icon = "rbxassetid://104487529937663",
+    Author = "Evade | " .. userversion,
+    Folder = "DYHUB_EVADE",
+    Size = UDim2.fromOffset(500, 350),
     Transparent = true,
     Theme = "Dark",
+    BackgroundImageTransparency = 0.8,
+    HasOutline = false,
+    HideSearchBar = true,
+    ScrollBarEnabled = false,
+    User = { Enabled = true, Anonymous = false },
 })
+
+pcall(function()
+    Window:Tag({
+        Title = version,
+        Color = Color3.fromHex("#30ff6a")
+    })
+end)
 
 Window:EditOpenButton({
     Title = "DYHUB - Open",
@@ -65,16 +104,17 @@ Window:EditOpenButton({
 })
 
 --- Add UI Elements to GameTab ---
-local GameTab = Window:Tab({ Title = "Main", Icon = "rocket" })
-local VoteTab = Window:Tab({ Title = "Vote", Icon = "map" })
-local EspTab = Window:Tab({ Title = "Esp", Icon = "eye" })
-local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
-local ReviveTab = Window:Tab({ Title = "Revive", Icon = "shield-plus" })
-local FakeTab = Window:Tab({ Title = "Fake", Icon = "sparkles" })
-local SkullTab = Window:Tab({ Title = "Best", Icon = "skull" })
-local MiscTab = Window:Tab({ Title = "Misc", Icon = "file-cog" })
-local Niggatab = Window:Tab({ Title = "Info", Icon = "settings-2" })
 
+local InfoTab = Window:Tab({ Title = "Information", Icon = "info" })
+local MainDivider = Window:Divider()
+local GameTab = Window:Tab({ Title = "Main", Icon = "rocket" })
+local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
+local EspTab = Window:Tab({ Title = "Esp", Icon = "eye" })
+local MainlolkilDivider = Window:Divider()
+local FakeTab = Window:Tab({ Title = "Other", Icon = "sparkles" })
+local ReviveTab = Window:Tab({ Title = "Revive", Icon = "shield-plus" })
+local MainlolDivider = Window:Divider()
+local MiscTab = Window:Tab({ Title = "Misc", Icon = "settings" })
 Window:SelectTab(1)
 
 local headlessEnabled = false
@@ -98,9 +138,11 @@ local OriginalWalkSpeed = 16
 
 local cframeSpeedConnection = nil
 
+PlayerTab:Section({ Title = "Feature Player", Icon = "rabbit" })
+
 PlayerTab:Input({
     Title = "Set Base Speed",
-    Placeholder = "Enter Speed Value (1-1000)",
+    Placeholder = "Ex: 100",
     onChanged = function(value)
         local num = tonumber(value)
         if num and num >= 1 and num <= 5000 then
@@ -206,6 +248,8 @@ end
 
 local afk = true
 
+MiscTab:Section({ Title = "Miscellaneous", Icon = "settings" })
+
 MiscTab:Toggle({
     Title = "Anti-AFK",
     Default = true,
@@ -278,6 +322,8 @@ MiscTab:Toggle({
     end
 })
 
+MiscTab:Section({ Title = "Boost", Icon = "flame" })
+
 MiscTab:Toggle({
     Title = "FPS Boost",
     Default = false,
@@ -311,73 +357,7 @@ if VibrantEnabled then
     applyVibrant()
 end
 
-local selectedMapNumber = 1
-local autoVoteEnabled = false
-local voteConnection = nil
-
-VoteTab:Dropdown({
-    Title = "Select Map",
-    Values = {"Map 1", "Map 2", "Map 3", "Map 4"},
-    Callback = function(value)
-        if value == "Map 1" then
-            selectedMapNumber = 1
-        elseif value == "Map 2" then
-            selectedMapNumber = 2
-        elseif value == "Map 3" then
-            selectedMapNumber = 3
-        elseif value == "Map 4" then
-            selectedMapNumber = 4
-        end
-    end
-})
-
-VoteTab:Button({
-    Title = "Vote!",
-    Callback = function()
-        fireVoteServer(selectedMapNumber)
-    end
-})
-
-VoteTab:Toggle({
-    Title = "Auto Vote",
-    Callback = function(state)
-        autoVoteEnabled = state
-        if autoVoteEnabled then
-            if not voteConnection then
-                voteConnection = game:GetService("RunService").Heartbeat:Connect(function()
-                    fireVoteServer(selectedMapNumber)
-                end)
-            end
-        else
-            if voteConnection then
-                voteConnection:Disconnect()
-                voteConnection = nil
-            end
-        end
-    end
-})
-
-local function fireVoteServer(selectedMapNumber)
-    local eventsFolder = ReplicatedStorage:WaitForChild("Events", 10)
-    if eventsFolder then
-        local playerFolder = eventsFolder:WaitForChild("Player", 10)
-        if playerFolder then
-            local voteEvent = playerFolder:WaitForChild("Vote", 10)
-            if voteEvent and typeof(voteEvent) == "Instance" and voteEvent:IsA("RemoteEvent") then
-                local args = {
-                    [1] = selectedMapNumber
-                }
-                voteEvent:FireServer(unpack(args))
-            else
-                warn("Vote RemoteEvent not found or is not a RemoteEvent.")
-            end
-        else
-            warn("Player folder not found under Events.")
-        end
-    else
-        warn("Events folder not found in ReplicatedStorage.")
-    end
-end
+GameTab:Section({ Title = "Auto Farm", Icon = "star" })
 
 GameTab:Toggle({
     Title = "Auto Farm Win",
@@ -481,11 +461,11 @@ GameTab:Toggle({
 })
 
 GameTab:Toggle({
-    Title = "Auto Farm Summer Event",
+    Title = "Auto Farm Ticket",
     Callback = function(state)
         AutoFarmSummerEvent = state
         if AutoFarmSummerEvent then
-            print("[DYHUB] Auto Farm Summer Event Enabled!")
+            print("[DYHUB] Auto Farm Ticket Event Enabled!")
             spawn(function()
                 while AutoFarmSummerEvent do
                     local tickets = Workspace:FindFirstChild("Game") and Workspace.Game:FindFirstChild("Effects") and Workspace.Game.Effects:FindFirstChild("Tickets")
@@ -530,12 +510,77 @@ GameTab:Toggle({
     end
 })
 
+local function fireVoteServer(selectedMapNumber)
+    local eventsFolder = ReplicatedStorage:WaitForChild("Events", 10)
+    if eventsFolder then
+        local playerFolder = eventsFolder:WaitForChild("Player", 10)
+        if playerFolder then
+            local voteEvent = playerFolder:WaitForChild("Vote", 10)
+            if voteEvent and typeof(voteEvent) == "Instance" and voteEvent:IsA("RemoteEvent") then
+                local args = {
+                    [1] = selectedMapNumber
+                }
+                voteEvent:FireServer(unpack(args))
+            else
+                warn("Vote RemoteEvent not found or is not a RemoteEvent.")
+            end
+        else
+            warn("Player folder not found under Events.")
+        end
+    else
+        warn("Events folder not found in ReplicatedStorage.")
+    end
+end
+
+local selectedMapNumber = 1
+local autoVoteEnabled = false
+local voteConnection = nil
+
+GameTab:Section({ Title = "Feature Vote", Icon = "badge-check" })
+
+GameTab:Dropdown({
+    Title = "Select Map",
+    Values = {"1", "2", "3", "4"},
+    Callback = function(value)
+            selectedMapNumber = value
+        end
+    end
+})
+
+GameTab:Button({
+    Title = "Vote!",
+    Callback = function()
+        fireVoteServer(selectedMapNumber)
+    end
+})
+
+GameTab:Toggle({
+    Title = "Auto Vote",
+    Callback = function(state)
+        autoVoteEnabled = state
+        if autoVoteEnabled then
+            if not voteConnection then
+                voteConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                    fireVoteServer(selectedMapNumber)
+                end)
+            end
+        else
+            if voteConnection then
+                voteConnection:Disconnect()
+                voteConnection = nil
+            end
+        end
+    end
+})
+
 local loopFakeBundleConnection = nil
 local loopFakeBundleEnabled = false
 local Niggastats = true
 local Admin = true
 
-SkullTab:Toggle({
+MiscTab:Section({ Title = "Feature Anti", Icon = "shield" })
+
+MiscTab:Toggle({
     Title = "Anti-Lagging",
     Callback = function(state)
         Niggastats = state
@@ -543,7 +588,7 @@ SkullTab:Toggle({
     end
 })
 
-SkullTab:Toggle({
+MiscTab:Toggle({
     Title = "Anti-Admin",
     Default = true,
     Callback = function(state)
@@ -690,9 +735,11 @@ local function removeAllHats()
     end
 end
 
+FakeTab:Section({ Title = "Feature Visual", Icon = "gem" })
+
 FakeTab:Dropdown({
     Title = "Fake Bundle (Visual)",
-    Values = {"Headless", "Korblox (Fixing)"},
+    Values = {"Headless", "Korblox (Bugs)"},
     Multi = true,
     Callback = function(values)
         if table.find(values, "Headless") and not headlessEnabled then
@@ -755,29 +802,6 @@ Players.LocalPlayer.CharacterAdded:Connect(function(character)
         applyKorbloxRightLeg()
     end
 end)
-
--- ==== nigg
-
-Niggatab:Button({
-    Title = "DYHUB - Thank you for choosing our script [F9]",
-    Callback = function()
-       print("[DYHUB] Join our Discord To view script update news")
-    end
-}) 
- 
-Niggatab:Button({
-    Title = "DYHUB - Subscribe",
-    Callback = function()
-       print("[DYHUB] https://www.youtube.com/@officialdyhub")
-    end
-}) 
-
-Niggatab:Button({
-    Title = "DYHUB - Discord",
-    Callback = function()
-       print("[DYHUB] https://www.dsc.gg/dyhub")
-    end
-}) 
 
 -- ===== Esp Tab
 local ActiveEspPlayers = false
@@ -882,6 +906,7 @@ local characterRemovingConnections = {}
 local botLoopConnection = nil
 local summerEventLoopConnection = nil
 
+EspTab:Section({ Title = "Feature ESP", Icon = "eye" })
 
 EspTab:Toggle({
     Title = "Players ESP",
@@ -966,7 +991,7 @@ EspTab:Toggle({
 })
 
 EspTab:Toggle({
-    Title = "Summer Event ESP",
+    Title = "Tickets ESP",
     Callback = function(state)
         ActiveEspSummerEvent = state
         if ActiveEspSummerEvent then
@@ -999,8 +1024,10 @@ EspTab:Toggle({
     end
 })
 
+EspTab:Section({ Title = "Setting ESP", Icon = "settings" })
+
 EspTab:Toggle({
-    Title = "Distance ESP",
+    Title = "Show Distance",
     Callback = function(state)
         ActiveDistanceEsp = state
         if ActiveDistanceEsp then
@@ -1014,6 +1041,8 @@ EspTab:Toggle({
 local autoReviveEnabled = false
 local lastCheckTime = 0
 local checkInterval = 5
+
+ReviveTab:Section({ Title = "Feature Revive", Icon = "cross" })
 
 ReviveTab:Button({
     Title = "Revive Yourself",
@@ -1054,3 +1083,188 @@ RunService.Heartbeat:Connect(function()
         end
     end
 end)
+
+Info = InfoTab
+
+if not ui then ui = {} end
+if not ui.Creator then ui.Creator = {} end
+
+-- Define the Request function that mimics ui.Creator.Request
+ui.Creator.Request = function(requestData)
+    local HttpService = game:GetService("HttpService")
+    
+    -- Try different HTTP methods
+    local success, result = pcall(function()
+        if HttpService.RequestAsync then
+            -- Method 1: Use RequestAsync if available
+            local response = HttpService:RequestAsync({
+                Url = requestData.Url,
+                Method = requestData.Method or "GET",
+                Headers = requestData.Headers or {}
+            })
+            return {
+                Body = response.Body,
+                StatusCode = response.StatusCode,
+                Success = response.Success
+            }
+        else
+            -- Method 2: Fallback to GetAsync
+            local body = HttpService:GetAsync(requestData.Url)
+            return {
+                Body = body,
+                StatusCode = 200,
+                Success = true
+            }
+        end
+    end)
+    
+    if success then
+        return result
+    else
+        error("HTTP Request failed: " .. tostring(result))
+    end
+end
+
+-- Remove this line completely: Info = InfoTab
+-- The Info variable is already correctly set above
+
+local InviteCode = "jWNDPNMmyB"
+local DiscordAPI = "https://discord.com/api/v10/invites/" .. InviteCode .. "?with_counts=true&with_expiration=true"
+
+local function LoadDiscordInfo()
+    local success, result = pcall(function()
+        return game:GetService("HttpService"):JSONDecode(ui.Creator.Request({
+            Url = DiscordAPI,
+            Method = "GET",
+            Headers = {
+                ["User-Agent"] = "RobloxBot/1.0",
+                ["Accept"] = "application/json"
+            }
+        }).Body)
+    end)
+
+    if success and result and result.guild then
+        local DiscordInfo = Info:Paragraph({
+            Title = result.guild.name,
+            Desc = ' <font color="#52525b">●</font> Member Count : ' .. tostring(result.approximate_member_count) ..
+                '\n <font color="#16a34a">●</font> Online Count : ' .. tostring(result.approximate_presence_count),
+            Image = "https://cdn.discordapp.com/icons/" .. result.guild.id .. "/" .. result.guild.icon .. ".png?size=1024",
+            ImageSize = 42,
+        })
+
+        Info:Button({
+            Title = "Update Info",
+            Callback = function()
+                local updated, updatedResult = pcall(function()
+                    return game:GetService("HttpService"):JSONDecode(ui.Creator.Request({
+                        Url = DiscordAPI,
+                        Method = "GET",
+                    }).Body)
+                end)
+
+                if updated and updatedResult and updatedResult.guild then
+                    DiscordInfo:SetDesc(
+                        ' <font color="#52525b">●</font> Member Count : ' .. tostring(updatedResult.approximate_member_count) ..
+                        '\n <font color="#16a34a">●</font> Online Count : ' .. tostring(updatedResult.approximate_presence_count)
+                    )
+                    
+                    WindUI:Notify({
+                        Title = "Discord Info Updated",
+                        Content = "Successfully refreshed Discord statistics",
+                        Duration = 2,
+                        Icon = "refresh-cw",
+                    })
+                else
+                    WindUI:Notify({
+                        Title = "Update Failed",
+                        Content = "Could not refresh Discord info",
+                        Duration = 3,
+                        Icon = "alert-triangle",
+                    })
+                end
+            end
+        })
+
+        Info:Button({
+            Title = "Copy Discord Invite",
+            Callback = function()
+                setclipboard("https://discord.gg/" .. InviteCode)
+                WindUI:Notify({
+                    Title = "Copied!",
+                    Content = "Discord invite copied to clipboard",
+                    Duration = 2,
+                    Icon = "clipboard-check",
+                })
+            end
+        })
+    else
+        Info:Paragraph({
+            Title = "Error fetching Discord Info",
+            Desc = "Unable to load Discord information. Check your internet connection.",
+            Image = "triangle-alert",
+            ImageSize = 26,
+            Color = "Red",
+        })
+        print("Discord API Error:", result) -- Debug print
+    end
+end
+
+LoadDiscordInfo()
+
+Info:Divider()
+Info:Section({ 
+    Title = "DYHUB Information",
+    TextXAlignment = "Center",
+    TextSize = 17,
+})
+Info:Divider()
+
+local Owner = Info:Paragraph({
+    Title = "Main Owner",
+    Desc = "@dyumraisgoodguy#8888",
+    Image = "rbxassetid://119789418015420",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 0,
+    Locked = false,
+})
+
+local Social = Info:Paragraph({
+    Title = "Social",
+    Desc = "Copy link social media for follow!",
+    Image = "rbxassetid://104487529937663",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 0,
+    Locked = false,
+    Buttons = {
+        {
+            Icon = "copy",
+            Title = "Copy Link",
+            Callback = function()
+                setclipboard("https://guns.lol/DYHUB")
+                print("Copied social media link to clipboard!")
+            end,
+        }
+    }
+})
+
+local Discord = Info:Paragraph({
+    Title = "Discord",
+    Desc = "Join our discord for more scripts!",
+    Image = "rbxassetid://104487529937663",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 0,
+    Locked = false,
+    Buttons = {
+        {
+            Icon = "copy",
+            Title = "Copy Link",
+            Callback = function()
+                setclipboard("https://discord.gg/jWNDPNMmyB")
+                print("Copied discord link to clipboard!")
+            end,
+        }
+    }
+})
