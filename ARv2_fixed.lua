@@ -1,5 +1,5 @@
 -- =========================
-local version = "5.6.5"
+local version = "5.6.6"
 -- =========================
 
 if setfpscap then
@@ -139,12 +139,47 @@ task.spawn(function()
     -- Remove loading
     ScreenGui:Destroy()
 
+	local Players = game:GetService("Players")
+    local HttpService = game:GetService("HttpService")
+
+    local FreeVersion = "Free Version"
+    local PremiumVersion = "Premium Version"
+
+    local function checkVersion(playerName)
+        local url = "https://raw.githubusercontent.com/dyumra/Whitelist/refs/heads/main/DYHUB-PREMIUM.lua"
+
+	    local success, response = pcall(function()
+            return game:HttpGet(url)
+        end)
+
+    if not success then
+        return FreeVersion
+    end
+
+    local premiumData
+    local func, err = loadstring(response)
+    if func then
+          premiumData = func()
+      else
+          return FreeVersion
+       end
+
+      if premiumData[playerName] then
+          return PremiumVersion
+      else
+          return FreeVersion
+       end
+    end
+
+    local player = Players.LocalPlayer
+    local userversion = checkVersion(player.Name)
+
     -- Window
     local Window = WindUI:CreateWindow({
         Title = "DYHUB",
         IconThemed = true,
         Icon = "rbxassetid://104487529937663",
-        Author = "Anime Rails | Free Verison",
+        Author = "Anime Rails | " .. userversion,
         Size = UDim2.fromOffset(500, 300),
         Transparent = true,
         Theme = "Dark",
