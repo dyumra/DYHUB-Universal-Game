@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.5.8"
+local version = "3.5.9"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -755,7 +755,7 @@ Misc:Button({
             Icon = "user-check",
         })
 
-        print("[DUPE] Go to Trade!
+        print("[DUPE] Go to Trade!")
         task.wait(0.5)
         WindUI:Notify({
             Title = "DYHUB Dupe",
