@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.5.2"
+local version = "3.5.4"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -33,7 +33,6 @@ local UserInputService = game:GetService("UserInputService")
 local VirtualUser = game:GetService("VirtualUser")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
-
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
@@ -45,21 +44,17 @@ local AutoEB = false
 local AutoEBRunning = false
 local AutoCollectV2 = false
 local AutoCollectV2Running = false
+
 local AutoFarm = false
 local autoClicking = false
 local AutoCollectDelay = 20
 local ClickInterval = 0.25
+
 local AntiAFKEnabled = false
-local SellPlant = false
+
 local SellBrainrot = false
+local SellPlant = false
 local SellEverything = false
-local AutoBuyAllSeed = false
-local AutoBuyAllGear = false
-local AutoBuySelectedGear = false
-local selectedPlatform = false
-local AutoBuySelectedSeed = false
-local AutoBuyPlatformAll = false
-local AutoBuyPlatformSelect = false
 
 local HeldToolNames = {
     "Basic Bat",
@@ -104,17 +99,18 @@ local shop = {
     }
 }
 
+-- ===================== VARIABLES =====================
 local selectedSeeds = {}
 local selectedGears = {}
 local selectedPlatform = {}
 
--- ===================== VARIABLES =====================
-local selectedSeeds = {}
-local selectedGears = {}
-local AutoBuySelectedSeed = false
-local AutoBuySelectedGear = false
 local AutoBuyAllSeed = false
 local AutoBuyAllGear = false
+local AutoBuyPlatformAll = false
+
+local AutoBuySelectedGear = false
+local AutoBuySelectedSeed = false
+local AutoBuyPlatformSelect = false
 
 -- ====================== HELPER FUNCTIONS ======================
 local function GetMyPlot()
@@ -267,7 +263,7 @@ Main:Paragraph({
                 WindUI:Notify({
                     Title = "DYHUB Status",
                     Content = message,
-                    Duration = 5,
+                    Duration = 2,
                     Icon = "user-check",
                 })
             end
@@ -535,6 +531,10 @@ Sell:Toggle({
     Default = false,
     Callback = function(state)
         SellBrainrot = state
+        while SellBrainrot do
+            task.wait(0.5) 
+            ReplicatedStorage.Remotes.ItemSell:FireServer()
+        end
     end
 })
 
@@ -543,6 +543,10 @@ Sell:Toggle({
     Default = false,
     Callback = function(state)
         SellPlant = state
+        while SellPlant do
+            task.wait(0.5)
+            ReplicatedStorage.Remotes.ItemSell:FireServer()
+        end
     end
 })
 
@@ -553,6 +557,10 @@ Sell:Toggle({
     Default = false,
     Callback = function(state)
         SellEverything = state
+        while SellEverything do
+            task.wait(0.5)
+            ReplicatedStorage.Remotes.ItemSell:FireServer()
+        end
     end
 })
 
@@ -746,6 +754,28 @@ Misc:Toggle({
                 end
             end)
         end
+    end
+})
+
+Misc:Button({
+    Title = "FPS Boost",
+    Description = "Click to enable FPS Boost and improve game performance",
+    Callback = function()
+        WindUI:Notify({
+            Title = "DYHUB Boost",
+            Content = "The FPS Boost script is being executed...",
+            Duration = 2,
+            Icon = "user-check",
+        })
+
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/DYHUB-Universal-Game/refs/heads/main/Nigga.lua"))()
+        
+        WindUI:Notify({
+            Title = "DYHUB Boost",
+            Content = "FPS Boost script has been executed successfully.",
+            Duration = 2,
+            Icon = "user-check",
+        })
     end
 })
 
