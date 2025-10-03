@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.5.4"
+local version = "3.5.8"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -734,6 +734,38 @@ Shop:Toggle({
 })
 
 -- ====================== MISC ======================
+Misc:Section({ Title = "Function Dupe", Icon = "crown" })
+
+Misc:Paragraph({
+    Title = "Dupe Information",
+    Desc = "This duplication method is confirmed to work only on older server versions.\nSupported: v3427 & v3428",
+    Image = "rbxassetid://104487529937663",
+    ImageSize = 30,
+    Locked = false,
+})
+
+Misc:Button({
+    Title = "Dupe Trade",
+    Description = "",
+    Callback = function()
+        WindUI:Notify({
+            Title = "DYHUB Dupe",
+            Content = "Loading remotely for trade...",
+            Duration = 2,
+            Icon = "user-check",
+        })
+
+        print("[DUPE] Go to Trade!
+        task.wait(0.5)
+        WindUI:Notify({
+            Title = "DYHUB Dupe",
+            Content = "Start trading now for dupe!",
+            Duration = 2,
+            Icon = "user-check",
+        })
+    end
+})
+
 Misc:Section({ Title = "Misc", Icon = "settings" })
 
 Misc:Toggle({
