@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.4.9"
+local version = "3.5.2"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -53,6 +53,13 @@ local AntiAFKEnabled = false
 local SellPlant = false
 local SellBrainrot = false
 local SellEverything = false
+local AutoBuyAllSeed = false
+local AutoBuyAllGear = false
+local AutoBuySelectedGear = false
+local selectedPlatform = false
+local AutoBuySelectedSeed = false
+local AutoBuyPlatformAll = false
+local AutoBuyPlatformSelect = false
 
 local HeldToolNames = {
     "Basic Bat",
@@ -452,7 +459,7 @@ Collect:Section({ Title = "Auto Collect", Icon = "hand-coins" })
 Collect:Slider({
     Title = "Auto Collect Delay (sec)",
     Description = "Set delay time between collections",
-    Value = {Min = 1, Max = 60, Default = 20},
+    Value = {Min = 1, Max = 300, Default = 20},
     Step = 1,
     Callback = function(val)
         AutoCollectDelay = val
@@ -502,7 +509,7 @@ Collect:Toggle({
 Collect:Section({ Title = "Auto Equip", Icon = "star" })
 
 Collect:Toggle({
-    Title = "Auto Equip Brainrot",
+    Title = "Auto Equip Best Brainrot",
     Description = "Automatically Equip Best Brainrot",
     Default = false,
     Callback = function(state)
@@ -681,6 +688,7 @@ Shop:Toggle({
     Title = "Auto Buy Platform (Selected)",
     Default = false,
     Callback = function(state)
+        AutoBuyPlatformSelect = state
         if state and #selectedPlatform > 0 then
             task.spawn(function()
                 while state do
@@ -698,8 +706,10 @@ Shop:Toggle({
 
 Shop:Toggle({
     Title = "Auto Buy Platform (All)",
+    Description = "Automatically buy platform for brainrot section rebirth",
     Default = false,
     Callback = function(state)
+        AutoBuyPlatformAll = state
         if state then
             task.spawn(function()
                 while state do
