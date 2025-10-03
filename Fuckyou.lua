@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.4.6"
+local version = "3.4.8"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -90,13 +90,16 @@ local shop = {
         "Carrot Launcher"
     },
     PlatformList = {
-        "1",
-        "2",
-        "3",
-        "4",
-        "5"
+        "1","2","3","4","5",
+        "6","7","8","9","10",
+        "11","12","13","14",
+        "15","16","17"
     }
 }
+
+local selectedSeeds = {}
+local selectedGears = {}
+local selectedPlatform = {}
 
 -- ===================== VARIABLES =====================
 local selectedSeeds = {}
@@ -549,6 +552,7 @@ Sell:Toggle({
 -- ===================== SHOP UI =====================
 Shop:Section({ Title = "Buy Seed", Icon = "leaf" })
 
+-- Seed Dropdown
 Shop:Dropdown({
     Title = "Select Seed",
     Values = shop.seedList,
@@ -558,22 +562,34 @@ Shop:Dropdown({
     end
 })
 
+-- Buy Selected Seeds
 Shop:Toggle({
-    Title = "Auto Buy Seed (Selected)",
+    Title = "Buy Seed (Selected)",
     Default = false,
     Callback = function(state)
-        AutoBuySelectedSeed = state
+        if state and #selectedSeeds > 0 then
+            local BuySeedRemote = game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyItem")
+            for _, seed in ipairs(selectedSeeds) do
+                BuySeedRemote:FireServer(seed)
+                task.wait(0.1)
+            end
+        end
     end
 })
 
-Shop:Toggle({
-    Title = "Auto Buy Seed (All)",
-    Default = false,
-    Callback = function(state)
-        AutoBuyAllSeed = state
+-- Buy All Seeds
+Shop:Button({
+    Title = "Buy Seed (All)",
+    Callback = function()
+        local BuySeedRemote = game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyItem")
+        for _, seed in ipairs(shop.seedList) do
+            BuySeedRemote:FireServer(seed)
+            task.wait(0.1)
+        end
     end
 })
 
+-- ================== GEAR ==================
 Shop:Section({ Title = "Buy Gear", Icon = "package" })
 
 Shop:Dropdown({
@@ -585,32 +601,35 @@ Shop:Dropdown({
     end
 })
 
+-- Buy Selected Gears
 Shop:Toggle({
-    Title = "Auto Buy Gear (Selected)",
+    Title = "Buy Gear (Selected)",
     Default = false,
     Callback = function(state)
-        AutoBuySelectedGear = state
+        if state and #selectedGears > 0 then
+            local BuyGearRemote = game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyGear")
+            for _, gear in ipairs(selectedGears) do
+                BuyGearRemote:FireServer(gear)
+                task.wait(0.1)
+            end
+        end
     end
 })
 
-Shop:Toggle({
-    Title = "Auto Buy Gear (All)",
-    Default = false,
-    Callback = function(state)
-        AutoBuyAllGear = state
+-- Buy All Gears
+Shop:Button({
+    Title = "Buy Gear (All)",
+    Callback = function()
+        local BuyGearRemote = game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyGear")
+        for _, gear in ipairs(shop.gearList) do
+            BuyGearRemote:FireServer(gear)
+            task.wait(0.1)
+        end
     end
 })
 
+-- ================== PLATFORM ==================
 Shop:Section({ Title = "Buy Platform", Icon = "house" })
-
-local shop = {
-    PlatformList = {
-        "1","2","3","4","5","6","7","8","9","10",
-        "11","12","13","14","15","16","17"
-    }
-}
-
-local selectedPlatform = {}
 
 Shop:Dropdown({
     Title = "Select Platform",
@@ -622,14 +641,10 @@ Shop:Dropdown({
 })
 
 Shop:Toggle({
-    Title = "Auto Buy Platform (Selected)",
+    Title = "Buy Platform (Selected)",
     Default = false,
     Callback = function(state)
-        if state then
-            if #selectedPlatform == 0 then
-                return
-            end
-
+        if state and #selectedPlatform > 0 then
             local BuyPlatformRemote = game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyPlatform")
             for _, platform in ipairs(selectedPlatform) do
                 BuyPlatformRemote:FireServer(platform)
@@ -640,7 +655,7 @@ Shop:Toggle({
 })
 
 Shop:Button({
-    Title = "Buy Platforms (All)",
+    Title = "Buy Platform (All)",
     Callback = function()
         local BuyPlatformRemote = game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyPlatform")
         for _, platform in ipairs(shop.PlatformList) do
@@ -649,69 +664,6 @@ Shop:Button({
         end
     end
 })
-
--- ====================== LOOPS ======================
--- Selling loop
-task.spawn(function()
-    while task.wait(0.15) do
-        if SellBrainrot or SellPlant or SellEverything then
-            local remotes = GetRemotesFolder()
-            pcall(function()
-                if remotes and remotes:FindFirstChild("ItemSell") then
-                    remotes.ItemSell:FireServer()
-                else
-                    ReplicatedStorage.Remotes.ItemSell:FireServer()
-                end
-            end)
-        end
-    end
-end)
-
--- Auto buy loop (รวมทุกแบบและใช้ shop.table ให้ถูกต้อง)
-task.spawn(function()
-    while task.wait(0.1) do
-        -- Selected Gear
-        if AutoBuySelectedGear and #selectedGears > 0 then
-            for _, g in ipairs(selectedGears) do
-                local args = {g}
-                pcall(function()
-                    game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyGear"):FireServer(unpack(args))
-                end)
-                task.wait(0.1)
-            end
-        end
-        -- Selected Seed
-        if AutoBuySelectedSeed and #selectedSeeds > 0 then
-            for _, s in ipairs(selectedSeeds) do
-                local args = {s}
-                pcall(function()
-                    game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyItem"):FireServer(unpack(args))
-                end)
-                task.wait(0.1)
-            end
-        end
-        -- All Gear
-        if AutoBuyAllGear then
-            for _, g in ipairs(shop.gearList) do
-                local args = {g}
-                pcall(function()
-                    game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyGear"):FireServer(unpack(args))
-                end)
-                task.wait(0.1)
-            end
-        end
-        -- All Seed
-        if AutoBuyAllSeed then
-            for _, s in ipairs(shop.seedList) do
-                local args = {s}
-                pcall(function()
-                    game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("BuyItem"):FireServer(unpack(args))
-                end)
-                task.wait(0.1)
-            end
-        end
-    end
-end)
 
 -- ====================== MISC ======================
 Misc:Section({ Title = "Misc", Icon = "settings" })
