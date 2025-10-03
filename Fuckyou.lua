@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.5.9"
+local version = "3.6.0"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -763,6 +763,67 @@ Misc:Button({
             Duration = 2,
             Icon = "user-check",
         })
+    end
+})
+
+Misc:Button({
+    Title = "Find Old",
+    Description = "Find and connect to old servers",
+    Callback = function()
+        WindUI:Notify({
+            Title = "DYHUB Hope",
+            Content = "In progress: teleport to old server",
+            Duration = 2,
+            Icon = "user-check",
+        })
+        task.wait(1)
+
+        local Players = game:GetService("Players")
+        local TeleportService = game:GetService("TeleportService")
+        local HttpService = game:GetService("HttpService")
+
+        local player = Players.LocalPlayer
+        local placeId = game.PlaceId
+
+        local function findAndTeleportOldServer()
+            local endpoint = string.format("https://games.roblox.com/v1/games/%s/servers/Public?sortOrder=Asc&limit=100", tostring(placeId))
+            local success, result = pcall(function()
+                return HttpService:JSONDecode(game:HttpGet(endpoint))
+            end)
+
+            if not success or not result or not result.data then
+                WindUI:Notify({
+                    Title = "DYHUB Hope",
+                    Content = "Failed to fetch servers",
+                    Duration = 2,
+                    Icon = "alert-triangle",
+                })
+                return false
+            end
+
+            for _, server in ipairs(result.data) do
+                if server.id ~= game.JobId and server.playing < server.maxPlayers then
+                    WindUI:Notify({
+                        Title = "DYHUB Hope",
+                        Content = "Joining old server...",
+                        Duration = 2,
+                        Icon = "log-in",
+                    })
+                    TeleportService:TeleportToPlaceInstance(placeId, server.id, player)
+                    return true
+                end
+            end
+
+            WindUI:Notify({
+                Title = "DYHUB Hope",
+                Content = "No old servers found",
+                Duration = 2,
+                Icon = "x-circle",
+            })
+            return false
+        end
+
+        findAndTeleportOldServer()
     end
 })
 
