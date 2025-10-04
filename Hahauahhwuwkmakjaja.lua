@@ -1,5 +1,5 @@
 -- ======================
-local version = "4.3.6"
+local version = "4.4.9"
 -- ======================
 
 repeat task.wait() until game:IsLoaded()
@@ -47,6 +47,16 @@ local ESPGATE      = false
 local ESPPALLET    = false
 local ESPWINDOW    = false
 local ESPHOOK      = false
+
+local espEnabled = false
+local espSurvivor = false
+local espMurder = false
+local espGenerator = false
+local espGate = false
+local espHook = false
+local espPallet = false
+local espObjects = {}
+local espWindowEnabled = false
 
 local COLOR_SURVIVOR       = Color3.fromRGB(0,0,255)
 local COLOR_MURDERER       = Color3.fromRGB(255,0,0)
@@ -130,22 +140,15 @@ Window:EditOpenButton({
 local InfoTab = Window:Tab({ Title = "Information", Icon = "info" })
 local MainDivider = Window:Divider()
 local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
-local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
 local EspTab = Window:Tab({ Title = "Esp", Icon = "eye" })
+local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
+local Main1Divider = Window:Divider()
+local SurTab = Window:Tab({ Title = "Survivor", Icon = "user-check" })
+local killerTab = Window:Tab({ Title = "Killer", Icon = "swords" })
 
 Window:SelectTab(1)
 
 -- ====================== ESP SYSTEM ======================
-local espEnabled = false
-local espSurvivor = false
-local espMurder = false
-local espGenerator = false
-local espGate = false
-local espHook = false
-local espPallet = false
-local espObjects = {}
-local espWindowEnabled = false
-
 local function removeESP(obj)
     if espObjects[obj] then
         local data = espObjects[obj]
@@ -165,8 +168,6 @@ local function createESP(obj, baseColor)
         if data.nameLabel then data.nameLabel.TextColor3 = baseColor end
         return
     end
-
-    if obj:FindFirstChild("Bottom") then obj.Bottom.Transparency = 0 end
 
     local highlight = Instance.new("Highlight")
     highlight.Adornee = obj
@@ -190,7 +191,6 @@ local function createESP(obj, baseColor)
     local nameLabel = Instance.new("TextLabel")
     nameLabel.Size = UDim2.new(1,0,0.5,0)
     nameLabel.BackgroundTransparency = 1
-    nameLabel.TextScaled = false
     nameLabel.Font = Enum.Font.SourceSansBold
     nameLabel.TextSize = 14
     nameLabel.TextColor3 = baseColor
@@ -203,7 +203,6 @@ local function createESP(obj, baseColor)
     distLabel.Size = UDim2.new(1,0,0.5,0)
     distLabel.Position = UDim2.new(0,0,0.5,0)
     distLabel.BackgroundTransparency = 1
-    distLabel.TextScaled = false
     distLabel.Font = Enum.Font.SourceSansBold
     distLabel.TextSize = 14
     distLabel.TextColor3 = baseColor
@@ -228,16 +227,12 @@ end
 local function updateWindowESP()
     if not espEnabled then return end
     for _, folder in pairs(getMapFolders()) do
-        for _, windowModel in pairs(folder:GetDescendants()) do
+        for _, windowModel in pairs(folder:GetChildren()) do
             if windowModel:IsA("Model") and windowModel.Name == "Window" then
-                local bottomPart = windowModel:FindFirstChild("Bottom")
-                if bottomPart then
-                    bottomPart.Transparency = espWindowEnabled and 0 or 1
-                    if espWindowEnabled then
-                        createESP(windowModel, COLOR_WINDOW)
-                    else
-                        removeESP(windowModel)
-                    end
+                if espWindowEnabled then
+                    createESP(windowModel, COLOR_WINDOW)
+                else
+                    removeESP(windowModel)
                 end
             end
         end
@@ -245,13 +240,14 @@ local function updateWindowESP()
 end
 
 local lastUpdate = 0
-local updateInterval = 0.3
+local updateInterval = 0.5
 
 local function updateESP(dt)
     if not espEnabled then return end
     local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
 
+    -- Players
     for _, player in pairs(Players:GetPlayers()) do
         if player.Character and player.Character ~= LocalPlayer.Character and player.Character.Name ~= "Lobby" then
             local isMurderer = player.Character:FindFirstChild("Weapon") ~= nil
@@ -271,35 +267,33 @@ local function updateESP(dt)
         end
     end
 
+    -- Objects
     for _, folder in pairs(getMapFolders()) do
-        for _, obj in pairs(folder:GetDescendants()) do
-            if obj:IsA("Model") or obj:IsA("BasePart") then
-                if obj.Name == "Generator" then
-                    if espGenerator then
-                        local hitbox = obj:FindFirstChild("HitBox")
-                        local pointLight = hitbox and hitbox:FindFirstChildOfClass("PointLight")
-                        local color = COLOR_GENERATOR
-                        if pointLight and pointLight.Color == Color3.fromRGB(126,255,126) then
-                            color = COLOR_GENERATOR_DONE
-                        end
-                        createESP(obj, color)
-                    else removeESP(obj) end
+        for _, obj in pairs(folder:GetChildren()) do
+            if obj.Name == "Generator" and espGenerator then
+                local hitbox = obj:FindFirstChild("HitBox")
+                local pointLight = hitbox and hitbox:FindFirstChildOfClass("PointLight")
+                local color = COLOR_GENERATOR
+                if pointLight and pointLight.Color == Color3.fromRGB(126,255,126) then
+                    color = COLOR_GENERATOR_DONE
                 end
-                if obj.Name == "Gate" then
-                    if espGate then createESP(obj, COLOR_GATE) else removeESP(obj) end
-                end
-                if obj.Name == "Hook" and obj:FindFirstChild("Model") then
-                    if espHook then createESP(obj.Model, COLOR_HOOK) else removeESP(obj.Model) end
-                end
-                if obj.Name == "Palletwrong" then
-                    if espPallet then createESP(obj, COLOR_PALLET) else removeESP(obj) end
-                end
+                createESP(obj, color)
+            elseif obj.Name == "Gate" and espGate then
+                createESP(obj, COLOR_GATE)
+            elseif obj.Name == "Hook" and espHook then
+                local mdl = obj:FindFirstChild("Model")
+                if mdl then createESP(mdl, COLOR_HOOK) end
+            elseif obj.Name == "Palletwrong" and espPallet then
+                createESP(obj, COLOR_PALLET)
+            else
+                if espObjects[obj] then removeESP(obj) end
             end
         end
     end
 
     updateWindowESP()
 
+    -- Distance update
     for obj,data in pairs(espObjects) do
         if obj and obj.Parent and obj.Name ~= "Lobby" then
             local targetPart = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
@@ -307,6 +301,8 @@ local function updateESP(dt)
                 local dist = math.floor((hrp.Position - targetPart.Position).Magnitude)
                 data.distLabel.Text = "["..dist.."m]"
             end
+        else
+            removeESP(obj)
         end
     end
 end
@@ -319,10 +315,6 @@ RunService.RenderStepped:Connect(function(dt)
     end
 end)
 
-Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function() task.wait(1) end)
-end)
-
 Players.PlayerRemoving:Connect(function(player)
     if player.Character then removeESP(player.Character) end
 end)
@@ -332,7 +324,6 @@ EspTab:Toggle({Title="Enable ESP", Default=false, Callback=function(v)
     espEnabled = v
     if not espEnabled then
         for obj,_ in pairs(espObjects) do
-            if obj:FindFirstChild("Bottom") then obj.Bottom.Transparency = 1 end
             removeESP(obj)
         end
     else
@@ -343,7 +334,7 @@ end})
 
 EspTab:Section({ Title = "Esp Role", Icon = "settings" })
 EspTab:Toggle({Title="ESP Survivor", Default=ESPSURVIVOR, Callback=function(v) espSurvivor=v end})
-EspTab:Toggle({Title="ESP Murderer", Default=ESPMURDER, Callback=function(v) espMurder=v end})
+EspTab:Toggle({Title="ESP Killer", Default=ESPMURDER, Callback=function(v) espMurder=v end})
 
 EspTab:Section({ Title = "Esp Engine", Icon = "biceps-flexed" })
 EspTab:Toggle({Title="ESP Generator", Default=ESPGENERATOR, Callback=function(v) espGenerator=v end})
@@ -353,7 +344,6 @@ EspTab:Section({ Title = "Esp Object", Icon = "package" })
 EspTab:Toggle({Title="ESP Pallet", Default=ESPPALLET, Callback=function(v) espPallet=v end})
 EspTab:Toggle({Title="ESP Hook", Default=ESPHOOK, Callback=function(v) espHook=v end})
 EspTab:Toggle({Title="ESP Window", Default=ESPWINDOW, Callback=function(v) espWindowEnabled=v; updateWindowESP() end})
-
 
 -- ====================== NO FLASHLIGHT ======================
 local noFlashlightEnabled = false
@@ -450,7 +440,7 @@ end
 -- UI Toggle
 MainTab:Section({ Title = "Feature Bypass", Icon = "lock-open" })
 MainTab:Toggle({
-    Title = "Bypass Gate (Beta)",
+    Title = "Bypass Gate (Fixed)",
     Default = false,
     Callback = function(state)
         bypassGateEnabled = state
@@ -459,15 +449,16 @@ MainTab:Toggle({
 })
 
 -- ====================== AUTO GENERATOR ======================
-local autoGeneratorEnabled = false
+SurTab:Section({ Title = "Feature Survivor", Icon = "user" })
 
-MainTab:Section({ Title = "Feature Cheat", Icon = "zap" })
-MainTab:Toggle({
-    Title = "Auto Generator (Beta)",
+killerTab:Toggle({Title="Auto Parry (Soon)", Default=false, Callback=function(v) noFlashlightEnabled=v end})
+
+local autoGeneratorEnabled = false
+SurTab:Toggle({
+    Title = "Auto Generator (No Puzzle)",
     Default = false,
     Callback = function(v)
         autoGeneratorEnabled = v
-
         if autoGeneratorEnabled then
             task.spawn(function()
                 local Players = game:GetService("Players")
@@ -479,25 +470,25 @@ MainTab:Toggle({
                     local char = player.Character
                     local root = char and char:FindFirstChild("HumanoidRootPart")
                     if root then
-                        local generators = workspace:WaitForChild("Map"):GetChildren()
-                        local closestGen = nil
-                        local closestDist = 20
+                        local folders = getMapFolders()
+                        local closestGen, closestDist = nil, 20
 
-                        for _, gen in ipairs(generators) do
-                            if gen.Name == "Generator" and gen:IsA("Model") then
-                                local primary = gen:FindFirstChild("PrimaryPart") or gen:FindFirstChildWhichIsA("BasePart")
-                                if primary then
-                                    local dist = (root.Position - primary.Position).Magnitude
-                                    if dist <= closestDist then
-                                        closestDist = dist
-                                        closestGen = gen
+                        for _, folder in ipairs(folders) do
+                            for _, gen in ipairs(folder:GetChildren()) do
+                                if gen.Name == "Generator" and gen:IsA("Model") then
+                                    local primary = gen:FindFirstChild("PrimaryPart") or gen:FindFirstChildWhichIsA("BasePart")
+                                    if primary then
+                                        local dist = (root.Position - primary.Position).Magnitude
+                                        if dist <= closestDist then
+                                            closestDist = dist
+                                            closestGen = gen
+                                        end
                                     end
                                 end
                             end
                         end
 
                         if closestGen then
-                            -- ยิงทุกจุดพร้อมกัน
                             for i = 1, 4 do
                                 local point = closestGen:FindFirstChild("GeneratorPoint" .. i)
                                 if point then
@@ -507,14 +498,99 @@ MainTab:Toggle({
                             end
                         end
                     end
-                    task.wait(1) -- สแกนทุก 1 วิ
+                    task.wait(1)
                 end
             end)
         end
     end
 })
 
-MainTab:Toggle({Title="No Flashlight", Default=false, Callback=function(v) noFlashlightEnabled=v end})
+local autoLeverEnabled = false
+SurTab:Toggle({
+    Title = "Auto Lever (No Hold)",
+    Default = false,
+    Callback = function(v)
+        autoLeverEnabled = v
+        if autoLeverEnabled then
+            task.spawn(function()
+                local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                local remote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Exit"):WaitForChild("LeverEvent")
+                while autoLeverEnabled do
+                    local folders = getMapFolders()
+                    for _, folder in ipairs(folders) do
+                        local gate = folder:FindFirstChild("Gate")
+                        if gate and gate:FindFirstChild("ExitLever") then
+                            local main = gate.ExitLever:FindFirstChild("Main")
+                            if main then
+                                remote:FireServer(main, true)
+                            end
+                        end
+                    end
+                    task.wait(2)
+                end
+            end)
+        end
+    end
+})
+
+SurTab:Section({ Title = "Feature Heal", Icon = "cross" })
+
+-- Auto Heal
+local autoHealEnabled = false
+SurTab:Toggle({
+    Title = "Auto Heal (No Puzzle)",
+    Default = false,
+    Callback = function(v)
+        autoHealEnabled = v
+        if autoHealEnabled then
+            task.spawn(function()
+                local Players = game:GetService("Players")
+                local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                local remote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Healing"):WaitForChild("SkillCheckResultEvent")
+                local player = Players.LocalPlayer
+
+                while autoHealEnabled do
+                    local char = player.Character
+                    local root = char and char:FindFirstChild("HumanoidRootPart")
+                    if root then
+                        local closestTarget = nil
+                        local closestDist = 10
+
+                        for _, plr in ipairs(Players:GetPlayers()) do
+                            if plr ~= player and plr.Character then
+                                local targetRoot = plr.Character:FindFirstChild("HumanoidRootPart")
+                                if targetRoot then
+                                    local dist = (root.Position - targetRoot.Position).Magnitude
+                                    if dist <= closestDist then
+                                        closestDist = dist
+                                        closestTarget = plr.Character
+                                    end
+                                end
+                            end
+                        end
+
+                        if closestTarget then
+                            local args = {"success", 1, closestTarget}
+                            remote:FireServer(unpack(args))
+                        end
+                    end
+                    task.wait(1)
+                end
+            end)
+        end
+    end
+})
+
+-- ====================== KILLER ======================
+killerTab:Section({ Title = "Feature Killer", Icon = "swords" })
+
+killerTab:Toggle({Title="Kill All (Soon)", Default=false, Callback=function(v) noFlashlightEnabled=v end})
+killerTab:Toggle({Title="Anti Parry (Soon)", Default=false, Callback=function(v) noFlashlightEnabled=v end})
+
+killerTab:Section({ Title = "Feature Cheat", Icon = "crown" })
+
+killerTab:Toggle({Title="No Cooldown (Soon)", Default=false, Callback=function(v) noFlashlightEnabled=v end})
+killerTab:Toggle({Title="No Flashlight (Beta)", Default=false, Callback=function(v) noFlashlightEnabled=v end})
 
 -- ====================== VISUAL ======================
 MainTab:Section({ Title = "Feature Visual", Icon = "lightbulb" })
