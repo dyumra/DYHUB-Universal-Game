@@ -1,4 +1,4 @@
--- V12
+-- V13
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -30,8 +30,9 @@ local finalCFrame2 = CFrame.new(-16710.6602, 576.828796, -20.0188751)
 
 -- ✅ skill args
 local skillArgs = {
-	"TriRoar",
-	"TriRoar"
+	"Beserk",
+	"TigerPlumit",
+	vector.create(-16710.6602, 576.828796, -20.0188751)
 }
 
 -- ✅ ฟังก์ชันกด ProximityPrompt อัตโนมัติ
@@ -113,7 +114,7 @@ local function startTeleport()
         task.spawn(function()
             while task.wait(0.35) do
                 if not looping then break end
-                ReplicatedStorage:WaitForChild("Events"):WaitForChild("WolfBossEvent"):FireServer(unpack(skillArgs))
+                ReplicatedStorage:WaitForChild("Events"):WaitForChild("Skill"):FireServer(unpack(skillArgs))
             end
         end)
 
