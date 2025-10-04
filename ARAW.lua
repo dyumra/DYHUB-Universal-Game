@@ -1,4 +1,4 @@
--- V13
+-- V14
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -34,6 +34,20 @@ local skillArgs = {
 	"TigerPlumit",
 	vector.create(-16710.6602, 576.828796, -20.0188751)
 }
+
+local args2 = {
+	"Beserk",
+	"HollowNuke",
+	vector.create(-16710.6602, 576.828796, -20.0188751)
+}
+
+local args1 = {
+	{
+		Key = "GojoDomain",
+		Function = "Active"
+	}
+}
+
 
 -- ✅ ฟังก์ชันกด ProximityPrompt อัตโนมัติ
 local function activateProximityPrompts()
@@ -112,9 +126,13 @@ local function startTeleport()
 
         -- ✅ ยิงสกิลรัวๆ (จนกว่าบอสจะตาย)
         task.spawn(function()
-            while task.wait(0.35) do
+            while task.wait(0.25) do
                 if not looping then break end
                 ReplicatedStorage:WaitForChild("Events"):WaitForChild("Skill"):FireServer(unpack(skillArgs))
+                task.wait(0.25)
+                ReplicatedStorage:WaitForChild("Events"):WaitForChild("Skill"):FireServer(unpack(args2))
+				task.wait(0.25)
+                ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ServerRemote"):FireServer(unpack(args1))
             end
         end)
 
