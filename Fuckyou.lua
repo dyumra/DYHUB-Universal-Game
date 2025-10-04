@@ -1,5 +1,5 @@
 -- =========================
-local version = "3.6.1"
+local version = "3.6.2"
 -- =========================
 
 repeat task.wait() until game:IsLoaded()
@@ -81,7 +81,8 @@ local shop = {
         "Carnivorous Plant Seed",
         "Mr Carrot Seed",
         "Tomatrio Seed",
-        "Shroombino Seed"
+        "Shroombino Seed",
+        "Mango Seed"
     },
 
     gearList = {
