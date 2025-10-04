@@ -1,5 +1,5 @@
 -- ======================
-local version = "4.6.5"
+local version = "4.6.8"
 -- ======================
 
 repeat task.wait() until game:IsLoaded()
@@ -41,6 +41,41 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 
 -- ====================== ESP SETTINGS ======================
 
+-- Toggle values
+local ESPSURVIVOR  = false
+local ESPMURDER    = false
+local ESPGENERATOR = false
+local ESPGATE      = false
+local ESPPALLET    = false
+local ESPWINDOW    = false
+local ESPHOOK      = false
+
+-- Color config
+local COLOR_SURVIVOR       = Color3.fromRGB(0,0,255)
+local COLOR_MURDERER       = Color3.fromRGB(255,0,0)
+local COLOR_GENERATOR      = Color3.fromRGB(255,255,255)
+local COLOR_GENERATOR_DONE = Color3.fromRGB(0,255,0)
+local COLOR_GATE           = Color3.fromRGB(255,255,255)
+local COLOR_PALLET         = Color3.fromRGB(255,255,0)
+local COLOR_OUTLINE        = Color3.fromRGB(0,0,0)
+local COLOR_WINDOW         = Color3.fromRGB(255,165,0)
+local COLOR_HOOK           = Color3.fromRGB(255,0,0)
+
+-- State flags
+local espEnabled = false
+local espSurvivor = false
+local espMurder = false
+local espGenerator = false
+local espGate = false
+local espHook = false
+local espPallet = false
+local espWindowEnabled = false
+
+-- Label toggles
+local ShowName = true
+local ShowDistance = true
+local ShowHP = true
+local ShowHighlight = true
 
 -- ====================== WINDOW ======================
 local Players = game:GetService("Players")
@@ -123,42 +158,6 @@ local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
 Window:SelectTab(1)
 
 -- ====================== ESP SYSTEM ======================
--- Toggle values
-local ESPSURVIVOR  = false
-local ESPMURDER    = false
-local ESPGENERATOR = false
-local ESPGATE      = false
-local ESPPALLET    = false
-local ESPWINDOW    = false
-local ESPHOOK      = false
-
--- Color config
-local COLOR_SURVIVOR       = Color3.fromRGB(0,0,255)
-local COLOR_MURDERER       = Color3.fromRGB(255,0,0)
-local COLOR_GENERATOR      = Color3.fromRGB(255,255,255)
-local COLOR_GENERATOR_DONE = Color3.fromRGB(0,255,0)
-local COLOR_GATE           = Color3.fromRGB(255,255,255)
-local COLOR_PALLET         = Color3.fromRGB(255,255,0)
-local COLOR_OUTLINE        = Color3.fromRGB(0,0,0)
-local COLOR_WINDOW         = Color3.fromRGB(255,165,0)
-local COLOR_HOOK           = Color3.fromRGB(255,0,0)
-
--- State flags
-local espEnabled = false
-local espSurvivor = false
-local espMurder = false
-local espGenerator = false
-local espGate = false
-local espHook = false
-local espPallet = false
-local espWindowEnabled = false
-
--- Label toggles
-local ShowName = true
-local ShowDistance = true
-local ShowHP = true
-local ShowHighlight = true
-
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
@@ -418,7 +417,7 @@ end)
 
 -- GUI toggle callbacks (example, replace with your actual GUI lib if needed)
 EspTab:Section({ Title = "Feature Esp", Icon = "eye" })
-EspTab:Toggle({Title="Enable ESP", Default=false, Callback=function(v)
+EspTab:Toggle({Title="Enable ESP", Value=false, Callback=function(v)
     espEnabled = v
     if not espEnabled then
         for obj,_ in pairs(espObjects) do removeESP(obj) end
@@ -429,26 +428,26 @@ EspTab:Toggle({Title="Enable ESP", Default=false, Callback=function(v)
 end})
 
 EspTab:Section({ Title = "Esp Role", Icon = "settings" })
-EspTab:Toggle({Title="ESP Survivor", Default=false, Callback=function(v) espSurvivor=v end})
-EspTab:Toggle({Title="ESP Killer", Default=false, Callback=function(v) espMurder=v end})
+EspTab:Toggle({Title="ESP Survivor", Value=false, Callback=function(v) espSurvivor=v end})
+EspTab:Toggle({Title="ESP Killer", Value=false, Callback=function(v) espMurder=v end})
 
 EspTab:Section({ Title = "Esp Engine", Icon = "biceps-flexed" })
-EspTab:Toggle({Title="ESP Generator", Default=false, Callback=function(v) espGenerator=v end})
-EspTab:Toggle({Title="ESP Gate", Default=false, Callback=function(v) espGate=v end})
+EspTab:Toggle({Title="ESP Generator", Value=false, Callback=function(v) espGenerator=v end})
+EspTab:Toggle({Title="ESP Gate", Value=false, Callback=function(v) espGate=v end})
 
 EspTab:Section({ Title = "Esp Object", Icon = "package" })
-EspTab:Toggle({Title="ESP Pallet", Default=false, Callback=function(v) espPallet=v end})
-EspTab:Toggle({Title="ESP Hook", Default=false, Callback=function(v) espHook=v end})
-EspTab:Toggle({Title="ESP Window", Default=false, Callback=function(v)
+EspTab:Toggle({Title="ESP Pallet", Value=false, Callback=function(v) espPallet=v end})
+EspTab:Toggle({Title="ESP Hook", Value=false, Callback=function(v) espHook=v end})
+EspTab:Toggle({Title="ESP Window", Value=false, Callback=function(v)
     espWindowEnabled=v
     updateWindowESP()
 end})
 
 EspTab:Section({ Title = "Esp Settings", Icon = "settings" })
-EspTab:Toggle({Title="Show Name", Default=ShowName, Callback=function(v) ShowName=v end})
-EspTab:Toggle({Title="Show Distance", Default=ShowDistance, Callback=function(v) ShowDistance=v end})
-EspTab:Toggle({Title="Show Health", Default=ShowHP, Callback=function(v) ShowHP=v end})
-EspTab:Toggle({Title="Show Highlight", Default=ShowHighlight, Callback=function(v) ShowHighlight=v end})
+EspTab:Toggle({Title="Show Name", Value=ShowName, Callback=function(v) ShowName=v end})
+EspTab:Toggle({Title="Show Distance", Value=ShowDistance, Callback=function(v) ShowDistance=v end})
+EspTab:Toggle({Title="Show Health", Value=ShowHP, Callback=function(v) ShowHP=v end})
+EspTab:Toggle({Title="Show Highlight", Value=ShowHighlight, Callback=function(v) ShowHighlight=v end})
 
 -- ====================== NO FLASHLIGHT ======================
 local noFlashlightEnabled = false
@@ -546,7 +545,7 @@ end
 MainTab:Section({ Title = "Feature Bypass", Icon = "lock-open" })
 MainTab:Toggle({
     Title = "Bypass Gate (Fixed)",
-    Default = false,
+    Value = false,
     Callback = function(state)
         bypassGateEnabled = state
         setGateState(state)
@@ -560,7 +559,7 @@ local autoparry = false
 
 SurTab:Toggle({
     Title = "Auto Parry (Dagger)",
-    Default = false,
+    Value = false,
     Callback = function(v)
         autoparry = v
         if autoparry then
@@ -588,7 +587,7 @@ SurTab:Toggle({
                             end
                         end
                     end
-                    task.wait(0.15)
+                    task.wait(0.05)
                 end
             end)
         end
@@ -598,7 +597,7 @@ SurTab:Toggle({
 local autoGeneratorEnabled = false
 SurTab:Toggle({
     Title = "Auto Generator (No Puzzle)",
-    Default = false,
+    Value = false,
     Callback = function(v)
         autoGeneratorEnabled = v
         if autoGeneratorEnabled then
@@ -640,7 +639,7 @@ SurTab:Toggle({
                             end
                         end
                     end
-                    task.wait(1)
+                    task.wait(0.5)
                 end
             end)
         end
@@ -650,7 +649,7 @@ SurTab:Toggle({
 local autoLeverEnabled = false
 SurTab:Toggle({
     Title = "Auto Lever (No Hold)",
-    Default = false,
+    Value = false,
     Callback = function(v)
         autoLeverEnabled = v
         if autoLeverEnabled then
@@ -668,7 +667,7 @@ SurTab:Toggle({
                             end
                         end
                     end
-                    task.wait(2)
+                    task.wait(3.5)
                 end
             end)
         end
@@ -681,7 +680,7 @@ SurTab:Section({ Title = "Feature Heal", Icon = "cross" })
 local autoHealEnabled = false
 SurTab:Toggle({
     Title = "Auto Heal (No Puzzle)",
-    Default = false,
+    Value = false,
     Callback = function(v)
         autoHealEnabled = v
         if autoHealEnabled then
@@ -716,7 +715,7 @@ SurTab:Toggle({
                             remote:FireServer(unpack(args))
                         end
                     end
-                    task.wait(1)
+                    task.wait(0.1)
                 end
             end)
         end
@@ -726,8 +725,8 @@ SurTab:Toggle({
 -- ====================== KILLER ======================
 killerTab:Section({ Title = "Feature Killer", Icon = "swords" })
 
-killerTab:Toggle({Title="Kill All (Soon)", Default=false, Callback=function(v) noFlashlightEnabled=v end})
-killerTab:Toggle({Title="Anti Parry (Soon)", Default=false, Callback=function(v) noFlashlightEnabled=v end})
+killerTab:Toggle({Title="Kill All (Soon)", Value=false, Callback=function(v) noFlashlightEnabled=v end})
+killerTab:Toggle({Title="Anti Parry (Soon)", Value=false, Callback=function(v) noFlashlightEnabled=v end})
 
 killerTab:Section({ Title = "Feature No-Cooldown", Icon = "crown" })
 
@@ -735,7 +734,7 @@ local nocooldownskillEnabled = false
 
 killerTab:Toggle({
     Title = "Auto Attack (No Animation)",
-    Default = false,
+    Value = false,
     Callback = function(v)
         nocooldownskillEnabled = v
         if nocooldownskillEnabled then
@@ -778,17 +777,17 @@ killerTab:Toggle({
 
 killerTab:Section({ Title = "Feature Cheat", Icon = "bug" })
 
-killerTab:Toggle({Title="No Flashlight (Beta)", Default=false, Callback=function(v) noFlashlightEnabled=v end})
+killerTab:Toggle({Title="No Flashlight (Beta)", Value=false, Callback=function(v) noFlashlightEnabled=v end})
 
 -- ====================== VISUAL ======================
 MainTab:Section({ Title = "Feature Visual", Icon = "lightbulb" })
-MainTab:Toggle({Title="Full Bright", Default=false, Callback=function(v)
+MainTab:Toggle({Title="Full Bright", Value=false, Callback=function(v)
     Lighting.Brightness = v and 2 or 1
     Lighting.ClockTime = v and 14 or 12
     Lighting.Ambient = v and Color3.fromRGB(255,255,255) or Color3.fromRGB(128,128,128)
 end})
 
-MainTab:Toggle({Title="No Fog", Default=false, Callback=function(v)
+MainTab:Toggle({Title="No Fog", Value=false, Callback=function(v)
     Lighting.Atmosphere.Density = v and 0 or 0.5
 end})
 
@@ -797,9 +796,9 @@ local speedEnabled, flyNoclipSpeed = false, 3
 local speedConnection, noclipConnection
 
 PlayerTab:Section({ Title = "Feature Player", Icon = "rabbit" })
-PlayerTab:Slider({ Title = "Set Speed Value", Value={Min=1,Max=10,Default=3}, Step=1, Callback=function(val) flyNoclipSpeed=val end })
+PlayerTab:Slider({ Title = "Set Speed Value", Value={Min=1,Max=10,Value=3}, Step=1, Callback=function(val) flyNoclipSpeed=val end })
 
-PlayerTab:Toggle({ Title = "Enable Speed", Default=false, Callback=function(v)
+PlayerTab:Toggle({ Title = "Enable Speed", Value=false, Callback=function(v)
     speedEnabled=v
     if speedEnabled then
         if speedConnection then speedConnection:Disconnect() end
@@ -815,7 +814,7 @@ PlayerTab:Toggle({ Title = "Enable Speed", Default=false, Callback=function(v)
 end })
 
 PlayerTab:Section({ Title = "Feature Power", Icon = "flame" })
-PlayerTab:Toggle({ Title = "No Clip", Default=false, Callback=function(state)
+PlayerTab:Toggle({ Title = "No Clip", Value=false, Callback=function(state)
     if state then
         noclipConnection=RunService.Stepped:Connect(function()
             local char=LocalPlayer.Character
@@ -838,7 +837,7 @@ end })
 
 -- ====================== INFINITE JUMP ======================
 local infiniteJumpEnabled = false
-PlayerTab:Toggle({ Title = "Infinite Jump", Default = false, Callback = function(state) infiniteJumpEnabled = state end })
+PlayerTab:Toggle({ Title = "Infinite Jump", Value = false, Callback = function(state) infiniteJumpEnabled = state end })
 
 UserInputService.JumpRequest:Connect(function()
     if infiniteJumpEnabled and Humanoid then
