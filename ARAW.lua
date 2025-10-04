@@ -1,3 +1,5 @@
+-- V12
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local StarterGui = game:GetService("StarterGui")
@@ -28,9 +30,8 @@ local finalCFrame2 = CFrame.new(-16710.6602, 576.828796, -20.0188751)
 
 -- ✅ skill args
 local skillArgs = {
-    [1] = "L",
-    [2] = "FateStorm",
-    [3] = CFrame.new(-1717.7021, 195.9434, -392.0003)
+	"TriRoar",
+	"TriRoar"
 }
 
 -- ✅ ฟังก์ชันกด ProximityPrompt อัตโนมัติ
@@ -110,9 +111,9 @@ local function startTeleport()
 
         -- ✅ ยิงสกิลรัวๆ (จนกว่าบอสจะตาย)
         task.spawn(function()
-            while task.wait(0) do
+            while task.wait(0.35) do
                 if not looping then break end
-                ReplicatedStorage:WaitForChild("Events"):WaitForChild("Skill"):FireServer(unpack(skillArgs))
+                ReplicatedStorage:WaitForChild("Events"):WaitForChild("WolfBossEvent"):FireServer(unpack(skillArgs))
             end
         end)
 
