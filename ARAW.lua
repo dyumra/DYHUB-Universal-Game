@@ -9,7 +9,7 @@ local playerGui = player:WaitForChild("PlayerGui")
 local function notify(text)
     pcall(function()
         StarterGui:SetCore("SendNotification", {
-            Title = "🛡️ DYHUB",
+            Title = "🛡️ DYHUB | V2",
             Text = text,
             Duration = 3
         })
@@ -21,32 +21,31 @@ notify("DYHUB Loaded! for Anime Rails")
 local looping = false
 local moving = false
 
-local targetCFrame = CFrame.new(
-    -16436.0254, 167.425308, 21.7240829,
-    -8.10623169e-05, 8.10623169e-05, 1,
-    1, -8.10623169e-05, 8.10623169e-05,
-    8.10623169e-05, 1, -8.10623169e-05
-)
-local targetPosition = targetCFrame.Position
+-- ✅ จุดวาร์ป
+local targetCFrame = CFrame.new(-16436.0254, 167.425308, 21.7240829)
+local finalCFrame = CFrame.new(-16413.0449, 168.362885, 36.4172363)
+local finalCFrame2 = CFrame.new(-16710.6602, 576.828796, -20.0188751)
 
-local finalCFrame = CFrame.new(
-    -16413.0449, 168.362885, 36.4172363,
-    0.609278917, -5.05710762e-09, 0.792955995,
-    2.53511234e-09, 1, 4.42964954e-09,
-    -0.792955995, -6.88659518e-10, 0.609278917
-)
-
+-- ✅ skill args
 local skillArgs = {
     [1] = "L",
     [2] = "FateStorm",
-    [3] = CFrame.new(
-        -1717.7021484375, 195.94349670410156, -392.0003662109375,
-        0.662624716758728, -0.0859827920794487, 0.7439996004104614,
-        -0, 0.9933881163597107, 0.11480420082807541,
-        -0.7489516139030457, -0.07607210427522659, 0.6582435369491577
-    )
+    [3] = CFrame.new(-1717.7021, 195.9434, -392.0003)
 }
 
+-- ✅ ฟังก์ชันกด ProximityPrompt อัตโนมัติ
+local function activateProximityPrompts()
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("ProximityPrompt") then
+            obj.HoldDuration = 0
+            pcall(function()
+                fireproximityprompt(obj)
+            end)
+        end
+    end
+end
+
+-- ✅ ฟังก์ชันวาร์ปหลัก
 local function startTeleport()
     local char = player.Character
     if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChildOfClass("Humanoid") then
@@ -57,7 +56,7 @@ local function startTeleport()
         local elapsed = 0
         moving = true
 
-        -- ยกสูง + ป้องกันตก
+        -- กันตก
         local platform = Instance.new("Part")
         platform.Size = Vector3.new(10, 1, 10)
         platform.Position = hrp.Position - Vector3.new(0, 3, 0)
@@ -77,11 +76,11 @@ local function startTeleport()
 
         while elapsed < duration and moving do
             local alpha = elapsed / duration
-            local newPos = startPos:Lerp(targetPosition, alpha)
+            local newPos = startPos:Lerp(targetCFrame.Position, alpha)
             newPos = Vector3.new(newPos.X, newPos.Y + 50, newPos.Z)
-            hrp.CFrame = CFrame.new(newPos, newPos + targetCFrame.LookVector)
+            hrp.CFrame = CFrame.new(newPos)
 
-            local distance = (newPos - targetPosition).Magnitude
+            local distance = (newPos - targetCFrame.Position).Magnitude
             if distance < 10 then
                 break
             end
@@ -93,18 +92,27 @@ local function startTeleport()
         noclipConnection:Disconnect()
         platform:Destroy()
 
-        -- ✅ รอ 5 วิ ก่อนวาร์ปทับ
         notify("Arrived! Waiting 5 seconds...")
         task.wait(5)
 
+        -- ✅ วาร์ปไปจุดแรก
         hrp.CFrame = finalCFrame
+        notify("First Teleport Done!")
+
+        -- ✅ กด ProximityPrompt
+        activateProximityPrompts()
+        notify("ProximityPrompt Activated! Waiting 5s...")
+        task.wait(6.9)
+
+        -- ✅ วาร์ปไปจุดสอง
+        hrp.CFrame = finalCFrame2
         notify("Final Teleport Done!")
 
-        -- ✅ ยิง Skill 500 ครั้ง
+        -- ✅ ยิงสกิลรัวๆ (จนกว่าบอสจะตาย)
         task.spawn(function()
-            for i = 1, 500 do
+            while task.wait(0) do
+                if not looping then break end
                 ReplicatedStorage:WaitForChild("Events"):WaitForChild("Skill"):FireServer(unpack(skillArgs))
-                task.wait(2/500)
             end
         end)
 
@@ -112,7 +120,7 @@ local function startTeleport()
     end
 end
 
--- ปุ่มกดเดิม
+-- ✅ GUI
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "DYHUB | Auto Win | Anime Rails"
 screenGui.ResetOnSpawn = false
@@ -173,7 +181,7 @@ end)
 
 local warnLabel = Instance.new("TextLabel", mainFrame)
 warnLabel.Size = UDim2.new(0.9, 0, 0, 40)
-warnLabel.Position = UDim2.new(0.05, 0, 0, 230)
+warnLabel.Position = UDim2.new(0.05, 0, 0, 120)
 warnLabel.Text = "⚠️ Be careful, Please press only once for the Auto-Win to run."
 warnLabel.Font = Enum.Font.GothamBold
 warnLabel.TextScaled = true
