@@ -1,5 +1,5 @@
 -- ======================
-local version = "4.6.3"
+local version = "4.6.5"
 -- ======================
 
 repeat task.wait() until game:IsLoaded()
@@ -40,39 +40,7 @@ local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 -- ====================== ESP SETTINGS ======================
-local ESPSURVIVOR  = false
-local ESPMURDER    = false
-local ESPGENERATOR = false
-local ESPGATE      = false
-local ESPPALLET    = false
-local ESPWINDOW    = false
-local ESPHOOK      = false
 
-local COLOR_SURVIVOR       = Color3.fromRGB(0,0,255)
-local COLOR_MURDERER       = Color3.fromRGB(255,0,0)
-local COLOR_GENERATOR      = Color3.fromRGB(255,255,255)
-local COLOR_GENERATOR_DONE = Color3.fromRGB(0,255,0)
-local COLOR_GATE           = Color3.fromRGB(255,255,255)
-local COLOR_PALLET         = Color3.fromRGB(255,255,0)
-local COLOR_OUTLINE        = Color3.fromRGB(0,0,0)
-local COLOR_WINDOW         = Color3.fromRGB(255,165,0)
-local COLOR_HOOK           = Color3.fromRGB(255,0,0)
-
-local espEnabled = false
-local espSurvivor = false
-local espMurder = false
-local espGenerator = false
-local espGate = false
-local espHook = false
-local espPallet = false
-local espWindowEnabled = false
-
-local ShowName = true
-local ShowDistance = true
-local ShowHP = true
-local ShowHighlight = true
-
-local espObjects = {}
 
 -- ====================== WINDOW ======================
 local Players = game:GetService("Players")
@@ -155,6 +123,46 @@ local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
 Window:SelectTab(1)
 
 -- ====================== ESP SYSTEM ======================
+-- Toggle values
+local ESPSURVIVOR  = false
+local ESPMURDER    = false
+local ESPGENERATOR = false
+local ESPGATE      = false
+local ESPPALLET    = false
+local ESPWINDOW    = false
+local ESPHOOK      = false
+
+-- Color config
+local COLOR_SURVIVOR       = Color3.fromRGB(0,0,255)
+local COLOR_MURDERER       = Color3.fromRGB(255,0,0)
+local COLOR_GENERATOR      = Color3.fromRGB(255,255,255)
+local COLOR_GENERATOR_DONE = Color3.fromRGB(0,255,0)
+local COLOR_GATE           = Color3.fromRGB(255,255,255)
+local COLOR_PALLET         = Color3.fromRGB(255,255,0)
+local COLOR_OUTLINE        = Color3.fromRGB(0,0,0)
+local COLOR_WINDOW         = Color3.fromRGB(255,165,0)
+local COLOR_HOOK           = Color3.fromRGB(255,0,0)
+
+-- State flags
+local espEnabled = false
+local espSurvivor = false
+local espMurder = false
+local espGenerator = false
+local espGate = false
+local espHook = false
+local espPallet = false
+local espWindowEnabled = false
+
+-- Label toggles
+local ShowName = true
+local ShowDistance = true
+local ShowHP = true
+local ShowHighlight = true
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local espObjects = {}
 
 -- Remove ESP from object
 local function removeESP(obj)
@@ -168,7 +176,7 @@ local function removeESP(obj)
     end
 end
 
--- Create or update ESP
+-- Create ESP
 local function createESP(obj, baseColor)
     if not obj or obj.Name == "Lobby" then return end
     if espObjects[obj] then
@@ -223,7 +231,7 @@ local function createESP(obj, baseColor)
     hpLabel.TextColor3 = baseColor
     hpLabel.TextStrokeColor3 = COLOR_OUTLINE
     hpLabel.TextStrokeTransparency = 0
-    hpLabel.Text = "[ 00 HP ]"
+    hpLabel.Text = ""
     hpLabel.Parent = frame
 
     local distLabel = Instance.new("TextLabel")
@@ -235,7 +243,7 @@ local function createESP(obj, baseColor)
     distLabel.TextColor3 = baseColor
     distLabel.TextStrokeColor3 = COLOR_OUTLINE
     distLabel.TextStrokeTransparency = 0
-    distLabel.Text = "[ 00 MM ]"
+    distLabel.Text = ""
     distLabel.Parent = frame
 
     espObjects[obj] = {
@@ -251,9 +259,11 @@ end
 local function getMapFolders()
     local folders = {}
     local mainMap = workspace:FindFirstChild("Map")
-    if mainMap then table.insert(folders, mainMap) end
-    if mainMap and mainMap:FindFirstChild("Rooftop") then
-        table.insert(folders, mainMap.Rooftop)
+    if mainMap then
+        table.insert(folders, mainMap)
+        if mainMap:FindFirstChild("Rooftop") then
+            table.insert(folders, mainMap.Rooftop)
+        end
     end
     return folders
 end
@@ -274,7 +284,7 @@ local function updateWindowESP()
     end
 end
 
--- Update ESP function
+-- Main update function
 local lastUpdate = 0
 local updateInterval = 0.5
 
@@ -283,7 +293,7 @@ local function updateESP(dt)
     local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
 
-    -- Players
+    -- Player loop
     for _, player in pairs(Players:GetPlayers()) do
         if player.Character and player.Character ~= LocalPlayer.Character and player.Character.Name ~= "Lobby" then
             local isMurderer = player.Character:FindFirstChild("Weapon") ~= nil
@@ -291,38 +301,66 @@ local function updateESP(dt)
 
             if isMurderer then
                 if espMurder then
-                    if currentESP and currentESP.color ~= COLOR_MURDERER then removeESP(player.Character); currentESP=nil end
+                    if currentESP and currentESP.color ~= COLOR_MURDERER then removeESP(player.Character) end
                     createESP(player.Character, COLOR_MURDERER)
-                else removeESP(player.Character) end
+                else
+                    removeESP(player.Character)
+                end
             else
                 if espSurvivor then
-                    if currentESP and currentESP.color ~= COLOR_SURVIVOR then removeESP(player.Character); currentESP=nil end
+                    if currentESP and currentESP.color ~= COLOR_SURVIVOR then removeESP(player.Character) end
                     createESP(player.Character, COLOR_SURVIVOR)
-                else removeESP(player.Character) end
+                else
+                    removeESP(player.Character)
+                end
             end
         end
     end
 
-    -- Objects
+    -- Object loop
     for _, folder in pairs(getMapFolders()) do
         for _, obj in pairs(folder:GetChildren()) do
-            if obj.Name == "Generator" and espGenerator then
-                local hitbox = obj:FindFirstChild("HitBox")
-                local pointLight = hitbox and hitbox:FindFirstChildOfClass("PointLight")
-                local color = COLOR_GENERATOR
-                if pointLight and pointLight.Color == Color3.fromRGB(126,255,126) then
-                    color = COLOR_GENERATOR_DONE
+            if obj.Name == "Generator" then
+                if espGenerator then
+                    local hitbox = obj:FindFirstChild("HitBox")
+                    local pointLight = hitbox and hitbox:FindFirstChildOfClass("PointLight")
+                    local color = COLOR_GENERATOR
+                    if pointLight and pointLight.Color == Color3.fromRGB(126,255,126) then
+                        color = COLOR_GENERATOR_DONE
+                    end
+                    createESP(obj, color)
+                else
+                    removeESP(obj)
                 end
-                createESP(obj, color)
-            elseif obj.Name == "Gate" and espGate then
-                createESP(obj, COLOR_GATE)
-            elseif obj.Name == "Hook" and espHook then
+
+            elseif obj.Name == "Gate" then
+                if espGate then
+                    createESP(obj, COLOR_GATE)
+                else
+                    removeESP(obj)
+                end
+
+            elseif obj.Name == "Hook" then
                 local mdl = obj:FindFirstChild("Model")
-                if mdl then createESP(mdl, COLOR_HOOK) end
-            elseif obj.Name == "Palletwrong" and espPallet then
-                createESP(obj, COLOR_PALLET)
+                if mdl then
+                    if espHook then
+                        createESP(mdl, COLOR_HOOK)
+                    else
+                        removeESP(mdl)
+                    end
+                end
+
+            elseif obj.Name == "Palletwrong" then
+                if espPallet then
+                    createESP(obj, COLOR_PALLET)
+                else
+                    removeESP(obj)
+                end
+
             else
-                if espObjects[obj] then removeESP(obj) end
+                if espObjects[obj] then
+                    removeESP(obj)
+                end
             end
         end
     end
@@ -341,21 +379,22 @@ local function updateESP(dt)
                 else
                     data.distLabel.Text = ""
                 end
+
                 -- Health
-                if ShowHP then
-                    local humanoid = obj:FindFirstChildOfClass("Humanoid")
-                    if humanoid then
-                        data.hpLabel.Text = "[ "..math.floor(humanoid.Health).." HP ]"
-                    else
-                        data.hpLabel.Text = "[ 00 HP ]"
-                    end
+                local humanoid = obj:FindFirstChildOfClass("Humanoid")
+                if ShowHP and humanoid then
+                    data.hpLabel.Text = "[ "..math.floor(humanoid.Health).." HP ]"
                 else
                     data.hpLabel.Text = ""
                 end
+
                 -- Name
                 data.nameLabel.Visible = ShowName
+
                 -- Highlight
-                if data.highlight then data.highlight.Enabled = ShowHighlight end
+                if data.highlight then
+                    data.highlight.Enabled = ShowHighlight
+                end
             end
         else
             removeESP(obj)
@@ -363,7 +402,7 @@ local function updateESP(dt)
     end
 end
 
--- Connections
+-- Run every frame
 RunService.RenderStepped:Connect(function(dt)
     lastUpdate = lastUpdate + dt
     if lastUpdate >= updateInterval then
@@ -372,11 +411,12 @@ RunService.RenderStepped:Connect(function(dt)
     end
 end)
 
+-- Clean up on player leave
 Players.PlayerRemoving:Connect(function(player)
     if player.Character then removeESP(player.Character) end
 end)
 
--- GUI
+-- GUI toggle callbacks (example, replace with your actual GUI lib if needed)
 EspTab:Section({ Title = "Feature Esp", Icon = "eye" })
 EspTab:Toggle({Title="Enable ESP", Default=false, Callback=function(v)
     espEnabled = v
@@ -399,13 +439,16 @@ EspTab:Toggle({Title="ESP Gate", Default=false, Callback=function(v) espGate=v e
 EspTab:Section({ Title = "Esp Object", Icon = "package" })
 EspTab:Toggle({Title="ESP Pallet", Default=false, Callback=function(v) espPallet=v end})
 EspTab:Toggle({Title="ESP Hook", Default=false, Callback=function(v) espHook=v end})
-EspTab:Toggle({Title="ESP Window", Default=false, Callback=function(v) espWindowEnabled=v; updateWindowESP() end})
+EspTab:Toggle({Title="ESP Window", Default=false, Callback=function(v)
+    espWindowEnabled=v
+    updateWindowESP()
+end})
 
 EspTab:Section({ Title = "Esp Settings", Icon = "settings" })
-EspTab:Toggle({Title="Show Name", Default=true, Callback=function(v) ShowName=v end})
-EspTab:Toggle({Title="Show Distance", Default=true, Callback=function(v) ShowDistance=v end})
-EspTab:Toggle({Title="Show Health", Default=true, Callback=function(v) ShowHP=v end})
-EspTab:Toggle({Title="Show Highlight", Default=true, Callback=function(v) ShowHighlight=v end})
+EspTab:Toggle({Title="Show Name", Default=ShowName, Callback=function(v) ShowName=v end})
+EspTab:Toggle({Title="Show Distance", Default=ShowDistance, Callback=function(v) ShowDistance=v end})
+EspTab:Toggle({Title="Show Health", Default=ShowHP, Callback=function(v) ShowHP=v end})
+EspTab:Toggle({Title="Show Highlight", Default=ShowHighlight, Callback=function(v) ShowHighlight=v end})
 
 -- ====================== NO FLASHLIGHT ======================
 local noFlashlightEnabled = false
