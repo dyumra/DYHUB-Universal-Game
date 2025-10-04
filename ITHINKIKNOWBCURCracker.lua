@@ -1,5 +1,5 @@
 -- ======================
-local version = "4.4.9"
+local version = "4.6.3"
 -- ======================
 
 repeat task.wait() until game:IsLoaded()
@@ -48,16 +48,6 @@ local ESPPALLET    = false
 local ESPWINDOW    = false
 local ESPHOOK      = false
 
-local espEnabled = false
-local espSurvivor = false
-local espMurder = false
-local espGenerator = false
-local espGate = false
-local espHook = false
-local espPallet = false
-local espObjects = {}
-local espWindowEnabled = false
-
 local COLOR_SURVIVOR       = Color3.fromRGB(0,0,255)
 local COLOR_MURDERER       = Color3.fromRGB(255,0,0)
 local COLOR_GENERATOR      = Color3.fromRGB(255,255,255)
@@ -67,6 +57,22 @@ local COLOR_PALLET         = Color3.fromRGB(255,255,0)
 local COLOR_OUTLINE        = Color3.fromRGB(0,0,0)
 local COLOR_WINDOW         = Color3.fromRGB(255,165,0)
 local COLOR_HOOK           = Color3.fromRGB(255,0,0)
+
+local espEnabled = false
+local espSurvivor = false
+local espMurder = false
+local espGenerator = false
+local espGate = false
+local espHook = false
+local espPallet = false
+local espWindowEnabled = false
+
+local ShowName = true
+local ShowDistance = true
+local ShowHP = true
+local ShowHighlight = true
+
+local espObjects = {}
 
 -- ====================== WINDOW ======================
 local Players = game:GetService("Players")
@@ -116,7 +122,7 @@ local Window = WindUI:CreateWindow({
     BackgroundImageTransparency = 0.8,
     HasOutline = false,
     HideSearchBar = true,
-    ScrollBarEnabled = false,
+    ScrollBarEnabled = true,
     User = { Enabled = true, Anonymous = false },
 })
 
@@ -138,17 +144,19 @@ Window:EditOpenButton({
 
 -- Tabs
 local InfoTab = Window:Tab({ Title = "Information", Icon = "info" })
-local MainDivider = Window:Divider()
-local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
-local EspTab = Window:Tab({ Title = "Esp", Icon = "eye" })
-local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
 local Main1Divider = Window:Divider()
 local SurTab = Window:Tab({ Title = "Survivor", Icon = "user-check" })
 local killerTab = Window:Tab({ Title = "Killer", Icon = "swords" })
+local Main2Divider = Window:Divider()
+local MainTab = Window:Tab({ Title = "Main", Icon = "rocket" })
+local EspTab = Window:Tab({ Title = "Esp", Icon = "eye" })
+local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
 
 Window:SelectTab(1)
 
 -- ====================== ESP SYSTEM ======================
+
+-- Remove ESP from object
 local function removeESP(obj)
     if espObjects[obj] then
         local data = espObjects[obj]
@@ -160,12 +168,16 @@ local function removeESP(obj)
     end
 end
 
+-- Create or update ESP
 local function createESP(obj, baseColor)
     if not obj or obj.Name == "Lobby" then return end
     if espObjects[obj] then
         local data = espObjects[obj]
-        if data.highlight then data.highlight.FillColor = baseColor; data.highlight.OutlineColor = baseColor end
-        if data.nameLabel then data.nameLabel.TextColor3 = baseColor end
+        if data.highlight then
+            data.highlight.FillColor = baseColor
+            data.highlight.OutlineColor = baseColor
+            data.highlight.Enabled = ShowHighlight
+        end
         return
     end
 
@@ -175,6 +187,7 @@ local function createESP(obj, baseColor)
     highlight.FillTransparency = 0.8
     highlight.OutlineColor = baseColor
     highlight.OutlineTransparency = 0.1
+    highlight.Enabled = ShowHighlight
     highlight.Parent = obj
 
     local bill = Instance.new("BillboardGui")
@@ -189,7 +202,8 @@ local function createESP(obj, baseColor)
     frame.Parent = bill
 
     local nameLabel = Instance.new("TextLabel")
-    nameLabel.Size = UDim2.new(1,0,0.5,0)
+    nameLabel.Size = UDim2.new(1,0,0.33,0)
+    nameLabel.Position = UDim2.new(0,0,0,0)
     nameLabel.BackgroundTransparency = 1
     nameLabel.Font = Enum.Font.SourceSansBold
     nameLabel.TextSize = 14
@@ -197,23 +211,43 @@ local function createESP(obj, baseColor)
     nameLabel.TextStrokeColor3 = COLOR_OUTLINE
     nameLabel.TextStrokeTransparency = 0
     nameLabel.Text = obj.Name
+    nameLabel.Visible = ShowName
     nameLabel.Parent = frame
 
+    local hpLabel = Instance.new("TextLabel")
+    hpLabel.Size = UDim2.new(1,0,0.33,0)
+    hpLabel.Position = UDim2.new(0,0,0.33,0)
+    hpLabel.BackgroundTransparency = 1
+    hpLabel.Font = Enum.Font.SourceSansBold
+    hpLabel.TextSize = 14
+    hpLabel.TextColor3 = baseColor
+    hpLabel.TextStrokeColor3 = COLOR_OUTLINE
+    hpLabel.TextStrokeTransparency = 0
+    hpLabel.Text = "[ 00 HP ]"
+    hpLabel.Parent = frame
+
     local distLabel = Instance.new("TextLabel")
-    distLabel.Size = UDim2.new(1,0,0.5,0)
-    distLabel.Position = UDim2.new(0,0,0.5,0)
+    distLabel.Size = UDim2.new(1,0,0.33,0)
+    distLabel.Position = UDim2.new(0,0,0.66,0)
     distLabel.BackgroundTransparency = 1
     distLabel.Font = Enum.Font.SourceSansBold
     distLabel.TextSize = 14
     distLabel.TextColor3 = baseColor
     distLabel.TextStrokeColor3 = COLOR_OUTLINE
     distLabel.TextStrokeTransparency = 0
-    distLabel.Text = "[ 0m ]"
+    distLabel.Text = "[ 00 MM ]"
     distLabel.Parent = frame
 
-    espObjects[obj] = {highlight = highlight, nameLabel = nameLabel, distLabel = distLabel, color = baseColor}
+    espObjects[obj] = {
+        highlight = highlight,
+        nameLabel = nameLabel,
+        hpLabel = hpLabel,
+        distLabel = distLabel,
+        color = baseColor
+    }
 end
 
+-- Get map folders
 local function getMapFolders()
     local folders = {}
     local mainMap = workspace:FindFirstChild("Map")
@@ -224,6 +258,7 @@ local function getMapFolders()
     return folders
 end
 
+-- Update Window ESP
 local function updateWindowESP()
     if not espEnabled then return end
     for _, folder in pairs(getMapFolders()) do
@@ -239,6 +274,7 @@ local function updateWindowESP()
     end
 end
 
+-- Update ESP function
 local lastUpdate = 0
 local updateInterval = 0.5
 
@@ -293,13 +329,33 @@ local function updateESP(dt)
 
     updateWindowESP()
 
-    -- Distance update
-    for obj,data in pairs(espObjects) do
+    -- Update labels
+    for obj, data in pairs(espObjects) do
         if obj and obj.Parent and obj.Name ~= "Lobby" then
             local targetPart = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
             if targetPart then
-                local dist = math.floor((hrp.Position - targetPart.Position).Magnitude)
-                data.distLabel.Text = "["..dist.."m]"
+                -- Distance
+                if ShowDistance then
+                    local dist = math.floor((hrp.Position - targetPart.Position).Magnitude)
+                    data.distLabel.Text = "[ "..dist.." MM ]"
+                else
+                    data.distLabel.Text = ""
+                end
+                -- Health
+                if ShowHP then
+                    local humanoid = obj:FindFirstChildOfClass("Humanoid")
+                    if humanoid then
+                        data.hpLabel.Text = "[ "..math.floor(humanoid.Health).." HP ]"
+                    else
+                        data.hpLabel.Text = "[ 00 HP ]"
+                    end
+                else
+                    data.hpLabel.Text = ""
+                end
+                -- Name
+                data.nameLabel.Visible = ShowName
+                -- Highlight
+                if data.highlight then data.highlight.Enabled = ShowHighlight end
             end
         else
             removeESP(obj)
@@ -307,6 +363,7 @@ local function updateESP(dt)
     end
 end
 
+-- Connections
 RunService.RenderStepped:Connect(function(dt)
     lastUpdate = lastUpdate + dt
     if lastUpdate >= updateInterval then
@@ -319,13 +376,12 @@ Players.PlayerRemoving:Connect(function(player)
     if player.Character then removeESP(player.Character) end
 end)
 
+-- GUI
 EspTab:Section({ Title = "Feature Esp", Icon = "eye" })
 EspTab:Toggle({Title="Enable ESP", Default=false, Callback=function(v)
     espEnabled = v
     if not espEnabled then
-        for obj,_ in pairs(espObjects) do
-            removeESP(obj)
-        end
+        for obj,_ in pairs(espObjects) do removeESP(obj) end
     else
         updateESP(0)
         updateWindowESP()
@@ -333,17 +389,23 @@ EspTab:Toggle({Title="Enable ESP", Default=false, Callback=function(v)
 end})
 
 EspTab:Section({ Title = "Esp Role", Icon = "settings" })
-EspTab:Toggle({Title="ESP Survivor", Default=ESPSURVIVOR, Callback=function(v) espSurvivor=v end})
-EspTab:Toggle({Title="ESP Killer", Default=ESPMURDER, Callback=function(v) espMurder=v end})
+EspTab:Toggle({Title="ESP Survivor", Default=false, Callback=function(v) espSurvivor=v end})
+EspTab:Toggle({Title="ESP Killer", Default=false, Callback=function(v) espMurder=v end})
 
 EspTab:Section({ Title = "Esp Engine", Icon = "biceps-flexed" })
-EspTab:Toggle({Title="ESP Generator", Default=ESPGENERATOR, Callback=function(v) espGenerator=v end})
-EspTab:Toggle({Title="ESP Gate", Default=ESPGATE, Callback=function(v) espGate=v end})
+EspTab:Toggle({Title="ESP Generator", Default=false, Callback=function(v) espGenerator=v end})
+EspTab:Toggle({Title="ESP Gate", Default=false, Callback=function(v) espGate=v end})
 
 EspTab:Section({ Title = "Esp Object", Icon = "package" })
-EspTab:Toggle({Title="ESP Pallet", Default=ESPPALLET, Callback=function(v) espPallet=v end})
-EspTab:Toggle({Title="ESP Hook", Default=ESPHOOK, Callback=function(v) espHook=v end})
-EspTab:Toggle({Title="ESP Window", Default=ESPWINDOW, Callback=function(v) espWindowEnabled=v; updateWindowESP() end})
+EspTab:Toggle({Title="ESP Pallet", Default=false, Callback=function(v) espPallet=v end})
+EspTab:Toggle({Title="ESP Hook", Default=false, Callback=function(v) espHook=v end})
+EspTab:Toggle({Title="ESP Window", Default=false, Callback=function(v) espWindowEnabled=v; updateWindowESP() end})
+
+EspTab:Section({ Title = "Esp Settings", Icon = "settings" })
+EspTab:Toggle({Title="Show Name", Default=true, Callback=function(v) ShowName=v end})
+EspTab:Toggle({Title="Show Distance", Default=true, Callback=function(v) ShowDistance=v end})
+EspTab:Toggle({Title="Show Health", Default=true, Callback=function(v) ShowHP=v end})
+EspTab:Toggle({Title="Show Highlight", Default=true, Callback=function(v) ShowHighlight=v end})
 
 -- ====================== NO FLASHLIGHT ======================
 local noFlashlightEnabled = false
@@ -451,7 +513,44 @@ MainTab:Toggle({
 -- ====================== AUTO GENERATOR ======================
 SurTab:Section({ Title = "Feature Survivor", Icon = "user" })
 
-killerTab:Toggle({Title="Auto Parry (Soon)", Default=false, Callback=function(v) noFlashlightEnabled=v end})
+local autoparry = false
+
+SurTab:Toggle({
+    Title = "Auto Parry (Dagger)",
+    Default = false,
+    Callback = function(v)
+        autoparry = v
+        if autoparry then
+            task.spawn(function()
+                local Players = game:GetService("Players")
+                local LocalPlayer = Players.LocalPlayer
+                local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                local remote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Items"):WaitForChild("Parrying Dagger"):WaitForChild("parry")
+
+                while autoparry do
+                    local char = LocalPlayer.Character
+                    local root = char and char:FindFirstChild("HumanoidRootPart")
+                    if root then
+                        for _, plr in ipairs(Players:GetPlayers()) do
+                            if plr ~= LocalPlayer and plr.Character then
+                                if plr.Character:FindFirstChild("Weapon") then
+                                    local targetRoot = plr.Character:FindFirstChild("HumanoidRootPart")
+                                    if targetRoot then
+                                        local dist = (root.Position - targetRoot.Position).Magnitude
+                                        if dist <= 10 then
+                                            remote:FireServer()
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                    task.wait(0.15)
+                end
+            end)
+        end
+    end
+})
 
 local autoGeneratorEnabled = false
 SurTab:Toggle({
@@ -587,9 +686,55 @@ killerTab:Section({ Title = "Feature Killer", Icon = "swords" })
 killerTab:Toggle({Title="Kill All (Soon)", Default=false, Callback=function(v) noFlashlightEnabled=v end})
 killerTab:Toggle({Title="Anti Parry (Soon)", Default=false, Callback=function(v) noFlashlightEnabled=v end})
 
-killerTab:Section({ Title = "Feature Cheat", Icon = "crown" })
+killerTab:Section({ Title = "Feature No-Cooldown", Icon = "crown" })
 
-killerTab:Toggle({Title="No Cooldown (Soon)", Default=false, Callback=function(v) noFlashlightEnabled=v end})
+local nocooldownskillEnabled = false
+
+killerTab:Toggle({
+    Title = "Auto Attack (No Animation)",
+    Default = false,
+    Callback = function(v)
+        nocooldownskillEnabled = v
+        if nocooldownskillEnabled then
+            task.spawn(function()
+                local Players = game:GetService("Players")
+                local LocalPlayer = Players.LocalPlayer
+                local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                local remote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Attacks"):WaitForChild("BasicAttack")
+
+                while nocooldownskillEnabled do
+                    local char = LocalPlayer.Character
+                    local root = char and char:FindFirstChild("HumanoidRootPart")
+                    if root then
+                        local closestTarget = nil
+                        local closestDist = 10
+
+                        for _, plr in ipairs(Players:GetPlayers()) do
+                            if plr ~= LocalPlayer and plr.Character then
+                                local targetRoot = plr.Character:FindFirstChild("HumanoidRootPart")
+                                if targetRoot then
+                                    local dist = (root.Position - targetRoot.Position).Magnitude
+                                    if dist <= closestDist then
+                                        closestDist = dist
+                                        closestTarget = plr.Character
+                                    end
+                                end
+                            end
+                        end
+
+                        if closestTarget then
+                            remote:FireServer()
+                        end
+                    end
+                    task.wait(0.1)
+                end
+            end)
+        end
+    end
+})
+
+killerTab:Section({ Title = "Feature Cheat", Icon = "bug" })
+
 killerTab:Toggle({Title="No Flashlight (Beta)", Default=false, Callback=function(v) noFlashlightEnabled=v end})
 
 -- ====================== VISUAL ======================
@@ -601,16 +746,15 @@ MainTab:Toggle({Title="Full Bright", Default=false, Callback=function(v)
 end})
 
 MainTab:Toggle({Title="No Fog", Default=false, Callback=function(v)
-    Lighting.FogEnd = v and 999999999 or 1000
-    Lighting.FogStart = 0
+    Lighting.Atmosphere.Density = v and 0 or 0.5
 end})
 
 -- ====================== PLAYER ======================
-local speedEnabled, flyNoclipSpeed = false, 5
+local speedEnabled, flyNoclipSpeed = false, 3
 local speedConnection, noclipConnection
 
 PlayerTab:Section({ Title = "Feature Player", Icon = "rabbit" })
-PlayerTab:Slider({ Title = "Set Speed Value", Value={Min=1,Max=50,Default=5}, Step=1, Callback=function(val) flyNoclipSpeed=val end })
+PlayerTab:Slider({ Title = "Set Speed Value", Value={Min=1,Max=10,Default=3}, Step=1, Callback=function(val) flyNoclipSpeed=val end })
 
 PlayerTab:Toggle({ Title = "Enable Speed", Default=false, Callback=function(v)
     speedEnabled=v
