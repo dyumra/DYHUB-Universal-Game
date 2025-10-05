@@ -1,5 +1,5 @@
 -- ======================
-local version = "4.6.9"
+local version = "4.7.6"
 -- ======================
 
 repeat task.wait() until game:IsLoaded()
@@ -41,41 +41,7 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 
 -- ====================== ESP SETTINGS ======================
 
--- Toggle values
-local ESPSURVIVOR  = false
-local ESPMURDER    = false
-local ESPGENERATOR = false
-local ESPGATE      = false
-local ESPPALLET    = false
-local ESPWINDOW    = false
-local ESPHOOK      = false
 
--- Color config
-local COLOR_SURVIVOR       = Color3.fromRGB(0,0,255)
-local COLOR_MURDERER       = Color3.fromRGB(255,0,0)
-local COLOR_GENERATOR      = Color3.fromRGB(255,255,255)
-local COLOR_GENERATOR_DONE = Color3.fromRGB(0,255,0)
-local COLOR_GATE           = Color3.fromRGB(255,255,255)
-local COLOR_PALLET         = Color3.fromRGB(255,255,0)
-local COLOR_OUTLINE        = Color3.fromRGB(0,0,0)
-local COLOR_WINDOW         = Color3.fromRGB(255,165,0)
-local COLOR_HOOK           = Color3.fromRGB(255,0,0)
-
--- State flags
-local espEnabled = false
-local espSurvivor = false
-local espMurder = false
-local espGenerator = false
-local espGate = false
-local espHook = false
-local espPallet = false
-local espWindowEnabled = false
-
--- Label toggles
-local ShowName = true
-local ShowDistance = true
-local ShowHP = true
-local ShowHighlight = true
 
 -- ====================== WINDOW ======================
 local Players = game:GetService("Players")
@@ -158,6 +124,42 @@ local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
 Window:SelectTab(1)
 
 -- ====================== ESP SYSTEM ======================
+-- Toggle values
+local ESPSURVIVOR  = false
+local ESPMURDER    = false
+local ESPGENERATOR = false
+local ESPGATE      = false
+local ESPPALLET    = false
+local ESPWINDOW    = false
+local ESPHOOK      = false
+
+-- Color config
+local COLOR_SURVIVOR       = Color3.fromRGB(0,0,255)
+local COLOR_MURDERER       = Color3.fromRGB(255,0,0)
+local COLOR_GENERATOR      = Color3.fromRGB(255,255,255)
+local COLOR_GENERATOR_DONE = Color3.fromRGB(0,255,0)
+local COLOR_GATE           = Color3.fromRGB(255,255,255)
+local COLOR_PALLET         = Color3.fromRGB(255,255,0)
+local COLOR_OUTLINE        = Color3.fromRGB(0,0,0)
+local COLOR_WINDOW         = Color3.fromRGB(255,165,0)
+local COLOR_HOOK           = Color3.fromRGB(255,0,0)
+
+-- State flags
+local espEnabled = false
+local espSurvivor = false
+local espMurder = false
+local espGenerator = false
+local espGate = false
+local espHook = false
+local espPallet = false
+local espWindowEnabled = false
+
+-- Label toggles
+local ShowName = true
+local ShowDistance = true
+local ShowHP = true
+local ShowHighlight = true
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
@@ -371,24 +373,59 @@ local function updateESP(dt)
         if obj and obj.Parent and obj.Name ~= "Lobby" then
             local targetPart = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
             if targetPart then
-                -- Distance
-                if ShowDistance then
-                    local dist = math.floor((hrp.Position - targetPart.Position).Magnitude)
-                    data.distLabel.Text = "[ "..dist.." MM ]"
-                else
-                    data.distLabel.Text = ""
-                end
-
-                -- Health
                 local humanoid = obj:FindFirstChildOfClass("Humanoid")
-                if ShowHP and humanoid then
-                    data.hpLabel.Text = "[ "..math.floor(humanoid.Health).." HP ]"
-                else
-                    data.hpLabel.Text = ""
-                end
+                local isPlayer = humanoid ~= nil
 
-                -- Name
+                -- Name label
+                data.nameLabel.Position = UDim2.new(0,0,0,0)
                 data.nameLabel.Visible = ShowName
+
+                if isPlayer then
+                    -- Player case
+
+                    -- HP label
+                    if ShowHP and humanoid then
+                        data.hpLabel.Text = "[ "..math.floor(humanoid.Health).." HP ]"
+                        data.hpLabel.Visible = true
+                    else
+                        data.hpLabel.Text = ""
+                        data.hpLabel.Visible = false
+                    end
+
+                    -- Distance label
+                    if ShowDistance then
+                        local dist = math.floor((hrp.Position - targetPart.Position).Magnitude)
+                        data.distLabel.Text = "[ "..dist.." MM ]"
+                        data.distLabel.Visible = true
+                    else
+                        data.distLabel.Text = ""
+                        data.distLabel.Visible = false
+                    end
+
+                    -- Adjust positions based on visibility
+                    if data.hpLabel.Visible then
+                        data.hpLabel.Position = UDim2.new(0,0,0.33,0)
+                        data.distLabel.Position = UDim2.new(0,0,0.66,0)
+                    else
+                        data.distLabel.Position = UDim2.new(0,0,0.33,0)
+                    end
+
+                else
+                    -- Object case (no HP)
+
+                    data.hpLabel.Text = ""
+                    data.hpLabel.Visible = false
+
+                    if ShowDistance then
+                        local dist = math.floor((hrp.Position - targetPart.Position).Magnitude)
+                        data.distLabel.Text = "[ "..dist.." MM ]"
+                        data.distLabel.Visible = true
+                        data.distLabel.Position = UDim2.new(0,0,0.33,0)
+                    else
+                        data.distLabel.Text = ""
+                        data.distLabel.Visible = false
+                    end
+                end
 
                 -- Highlight
                 if data.highlight then
@@ -861,7 +898,7 @@ local speedEnabled, flyNoclipSpeed = false, 3
 local speedConnection, noclipConnection
 
 PlayerTab:Section({ Title = "Feature Player", Icon = "rabbit" })
-PlayerTab:Slider({ Title = "Set Speed Value", Value={Min=1,Max=10,Value=3}, Step=1, Callback=function(val) flyNoclipSpeed=val end })
+PlayerTab:Slider({ Title = "Set Speed Value", Value={Min=1,Max=50,Default=4}, Step=1, Callback=function(val) flyNoclipSpeed=val end })
 
 PlayerTab:Toggle({ Title = "Enable Speed", Value=false, Callback=function(v)
     speedEnabled=v
@@ -901,12 +938,46 @@ PlayerTab:Toggle({ Title = "No Clip", Value=false, Callback=function(state)
 end })
 
 -- ====================== INFINITE JUMP ======================
-local infiniteJumpEnabled = false
-PlayerTab:Toggle({ Title = "Infinite Jump", Value = false, Callback = function(state) infiniteJumpEnabled = state end })
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
-UserInputService.JumpRequest:Connect(function()
-    if infiniteJumpEnabled and Humanoid then
-        Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local infiniteJumpEnabled = false
+local jumpPressed = false
+
+-- Toggle ปรับสถานะ
+PlayerTab:Toggle({
+    Title = "Infinite Jump",
+    Value = false,
+    Callback = function(state)
+        infiniteJumpEnabled = state
+    end
+})
+
+-- อัพเดตตัวละครใหม่
+player.CharacterAdded:Connect(function(char)
+    character = char
+    humanoid = character:WaitForChild("Humanoid")
+end)
+
+-- ตรวจจับการกดปุ่ม (Space บนคีย์บอร์ด หรือแตะหน้าจอบนมือถือ)
+UserInputService.InputBegan:Connect(function(input, processed)
+    if processed then return end
+    if input.KeyCode == Enum.KeyCode.Space or input.UserInputType == Enum.UserInputType.Touch then
+        jumpPressed = true
+    end
+end)
+
+-- Loop กระโดด
+RunService.RenderStepped:Connect(function()
+    if infiniteJumpEnabled and jumpPressed and humanoid then
+        humanoid:ChangeState(Enum.HumanoidStateType.Freefall)
+        humanoid.Jump = true
+        jumpPressed = false
     end
 end)
 
