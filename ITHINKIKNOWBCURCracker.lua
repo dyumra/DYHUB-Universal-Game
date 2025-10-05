@@ -1,5 +1,5 @@
 -- ======================
-local version = "4.7.6"
+local version = "4.7.9"
 -- ======================
 
 repeat task.wait() until game:IsLoaded()
@@ -486,21 +486,6 @@ EspTab:Toggle({Title="Show Distance", Value=ShowDistance, Callback=function(v) S
 EspTab:Toggle({Title="Show Health", Value=ShowHP, Callback=function(v) ShowHP=v end})
 EspTab:Toggle({Title="Show Highlight", Value=ShowHighlight, Callback=function(v) ShowHighlight=v end})
 
--- ====================== NO FLASHLIGHT ======================
-local noFlashlightEnabled = false
-spawn(function()
-    while task.wait(5) do
-        if noFlashlightEnabled then
-            local playerGui = LocalPlayer:FindFirstChild("PlayerGui")
-            if playerGui then
-                local screenshotFrame = playerGui:FindFirstChild("ScreenshotHudFrame")
-                if screenshotFrame then
-                    screenshotFrame:Destroy()
-                end
-            end
-        end
-    end
-end)
 
 -- ====================== BYPASS GATE ======================
 local bypassGateEnabled = false
@@ -879,7 +864,71 @@ killerTab:Toggle({
 
 killerTab:Section({ Title = "Feature Cheat", Icon = "bug" })
 
-killerTab:Toggle({Title="No Flashlight (Beta)", Value=false, Callback=function(v) noFlashlightEnabled=v end})
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local noFlashlightEnabled = false
+
+-- Toggle ของคุณ (ถ้ามี)
+killerTab:Toggle({
+    Title = "No Flashlight",
+    Value = false,
+    Callback = function(state)
+        noFlashlightEnabled = state
+    end
+})
+
+-- ฟังก์ชันสแกนทุก Descendant ที่ชื่อ "Blind"
+local function removeBlindGui()
+    local playerGui = LocalPlayer:FindFirstChild("PlayerGui")
+    if not playerGui then return end
+
+    -- สแกนทุก Descendant
+    for _, descendant in pairs(playerGui:GetDescendants()) do
+        if descendant:IsA("GuiObject") and descendant.Name == "Blind" then
+            descendant:Destroy()
+        end
+    end
+end
+
+-- วน loop ทุก 0.5 วินาที
+task.spawn(function()
+    while true do
+        task.wait(0.5)
+        if noFlashlightEnabled then
+            removeBlindGui()
+        end
+    end
+end)
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+-- ปุ่มใน Killer Tab สำหรับ Reset กล้อง
+killerTab:Button({ 
+    Title = "Fix Cam (3rd Person Camera)", 
+    Callback = function()
+        -- รีเซ็ตกล้อง
+        local character = player.Character or player.CharacterAdded:Wait()
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+        if humanoid then
+            camera.CameraType = Enum.CameraType.Custom
+            camera.CameraSubject = humanoid
+
+            player.CameraMinZoomDistance = 0.5
+            player.CameraMaxZoomDistance = 400
+            player.CameraMode = Enum.CameraMode.Classic
+
+            -- เผื่อโดน Anchor หัวไว้
+            local head = character:FindFirstChild("Head")
+            if head then
+                head.Anchored = false
+            end
+        end
+    end
+})
 
 -- ====================== VISUAL ======================
 MainTab:Section({ Title = "Feature Visual", Icon = "lightbulb" })
@@ -936,50 +985,6 @@ PlayerTab:Toggle({ Title = "No Clip", Value=false, Callback=function(state)
         end
     end
 end })
-
--- ====================== INFINITE JUMP ======================
-local UserInputService = game:GetService("UserInputService")
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
-local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-
-local infiniteJumpEnabled = false
-local jumpPressed = false
-
--- Toggle ปรับสถานะ
-PlayerTab:Toggle({
-    Title = "Infinite Jump",
-    Value = false,
-    Callback = function(state)
-        infiniteJumpEnabled = state
-    end
-})
-
--- อัพเดตตัวละครใหม่
-player.CharacterAdded:Connect(function(char)
-    character = char
-    humanoid = character:WaitForChild("Humanoid")
-end)
-
--- ตรวจจับการกดปุ่ม (Space บนคีย์บอร์ด หรือแตะหน้าจอบนมือถือ)
-UserInputService.InputBegan:Connect(function(input, processed)
-    if processed then return end
-    if input.KeyCode == Enum.KeyCode.Space or input.UserInputType == Enum.UserInputType.Touch then
-        jumpPressed = true
-    end
-end)
-
--- Loop กระโดด
-RunService.RenderStepped:Connect(function()
-    if infiniteJumpEnabled and jumpPressed and humanoid then
-        humanoid:ChangeState(Enum.HumanoidStateType.Freefall)
-        humanoid.Jump = true
-        jumpPressed = false
-    end
-end)
 
 Info = InfoTab
 
