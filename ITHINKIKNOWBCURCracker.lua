@@ -1,5 +1,5 @@
 -- ======================
-local version = "4.6.8"
+local version = "4.6.9"
 -- ======================
 
 repeat task.wait() until game:IsLoaded()
@@ -579,7 +579,7 @@ SurTab:Toggle({
                                     local targetRoot = plr.Character:FindFirstChild("HumanoidRootPart")
                                     if targetRoot then
                                         local dist = (root.Position - targetRoot.Position).Magnitude
-                                        if dist <= 10 then
+                                        if dist <= 20 then
                                             remote:FireServer()
                                         end
                                     end
@@ -587,7 +587,7 @@ SurTab:Toggle({
                             end
                         end
                     end
-                    task.wait(0.05)
+                    task.wait(0.01)
                 end
             end)
         end
@@ -612,7 +612,7 @@ SurTab:Toggle({
                     local root = char and char:FindFirstChild("HumanoidRootPart")
                     if root then
                         local folders = getMapFolders()
-                        local closestGen, closestDist = nil, 20
+                        local closestGen, closestDist = nil, 10
 
                         for _, folder in ipairs(folders) do
                             for _, gen in ipairs(folder:GetChildren()) do
@@ -715,7 +715,7 @@ SurTab:Toggle({
                             remote:FireServer(unpack(args))
                         end
                     end
-                    task.wait(0.1)
+                    task.wait(0.5)
                 end
             end)
         end
@@ -725,7 +725,72 @@ SurTab:Toggle({
 -- ====================== KILLER ======================
 killerTab:Section({ Title = "Feature Killer", Icon = "swords" })
 
-killerTab:Toggle({Title="Kill All (Soon)", Value=false, Callback=function(v) noFlashlightEnabled=v end})
+local killallEnabled = false
+
+killerTab:Toggle({
+    Title = "Kill All (Warning: Get Ban)", 
+    Value = false,
+    Callback = function(v)
+        killallEnabled = v
+        if killallEnabled then
+            task.spawn(function()
+                local Players = game:GetService("Players")
+                local LocalPlayer = Players.LocalPlayer
+                local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                local remote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Attacks"):WaitForChild("BasicAttack")
+
+                local index = 1
+
+                while killallEnabled do
+                    local char = LocalPlayer.Character
+                    local root = char and char:FindFirstChild("HumanoidRootPart")
+                    if root then
+                        -- สร้างลิสต์เป้าหมายในรอบนี้
+                        local targets = {}
+                        for _, plr in ipairs(Players:GetPlayers()) do
+                            if plr ~= LocalPlayer and plr.Character then
+                                local targetRoot = plr.Character:FindFirstChild("HumanoidRootPart")
+                                local humanoid = plr.Character:FindFirstChildOfClass("Humanoid")
+                                if targetRoot and targetRoot.Position.Y <= 100 and (not humanoid or humanoid.Health > 20) then
+                                    table.insert(targets, {player = plr, root = targetRoot})
+                                end
+                            end
+                        end
+
+                        if #targets > 0 then
+                            if index > #targets then index = 1 end
+                            local entry = targets[index]
+                            local targetRoot = entry and entry.root
+
+                            if targetRoot and targetRoot.Parent then
+                                -- วาร์ปไปข้างหน้าเป้าหมาย
+                                root.CFrame = targetRoot.CFrame * CFrame.new(0, 0, 2)
+
+                                -- ยิง Remote
+                                pcall(function()
+                                    remote:FireServer()
+                                end)
+
+                                -- ไปหาเป้าถัดไป
+                                index = index + 1
+                                task.wait(0.15)
+                            else
+                                index = index + 1
+                                task.wait(0.05)
+                            end
+                        else
+                            index = 1
+                            task.wait(0.5)
+                        end
+                    else
+                        task.wait(0.2)
+                    end
+                end
+            end)
+        end
+    end
+})
+
 killerTab:Toggle({Title="Anti Parry (Soon)", Value=false, Callback=function(v) noFlashlightEnabled=v end})
 
 killerTab:Section({ Title = "Feature No-Cooldown", Icon = "crown" })
